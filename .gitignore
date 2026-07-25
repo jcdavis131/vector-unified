@@ -1,0 +1,43 @@
+# vector-unified — what git carries and what it deliberately does not.
+#
+# This repo was created 2026-07-25 to put 5,397 lines of previously UNVERSIONED
+# pipeline code and its architecture docs under history. Before that, one
+# accidental delete lost the joint-embedding work outright.
+#
+# Rule: source and docs are tracked; large GENERATED artifacts are not, because
+# they are reproducible from the pipeline and would put ~43 MB of JSON blobs into
+# history with no diffability. If you later want the published artifacts
+# versioned, add git-lfs and un-ignore them deliberately — do not just delete
+# these lines.
+
+# Generated joint-embedding artifacts (assets/unified.json alone is 16.7 MB)
+assets/*.json
+assets/**/*.json
+
+# Acquired + intermediate data (27 MB; re-fetchable via pipeline/acquire_*.py)
+data/
+pipeline/data/
+
+# Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).
+# Caught only by checking `git diff --cached` BEFORE the first commit: staging
+# had ballooned to 581,559 lines. Scrape cache is re-fetchable and belongs
+# nowhere near history.
+pipeline/cache/
+**/cache/
+
+# A pre-pitch-consolidation backup copy of unified.json (16.7 MB duplicate)
+pipeline/data/bak_pre_pitch_con/
+**/bak_pre_*/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
