@@ -3,7 +3,8 @@
 Produces a common record stream from the three proven sport encoders so the
 shared projection trunk (Pillar 2) can fold them into one 64-d space.
 
-  e_h  hoops    48-d   <- vector-hoops/pipeline/data/embedding_v3.npz        (cached, shipped)
+  e_h  hoops    64-d   <- vector-hoops/pipeline/data/embedding_v3.npz        (cached, shipped;
+                          64-d concat-fusion v5.1 promoted 2026-07-25, was 48-d)
   e_g  gridiron 32-d   <- vector-gridiron/pipeline/data/mtnn_best.pt +       (regenerated,
                           train_matrix.npz  -> forward pass -> season-agg      no cached 32-d)
   e_p  pitch    24-d   <- vector-pitch/assets/pitch_mtnn_embeddings.json     (cached, just built)
@@ -47,7 +48,7 @@ GRID = HOME / "vector-gridiron"
 PITCH = HOME / "vector-pitch"
 
 SPORTS = ("hoops", "gridiron", "pitch")
-SPORT_DIM = {"hoops": 48, "gridiron": 32, "pitch": 24}
+SPORT_DIM = {"hoops": 64, "gridiron": 32, "pitch": 24}
 SPORT_ID = {s: i for i, s in enumerate(SPORTS)}
 UCACHE = ROOT / "pipeline" / "data"  # unified-side cache for derived artifacts
 
