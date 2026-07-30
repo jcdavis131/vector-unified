@@ -92,9 +92,11 @@ class UnifiedTrunk(nn.Module):
         if market_heads:
             self.salary_head = nn.Linear(d_emb, 1)
             self.award_head = nn.Linear(d_emb, 1)
+            self.reach_head = nn.Linear(d_emb, 1)  # log(Wikipedia pageviews), keyless social reach
         else:
             self.salary_head = None
             self.award_head = None
+            self.reach_head = None
         # cultural text: project z -> MiniLM space; masked cosine alignment
         if cultural_text:
             self.text_proj = nn.Linear(d_emb, d_text)
@@ -242,13 +244,19 @@ def load_matrix(device, market=False, cultural_text=False):
         sal_m = np.array([r["m_salary"] for r in rows], dtype=np.float32)
         awd = np.array([(r["award_prestige"] if r["m_award"] else 0.0) for r in rows], dtype=np.float32)
         awd_m = np.array([r["m_award"] for r in rows], dtype=np.float32)
+        rch = np.array([(r["reach_log"] if r.get("m_reach") else 0.0) for r in rows], dtype=np.float32)
+        rch_m = np.array([r.get("m_reach", 0) for r in rows], dtype=np.float32)
         sal_z, sal_m = _zscore_masked(sal, sal_m)
         awd_z, awd_m = _zscore_masked(awd, awd_m)
+        rch_z, rch_m = _zscore_masked(rch, rch_m)
         out["salary_z"] = torch.tensor(sal_z, dtype=torch.float32, device=device)
         out["salary_mask"] = torch.tensor(sal_m, dtype=torch.float32, device=device)
         out["award_z"] = torch.tensor(awd_z, dtype=torch.float32, device=device)
         out["award_mask"] = torch.tensor(awd_m, dtype=torch.float32, device=device)
-        print(f"market loaded: salary labeled={int(sal_m.sum())}  award labeled={int(awd_m.sum())}")
+        out["reach_z"] = torch.tensor(rch_z, dtype=torch.float32, device=device)
+        out["reach_mask"] = torch.tensor(rch_m, dtype=torch.float32, device=device)
+        print(f"market loaded: salary labeled={int(sal_m.sum())}  award labeled={int(awd_m.sum())}  "
+              f"reach labeled={int(rch_m.sum())}")
     if cultural_text:
         ct_path = DATA / "market_cultural" / "cultural_text_matrix.npz"
         if not ct_path.exists():
@@ -290,7 +298,8 @@ def gather_batch(M, global_idx):
     batch = (sport_ids, era_ids, arch, native, pos, posm, e_per)
     if "salary_z" in M:
         batch = batch + (M["salary_z"][global_idx], M["salary_mask"][global_idx],
-                         M["award_z"][global_idx], M["award_mask"][global_idx])
+                         M["award_z"][global_idx], M["award_mask"][global_idx],
+                         M["reach_z"][global_idx], M["reach_mask"][global_idx])
     if "text_t" in M:
         batch = batch + (M["text_t"][global_idx], M["text_mask"][global_idx])
     return batch
@@ -413,12 +422,13 @@ def main():
                     loss = loss + F.cross_entropy(model.pos_heads[s](z[pm]), pp)
         return loss / 3.0
 
-    def market_loss(z, sal_z, sal_m, awd_z, awd_m):
+    def market_loss(z, sal_z, sal_m, awd_z, awd_m, rch_z, rch_m):
         if model.salary_head is None:
             return z.new_zeros(())
         l_sal = masked_mse(model.salary_head(z).squeeze(-1), sal_z, sal_m)
         l_awd = masked_mse(model.award_head(z).squeeze(-1), awd_z, awd_m)
-        return l_sal + l_awd
+        l_rch = masked_mse(model.reach_head(z).squeeze(-1), rch_z, rch_m)
+        return l_sal + l_awd + l_rch
 
     def text_loss(z, text_t, text_m):
         if model.text_proj is None:
@@ -431,8 +441,8 @@ def main():
         market = None
         text = None
         if args.market:
-            market = packed[off:off + 4]
-            off += 4
+            market = packed[off:off + 6]
+            off += 6
         if args.cultural_text:
             text = packed[off:off + 2]
         return market, text

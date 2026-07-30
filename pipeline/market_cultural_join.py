@@ -5,18 +5,23 @@ Reads:
   data/market_cultural/forbes_earnings.json
   data/market_cultural/spotrac_nfl_salary.json
   data/market_cultural/awards.json
+  data/market_cultural/wikipedia_pageviews.json (social reach, keyless -- see
+    acquire_wikipedia_pageviews.py; replaces the originally-scoped Apify path)
 
 Writes player-season rows aligned to unified.json order:
   data/market_cultural/market_cultural.json
     { built, n_rows, schema, coverage, rows: [
         { sport, player_id, name, season, year,
-          salary_m, endorse_m, earnings_m, award_prestige,
-          m_salary, m_endorse, m_earnings, m_award } ... ] }
+          salary_m, endorse_m, earnings_m, award_prestige, reach_views,
+          m_salary, m_endorse, m_earnings, m_award, m_reach } ... ] }
 
 Honesty contract (§257): missing signals are masked (m_*=0), never imputed.
 Pitch salary is almost entirely Forbes-stars-only (Transfermarkt blocked).
-Social reach deferred (Phase 1e). Hoops full salary stays in the native BBREF
-pipeline; this join adds the *cross-sport* Forbes/Spotrac/awards layer.
+Social reach: Wikipedia pageviews, exact (player, year) match only (no
+interpolation across years, same discipline as Forbes) -- only covers the 429
+players resolved by acquire_wikipedia_bios.py and only 2015+ seasons (earliest
+article-level pageview data). Hoops full salary stays in the native BBREF
+pipeline; this join adds the *cross-sport* Forbes/Spotrac/awards/reach layer.
 
 Run:  python pipeline/market_cultural_join.py
 """
@@ -69,6 +74,9 @@ def main() -> int:
     forbes = json.loads((DATA / "forbes_earnings.json").read_text(encoding="utf-8"))
     spotrac = json.loads((DATA / "spotrac_nfl_salary.json").read_text(encoding="utf-8"))
     awards = json.loads((DATA / "awards.json").read_text(encoding="utf-8"))
+    pageviews_path = DATA / "wikipedia_pageviews.json"
+    pageviews = (json.loads(pageviews_path.read_text(encoding="utf-8"))
+                 if pageviews_path.exists() else {"players": {}})
 
     # Forbes index: (norm, sport, year) -> {salary_m, endorse_m, total_m}
     # Also career-max endorse per (norm, sport) as a fallback cultural signal
@@ -104,11 +112,15 @@ def main() -> int:
         for nn, rec in athletes.items():
             a_idx[(nn, sport)] = float(rec["prestige"])
 
+    # Pageviews: "sport::norm" (matches acquire_wikipedia_bios.py's key) -> by_year
+    pv_idx: dict[str, dict] = pageviews.get("players", {})
+
     rows = []
     cov = {
         "salary": {"hoops": 0, "gridiron": 0, "pitch": 0},
         "endorse": {"hoops": 0, "gridiron": 0, "pitch": 0},
         "award": {"hoops": 0, "gridiron": 0, "pitch": 0},
+        "reach": {"hoops": 0, "gridiron": 0, "pitch": 0},
         "any": {"hoops": 0, "gridiron": 0, "pitch": 0},
         "n": {"hoops": 0, "gridiron": 0, "pitch": 0},
     }
@@ -133,6 +145,11 @@ def main() -> int:
                 salary_m = cap / 1_000_000.0  # dollars -> millions
         # 3) career award prestige (same across seasons)
         award_prestige = a_idx.get((nn, sport))
+        # 4) social reach: exact (player, year) pageviews match, no interpolation
+        reach_views = None
+        pv = pv_idx.get(f"{sport}::{nn}")
+        if pv and year is not None:
+            reach_views = pv["by_year"].get(str(year))
 
         earnings_m = None
         if salary_m is not None or endorse_m is not None:
@@ -142,6 +159,7 @@ def main() -> int:
         m_endorse = 1 if endorse_m is not None else 0
         m_earnings = 1 if earnings_m is not None else 0
         m_award = 1 if award_prestige is not None else 0
+        m_reach = 1 if reach_views is not None else 0
 
         if m_salary:
             cov["salary"][sport] += 1
@@ -149,7 +167,9 @@ def main() -> int:
             cov["endorse"][sport] += 1
         if m_award:
             cov["award"][sport] += 1
-        if m_salary or m_endorse or m_award:
+        if m_reach:
+            cov["reach"][sport] += 1
+        if m_salary or m_endorse or m_award or m_reach:
             cov["any"][sport] += 1
 
         rows.append({
@@ -162,18 +182,21 @@ def main() -> int:
             "endorse_m": endorse_m,
             "earnings_m": earnings_m,
             "award_prestige": award_prestige,
+            "reach_views": reach_views,
             "salary_log": log1p_m(salary_m),
             "endorse_log": log1p_m(endorse_m),
             "earnings_log": log1p_m(earnings_m),
+            "reach_log": (math.log1p(reach_views) if reach_views is not None else None),
             "m_salary": m_salary,
             "m_endorse": m_endorse,
             "m_earnings": m_earnings,
             "m_award": m_award,
+            "m_reach": m_reach,
         })
 
     # coverage rates
     rates = {}
-    for signal in ("salary", "endorse", "award", "any"):
+    for signal in ("salary", "endorse", "award", "reach", "any"):
         rates[signal] = {
             s: round(cov[signal][s] / max(1, cov["n"][s]), 4) for s in ("hoops", "gridiron", "pitch")
         }
@@ -187,11 +210,14 @@ def main() -> int:
             "endorse_m": "off-field $ millions (Forbes stars only)",
             "earnings_m": "salary_m + endorse_m when either present",
             "award_prestige": "career tier-weighted award wins (NBA MVP / AP NFL MVP / Ballon d'Or / FIFA Best)",
+            "reach_views": "Wikipedia pageviews for that exact (player, year) -- keyless social-reach signal, no interpolation",
             "masks": "m_*=1 when present; never impute (§257)",
             "gaps": [
                 "pitch salary: Forbes stars only (Transfermarkt market-value blocked)",
                 "endorse: Forbes stars only (~23 unique athletes across 3 sports)",
-                "social reach: deferred (Phase 1e)",
+                "social reach: Wikipedia pageviews (keyless), only for the 429 players "
+                "resolved so far and only 2015+ seasons (earliest article-level data); "
+                "originally scoped via Apify (needs a paid key), swapped for a free source",
                 "hoops full salary: remains in native BBREF pipeline, not duplicated here",
             ],
         },
@@ -204,11 +230,11 @@ def main() -> int:
 
     print(f"saved {out.name}: {len(rows)} rows (aligned to unified.json)")
     print("coverage rates (fraction of player-seasons with signal):")
-    for signal in ("salary", "endorse", "award", "any"):
+    for signal in ("salary", "endorse", "award", "reach", "any"):
         r = rates[signal]
         print(f"  {signal:8s}  hoops={r['hoops']:.3f}  gridiron={r['gridiron']:.3f}  pitch={r['pitch']:.3f}")
     print("coverage counts:")
-    for signal in ("salary", "endorse", "award", "any"):
+    for signal in ("salary", "endorse", "award", "reach", "any"):
         print(f"  {signal:8s}  {cov[signal]}")
 
     # showcase: top prestige / earnings in corpus
@@ -228,6 +254,10 @@ def main() -> int:
     for r in top_s:
         print(f"  [{r['sport'][:2]}] {r['year']} {r['name']:<22} salary=${r['salary_m']:.1f}M "
               f"endorse={r['endorse_m']}")
+    print("\nshowcase (highest reach_views present):")
+    top_r = sorted([r for r in rows if r["m_reach"]], key=lambda r: -(r["reach_views"] or 0))[:6]
+    for r in top_r:
+        print(f"  [{r['sport'][:2]}] {r['year']} {r['name']:<22} reach_views={r['reach_views']:,}")
     return 0
 
 
