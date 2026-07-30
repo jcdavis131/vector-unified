@@ -169,7 +169,14 @@ justified (`document-non-action`). Prefer the sport projects' family/tower namin
 
 ## 7. Acceptance criteria (Definition of Done)
 
-> **Stage 1 v0 status (2026-07-10):** 1✓ 2✓ 3✓ 4✓ 5✓(G1) 6✗(G2 deferred→Stage 2, see arch §11)
+> **Stage 2.1 status (2026-07-30, shipped):** 1✓ 2✓ 3✓ 4✓ 5✓(G1, improved) 6✗(G2 soft target, not met —
+> see below) 7✓(G3) 8✓(G4=0.978, automated not curated) 9✓ 10☐(methods page pending). G2 moved from
+> Stage 1's ~0.74-0.79 to 0.693 after unfreezing the encoders (Stage 2.1) but plateaued there through
+> 60 epochs, well above the ≤0.433 target. User decision (2026-07-30): ship on G1+G3 with G2 as an
+> honest soft-target caveat rather than hold for a Stage 2.2 attempt. `assets/unified.json` now ships
+> from `unified_stage2_best.pt` (drifted encoders), not the frozen Stage 1 `unified_best.pt`.
+>
+> Prior (Stage 1 v0, 2026-07-10): 1✓ 2✓ 3✓ 4✓ 5✓(G1) 6✗(G2 deferred→Stage 2, see arch §11)
 > 7✓(G3) 8✓(G4=0.978, automated not curated) 9✓ 10☐(methods page pending). G2 is the one open gate;
 > it is structurally blocked at Stage 1 (frozen encoders in different spaces) and is a Stage 2 goal.
 
@@ -184,9 +191,14 @@ justified (`document-non-action`). Prefer the sport projects' family/tower namin
    gridiron PPR MAE ≤ 4.313 + 0.05; pitch purity ≥ baseline). **✓ PASS — z beats frozen e_s on
    native-cluster kNN-5 for all 3 sports; position 1.0 all.**
 6. **G2:** sport-classifier accuracy ≥ 10pp below a no-debiasing baseline; `z` effective rank ≥ 32.
-   **✗ DEFERRED TO STAGE 2 — sport-acc 0.771 vs baseline 0.799 (Δ≈3pp; GRL inert); rank 13 (role
-   manifold is genuinely ~13-d; collapse_detector passes: rank≥12 + G1 + G3). Structural to frozen
-   per-sport encoders in different spaces — not fixable by trunk tweaks. See arch §11.**
+   **✗ STAGE 2.1 SOFT TARGET, SHIPPED ANYWAY — Stage 1 (frozen): sport-acc 0.771 vs baseline 0.799
+   (Δ≈3pp; GRL inert), rank 13. Stage 2.1 (unfrozen encoders, 60ep, enc_lr 3e-5, GRL λ 0.10): sport-
+   acc improved to 0.693 but plateaued there (not still falling at epoch 60) — target ≤0.433 not
+   met. G1 held/improved for all 3 sports throughout (no regression), so per
+   `docs/STAGE2.1_SWEEP_PLAN.md` §5's own decision tree ("G2 plateau > 0.55 → declare a soft target,
+   user decision") the user chose to ship on G1+G3 with this named as an open gap rather than run
+   Stage 2.2. Structural: encoders can drift some without hurting per-sport role, but fully erasing
+   sport from a 64-d shared space while keeping G1 intact hits a real ceiling around here.**
 7. **G3:** cross-sport archetype silhouette > 0 on `z`. **✓ PASS — silhouette 0.683; within-arch
    cross-sport cos 0.746 >> between-arch -0.121.**
 8. **G4:** ≥ 60% of curated cross-sport analogies land in top-k=10 with a sensible role label.

@@ -1,13 +1,23 @@
-# Stage 2.1 — Sweep plan (next attempt, once hoops artifacts stabilize)
+# Stage 2.1 — Sweep plan (RUN 2026-07-30, SHIPPED)
 
-> **Status:** PLAN. Stage 2 (v0, LR 1e-5 / 30 epochs) infrastructure is built and
-> proven but its run was confounded by a concurrent hoops hillclimb overwriting
-> the hoops artifacts (see `STAGE2_PLAN.md` §8). Even un-confounded, that config
-> was never going to ship: G2 only moved ~0.07 (0.74→~0.70) vs the ≤0.43 target.
-> This doc is the next concrete hill-climb step. **Precondition: the hoops lane
-> must be stable and `load_live_encoders.py` smoke must again show cos=1.00000
-> for hoops, and `unified_matrix.npz` must be rebuilt from the stabilized
-> `embedding_v3.npz`.**
+> **Status:** DONE + SHIPPED. Precondition turned out to be broken when actually
+> checked (not just stale): hoops had been promoted to a 64-d encoder
+> (2026-07-25) but `SPORT_DIM["hoops"]` still said 48 and
+> `load_live_encoders.py::_hoops_bundle` didn't know about the post-PR#9
+> `injury`-family exclusion / durability head — both fixed, see
+> `pipeline/load_encoders.py` + `pipeline/load_live_encoders.py` git history
+> 2026-07-30. Stage 1 retrained fresh against the corrected encoder (G1
+> improved, G3 PASS), then §3's run below executed as planned (staggering from
+> §3/§2 was NOT implemented in `train_stage2.py` and was skipped — the
+> existing per-epoch G1 revert-check served as the safety net instead, and
+> nothing regressed). Result: **G1 holds/improves for all 3 sports, G3 holds,
+> G2 plateaus at 0.693** (target ≤0.43 not met) — landing on §5's "G2 plateau >
+> 0.55, declare a soft target, user decision" branch. **User shipped it
+> anyway** (2026-07-30): `pipeline/export_unified_stage2.py` → `assets/unified.json`,
+> caveat baked into the artifact's own `g2_status` field. See
+> `tasks/todo.md` 4.3 and `docs/SPEC.md` §7 for the full record.
+>
+> Original plan (kept below for the exact recipe/rationale used):
 
 ## 1. What Stage 2 v0 taught us (assuming the trend was real)
 
