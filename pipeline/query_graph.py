@@ -243,6 +243,100 @@ def q_roster_mix() -> None:
         print("    VERDICT: |r| does not clear the shuffled baseline. No finding.")
 
 
+def q_salary_concentration() -> None:
+    """Q3: do larger-market clubs concentrate pay in fewer players?
+
+    Q1 and Q2 were null for a reason worth acting on rather than repeating: the archetype
+    layer is a ROLE taxonomy and a role label cannot carry a value question. This uses the
+    first real value signal in the estate — vector-hoops/pipeline/data/salary_market.json,
+    11,408 player-seasons with SALARY_TEAM_PCT, already normalised as a share so it is
+    comparable across 30 years of cap inflation.
+
+    WHY CONCENTRATION AND NOT TOTAL PAYROLL. The NBA has a salary cap, so total payroll is
+    near-constant by RULE and correlating it with market size would produce a null that says
+    nothing about markets and everything about league regulation. Concentration — one star
+    on a max deal versus a balanced roster — is not capped away, and it is the actual
+    strategic choice a front office makes.
+
+    Predictor is org capacity percentile WITHIN hoops; outcome is HHI over each roster's
+    salary shares.
+    """
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    orgs = {o["org_id"]: o for o in doc["orgs"]}
+    sal_p = ROOT.parent / "vector-hoops" / "pipeline" / "data" / "salary_market.json"
+    if not sal_p.exists():
+        print("\nQ3 skipped: salary_market.json not found.")
+        return
+    sal = {
+        (norm_name(r["name"]), str(r["season"])): r.get("SALARY_TEAM_PCT")
+        for r in json.loads(sal_p.read_text(encoding="utf-8"))["players"]
+        if r.get("SALARY_TEAM_PCT") is not None
+    }
+
+    caps = sorted(
+        (o["attrs"]["capacity"] for o in orgs.values()
+         if o["sport"] == "hoops" and (o.get("attrs") or {}).get("capacity"))
+    )
+
+    def cap_pct(c: int) -> float:
+        return 100.0 * sum(1 for x in caps if x < c) / max(len(caps) - 1, 1)
+
+    shares: dict[str, list[float]] = defaultdict(list)
+    for e in doc["edges"]:
+        if e["sport"] != "hoops" or not e.get("org_id"):
+            continue
+        s = sal.get((e["norm"], str(e["season"])))
+        if s is not None:
+            shares[e["org_id"]].append(float(s))
+
+    pts = []
+    for oid, vals in shares.items():
+        if len(vals) < 8:
+            continue
+        o = orgs.get(oid)
+        cap = (o.get("attrs") or {}).get("capacity") if o else None
+        if not cap:
+            continue
+        tot = sum(vals)
+        if tot <= 0:
+            continue
+        hhi = sum((v / tot) ** 2 for v in vals)
+        pts.append((cap_pct(cap), hhi))
+
+    print("\nQ3  Do larger-market clubs concentrate pay in fewer players?")
+    print(f"    hoops team-seasons with >=8 salaried players and a capacity: {len(pts)}\n")
+    if len(pts) < 50:
+        print("    too few to say anything. Not reporting a correlation.")
+        return
+
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    r = statistics.correlation(xs, ys)
+    rng = random.Random(SEED)
+    shuffled = list(ys)
+    null = [
+        abs(statistics.correlation(xs, shuffled))
+        for _ in range(SHUFFLES)
+        if not rng.shuffle(shuffled)
+    ]
+    p95 = sorted(null)[int(0.95 * len(null))]
+
+    q = statistics.quantiles(xs, n=4)
+    small = statistics.mean([y for x, y in pts if x <= q[0]])
+    big = statistics.mean([y for x, y in pts if x >= q[2]])
+    print(f"    salary HHI       : smallest-venue quartile {small:.4f}   "
+          f"largest {big:.4f}")
+    print(f"    pearson r        : {r:+.3f}")
+    print(f"    shuffle p95 |r|  : {p95:.3f}   ({SHUFFLES} permutations, seed {SEED})")
+    if abs(r) > p95:
+        d = "MORE" if r > 0 else "LESS"
+        print(f"    VERDICT: clears the baseline. Larger-venue clubs concentrate pay {d}.")
+        print("             Association only. Venue capacity is a market proxy, not market")
+        print("             revenue, and roster construction responds to many things.")
+    else:
+        print("    VERDICT: |r| does not clear the shuffled baseline. No finding.")
+
+
 def positive_control() -> bool:
     """WIN_PCT vs NET_RATING must come back significant, or every null here is worthless.
 
@@ -286,7 +380,7 @@ def positive_control() -> bool:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--q", default="all", choices=["all", "archetype", "roster"])
+    ap.add_argument("--q", default="all", choices=["all", "archetype", "roster", "salary"])
     args = ap.parse_args()
 
     positive_control()
@@ -299,6 +393,8 @@ def main() -> int:
         q_archetype(rows, dropped)
     if args.q in ("all", "roster"):
         q_roster_mix()
+    if args.q in ("all", "salary"):
+        q_salary_concentration()
     return 0
 
 
