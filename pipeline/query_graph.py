@@ -459,6 +459,102 @@ def q_league_style() -> None:
         print("    VERDICT: does not clear the shuffled baseline. No finding.")
 
 
+def q_archetype_pay(sport: str = "hoops") -> None:
+    """Q5: does an athlete's archetype predict their share of the team's pay?
+
+    THE POWER Q4 DID NOT HAVE. Q4 was underpowered — 3 country groups over 2,108 rows. This
+    is the same kind of question (does the archetype layer carry value information?) on
+    11,408 hoops rows and 4,962 gridiron rows, with 6 archetype groups. If the archetype
+    layer carries ANY signal about what a player is worth, this is where it shows.
+
+    NO MARKET-SIZE CONFOUND. Q1-Q3 all measured market effects, which caps are designed to
+    suppress, so their nulls were partly about league regulation. Pay SHARE is within-team
+    by construction: it asks which roles a club spends its money on, not how much money the
+    club has. The cap cannot flatten this.
+
+    A POSITIVE HERE IS LOAD-BEARING FOR THE WHOLE SESSION. Four market-size nulls are only
+    credible as negatives ABOUT MARKETS if the same graph can be shown to find something
+    else. A fifth null would instead point at the archetype layer being thin.
+    """
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    players = json.loads(UNIFIED.read_text(encoding="utf-8"))["players"]
+    sal = _salary_index(sport)
+    if not sal:
+        print(f"\nQ5 [{sport}] skipped: no salary source with usable coverage.")
+        return
+
+    arch_of = {
+        (norm_name(p["name"]), str(p["season"])): str(p["cross_arch"])
+        for p in players
+        if p["sport"] == sport and p.get("cross_arch") is not None
+    }
+
+    # Pay is turned into a WITHIN-TEAM share before anything is compared, so a rich club and
+    # a poor club contribute on the same scale and cap inflation across 30 years drops out.
+    team_rows: dict[str, list[tuple[str, float]]] = defaultdict(list)
+    for e in doc["edges"]:
+        if e["sport"] != sport or not e.get("org_id"):
+            continue
+        k = (e["norm"], str(e["season"]))
+        a, v = arch_of.get(k), sal.get(k)
+        if a is not None and v:
+            team_rows[e["org_id"]].append((a, float(v)))
+
+    pairs: list[tuple[str, float]] = []
+    for rows in team_rows.values():
+        if len(rows) < 8:
+            continue
+        tot = sum(v for _, v in rows)
+        if tot <= 0:
+            continue
+        pairs.extend((a, v / tot) for a, v in rows)
+
+    print(f"\nQ5 [{sport}]  Does archetype predict share of team pay?")
+    print(f"    player-seasons with an archetype and a pay share: {len(pairs)}\n")
+    if len(pairs) < 200:
+        print("    too few rows. Not reporting.")
+        return
+
+    by_a: dict[str, list[float]] = defaultdict(list)
+    for a, s in pairs:
+        by_a[a].append(s)
+    means = {a: statistics.mean(v) for a, v in by_a.items() if len(v) >= 30}
+    if len(means) < 2:
+        print("    fewer than 2 archetypes with n>=30. Not ranking them.")
+        return
+    observed = max(means.values()) - min(means.values())
+
+    rng = random.Random(SEED)
+    labels = [a for a, _ in pairs]
+    vals = [s for _, s in pairs]
+    null = []
+    for _ in range(SHUFFLES):
+        rng.shuffle(labels)
+        g: dict[str, list[float]] = defaultdict(list)
+        for a, v in zip(labels, vals):
+            g[a].append(v)
+        m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
+        if len(m) >= 2:
+            null.append(max(m) - min(m))
+    p95 = sorted(null)[int(0.95 * len(null))] if null else 0.0
+
+    print(f"    {'archetype':12} {'n':>6}  mean share of team pay")
+    for a, m in sorted(means.items(), key=lambda kv: -kv[1]):
+        print(f"    {a:12} {len(by_a[a]):6}  {100 * m:5.2f}%")
+    print()
+    print(f"    observed spread : {100 * observed:.2f} percentage points")
+    print(f"    shuffle p95     : {100 * p95:.2f}   ({SHUFFLES} permutations, seed {SEED})")
+    if observed > p95:
+        print("    VERDICT: clears the baseline. Archetype DOES carry pay information.")
+        print("             Association only — role and quality are entangled, and this")
+        print("             does not separate 'this role is paid more' from 'better")
+        print("             players end up in this role'.")
+    elif len(means) < 5:
+        print(f"    VERDICT: UNDERPOWERED — only {len(means)} archetype groups clear n>=30.")
+    else:
+        print("    VERDICT: does not clear the shuffled baseline. No finding.")
+
+
 def positive_control() -> bool:
     """WIN_PCT vs NET_RATING must come back significant, or every null here is worthless.
 
@@ -503,7 +599,7 @@ def positive_control() -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--q", default="all",
-                    choices=["all", "archetype", "roster", "salary", "league"])
+                    choices=["all", "archetype", "roster", "salary", "league", "pay"])
     args = ap.parse_args()
 
     positive_control()
@@ -523,6 +619,9 @@ def main() -> int:
             q_salary_concentration(_sport)
     if args.q in ("all", "league"):
         q_league_style()
+    if args.q in ("all", "pay"):
+        for _sport in ("hoops", "gridiron"):
+            q_archetype_pay(_sport)
     return 0
 
 
