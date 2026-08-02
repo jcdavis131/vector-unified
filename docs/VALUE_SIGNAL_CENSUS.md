@@ -126,6 +126,45 @@ rather than attempted badly — a stratification on a weak proxy (career length,
 correlates with role independently) would produce a confounded number that looks like an
 answer, which is the failure mode this whole file exists to prevent.
 
+## Quality signals — a separate census, because Q6/Q7 needed one
+
+Q5 (archetype predicts pay) replicated across hoops and gridiron. Q6 and Q7 — which hold
+usage and then QUALITY constant, and are the rungs that make the finding non-obvious — are
+hoops-only. The blocker is a quality metric, and the two sports are not equally served:
+
+| sport | metric | coverage | verdict |
+|---|---|---|---|
+| hoops | `PIE` in `vector-hoops/.../dashadvanced_<season>.json` | 14,565 player-seasons, 30 files | **usable** |
+| gridiron | fantasy `ppg.ppr` in `vector-gridiron/assets/vectors.json` | 10,700 rows | **not usable — see below** |
+
+### Why fantasy PPR cannot carry Q7, measured rather than assumed
+
+    QB  n=1155  mean ppr 12.98
+    RB  n=2916  mean ppr  7.58
+    WR  n=4383  mean ppr  7.37
+    TE  n=2246  mean ppr  5.15
+
+A 2.5x spread by position, produced by the SCORING SYSTEM — passing yards score at 1/25,
+rushing and receiving at 1/10, and quarterbacks accumulate more of the former. A QB is not
+2.5x better than a TE. Raw PPR is therefore a position label wearing a quality label, the
+same shape as venue capacity being a sport label wearing a market label (Q1).
+
+The obvious repair makes it worse. Ranking PPR WITHIN position would absorb the very signal
+Q7 tests, because archetype correlates with position by construction — archetype_map.json's
+gridiron_hint for A0 is literally "QB / high-usage RB / WR1". Stratifying on a
+position-normalised metric would partial out the archetype effect and return a null that
+means nothing.
+
+So the gridiron replication of Q6/Q7 is BLOCKED, not merely unrun, and it is blocked on a
+metric rather than on effort. What would unblock it is a play-value measure independent of
+fantasy scoring — EPA per play, or PFF-style grades. EPA is derivable from public
+play-by-play (nflfastR-class data); PFF is licensed.
+
+Until then the honest scope of the finding is: **the quality-controlled role premium is a
+BASKETBALL result.** Q5's cross-sport replication does not extend to Q6/Q7, and saying
+otherwise would be the "basketball study wearing a cross-sport graph" failure this file
+already names.
+
 ## The standing rule this estate keeps proving
 
 Measure coverage before building the model. It killed the brand entity at 0.22% before an
