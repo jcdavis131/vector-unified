@@ -88,6 +88,44 @@ replication it could have failed, which is worth more than the original null was
 Still association-only, and still bounded by venue capacity being a proxy for market size
 rather than a measure of it. The uncapped test remains unrun, because pitch salary is 0.58%.
 
+## Q5 fired — and the one thing that would make it non-obvious
+
+`query_graph.py --q pay` is the first positive, replicated:
+
+| sport | n | spread | shuffle p95 | ratio |
+|---|---|---|---|---|
+| hoops | 11,149 | 7.11 pp | 0.65 | **11x** |
+| gridiron | 4,965 | 18.10 pp | 1.29 | **14x** |
+
+Face validity it could have failed: gridiron A0 takes **20.41%** of team pay, double the next
+role, and A0 was recovered from play data with no position label supplied. A role commanding
+a fifth of an NFL payroll is a quarterback.
+
+**It is association-only, and the confound is the whole question.** Role and quality are
+entangled: "this role is paid more" and "better players end up in this role" produce the same
+table. Without separating them the finding is real but unsurprising — everyone knows QBs are
+expensive.
+
+### The exact test that would make it non-obvious, and what it needs
+
+Stratify by a quality/usage proxy and ask whether archetype STILL predicts pay share inside a
+narrow band. A yes is a **role premium beyond usage**, which is a genuinely sellable claim; a
+no says the archetype effect is just quality wearing a role label.
+
+The proxy is minutes played, and it is nearly free:
+
+- `vector-hoops/pipeline/build_min_gp.py` caches `pergame_<season>.json` with MPG/GP. **It has
+  never been run here — 0 such files exist.** Checked, not assumed.
+- `pipeline/acquire_hoops_rosters.py` already calls the same endpoint
+  (`LeagueDashPlayerStats`) for TEAM_ABBREVIATION. `MIN` and `GP` are columns on the response
+  it already receives and discards — the same shape as the bug that capped hoops org coverage
+  at 35.53% until 8a4ec34.
+
+So: add two fields to the existing pull, re-run 30 seasons, stratify. Not attempted here
+rather than attempted badly — a stratification on a weak proxy (career length, say, which
+correlates with role independently) would produce a confounded number that looks like an
+answer, which is the failure mode this whole file exists to prevent.
+
 ## The standing rule this estate keeps proving
 
 Measure coverage before building the model. It killed the brand entity at 0.22% before an
