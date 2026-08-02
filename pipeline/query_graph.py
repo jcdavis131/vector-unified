@@ -555,6 +555,116 @@ def q_archetype_pay(sport: str = "hoops") -> None:
         print("    VERDICT: does not clear the shuffled baseline. No finding.")
 
 
+def q_pay_within_usage_band() -> None:
+    """Q6: does archetype still predict pay INSIDE a narrow band of usage?
+
+    THE TEST THAT DECIDES WHETHER Q5 IS INTERESTING. Q5 found archetype predicts share of
+    team pay at 11-14x the shuffled baseline, and it is real but unsurprising: role and
+    quality are entangled, so "this role is paid more" and "better players end up in this
+    role" produce the same table. Everyone already knows quarterbacks are expensive.
+
+    Stratifying on minutes per game separates them. Inside a band of players who all play
+    roughly the same amount, usage is held roughly constant — so if archetype STILL predicts
+    pay there, the premium is attached to the ROLE rather than to how much the player plays.
+    That is the non-obvious claim.
+
+    hoops only: minutes come from acquire_hoops_rosters.py, which now keeps the MIN column
+    LeagueDashPlayerStats was already returning. gridiron has no comparable usage field here.
+
+    HONEST LIMIT, and it is not small. Minutes are a USAGE proxy, not a quality measure. A
+    coach gives minutes partly because a player is good, so this holds usage constant, not
+    talent. A surviving effect means "not explained by playing time", which is weaker than
+    "not explained by quality" and stronger than Q5 alone.
+    """
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    players = json.loads(UNIFIED.read_text(encoding="utf-8"))["players"]
+    sal = _salary_index("hoops")
+    if not sal:
+        print("\nQ6 skipped: no hoops salary source.")
+        return
+
+    arch_of = {
+        (norm_name(p["name"]), str(p["season"])): str(p["cross_arch"])
+        for p in players
+        if p["sport"] == "hoops" and p.get("cross_arch") is not None
+    }
+
+    team_rows: dict[str, list[tuple[str, float, float]]] = defaultdict(list)
+    for e in doc["edges"]:
+        if e["sport"] != "hoops" or not e.get("org_id") or e.get("min") is None:
+            continue
+        k = (e["norm"], str(e["season"]))
+        a, v = arch_of.get(k), sal.get(k)
+        if a is not None and v:
+            team_rows[e["org_id"]].append((a, float(v), float(e["min"])))
+
+    rows: list[tuple[str, float, float]] = []
+    for tr in team_rows.values():
+        if len(tr) < 8:
+            continue
+        tot = sum(v for _, v, _ in tr)
+        if tot <= 0:
+            continue
+        rows.extend((a, v / tot, mn) for a, v, mn in tr)
+
+    print("\nQ6 [hoops]  Does archetype predict pay INSIDE a usage band?")
+    print(f"    player-seasons with archetype, pay share and minutes: {len(rows)}\n")
+    if len(rows) < 500:
+        print("    too few rows. Not reporting.")
+        return
+
+    mins = sorted(r[2] for r in rows)
+    cuts = [mins[int(len(mins) * f)] for f in (0.25, 0.5, 0.75)]
+    bands = [
+        ("bench      <%.0f mpg" % cuts[0], lambda m: m < cuts[0]),
+        ("rotation %.0f-%.0f" % (cuts[0], cuts[1]), lambda m: cuts[0] <= m < cuts[1]),
+        ("starter  %.0f-%.0f" % (cuts[1], cuts[2]), lambda m: cuts[1] <= m < cuts[2]),
+        ("heavy      >=%.0f mpg" % cuts[2], lambda m: m >= cuts[2]),
+    ]
+
+    rng = random.Random(SEED)
+    cleared = 0
+    for label, pred in bands:
+        band = [(a, s) for a, s, m in rows if pred(m)]
+        by_a: dict[str, list[float]] = defaultdict(list)
+        for a, s in band:
+            by_a[a].append(s)
+        means = {a: statistics.mean(v) for a, v in by_a.items() if len(v) >= 30}
+        if len(means) < 2:
+            print(f"    {label:22} n={len(band):5}  too few groups")
+            continue
+        observed = max(means.values()) - min(means.values())
+        labels = [a for a, _ in band]
+        vals = [s for _, s in band]
+        null = []
+        for _ in range(SHUFFLES):
+            rng.shuffle(labels)
+            g: dict[str, list[float]] = defaultdict(list)
+            for a, v in zip(labels, vals):
+                g[a].append(v)
+            m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
+            if len(m) >= 2:
+                null.append(max(m) - min(m))
+        p95 = sorted(null)[int(0.95 * len(null))] if null else 0.0
+        ok = observed > p95
+        cleared += ok
+        print(f"    {label:22} n={len(band):5}  spread {100 * observed:5.2f}pp  "
+              f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}")
+
+    print()
+    if cleared == len(bands):
+        print("    VERDICT: archetype predicts pay in EVERY usage band. The premium is not")
+        print("             explained by playing time — a role effect, not just a minutes")
+        print("             effect. Still not proof it is not QUALITY: minutes are a usage")
+        print("             proxy, and coaches give minutes partly because a player is good.")
+    elif cleared:
+        print(f"    VERDICT: clears in {cleared} of {len(bands)} bands. Partial — the effect")
+        print("             is not uniform across usage levels, which is itself informative.")
+    else:
+        print("    VERDICT: clears in NO band. Q5's effect is explained by playing time:")
+        print("             archetypes differ in minutes, and minutes are what is paid for.")
+
+
 def positive_control() -> bool:
     """WIN_PCT vs NET_RATING must come back significant, or every null here is worthless.
 
@@ -599,7 +709,7 @@ def positive_control() -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--q", default="all",
-                    choices=["all", "archetype", "roster", "salary", "league", "pay"])
+                    choices=["all", "archetype", "roster", "salary", "league", "pay", "band"])
     args = ap.parse_args()
 
     positive_control()
@@ -622,6 +732,8 @@ def main() -> int:
     if args.q in ("all", "pay"):
         for _sport in ("hoops", "gridiron"):
             q_archetype_pay(_sport)
+    if args.q in ("all", "band"):
+        q_pay_within_usage_band()
     return 0
 
 

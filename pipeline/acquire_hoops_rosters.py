@@ -60,7 +60,12 @@ def norm_name(name: str) -> str:
 
 def fetch_season(season: str, offline: bool) -> list[dict] | None:
     """One season of player -> team rows, cached. Returns None when unavailable."""
-    cache_p = CACHE / f"hoops_roster_{season}.json"
+    # v2: MIN and GP are kept alongside the team. They were always on the response and
+    # always discarded — the same shape as the TEAM_ABBREVIATION this script exists to stop
+    # discarding. Minutes are the usage proxy Q6 stratifies on, so the finding that
+    # archetype predicts pay can be tested INSIDE a usage band instead of across all of it.
+    # New filename rather than deleting: the v1 pull stays reproducible.
+    cache_p = CACHE / f"hoops_roster_v2_{season}.json"
     if cache_p.exists():
         try:
             return json.loads(cache_p.read_text(encoding="utf-8"))
@@ -86,6 +91,13 @@ def fetch_season(season: str, offline: bool) -> list[dict] | None:
                 team = str(x.get("TEAM_ABBREVIATION") or "").strip()
                 if not team or team in NOT_A_TEAM:
                     continue
+                def _num(v):
+                    try:
+                        f = float(v)
+                    except (TypeError, ValueError):
+                        return None
+                    return None if f != f else f      # NaN is not a measurement
+
                 rows.append(
                     {
                         "player_id": int(x["PLAYER_ID"]),
@@ -93,6 +105,9 @@ def fetch_season(season: str, offline: bool) -> list[dict] | None:
                         "season": season,
                         "team_code": team,
                         "team_id": int(x["TEAM_ID"]) if x.get("TEAM_ID") else None,
+                        # per_mode_detailed="PerGame", so MIN is minutes per game.
+                        "min": _num(x.get("MIN")),
+                        "gp": _num(x.get("GP")),
                     }
                 )
             CACHE.mkdir(parents=True, exist_ok=True)
@@ -131,6 +146,13 @@ def main() -> int:
                     "season": r["season"],
                     "team_code": r["team_code"],
                     "team_id": r.get("team_id"),
+                    # Carried through to the edge, not just the cache. The first attempt
+                    # added min/gp to the CACHED rows and left this projection untouched, so
+                    # the pull succeeded and the edges came back 0% populated — the same
+                    # discarded-column bug this script exists to fix, reintroduced one layer
+                    # up. Caught by asserting the field was present rather than assuming it.
+                    "min": r.get("min"),
+                    "gp": r.get("gp"),
                     "source": "nba_api LeagueDashPlayerStats",
                 }
             )
