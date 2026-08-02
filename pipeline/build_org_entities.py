@@ -205,6 +205,42 @@ def load_corpus_orgs_and_edges() -> tuple[list[dict], list[dict], dict]:
     return orgs, edges, dict(missing)
 
 
+def resolve_edges(orgs: list[dict], edges: list[dict]) -> dict:
+    """Point every edge at an actual org row, and count how many land.
+
+    THE BUG THIS FIXES, found by trying to USE the graph rather than by reading it. hoops
+    orgs are keyed by TEAM_NAME ("Atlanta Hawks", from team_season_*.json) and hoops edges
+    by TEAM_ABBREVIATION ("DAL", from LeagueDashPlayerStats). Overlap was 0 of 36 codes, so
+    every hoops edge pointed at an organization that did not exist in the registry.
+
+    The 99.98% reported at 8a4ec34 was therefore answering a different question than the one
+    it appeared to: it counted athletes WITH A TEAM EDGE, not athletes RESOLVING TO AN ORG.
+    True for hoops edges in isolation, misleading as a graph statistic.
+
+    team_id is the key that actually works — 30/30 for hoops, both sides carrying the NBA
+    TEAM_ID. gridiron and pitch join on the team label (32/32 and 152/152), because there
+    both sides came from the same corpus field.
+    """
+    by_id: dict[tuple, str] = {}
+    by_label: dict[tuple, str] = {}
+    for o in orgs:
+        if o.get("team_id"):
+            by_id[(o["sport"], o["team_id"], o["season"])] = o["org_id"]
+        by_label[(o["sport"], o["team"], o["season"])] = o["org_id"]
+
+    resolved = 0
+    for e in edges:
+        oid = None
+        if e.get("team_id"):
+            oid = by_id.get((e["sport"], e["team_id"], e["season"]))
+        if oid is None:
+            oid = by_label.get((e["sport"], e.get("team_code"), e["season"]))
+        e["org_id"] = oid
+        if oid:
+            resolved += 1
+    return {"resolved": resolved, "unresolved": len(edges) - resolved}
+
+
 def apply_wikidata(orgs: list[dict]) -> dict:
     """Second pass: fold enrich_orgs_wikidata.py's registry onto the org rows.
 
@@ -254,6 +290,7 @@ def main() -> int:
         print("downstream as 'measured, found nothing' rather than 'a source moved'.")
         return 1
 
+    link_stats = resolve_edges(orgs, edges)
     wd_stats = apply_wikidata(orgs)
 
     doc = json.loads(UNIFIED.read_text(encoding="utf-8"))
@@ -261,6 +298,10 @@ def main() -> int:
     corpus_athletes = {(norm_name(p["name"]), p["sport"]) for p in players}
     edge_athletes = {(e["norm"], e["sport"]) for e in edges}
     matched = corpus_athletes & edge_athletes
+    # The number that actually matters: resolved to a REAL org row, not merely holding an
+    # edge. These differed by every hoops athlete until the join key was fixed.
+    resolved_athletes = {(e["norm"], e["sport"]) for e in edges if e.get("org_id")}
+    matched_resolved = corpus_athletes & resolved_athletes
 
     per_sport = {}
     for sport in sorted({s for _, s in corpus_athletes}):
@@ -285,6 +326,11 @@ def main() -> int:
         "matched_pct": round(100.0 * len(matched) / max(len(corpus_athletes), 1), 2),
         "player_seasons_missing_team": missing_team,
         "orgs_with_wikidata_attrs": wd_stats["orgs_with_any_attr"],
+        "edges_resolved_to_an_org": link_stats["resolved"],
+        "edges_unresolved": link_stats["unresolved"],
+        "athletes_resolved_to_an_org": len(matched_resolved),
+        "athletes_resolved_pct": round(
+            100.0 * len(matched_resolved) / max(len(corpus_athletes), 1), 2),
         "per_sport": per_sport,
     }
 
@@ -308,6 +354,10 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    print(f"edges resolved to an org: {link_stats['resolved']}/{len(edges)}"
+          f"  (unresolved {link_stats['unresolved']})")
+    print(f"athletes RESOLVED to an org: {len(matched_resolved)}/{len(corpus_athletes)}"
+          f"  ({round(100.0*len(matched_resolved)/max(len(corpus_athletes),1),2)}%)")
     print(f"orgs with wikidata attrs: {wd_stats['orgs_with_any_attr']}/{len(orgs)}")
     print(f"orgs  : {len(orgs)}   ({len(hoops_orgs)} hoops with features, "
           f"{len(corpus_orgs)} identity-only)")
