@@ -367,6 +367,98 @@ def q_salary_concentration(sport: str = "hoops") -> None:
         print("    VERDICT: |r| does not clear the shuffled baseline. No finding.")
 
 
+def q_league_style() -> None:
+    """Q4: do national leagues field different player archetypes?
+
+    Q1-Q3 all tested MARKET-SIZE effects and all came back null. Salary caps exist
+    specifically to suppress market-size effects, so four nulls in a row may say more about
+    league regulation than about the graph. This asks something a cap does not touch.
+
+    The prior is real rather than fished for: national leagues are widely held to differ in
+    style, and if the archetype layer carries anything about how a league plays, a Spanish
+    club's archetype mix should differ from an English one. If this is ALSO null, the honest
+    reading shifts — it would suggest the archetype layer is thinner than G4 0.978 implies,
+    not that every sports question is null.
+
+    pitch only: it is the sport with real country spread (58 org countries) and no cap.
+    Statistic is the L1 distance between each country's archetype distribution and the
+    global one, averaged over countries with enough rows. Shuffled country labels give the
+    null, exactly as in Q1-Q3.
+    """
+    players = json.loads(UNIFIED.read_text(encoding="utf-8"))["players"]
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    orgs = {o["org_id"]: o for o in doc["orgs"]}
+
+    arch_of = {
+        (norm_name(p["name"]), str(p["season"])): str(p["cross_arch"])
+        for p in players
+        if p["sport"] == "pitch" and p.get("cross_arch") is not None
+    }
+    pairs = []
+    for e in doc["edges"]:
+        if e["sport"] != "pitch" or not e.get("org_id"):
+            continue
+        a = arch_of.get((e["norm"], str(e["season"])))
+        country = (orgs.get(e["org_id"], {}).get("attrs") or {}).get("country")
+        if a and country:
+            pairs.append((country, a))
+
+    print("\nQ4 [pitch]  Do national leagues field different player archetypes?")
+    print(f"    athlete-org rows with both an archetype and a country: {len(pairs)}\n")
+    if len(pairs) < 200:
+        print("    too few rows. Not reporting.")
+        return
+
+    def mean_l1(rows: list[tuple[str, str]]) -> float:
+        glob: dict[str, int] = defaultdict(int)
+        by_c: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        for c, a in rows:
+            glob[a] += 1
+            by_c[c][a] += 1
+        gtot = sum(glob.values())
+        gdist = {a: n / gtot for a, n in glob.items()}
+        ds = []
+        for c, counts in by_c.items():
+            n = sum(counts.values())
+            if n < 100:            # a league sample, not a handful of players
+                continue
+            ds.append(sum(abs(counts.get(a, 0) / n - gdist.get(a, 0)) for a in gdist))
+        return statistics.mean(ds) if ds else 0.0
+
+    observed = mean_l1(pairs)
+    countries = [c for c, _ in pairs]
+    archs = [a for _, a in pairs]
+    rng = random.Random(SEED)
+    null = []
+    for _ in range(SHUFFLES):
+        rng.shuffle(countries)
+        null.append(mean_l1(list(zip(countries, archs))))
+    p95 = sorted(null)[int(0.95 * len(null))]
+
+    kept = {c for c in set(c for c, _ in pairs)
+            if sum(1 for x, _ in pairs if x == c) >= 100}
+    print(f"    countries with n>=100 : {len(kept)}  {sorted(kept)[:6]}")
+    print(f"    observed mean L1      : {observed:.4f}")
+    print(f"    shuffle p95           : {p95:.4f}   ({SHUFFLES} permutations, seed {SEED})")
+    if observed > p95:
+        print("    VERDICT: clears the baseline. Archetype mix DOES vary by league country.")
+        print("             Association only — squad composition also reflects transfer")
+        print("             markets, academy pipelines and which clubs the corpus covers.")
+    elif len(kept) < 5:
+        # "Cannot detect" and "detected nothing" are different claims, and reporting them
+        # in the same words is how an underpowered test gets cited as a negative result.
+        # With 3 groups the permutation null is wide by construction, so a real effect of
+        # this size would not clear it either.
+        print(f"    VERDICT: UNDERPOWERED, not null. Only {len(kept)} countries clear n>=100,")
+        print("             so the permutation null is wide by construction and an effect")
+        print("             this size could not have been detected. This is NOT evidence")
+        print("             that leagues field the same archetypes — it is evidence that")
+        print("             2,108 pitch rows spread over 58 countries cannot answer it.")
+        print("             Needs deeper per-league coverage, not a different statistic.")
+    else:
+        print("    VERDICT: does not clear the shuffled baseline. No finding.")
+
+
 def positive_control() -> bool:
     """WIN_PCT vs NET_RATING must come back significant, or every null here is worthless.
 
@@ -410,7 +502,8 @@ def positive_control() -> bool:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--q", default="all", choices=["all", "archetype", "roster", "salary"])
+    ap.add_argument("--q", default="all",
+                    choices=["all", "archetype", "roster", "salary", "league"])
     args = ap.parse_args()
 
     positive_control()
@@ -428,6 +521,8 @@ def main() -> int:
         # that could have failed. pitch is absent by design — 0.58% salary coverage.
         for _sport in ("hoops", "gridiron"):
             q_salary_concentration(_sport)
+    if args.q in ("all", "league"):
+        q_league_style()
     return 0
 
 
