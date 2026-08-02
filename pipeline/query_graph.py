@@ -752,6 +752,8 @@ def q_pay_within_quality_band() -> None:
 
     rng = random.Random(SEED)
     cleared = 0
+    rank_by_band: dict[str, list[str]] = {}
+    mean_by_band: dict[str, dict[str, float]] = {}
     for label, pred in bands:
         band = [(a, s) for a, s, q in rows if pred(q)]
         by_a: dict[str, list[float]] = defaultdict(list)
@@ -761,6 +763,8 @@ def q_pay_within_quality_band() -> None:
         if len(means) < 2:
             print(f"    {label:26} n={len(band):5}  too few groups")
             continue
+        rank_by_band[label] = [a for a, _ in sorted(means.items(), key=lambda kv: -kv[1])]
+        mean_by_band[label] = means
         observed = max(means.values()) - min(means.values())
         labels = [a for a, _ in band]
         vals = [s for _, s in band]
@@ -778,6 +782,37 @@ def q_pay_within_quality_band() -> None:
         cleared += ok
         print(f"    {label:26} n={len(band):5}  spread {100 * observed:5.2f}pp  "
               f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}")
+
+    # WHICH roles carry the premium, and whether the ordering survives quality. A role that
+    # is top-paid at EVERY quality level is a genuine premium; one that only leads in the
+    # high-PIE band is just "stars are expensive" restated.
+    if len(rank_by_band) >= 2:
+        common = set.intersection(*(set(v) for v in rank_by_band.values()))
+        print()
+        print("    ROLE PREMIUM by quality band (mean share of team pay):")
+        hdr = "    " + f"{'archetype':10}" + "".join(f"{lbl.split()[0]:>12}" for lbl in rank_by_band)
+        print(hdr)
+        overall = {
+            a: statistics.mean([mean_by_band[b][a] for b in rank_by_band if a in mean_by_band[b]])
+            for a in common
+        }
+        for a in sorted(overall, key=lambda x: -overall[x]):
+            row = f"    {a:10}"
+            for b in rank_by_band:
+                row += f"{100 * mean_by_band[b].get(a, float('nan')):11.2f}%"
+            print(row)
+
+        tops = {v[0] for v in rank_by_band.values()}
+        bots = {v[-1] for v in rank_by_band.values()}
+        print()
+        if len(tops) == 1:
+            print(f"    {tops.pop()} is the highest-paid archetype in EVERY quality band —")
+            print("    a role premium that holds at every level of measured impact.")
+        else:
+            print(f"    top-paid role is NOT stable across bands ({sorted(tops)}), so the")
+            print("    premium ordering is quality-dependent rather than a fixed role effect.")
+        if len(bots) == 1:
+            print(f"    {bots.pop()} is the lowest-paid in every band.")
 
     print()
     if cleared == len(bands):
