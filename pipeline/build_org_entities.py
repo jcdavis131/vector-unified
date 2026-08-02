@@ -104,10 +104,28 @@ def load_hoops_orgs() -> tuple[list[dict], list[str]]:
 
 
 def load_hoops_edges() -> list[dict]:
-    """Athlete -> org, from the roster context vector-hoops already computes."""
+    """Athlete -> org for hoops. Prefers the full roster pull, falls back to rotation-only.
+
+    acquire_hoops_rosters.py asks LeagueDashPlayerStats for the TEAM_ABBREVIATION that
+    vector-hoops/build_min_gp.py was already fetching and discarding. It covers all 30
+    corpus seasons and reaches 99.96% of hoops athletes.
+
+    roster_context.json remains the fallback, and it is worth naming why it was never
+    enough: it is built at an 800-minute ROTATION threshold over gamelog seasons
+    2015-16..2025-26, so it is rotation players in the gamelog era — 35.53%. That is a
+    property of how it is DEFINED, not a gap to be tuned out of it.
+    """
+    full = ROOT / "data" / "orgs" / "hoops_rosters.json"
+    if full.exists():
+        doc = json.loads(full.read_text(encoding="utf-8"))
+        edges = doc.get("edges", [])
+        if edges:
+            return edges
+
     p = HOOPS / "roster_context.json"
     if not p.exists():
         return []
+    print("  (falling back to roster_context.json — run acquire_hoops_rosters.py for full)")
     doc = json.loads(p.read_text(encoding="utf-8"))
     out = []
     for e in doc.get("entries", []):
