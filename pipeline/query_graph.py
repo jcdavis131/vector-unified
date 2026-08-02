@@ -243,39 +243,69 @@ def q_roster_mix() -> None:
         print("    VERDICT: |r| does not clear the shuffled baseline. No finding.")
 
 
-def q_salary_concentration() -> None:
+def _salary_index(sport: str) -> dict:
+    """(norm_name, season) -> a pay figure, per sport, from whichever source has coverage.
+
+    Two sources because two separate acquisitions produced them. docs/VALUE_SIGNAL_CENSUS.md
+    records what each reaches:
+
+        hoops     vector-hoops salary_market.json  11,408 player-seasons, SALARY_TEAM_PCT
+        gridiron  market_cultural.json (Spotrac)   93.27% of rows, salary_m (NFL cap hit)
+        pitch     0.58% — returns {} so Q3 prints "skipped" rather than a thin number
+
+    UNITS DIFFER (cap share vs $M) and that is deliberately fine: the statistic is HHI over
+    each roster's shares of ITS OWN total, which is scale-invariant. Comparing the raw
+    values across sports would NOT be fine, and nothing here does that.
+    """
+    if sport == "hoops":
+        p = ROOT.parent / "vector-hoops" / "pipeline" / "data" / "salary_market.json"
+        if not p.exists():
+            return {}
+        return {
+            (norm_name(r["name"]), str(r["season"])): float(r["SALARY_TEAM_PCT"])
+            for r in json.loads(p.read_text(encoding="utf-8"))["players"]
+            if r.get("SALARY_TEAM_PCT") is not None
+        }
+    p = ROOT / "data" / "market_cultural" / "market_cultural.json"
+    if not p.exists():
+        return {}
+    return {
+        (norm_name(r["name"]), str(r["season"])): float(r["salary_m"])
+        for r in json.loads(p.read_text(encoding="utf-8"))["rows"]
+        if r.get("sport") == sport and r.get("salary_m")
+    }
+
+
+def q_salary_concentration(sport: str = "hoops") -> None:
     """Q3: do larger-market clubs concentrate pay in fewer players?
 
     Q1 and Q2 were null for a reason worth acting on rather than repeating: the archetype
     layer is a ROLE taxonomy and a role label cannot carry a value question. This uses the
-    first real value signal in the estate — vector-hoops/pipeline/data/salary_market.json,
-    11,408 player-seasons with SALARY_TEAM_PCT, already normalised as a share so it is
-    comparable across 30 years of cap inflation.
+    two real value signals in the estate (see _salary_index).
 
-    WHY CONCENTRATION AND NOT TOTAL PAYROLL. The NBA has a salary cap, so total payroll is
-    near-constant by RULE and correlating it with market size would produce a null that says
-    nothing about markets and everything about league regulation. Concentration — one star
-    on a max deal versus a balanced roster — is not capped away, and it is the actual
-    strategic choice a front office makes.
+    WHY CONCENTRATION AND NOT TOTAL PAYROLL. Both leagues have a salary cap, so total
+    payroll is near-constant by RULE and correlating it with market size would produce a
+    null that says nothing about markets and everything about league regulation.
+    Concentration — one star on a max deal versus a balanced roster — is not capped away,
+    and it is the actual strategic choice a front office makes.
 
-    Predictor is org capacity percentile WITHIN hoops; outcome is HHI over each roster's
-    salary shares.
+    RUN ON BOTH LEAGUES ON PURPOSE. A single null is a result; the same null in a HARDER-
+    capped league (NFL hard cap vs NBA soft cap + luxury tax) is a replication that could
+    have failed and did not.
+
+    Predictor is org capacity percentile WITHIN the sport; outcome is HHI over each
+    roster's salary shares.
     """
     doc = json.loads(ORGS.read_text(encoding="utf-8"))
     orgs = {o["org_id"]: o for o in doc["orgs"]}
-    sal_p = ROOT.parent / "vector-hoops" / "pipeline" / "data" / "salary_market.json"
-    if not sal_p.exists():
-        print("\nQ3 skipped: salary_market.json not found.")
+    sal = _salary_index(sport)
+    if not sal:
+        print(f"\nQ3 [{sport}] skipped: no salary source with usable coverage.")
         return
-    sal = {
-        (norm_name(r["name"]), str(r["season"])): r.get("SALARY_TEAM_PCT")
-        for r in json.loads(sal_p.read_text(encoding="utf-8"))["players"]
-        if r.get("SALARY_TEAM_PCT") is not None
-    }
 
     caps = sorted(
         (o["attrs"]["capacity"] for o in orgs.values()
-         if o["sport"] == "hoops" and (o.get("attrs") or {}).get("capacity"))
+         if o["sport"] == sport and (o.get("attrs") or {}).get("capacity"))
     )
 
     def cap_pct(c: int) -> float:
@@ -283,7 +313,7 @@ def q_salary_concentration() -> None:
 
     shares: dict[str, list[float]] = defaultdict(list)
     for e in doc["edges"]:
-        if e["sport"] != "hoops" or not e.get("org_id"):
+        if e["sport"] != sport or not e.get("org_id"):
             continue
         s = sal.get((e["norm"], str(e["season"])))
         if s is not None:
@@ -303,8 +333,8 @@ def q_salary_concentration() -> None:
         hhi = sum((v / tot) ** 2 for v in vals)
         pts.append((cap_pct(cap), hhi))
 
-    print("\nQ3  Do larger-market clubs concentrate pay in fewer players?")
-    print(f"    hoops team-seasons with >=8 salaried players and a capacity: {len(pts)}\n")
+    print(f"\nQ3 [{sport}]  Do larger-market clubs concentrate pay in fewer players?")
+    print(f"    {sport} team-seasons with >=8 salaried players and a capacity: {len(pts)}\n")
     if len(pts) < 50:
         print("    too few to say anything. Not reporting a correlation.")
         return
@@ -394,7 +424,10 @@ def main() -> int:
     if args.q in ("all", "roster"):
         q_roster_mix()
     if args.q in ("all", "salary"):
-        q_salary_concentration()
+        # One null is a result; the SAME null in a harder-capped league is a replication
+        # that could have failed. pitch is absent by design — 0.58% salary coverage.
+        for _sport in ("hoops", "gridiron"):
+            q_salary_concentration(_sport)
     return 0
 
 
