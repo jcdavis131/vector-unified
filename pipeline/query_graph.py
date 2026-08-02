@@ -665,6 +665,137 @@ def q_pay_within_usage_band() -> None:
         print("             archetypes differ in minutes, and minutes are what is paid for.")
 
 
+def q_pay_within_quality_band() -> None:
+    """Q7: does archetype still predict pay inside a band of equal PLAYER QUALITY?
+
+    THE CLAIM Q6 COULD NOT MAKE. Q6 held USAGE constant (minutes) and the role premium
+    survived, but minutes are not talent — a coach plays someone partly because they are
+    good, so "not explained by playing time" was the most that could be earned.
+
+    I ALSO SAID THE ESTATE HAD NO TALENT MEASURE. That was wrong and I checked rather than
+    repeating it: vector-hoops/pipeline/cache/dashadvanced_<season>.json covers all 30
+    corpus seasons and carries PIE — the NBA's own Player Impact Estimate, a composite
+    single-number quality metric computed from box-score contribution and independent of
+    salary. Stratifying on PIE holds QUALITY roughly constant, which is the thing Q6 could
+    not do.
+
+    If archetype still predicts pay share inside a PIE band, the premium is attached to the
+    ROLE and not to how good the player is. That is the sellable claim: two players of equal
+    measured impact are paid differently according to the archetype they occupy.
+
+    LIMITS, and they are real. PIE is a box-score composite: it under-credits defence and
+    off-ball work, and it is not a market-neutral measure of worth. It is a far better
+    talent proxy than minutes, not a perfect one. Association only — this cannot separate
+    "clubs overpay this role" from "this role produces value PIE does not capture".
+    """
+    hoops_cache = ROOT.parent / "vector-hoops" / "pipeline" / "cache"
+    files = sorted(hoops_cache.glob("dashadvanced_*.json"))
+    if not files:
+        print("\nQ7 skipped: no dashadvanced_*.json in vector-hoops cache.")
+        return
+
+    pie: dict[tuple, float] = {}
+    for f in files:
+        season = f.stem.replace("dashadvanced_", "")
+        try:
+            rows = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        for r in rows:
+            v = r.get("PIE")
+            if v is None:
+                continue
+            pie[(norm_name(str(r.get("PLAYER_NAME") or "")), season)] = float(v)
+
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    players = json.loads(UNIFIED.read_text(encoding="utf-8"))["players"]
+    sal = _salary_index("hoops")
+    arch_of = {
+        (norm_name(p["name"]), str(p["season"])): str(p["cross_arch"])
+        for p in players
+        if p["sport"] == "hoops" and p.get("cross_arch") is not None
+    }
+
+    team_rows: dict[str, list[tuple[str, float, float]]] = defaultdict(list)
+    for e in doc["edges"]:
+        if e["sport"] != "hoops" or not e.get("org_id"):
+            continue
+        k = (e["norm"], str(e["season"]))
+        a, v, q = arch_of.get(k), sal.get(k), pie.get(k)
+        if a is not None and v and q is not None:
+            team_rows[e["org_id"]].append((a, float(v), q))
+
+    rows: list[tuple[str, float, float]] = []
+    for tr in team_rows.values():
+        if len(tr) < 8:
+            continue
+        tot = sum(v for _, v, _ in tr)
+        if tot <= 0:
+            continue
+        rows.extend((a, v / tot, q) for a, v, q in tr)
+
+    print("\nQ7 [hoops]  Does archetype predict pay INSIDE a PIE (quality) band?")
+    print(f"    player-seasons with archetype, pay share and PIE: {len(rows)}")
+    print(f"    PIE coverage: {len(pie)} player-seasons across {len(files)} season files\n")
+    if len(rows) < 500:
+        print("    too few rows. Not reporting.")
+        return
+
+    qs = sorted(r[2] for r in rows)
+    cuts = [qs[int(len(qs) * f)] for f in (0.25, 0.5, 0.75)]
+    bands = [
+        (f"low PIE    <{cuts[0]:.3f}", lambda q: q < cuts[0]),
+        (f"mid-low  {cuts[0]:.3f}-{cuts[1]:.3f}", lambda q: cuts[0] <= q < cuts[1]),
+        (f"mid-high {cuts[1]:.3f}-{cuts[2]:.3f}", lambda q: cuts[1] <= q < cuts[2]),
+        (f"high PIE   >={cuts[2]:.3f}", lambda q: q >= cuts[2]),
+    ]
+
+    rng = random.Random(SEED)
+    cleared = 0
+    for label, pred in bands:
+        band = [(a, s) for a, s, q in rows if pred(q)]
+        by_a: dict[str, list[float]] = defaultdict(list)
+        for a, s in band:
+            by_a[a].append(s)
+        means = {a: statistics.mean(v) for a, v in by_a.items() if len(v) >= 30}
+        if len(means) < 2:
+            print(f"    {label:26} n={len(band):5}  too few groups")
+            continue
+        observed = max(means.values()) - min(means.values())
+        labels = [a for a, _ in band]
+        vals = [s for _, s in band]
+        null = []
+        for _ in range(SHUFFLES):
+            rng.shuffle(labels)
+            g: dict[str, list[float]] = defaultdict(list)
+            for a, v in zip(labels, vals):
+                g[a].append(v)
+            m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
+            if len(m) >= 2:
+                null.append(max(m) - min(m))
+        p95 = sorted(null)[int(0.95 * len(null))] if null else 0.0
+        ok = observed > p95
+        cleared += ok
+        print(f"    {label:26} n={len(band):5}  spread {100 * observed:5.2f}pp  "
+              f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}")
+
+    print()
+    if cleared == len(bands):
+        print("    VERDICT: archetype predicts pay in EVERY quality band. Two players of")
+        print("             equal measured impact are paid differently by role. This is the")
+        print("             claim Q6 could not make — not explained by talent, as PIE")
+        print("             measures it.")
+        print("             PIE under-credits defence and off-ball work, so 'clubs overpay")
+        print("             this role' and 'this role creates value PIE misses' remain")
+        print("             indistinguishable here.")
+    elif cleared:
+        print(f"    VERDICT: clears in {cleared} of {len(bands)} bands. Partial, and where it")
+        print("             fails is the informative part.")
+    else:
+        print("    VERDICT: clears in NO band. Q5/Q6's effect is explained by player")
+        print("             quality: archetypes differ in PIE, and PIE is what is paid for.")
+
+
 def positive_control() -> bool:
     """WIN_PCT vs NET_RATING must come back significant, or every null here is worthless.
 
@@ -709,7 +840,7 @@ def positive_control() -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--q", default="all",
-                    choices=["all", "archetype", "roster", "salary", "league", "pay", "band"])
+                    choices=["all", "archetype", "roster", "salary", "league", "pay", "band", "quality"])
     args = ap.parse_args()
 
     positive_control()
@@ -734,6 +865,8 @@ def main() -> int:
             q_archetype_pay(_sport)
     if args.q in ("all", "band"):
         q_pay_within_usage_band()
+    if args.q in ("all", "quality"):
+        q_pay_within_quality_band()
     return 0
 
 
