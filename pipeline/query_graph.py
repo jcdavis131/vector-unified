@@ -54,6 +54,27 @@ SHUFFLES = 200
 SEED = 7
 
 
+def arch_labels() -> dict[str, str]:
+    """A0..A11 -> the human-authored label. Opaque IDs make a finding unsellable.
+
+    "A1 carries a star premium" is not actionable; "volume scorers carry a star premium"
+    is. Labels come from data/archetype_map.json's hand-authored taxonomy, which is the
+    same anchor the cross-sport alignment was built against.
+
+    Worth recording: the gridiron_hint for A0 reads "QB / high-usage RB / WR1". At Q5 I
+    called gridiron A0's 20.41% pay share "a quarterback" from the number alone, before
+    reading this file. The taxonomy independently agrees.
+    """
+    p = ROOT / "data" / "archetype_map.json"
+    if not p.exists():
+        return {}
+    try:
+        tax = json.loads(p.read_text(encoding="utf-8")).get("taxonomy", [])
+    except Exception:
+        return {}
+    return {t["id"]: t.get("label", "") for t in tax if t.get("id")}
+
+
 def norm_name(name: str) -> str:
     s = unicodedata.normalize("NFD", name or "")
     s = "".join(c for c in s if not unicodedata.combining(c))
@@ -788,6 +809,7 @@ def q_pay_within_quality_band() -> None:
     # high-PIE band is just "stars are expensive" restated.
     if len(rank_by_band) >= 2:
         common = set.intersection(*(set(v) for v in rank_by_band.values()))
+        labels = arch_labels()
         print()
         print("    ROLE PREMIUM by quality band (mean share of team pay):")
         hdr = "    " + f"{'archetype':10}" + "".join(f"{lbl.split()[0]:>12}" for lbl in rank_by_band)
@@ -800,19 +822,25 @@ def q_pay_within_quality_band() -> None:
             row = f"    {a:10}"
             for b in rank_by_band:
                 row += f"{100 * mean_by_band[b].get(a, float('nan')):11.2f}%"
-            print(row)
+            print(row + f"   {labels.get(a, '')}")
 
         tops = {v[0] for v in rank_by_band.values()}
         bots = {v[-1] for v in rank_by_band.values()}
         print()
         if len(tops) == 1:
-            print(f"    {tops.pop()} is the highest-paid archetype in EVERY quality band —")
+            _t = tops.pop()
+            print(f"    {_t} ({arch_labels().get(_t,'?')}) is the highest-paid archetype in")
+            print("    EVERY quality band —")
             print("    a role premium that holds at every level of measured impact.")
         else:
-            print(f"    top-paid role is NOT stable across bands ({sorted(tops)}), so the")
-            print("    premium ordering is quality-dependent rather than a fixed role effect.")
+            _lab = arch_labels()
+            print("    top-paid role is NOT stable across bands: "
+                  + ", ".join(f"{t} ({_lab.get(t,'?')})" for t in sorted(tops)))
+            print("    The premium ordering is quality-dependent, not a fixed role effect:")
+            print("    which role commands the most pay DEPENDS on the quality band.")
         if len(bots) == 1:
-            print(f"    {bots.pop()} is the lowest-paid in every band.")
+            _b = bots.pop()
+            print(f"    {_b} ({arch_labels().get(_b,'?')}) is the lowest-paid in every band.")
 
     print()
     if cleared == len(bands):
