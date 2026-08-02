@@ -35,10 +35,24 @@ Writes NO model asset and trains nothing. Same rule as acquire_sponsors.py: prod
 registry and the coverage number first, so the decision to embed a second entity type is
 made against measured reach rather than an assumption about it.
 
-KNOWN ASYMMETRY, recorded rather than smoothed over: only hoops has org FEATURES here.
-gridiron and pitch orgs are currently identity-only (they exist, they have athletes, they
-carry no operating stats yet), because the corpus stores a team code and nothing about the
-team. Any model trained on this must not read a missing feature vector as a zeroed one.
+TWO FIELDS, NOT ONE, and the distinction is load-bearing:
+
+  features  SEASON-VARYING operating stats. hoops only (PACE, OFF/DEF/NET_RATING, W, L,
+            WIN_PCT), because the corpus stores a bare team code for gridiron and pitch.
+            892/1440 orgs. Written as an explicit {} elsewhere so a consumer cannot read
+            absent as zeroed.
+  attrs     STATIC club attributes from enrich_orgs_wikidata.py, broadcast to every season
+            of that team: country, city, venue, capacity, founded, owner, org_kind.
+            1339/1440 orgs (gridiron 96.8%, hoops 93.4%, pitch 86.3%).
+
+So gridiron and pitch orgs are no longer identity-only — they carry attrs but still no
+season-varying stats. A model must not average the two together: capacity is a property of
+the franchise, NET_RATING is a property of one season of it.
+
+CAPACITY IS CONFOUNDED BY SPORT. NFL stadiums ~70k, NBA arenas ~19k, so a raw cross-sport
+comparison ranks every gridiron org above every hoops org on "scale" for reasons of
+physical format, not business size. Within-sport it is meaningful; across sports it needs
+the sport offset the joint model already carries.
 """
 
 from __future__ import annotations
@@ -191,6 +205,43 @@ def load_corpus_orgs_and_edges() -> tuple[list[dict], list[dict], dict]:
     return orgs, edges, dict(missing)
 
 
+def apply_wikidata(orgs: list[dict]) -> dict:
+    """Second pass: fold enrich_orgs_wikidata.py's registry onto the org rows.
+
+    Two files rather than one because the two passes need each other in opposite
+    directions: the enrichment needs the TEAM LIST this script produces, and this script
+    needs the FEATURES that one produces. Run order is build -> enrich -> build. Stated
+    plainly because a reader hitting the second build first would see an apparent cycle.
+
+    Static per club (country, venue, capacity, founded, owner) so it is broadcast to every
+    season of that team. Season-varying org stats stay in `features`, which is why the
+    hoops per-season numbers are NOT overwritten here.
+    """
+    src = ROOT / "data" / "orgs" / "org_wikidata.json"
+    if not src.exists():
+        print("  (no org_wikidata.json — run enrich_orgs_wikidata.py for org attributes)")
+        return {"applied": 0, "orgs_with_any_attr": 0}
+
+    enriched = json.loads(src.read_text(encoding="utf-8")).get("enriched", {})
+    applied = 0
+    for o in orgs:
+        rec = enriched.get(f"{o['sport']}::{o['team']}")
+        if not rec:
+            o["attrs"] = {}
+            continue
+        o["attrs"] = {
+            k: rec.get(k)
+            for k in ("country", "city", "venue", "capacity", "founded", "owner",
+                      "league", "org_kind", "wikidata")
+            if rec.get(k) is not None
+        }
+        applied += 1
+    return {
+        "applied": applied,
+        "orgs_with_any_attr": sum(1 for o in orgs if o.get("attrs")),
+    }
+
+
 def main() -> int:
     hoops_orgs, hoops_seasons = load_hoops_orgs()
     hoops_edges = load_hoops_edges()
@@ -202,6 +253,8 @@ def main() -> int:
         print("Refusing to write: orgs or edges came back empty, which would read")
         print("downstream as 'measured, found nothing' rather than 'a source moved'.")
         return 1
+
+    wd_stats = apply_wikidata(orgs)
 
     doc = json.loads(UNIFIED.read_text(encoding="utf-8"))
     players = doc["players"]
@@ -231,6 +284,7 @@ def main() -> int:
         "matched_unique_athletes": len(matched),
         "matched_pct": round(100.0 * len(matched) / max(len(corpus_athletes), 1), 2),
         "player_seasons_missing_team": missing_team,
+        "orgs_with_wikidata_attrs": wd_stats["orgs_with_any_attr"],
         "per_sport": per_sport,
     }
 
@@ -254,6 +308,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    print(f"orgs with wikidata attrs: {wd_stats['orgs_with_any_attr']}/{len(orgs)}")
     print(f"orgs  : {len(orgs)}   ({len(hoops_orgs)} hoops with features, "
           f"{len(corpus_orgs)} identity-only)")
     print(f"edges : {len(edges)}")

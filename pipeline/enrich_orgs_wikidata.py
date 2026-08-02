@@ -111,16 +111,36 @@ def run_query(q: str):
     return r.json()["results"]["bindings"]
 
 
+# P1083 (maximum capacity) is reached THROUGH the venue, not stated on the club. Probed
+# over 180 enriched orgs before adding it, because the obvious business fields are not
+# there and it would have been easy to assume otherwise:
+#
+#     capacity  171/180   (95%)
+#     members    20
+#     employees   2
+#     revenue     1
+#     assets      1
+#
+# So Wikidata gives SCALE but not money. Capacity is the closest public proxy for market
+# size, and it is what takes gridiron/pitch orgs off identity-only.
+#
+# CROSS-SPORT CAVEAT, load-bearing for anyone modelling on this: capacity is confounded by
+# sport. NFL stadiums run ~70k, NBA arenas ~19k, so a raw comparison ranks every gridiron
+# org above every hoops org on "scale" for reasons of physical format, not business size.
+# Within-sport it is meaningful; across sports it needs the sport offset the joint model
+# already carries.
 ORG_FIELDS = """
   OPTIONAL {{ ?club wdt:P17  ?country. }}
   OPTIONAL {{ ?club wdt:P159 ?hq. }}
   OPTIONAL {{ ?club wdt:P571 ?inception. }}
   OPTIONAL {{ ?club wdt:P115 ?venue. }}
   OPTIONAL {{ ?club wdt:P127 ?owner. }}
+  OPTIONAL {{ ?club wdt:P115/wdt:P1083 ?capacity. }}
+  OPTIONAL {{ ?club wdt:P2124 ?members. }}
 """
 
 SELECT = """SELECT ?club ?clubLabel ?leagueLabel ?countryLabel ?hqLabel ?inception
-       ?venueLabel ?ownerLabel WHERE {{"""
+       ?venueLabel ?ownerLabel ?capacity ?members WHERE {{"""
 TAIL = """  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
 }}"""
 
@@ -150,6 +170,16 @@ def val(b, k):
     return v.get("value") if v else None
 
 
+def _as_int(v):
+    """Wikidata numerics arrive as strings, sometimes '19068.0' or '+19068'."""
+    if v is None:
+        return None
+    try:
+        return int(float(str(v).lstrip("+")))
+    except (TypeError, ValueError):
+        return None
+
+
 def collect(rows, sport: str) -> dict:
     out: dict[str, dict] = {}
     for b in rows:
@@ -169,6 +199,8 @@ def collect(rows, sport: str) -> dict:
                 "founded": (val(b, "inception") or "")[:4] or None,
                 "venue": val(b, "venueLabel"),
                 "owner": val(b, "ownerLabel"),
+                "capacity": _as_int(val(b, "capacity")),
+                "members": _as_int(val(b, "members")),
             },
         )
         for k, src in (("country", "countryLabel"), ("city", "hqLabel"),
@@ -177,6 +209,12 @@ def collect(rows, sport: str) -> dict:
                 v = val(b, src)
                 if v and not re.fullmatch(r"Q\d+", v):
                     rec[k] = v
+        # A club with several venues yields several rows; keep the LARGEST capacity rather
+        # than whichever row arrived first, so the value is a stable property of the org.
+        for k in ("capacity", "members"):
+            v = _as_int(val(b, k))
+            if v is not None and (rec[k] is None or v > rec[k]):
+                rec[k] = v
     return out
 
 
