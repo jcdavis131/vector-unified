@@ -144,7 +144,15 @@ def build(women: bool) -> list[dict]:
             ):
                 if not name:
                     continue
-                k = (name, *ev)
+                # TOUR IN THE KEY, defensively. It was NOT a live bug: build() is called
+                # once per tour and `ent` is local to the call, so ATP and WTA never shared
+                # a dict — entity count is identical before and after (68,419). But the
+                # separation depended on the CALL STRUCTURE rather than on the key, and
+                # that is the kind of invariant that survives until someone merges the two
+                # loops. The risk is real: 224 tournament-years carry both an ATP and a WTA
+                # draw, and nine abbreviated names appear on both tours — "Beck A." is
+                # Andreas Beck (ATP) and Annika Beck (WTA).
+                k = (name, "wta" if women else "atp", *ev)
                 d = ent.get(k)
                 if d is None:
                     d = ent[k] = {
