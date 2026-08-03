@@ -9,12 +9,21 @@ that were real and answered a different question than the one they appeared to a
 a gate is exactly the kind of thing that hides one: it emits a verdict, the verdict is
 green, and nobody asks what red would have required.
 
-Two of the thresholds are bare inequalities with no margin at all:
+Two of the thresholds were bare inequalities with no margin at all:
 
     G3  silhouette_pass  = sil > 0
         separation_pass  = within_arch_cross_sport_cos > between_arch_cross_sport_cos
 
-A quantity being greater than zero is not evidence of the thing G3 is named after.
+A quantity being greater than zero is not evidence of the thing G3 is named after. Both
+now carry floors calibrated against the nulls measured here (SIL_FLOOR, SEP_FLOOR in
+eval_unified.py). Only ONE of them had actually been passing on a null — separation, up to
++0.0440 — but a test with no margin is untrustworthy whether or not it has failed yet.
+
+ONE QUANTITY CANNOT BE TESTED THIS WAY AT ALL, and it is reported as such rather than
+counted: G2's effective_rank is a function of the singular values, and a row permutation
+leaves the Gram spectrum untouched. Both shuffles score 12.4, exactly the real value.
+random_gaussian moves it UP to 64.0, so a high rank is not evidence of quality either.
+rank_nondeg_pass detects collapse and nothing more.
 
 THE THREE NULLS, and what each is designed to kill:
 
@@ -293,6 +302,13 @@ def main() -> int:
             "A gate that PASSES on within_sport_shuffle is not measuring what it claims "
             "and its historical PASS must be withdrawn until it is redefined. Fixed "
             "before the first run."),
+        "note_rank": (
+            "G2's effective_rank is NOT testable by these nulls and its green must not be "
+            "read as earned. Rank is a function of the singular values and a row "
+            "permutation leaves the Gram spectrum untouched — global_shuffle and "
+            "within_sport_shuffle both score 12.4, exactly the real value. Only "
+            "random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not "
+            "evidence of quality either. rank_nondeg_pass detects collapse, nothing more."),
         "note_G2": ("G2 has no pass/fail here on purpose — it is a leakage measure, not a "
                     "quality gate, and a null SHOULD drive sport accuracy toward chance. "
                     "Its value under each null is reported as a sanity check on the nulls "
@@ -344,7 +360,11 @@ def main() -> int:
             print(f"  {v}")
         print(f"\nwrote {OUT}")
         return 1 if args.check else 0
-    print("\nno gate survives a null — every PASS above is earned.")
+    print("\nno gate survives a null — every PASS above is earned,")
+    print("EXCEPT effective_rank, which no permutation null can test. Rank is a function")
+    print("of the singular values and a row permutation leaves them unchanged: both")
+    print("shuffles score 12.4, exactly the real value. random_gaussian moves it UP to")
+    print("64.0, so a high rank is not evidence of quality either. It detects collapse.")
     print(f"\nwrote {OUT}")
     return 0
 

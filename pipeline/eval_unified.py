@@ -51,6 +51,8 @@ SEED = 7
 # Above the largest separation observed across 50 within-sport shuffles (+0.0440).
 # Provenance: data/gate_nonvacuity.json.
 SEP_FLOOR = 0.05
+# Above the largest silhouette observed on any null (-0.0054). Same provenance.
+SIL_FLOOR = 0.05
 
 
 def load_model(device, ckpt_name="unified_best.pt"):
@@ -124,6 +126,11 @@ def g2_sport_invariance(z_full, M):
     acc = float(clf.score(Xte, yte))
     rank = effective_rank(torch.tensor(z_full))
     target = z_full.shape[1] // 2  # literal G2 floor (collapse heuristic)
+    # NOT TESTABLE BY A PERMUTATION NULL, and the checker says so rather than reporting a
+    # green it did not earn: effective rank is a function of the singular values, which a
+    # row permutation leaves untouched. global_shuffle scores 12.4, exactly the real
+    # value. rank_nondeg_pass therefore detects COLLAPSE only — it is not evidence that z
+    # carries role structure, and it must never be quoted as if it were.
     nondeg = 12  # non-degenerate floor: below this with role/folding loss = collapse
     # MAJORITY, NOT 1/3. The three sports are not balanced — 12,966 hoops / 5,323 gridiron
     # / 2,430 pitch — so a classifier that always answers "hoops" scores 0.6258, and
@@ -181,7 +188,13 @@ def g3_silhouette(z_full, M):
     # but the TEST could not tell the two apart. SEP_FLOOR is set above the observed null
     # maximum; re-derive it with `python pipeline/check_gate_nonvacuity.py` if the
     # embedding or the label set changes.
-    return {"silhouette": round(sil, 4), "silhouette_pass": bool(sil > 0),
+    # SIL_FLOOR for the same reason as SEP_FLOOR. `sil > 0` happened to separate the real
+    # embedding from every null (which peaked at -0.0054), so unlike the separation test
+    # it was not actually broken — but it had no margin, and "greater than zero" is not
+    # evidence of the thing G3 is named after. The floor sits above the observed null
+    # maximum; real is +0.6147.
+    return {"silhouette": round(sil, 4), "silhouette_floor": SIL_FLOOR,
+            "silhouette_pass": bool(sil > SIL_FLOOR),
             "within_arch_cross_sport_cos": round(within_m, 4),
             "between_arch_cross_sport_cos": round(between_m, 4),
             "separation": round(within_m - between_m, 4),
