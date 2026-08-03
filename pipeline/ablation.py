@@ -144,7 +144,23 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--seeds", type=int, default=1,
                     help="repeats per config; >1 puts an error bar on every delta")
+    ap.add_argument("--configs", default="",
+                    help="comma-separated subset (always includes `full`, the reference). "
+                         "Exists so an undecided loss can be re-run at high seed count "
+                         "without paying for the four already settled.")
+    ap.add_argument("--out", default="ablation_report.json",
+                    help="report filename under data/; use a distinct name for a targeted "
+                         "subset run so it does not overwrite the full table")
     args = ap.parse_args()
+    if args.configs:
+        want = {c.strip() for c in args.configs.split(",") if c.strip()} | {"full"}
+        unknown = want - set(CONFIGS)
+        if unknown:
+            print(f"unknown config(s): {', '.join(sorted(unknown))}")
+            return 2
+        for name in list(CONFIGS):
+            if name not in want:
+                del CONFIGS[name]
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     M = load_matrix(DEVICE)
 
@@ -172,7 +188,7 @@ def main():
         r["G4_baseline"] = runs[name][0]["G4_baseline"]
         r["n_seeds"] = len(seeds)
         results[name] = r
-    (DATA / "ablation_report.json").write_text(
+    (DATA / args.out).write_text(
         json.dumps({"seeds": seeds, "configs": results, "runs": runs}, indent=2),
         encoding="utf-8")
     print("\n=== Ablation summary (each loss earns its keep if dropping it worsens its target gate) ===")
@@ -201,7 +217,7 @@ def main():
     if len(seeds) < 2:
         print("  NOT DECIDABLE — one seed per config, so no noise floor was measured. "
               "Re-run with --seeds 3.")
-    for name in ("no_supcon", "no_coral", "no_grl", "no_vicreg", "task_only"):
+    for name in [c for c in CONFIGS if c != "full"]:
         parts = []
         for k, label in (("G3_sil", "dG3"), ("G4_hit", "dG4"), ("G2_sport_acc", "dG2sport")):
             mu_f, sd_f = agg("full", k)

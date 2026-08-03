@@ -51,3 +51,5 @@ Thumbs.db
 # transient logs from a detached ablation re-run
 ablation_rerun.log
 ablation_rerun.err
+grl_seeds.log
+grl_seeds.err
