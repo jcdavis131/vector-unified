@@ -64,6 +64,7 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "trajectory_axis.json": ("build_trajectory_axis.py", []),
     "trajectory_axis_gridiron.json": ("build_trajectory_axis.py", []),
     "gridiron_pedigree.json": ("export_gridiron_pedigree.py", []),
+    "pitch_expectation_sources.json": ("probe_pitch_expectation_sources.py", []),
 }
 
 # The SHIPPED asset, checked the same way and for a sharper reason: 7.29 found
