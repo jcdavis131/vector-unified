@@ -48,6 +48,54 @@ with the NBA as its own control.
 and no value signal at any usable coverage. The comparison is blocked on acquisition, not
 on modelling.
 
+## AMENDED 2026-08-03 — the COMPANY edge exists, on the org side
+
+Everything above is about a value signal **on the athlete**, and it stands. But it was
+read as "there is no company edge", and that is a claim this file never tested. P859 was
+measured on ATHLETES only. Measured on ORGS, by `pipeline/probe_company_edges.py`, over
+the same 187 enriched orgs:
+
+| relation | orgs with edge | typed as an ORGANIZATION | distinct targets |
+|---|---|---|---|
+| `P859` sponsor (on the club) | 27 (14.4%) | 27 (**14.4%**) | 64 |
+| `P127` owner | 131 (70.1%) | 75 (**40.1%**) | 157 |
+| `P115/P138` venue named-after | 85 (45.5%) | 67 (**35.8%**) | 93 |
+
+Individually moderate; **complementary in practice**, because they fail in different
+places — US venues carry naming rights (AT&T, Bank of America, Ford Motor Company) where
+European clubs carry shirt sponsors (Adidas AG, Accor, CMA CGM) instead. The union:
+
+    orgs with >= 1 ORGANIZATION-typed company edge : 142 / 187 = 75.9%   (196 companies)
+    gridiron 86.7%   hoops 93.5%   pitch 69.0%
+
+Multiplied through `org_entities.json`'s athlete->org edges (99.98% resolved):
+
+    ATHLETES reaching a company in 2 hops : 5,248 / 6,226 = 84.3%
+    athlete -> sponsor, direct (above)    :               0.22%
+    gridiron 88.0%   hoops 95.7%   pitch 63.4%
+
+**This is the first signal in this estate that does not collapse into basketball.** Every
+value and outcome column is hoops-only; the company edge is above 63% in all three sports.
+
+**What it is NOT.** These are INSTITUTIONAL edges — who owns the club, who named the
+stadium, who is on the shirt. They are not personal endorsement deals, and 84.3% must
+never be described as "84% of athletes have sponsors". The honest reading is *brand
+exposure through the employer*, which is a different and weaker claim than the one the
+0.22% number was trying to answer.
+
+**Typing is the measurement, not presence.** `owner` is 70.1% populated but only 40.1%
+organisations — the rest are individuals (Jeanie Buss, Dan Gilbert). Counting raw
+presence would have overstated the company edge by 30 points. `P138` is resolved through
+the venue entity rather than by string-matching the label, so "Madison Square Garden"
+does not become a company by accident.
+
+**One trap, recorded because it looked exactly like a real negative.** The first
+athlete-reach join matched bare team names and returned **0 / 6,226 = 0.0%**. Gridiron
+orgs are keyed by CODE (`gridiron::ARI`) while hoops and pitch use full names, so the
+join missed every row. A 0.0% here is indistinguishable from "the edge is useless" — the
+join key is `sport::team` and the script now asserts how many org keys matched (187/187)
+so a silent zero cannot be read as a finding again.
+
 ## What the graph CAN still carry
 
 - role (12 cross-sport archetypes, G4 0.978)
