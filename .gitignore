@@ -55,3 +55,5 @@ grl_seeds.log
 grl_seeds.err
 chain_ablation.ps1
 grl_paired.log
+coral_vicreg.log
+chain_cv.ps1

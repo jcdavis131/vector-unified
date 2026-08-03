@@ -51,6 +51,7 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "analogy_triples_report.json": ("analogy_triples_eval.py", []),
     "ablation_report.json": ("ablation.py", ["eval_unified.py"]),
     "ablation_grl_seeds.json": ("ablation.py", ["eval_unified.py"]),
+    "ablation_coral_vicreg_seeds.json": ("ablation.py", ["eval_unified.py"]),
     "gate_nonvacuity.json": ("check_gate_nonvacuity.py", ["eval_unified.py"]),
     "matched_draft_value_comparison.json": ("compare_matched_draft_value.py", []),
     "hoops_vor_draft_value.json": ("build_hoops_vor_draft_value.py", []),
