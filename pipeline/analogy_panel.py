@@ -27,7 +27,7 @@ import sys
 import numpy as np
 import torch
 
-from load_encoders import SPORTS, SPORT_ID, ROOT, UCACHE, load_all
+from load_encoders import SPORTS, ROOT, load_all
 from train_unified import load_matrix
 from eval_unified import load_model, encode_all
 
@@ -96,6 +96,21 @@ def main():
     nn_idx, nn_sim = cross_sport_nn(z, sid)
     hits = arch[nn_idx] == arch
     g4 = float(hits.mean())
+
+    # BASELINE, COMPUTED. The 0.60 bar was stated without one, and an archetype hit-rate
+    # is only interpretable against the chance that a random OTHER-SPORT row happens to
+    # share the archetype. The mix is 0.249 / 0.235 / 0.192 / 0.148 / 0.113 / 0.063, so
+    # that chance is ~0.1712 — 0.60 is a real bar, unlike G2's `chance = 1/3` which was
+    # 29 points too generous (see check_gate_nonvacuity.py, 7.16). Confirmed empirically:
+    # all three nulls in that checker land on 0.167-0.171.
+    n_rows = len(arch)
+    g4_baseline = 0.0
+    for a_ in np.unique(arch):
+        for s_ in np.unique(sid):
+            n_q = int(((arch == a_) & (sid == s_)).sum())
+            pool = int((sid != s_).sum())
+            if pool:
+                g4_baseline += (n_q / n_rows) * (int(((arch == a_) & (sid != s_)).sum()) / pool)
     # per-sport + per-arch breakdown
     per_sport = {}
     for s in range(3):
@@ -131,6 +146,8 @@ def main():
         "model": "UnifiedTrunk Stage 1 (frozen encoders)",
         "n_rows": int(z.shape[0]), "d_emb": int(z.shape[1]),
         "G4_cross_sport_nn_role_coherence": {"hit_rate": round(g4, 4),
+                                             "random_baseline": round(g4_baseline, 4),
+                                             "lift_over_random": round(g4 - g4_baseline, 4),
                                              "target": 0.60, "pass": bool(g4 >= 0.60),
                                              "per_sport": {k: {kk: round(vv, 4) if isinstance(vv, float) else vv
                                                                for kk, vv in v.items()} for k, v in per_sport.items()},
@@ -141,8 +158,9 @@ def main():
     (DATA / "analogy_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     print("=== Cross-sport analogy panel (G4) ===")
-    print(f"G4 cross-sport NN role-coherence: hit_rate={g4:.3f} (target 0.60) "
-          f"{'PASS' if g4 >= 0.60 else 'FAIL'}")
+    print(f"G4 cross-sport NN role-coherence: hit_rate={g4:.3f} "
+          f"vs random baseline {g4_baseline:.3f} (lift {g4 - g4_baseline:+.3f}), "
+          f"target 0.60 {'PASS' if g4 >= 0.60 else 'FAIL'}")
     for s, d in per_sport.items():
         print(f"  {s:8s} n={d['n']:>5}  hit={d['hit_rate']:.3f}  mean_nn_cos={d['mean_nn_cos']:.3f}")
     print("\nPer-archetype hit-rate:")

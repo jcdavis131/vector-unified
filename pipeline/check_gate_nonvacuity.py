@@ -81,6 +81,37 @@ def nulls(z: np.ndarray, sid: np.ndarray, rng: np.random.Generator) -> dict[str,
     return out
 
 
+def g4_random_baseline(arch: np.ndarray, sid: np.ndarray) -> float:
+    """P(a random OTHER-SPORT row shares the query's archetype).
+
+    G4's stated bar is 0.60 against an unstated baseline. The archetypes are not uniform
+    — 0.249 / 0.235 / 0.192 / 0.148 / 0.113 / 0.063 — and G4 draws its neighbour only
+    from the other two sports, so the honest null is this quantity, not 1/n_arch. Same
+    defect shape as G2's `chance = 1/3`, which is why it is computed rather than assumed.
+    """
+    n = len(arch)
+    tot = 0.0
+    for a in np.unique(arch):
+        for s in np.unique(sid):
+            n_q = int(((arch == a) & (sid == s)).sum())
+            pool = int((sid != s).sum())
+            same = int(((arch == a) & (sid != s)).sum())
+            if pool:
+                tot += (n_q / n) * (same / pool)
+    return tot
+
+
+def g4_hit_rate(z: np.ndarray, M) -> float:
+    """analogy_panel.py's G4, replicated: cross-sport NN shares the archetype."""
+    arch = M["arch_id"].cpu().numpy()
+    sid = M["sport_id"].cpu().numpy()
+    zn = z / (np.linalg.norm(z, axis=1, keepdims=True) + 1e-9)
+    sim = zn @ zn.T
+    sim = np.where(sid[:, None] == sid[None, :], -np.inf, sim)
+    np.fill_diagonal(sim, -np.inf)
+    return float((arch[sim.argmax(axis=1)] == arch).mean())
+
+
 def gate_verdicts(z: np.ndarray, M) -> dict:
     g1 = EV.g1_per_sport(z, M)
     # G1's z arm only — the e_s arm is the frozen encoder and is unaffected by a null,
@@ -92,6 +123,7 @@ def gate_verdicts(z: np.ndarray, M) -> dict:
         for z_v, e_v in zip(g1_z.values(), g1_e.values(), strict=True))
     g2 = EV.g2_sport_invariance(z, M)
     g3 = EV.g3_silhouette(z, M)
+    g4h = g4_hit_rate(z, M)
     return {
         "G1_native_knn5_z": {k: (round(v, 4) if v is not None else None)
                              for k, v in g1_z.items()},
@@ -101,6 +133,8 @@ def gate_verdicts(z: np.ndarray, M) -> dict:
         "G3_within_cos": g3["within_arch_cross_sport_cos"],
         "G3_between_cos": g3["between_arch_cross_sport_cos"],
         "G3_separation": g3["separation"], "G3_separation_pass": g3["separation_pass"],
+        "G4_hit_rate": round(g4h, 4),
+        "G4_pass": bool(g4h >= 0.60),
     }
 
 
@@ -160,6 +194,7 @@ def main() -> int:
     z = EV.encode_all(model, M, device)
     sid = M["sport_id"].cpu().numpy()
 
+    g4_base = g4_random_baseline(M["arch_id"].cpu().numpy(), sid)
     real = gate_verdicts(z, M)
     rng = np.random.default_rng(SEED)
     null_results = {name: gate_verdicts(zz, M) for name, zz in nulls(z, sid, rng).items()}
@@ -217,7 +252,7 @@ def main() -> int:
     # A gate is VACUOUS if it still passes when the structure it names is destroyed.
     vacuous: list[str] = []
     for gate, key in (("G1", "G1_pass"), ("G3_silhouette", "G3_silhouette_pass"),
-                      ("G3_separation", "G3_separation_pass")):
+                      ("G3_separation", "G3_separation_pass"), ("G4", "G4_pass")):
         if not real[key]:
             continue
         survivors = [n for n, r in null_results.items() if r[key]]
@@ -242,6 +277,16 @@ def main() -> int:
         "nulls": null_results,
         "g3_sport_pair_confound": sport_pair_mix(M),
         "g2_baseline_correction": g2_baseline,
+        "g4_baseline": {
+            "random_cross_sport_arch_match": round(g4_base, 4),
+            "real_hit_rate": real["G4_hit_rate"],
+            "lift_over_random": round(real["G4_hit_rate"] - g4_base, 4),
+            "stated_bar": 0.60,
+            "note": ("G4's 0.60 bar was stated without a baseline. The honest null is the "
+                     "chance that a random other-sport row shares the archetype, which is "
+                     f"{g4_base:.4f} given the 0.249/0.235/0.192/0.148/0.113/0.063 "
+                     "archetype mix — so 0.60 is a real bar here, unlike G2's 1/3."),
+        },
         "g3_separation_calibrated": calibrated,
         "vacuous_gates": vacuous,
         "decision_rule": (
@@ -259,12 +304,12 @@ def main() -> int:
 
     rows = [("REAL", real), *null_results.items()]
     print(f"{'variant':<22} {'G1':>5} {'G2acc':>7} {'rank':>6} {'sil':>8} {'within':>8} "
-          f"{'between':>8} {'sep':>8}")
+          f"{'between':>8} {'sep':>8} {'G4':>7}")
     for name, r in rows:
         print(f"{name:<22} {str(r['G1_pass']):>5} {r['G2_sport_acc']:>7.3f} "
               f"{r['G2_effective_rank']:>6.1f} {r['G3_silhouette']:>8.4f} "
               f"{r['G3_within_cos']:>8.4f} {r['G3_between_cos']:>8.4f} "
-              f"{r['G3_separation']:>+8.4f}")
+              f"{r['G3_separation']:>+8.4f} {r['G4_hit_rate']:>7.4f}")
 
     b = g2_baseline
     print()
@@ -274,6 +319,13 @@ def main() -> int:
     print(f"{'':13}real acc {b['real_sport_acc']}  ->  lift over uniform "
           f"{b['lift_over_uniform']:+.4f}, over MAJORITY {b['lift_over_majority']:+.4f}"
           f"   (global_shuffle lands at {b['global_shuffle_acc']})")
+    gb = report["g4_baseline"]
+    print()
+    print(f"G4 baseline: random other-sport archetype match = "
+          f"{gb['random_cross_sport_arch_match']:.4f}; real {gb['real_hit_rate']:.4f} "
+          f"= lift {gb['lift_over_random']:+.4f} (stated bar {gb['stated_bar']})")
+    print(f"{'':13}every null lands on the baseline, which validates both at once")
+
     k = calibrated
     print()
     print(f"G3 separation: real {k['real_separation']:+.4f}  vs null p95 "
