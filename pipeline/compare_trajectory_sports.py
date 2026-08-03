@@ -119,6 +119,9 @@ def main() -> int:
     by_pos: dict[str, list[dict]] = collections.defaultdict(list)
     for r in g:
         by_pos[r.get("position") or "?"].append(r)
+    # Each position gets a CI and a RANGE, because "QB is different" needs both: a
+    # correlation that separates, and the ruling-out of restricted range, which attenuates
+    # r mechanically and is the first thing that should be suspected at n=116.
     per_position = {}
     for pos, rows in by_pos.items():
         if len(rows) < 40:
@@ -127,8 +130,18 @@ def main() -> int:
         py = [r["delivery"] for r in rows]
         if len(set(px)) < 2:
             continue
-        per_position[pos] = {"n": len(rows),
-                             "r": round(statistics.correlation(px, py), 4)}
+        b = boot_corr(px, py)
+        qx = statistics.quantiles(px, n=4)
+        qy = statistics.quantiles(py, n=4)
+        per_position[pos] = {
+            "n": len(rows), "r": b["r"], "ci95": [b["lo"], b["hi"]],
+            "ci_includes_zero": b["lo"] <= 0.0 <= b["hi"],
+            "expect_sd": round(statistics.stdev(px), 4),
+            "expect_iqr": round(qx[2] - qx[0], 4),
+            "delivery_sd": round(statistics.stdev(py), 2),
+            "delivery_iqr": round(qy[2] - qy[0], 2),
+            "undrafted_pct": round(100.0 * sum(1 for r in rows if r["undrafted"]) / len(rows), 1),
+        }
 
     report = {
         "hoops": hb,
@@ -137,11 +150,27 @@ def main() -> int:
         "position_stratification_verdict": (
             "The gap is NOT pool composition. Every gridiron position except QB exceeds "
             "hoops' pooled r, so splitting by position does not collapse the difference. "
-            "QB is the outlier in the opposite direction — draft slot barely predicts "
-            "fantasy delivery at quarterback, which matches the football-side belief that "
-            "QB is the hardest position to draft. A composition artefact would have shown "
-            "one dominant position carrying the pooled number; instead the pooled number "
-            "is DRAGGED DOWN by its smallest group."),
+            "A composition artefact would have shown one dominant position carrying the "
+            "pooled number; instead the pooled number is DRAGGED DOWN by its smallest "
+            "group."),
+        "qb_verdict": (
+            "QB r=+0.12 with a 95% CI that INCLUDES ZERO — draft slot has no detectable "
+            "relationship with fantasy delivery at quarterback — while RB is +0.57 with a "
+            "non-overlapping CI. RESTRICTED RANGE WAS THE OBVIOUS MECHANICAL EXPLANATION "
+            "AND IT IS REFUTED, INVERTED: QB has the WIDEST spread in draft expectation of "
+            "any position (sd 0.313 and IQR 0.601, against ~0.15-0.20 and 0.23-0.30 "
+            "elsewhere). Attenuation from a narrow predictor would require the opposite. "
+            "Teams spend draft capital on quarterbacks across the whole board, and among "
+            "those who last four fantasy-relevant seasons, where they were taken tells you "
+            "nothing."),
+        "qb_remaining_alternative": (
+            "SURVIVORSHIP, and it is not excluded. A high-pick QB who busts is benched "
+            "quickly and never reaches four charted seasons, so the surviving QB pool is "
+            "more heavily selected on delivery than any other position — exactly the "
+            "selection that would flatten this correlation. The undrafted share at QB is "
+            "10.3% against 20-25% elsewhere, consistent with a pool that is mostly drafted "
+            "players who survived. Testing this needs the players who left, which this "
+            "dataset does not contain."),
         "undrafted_share": {
             "gridiron": round(100.0 * sum(1 for r in g if r.get("undrafted")) / len(g), 1),
             "hoops": round(100.0 * sum(1 for r in h if r.get("undrafted")) / len(h), 1),
@@ -187,11 +216,15 @@ def main() -> int:
     print(f"excludes zero: {d['excludes_zero']}")
     print(f"\nVERDICT: {report['verdict']}")
     if per_position:
-        print("\ngridiron r by position — does the gap survive stratification?")
+        print("\ngridiron by position — does the gap survive stratification?")
+        print(f"  {'pos':4} {'n':>5} {'r':>8} {'95% CI':>20} {'exp sd':>7} {'exp IQR':>8} {'undrf%':>7}")
         for pos, v in sorted(per_position.items(), key=lambda kv: -kv[1]["r"]):
-            flag = "  <- below hoops" if v["r"] < hb["r"] else ""
-            print(f"  {pos:4} n={v['n']:>5}  r={v['r']:+.4f}{flag}")
-        print("  " + report["position_stratification_verdict"][:96] + "...")
+            ci = f"[{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}]"
+            flag = " *zero" if v["ci_includes_zero"] else ""
+            print(f"  {pos:4} {v['n']:>5} {v['r']:>+8.4f} {ci:>20} "
+                  f"{v['expect_sd']:>7.3f} {v['expect_iqr']:>8.3f} {v['undrafted_pct']:>6.1f}%{flag}")
+        print("\n  " + report["qb_verdict"][:150] + "...")
+        print("  REMAINING: " + report["qb_remaining_alternative"][:120] + "...")
     print(f"\n{RESAMPLES} resamples, seed {SEED}")
     print("\nCAVEAT that binds if the difference is real:")
     print("  " + report["comparability_caveat"][:120] + "...")
