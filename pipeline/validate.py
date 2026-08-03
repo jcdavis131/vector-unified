@@ -44,6 +44,8 @@ PIPE = ROOT / "pipeline"
 CHECKS: dict[str, tuple[list[str], bool]] = {
     "draft_value_invariants": (["check_draft_value_invariants.py", "--check"], False),
     "wikidata_qids": (["check_wikidata_qids.py", "--check"], True),
+    # ~4 min: 50 permutation shuffles, each recomputing G3 over 6,000-point silhouettes.
+    "gate_nonvacuity": (["check_gate_nonvacuity.py", "--check"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:

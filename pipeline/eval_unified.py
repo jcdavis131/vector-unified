@@ -6,23 +6,35 @@ scores the three automatic gates from UNIFIED_ARCHITECTURE §6:
   G1  Per-sport non-inferiority (hard)  — does z recover each sport's native role
       (kNN-5 native-cluster + position acc) at least as well as its FROZEN e_s?
       The games must not break: z must not lose role info each sport needs.
-  G2  Sport-invariance (hard)          — 3-way sport classifier on z (accuracy vs
-      chance 33.3%) + effective rank of z (target >= 32 = half of 64).
+  G2  Sport-invariance (hard)          — 3-way sport classifier on z, scored against
+      the MAJORITY-CLASS share (0.6258), not uniform chance + effective rank of z.
   G3  Cross-sport archetype coherence   — silhouette over cross-sport arch labels
-      on z (>0 = joint space separates shared archetypes better than chance) and
-      per-arch within-arch cross-sport cosine > between-arch cross-sport cosine.
+      on z, and (within-arch cross-sport cosine - between-arch) above SEP_FLOOR.
 
 Output: data/unified_report.json + a printed VERDICT.
 
+TWO THRESHOLDS WERE WRONG UNTIL 7.16, both found by check_gate_nonvacuity.py:
+
+  * G2 quoted accuracy against `chance = 1/3`. The sports are 12,966 / 5,323 / 2,430,
+    so always answering "hoops" scores 0.6258 — and a globally shuffled z, carrying no
+    sport information whatsoever, scored 0.6257. Real leakage is +0.130 over majority,
+    not +0.422 over uniform. `chance` and `delta_vs_chance` are still emitted so older
+    reports stay readable; quote `delta_vs_majority`.
+
+  * G3's separation test was the bare inequality `within > between`, which holds on a
+    null about half the time by construction — measured up to +0.0440 across 50
+    within-sport shuffles with the archetype labels randomised. The real value is
+    +0.8448, so the finding was never in doubt, but the TEST could not tell them apart.
+    Now a calibrated SEP_FLOOR.
+
 Honest note: the G2 "no-debiasing baseline" (a no-GRL control trunk) is not trained
-here; we report sport-acc vs chance and flag the control as a deferred sub-check.
+here; the control remains a deferred sub-check.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 
 import numpy as np
 import torch
@@ -31,11 +43,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import silhouette_score
 from sklearn.model_selection import train_test_split
 
-from load_encoders import SPORT_DIM, SPORT_ID, ROOT, UCACHE, SPORTS
+from load_encoders import ROOT, UCACHE, SPORTS
 from train_unified import UnifiedTrunk, effective_rank
 
 DATA = ROOT / "data"
 SEED = 7
+# Above the largest separation observed across 50 within-sport shuffles (+0.0440).
+# Provenance: data/gate_nonvacuity.json.
+SEP_FLOOR = 0.05
 
 
 def load_model(device, ckpt_name="unified_best.pt"):
@@ -110,8 +125,19 @@ def g2_sport_invariance(z_full, M):
     rank = effective_rank(torch.tensor(z_full))
     target = z_full.shape[1] // 2  # literal G2 floor (collapse heuristic)
     nondeg = 12  # non-degenerate floor: below this with role/folding loss = collapse
+    # MAJORITY, NOT 1/3. The three sports are not balanced — 12,966 hoops / 5,323 gridiron
+    # / 2,430 pitch — so a classifier that always answers "hoops" scores 0.6258, and
+    # quoting accuracy against uniform chance overstates the leakage by 29 points. This was
+    # found by check_gate_nonvacuity.py: a globally shuffled z, which carries no sport
+    # information at all, still scored 0.6257. `chance` and `delta_vs_chance` are KEPT so
+    # older reports remain readable, but the majority figures are the ones to quote.
+    majority = float(np.bincount(sid).max()) / len(sid)
     return {"sport_acc": round(acc, 4), "chance": round(1.0 / 3.0, 4),
             "delta_vs_chance": round(acc - 1.0 / 3.0, 4),
+            "majority_class_share": round(majority, 4),
+            "delta_vs_majority": round(acc - majority, 4),
+            "baseline_note": ("Quote delta_vs_majority. delta_vs_chance assumes balanced "
+                              "classes and these are 62.6 / 25.7 / 11.7."),
             "effective_rank": round(rank, 1), "rank_target_literal": target,
             "rank_literal_pass": bool(rank >= target),
             "rank_nondeg_floor": nondeg, "rank_nondeg_pass": bool(rank >= nondeg),
@@ -147,11 +173,20 @@ def g3_silhouette(z_full, M):
             between.append(float(zn[i] @ zn[j]))
     within_m = float(np.mean(within)) if within else 0.0
     between_m = float(np.mean(between)) if between else 0.0
+    # CALIBRATED FLOOR, not a bare inequality. `within_m > between_m` on a noisy
+    # difference passes on a null roughly half the time by construction, and it did:
+    # check_gate_nonvacuity.py measured separations up to +0.0440 across 50 within-sport
+    # shuffles (95th percentile +0.0301), where the archetype labels had been randomised
+    # inside each sport. The construct was never in doubt — the real value is +0.8448 —
+    # but the TEST could not tell the two apart. SEP_FLOOR is set above the observed null
+    # maximum; re-derive it with `python pipeline/check_gate_nonvacuity.py` if the
+    # embedding or the label set changes.
     return {"silhouette": round(sil, 4), "silhouette_pass": bool(sil > 0),
             "within_arch_cross_sport_cos": round(within_m, 4),
             "between_arch_cross_sport_cos": round(between_m, 4),
             "separation": round(within_m - between_m, 4),
-            "separation_pass": bool(within_m > between_m)}
+            "separation_floor": SEP_FLOOR,
+            "separation_pass": bool(within_m - between_m > SEP_FLOOR)}
 
 
 def main():
@@ -218,7 +253,9 @@ def main():
     bmsg = ""
     if args.baseline_sport_acc is not None:
         bmsg = f"  baseline={args.baseline_sport_acc:.3f} dVsBase={g2['delta_vs_baseline']:+.3f}"
-    print(f"\nG2 sport-invariance: acc={g2['sport_acc']:.3f} (chance {g2['chance']:.3f}, "
+    print(f"\nG2 sport-invariance: acc={g2['sport_acc']:.3f} vs MAJORITY "
+          f"{g2['majority_class_share']:.3f} = {g2['delta_vs_majority']:+.3f} "
+          f"(uniform-chance framing, kept for older reports: "
           f"dVsChance{g2['delta_vs_chance']:+.3f}){bmsg}  rank={g2['effective_rank']:.1f} "
           f"(literal>{g2['rank_target_literal']}: {'PASS' if g2['rank_literal_pass'] else 'FAIL'}; "
           f"nondeg>{g2['rank_nondeg_floor']}: {'PASS' if g2['rank_nondeg_pass'] else 'FAIL'})")
