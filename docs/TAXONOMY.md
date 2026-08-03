@@ -165,10 +165,26 @@ name, computed per career from per-season archetypes. The unified trajectory axi
 be reconciled against those five rather than invented in parallel; that reconciliation is
 open work, not done here.
 
-**Migration cost, stated plainly:** any consumer keying on A6–A9 breaks. The operator has
-accepted that ("do what makes the most sense long-term and we will reconfigure the games
-and sites accordingly"). `archetype_map.json` must carry both axes before anything is
-regenerated, and `archetypes_in_scope_v0` needs splitting into per-axis scope lists.
+**Migration cost — MEASURED, and smaller than first stated.** This section originally read
+"any consumer keying on A6–A9 breaks". That is technically true and practically vacuous:
+
+```
+cross_arch values actually assigned in assets/unified.json (20,719 player-seasons):
+  A0 2348   A1 4860   A2 5159   A3 3983   A5 1311   A11 3058
+declared but NEVER assigned: A4, A6, A7, A8, A9, A10
+```
+
+No player record carries A6–A9, so nothing reading real data can break on the split. It
+is a **declaration cleanup, not a data migration**. Consumers of `archetype_map.json` live
+only in vector-unified (14 files); vector-hoops, -gridiron, -pitch, -equities and dottie
+reference it **zero** times, so the shipped games and sites are untouched.
+
+**DONE**: `archetype_map.json` now carries `axes.role` (grain: player-season),
+`axes.trajectory` (grain: career), and `axes.legacy_a_to_axis` so `A8` resolves to
+`{axis: trajectory, id: T2}`. The original `taxonomy` key is retained UNCHANGED and marked
+deprecated, so the 14 existing consumers keep working — `query_graph.py` runs end to end
+and `arch_labels()` still resolves all 12. Note the practical consequence: the role axis
+declares 8 values but only **6** have ever been assigned, because A4 and A10 are deferred.
 
 ### Family ontology (the bridge that makes cross-sport possible)
 
