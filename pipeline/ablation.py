@@ -213,21 +213,35 @@ def main():
     # dropping it moves its target metric by more than 2x the pooled seed-to-seed standard
     # deviation; anything smaller is NOT DISTINGUISHABLE FROM NOISE and is reported that
     # way rather than as a small effect.
-    print("\nEarns-its-keep verdict (vs full, |delta| > 2x pooled seed sd):")
+    # PAIRED, because the DESIGN is paired and the first version of this rule threw that
+    # away. Every config trains on the same seed list, so seed i gives `full` and `no_grl`
+    # the same initialisation and the same batch order — the right statistic is the
+    # per-seed DIFFERENCE, not two independent means. The unpaired 2x-pooled-sd rule
+    # returned `ns` for GRL at 3 seeds (delta +0.047 against a 0.048 threshold). The same
+    # data read pairwise: 8 of 9 seeds positive, mean +0.0456, sd of the differences
+    # 0.0291, so sd of the mean is 0.0097 and the effect is ~4.7 sigma. The pairing was
+    # worth roughly a factor of five in power and discarding it nearly retired a loss that
+    # does work.
+    print("\nEarns-its-keep verdict (vs full, PAIRED by seed, |mean diff| > 2x sd-of-mean):")
     if len(seeds) < 2:
         print("  NOT DECIDABLE — one seed per config, so no noise floor was measured. "
               "Re-run with --seeds 3.")
     for name in [c for c in CONFIGS if c != "full"]:
         parts = []
         for k, label in (("G3_sil", "dG3"), ("G4_hit", "dG4"), ("G2_sport_acc", "dG2sport")):
-            mu_f, sd_f = agg("full", k)
-            mu_x, sd_x = agg(name, k)
-            delta = mu_x - mu_f
-            pooled = ((sd_f ** 2 + sd_x ** 2) / 2) ** 0.5
-            tag = "?" if len(seeds) < 2 else ("*" if abs(delta) > 2 * pooled else "ns")
-            parts.append(f"{label}={delta:+.3f}(+-{pooled:.3f}){tag}")
+            diffs = [x[k] - f[k] for x, f in zip(runs[name], runs["full"], strict=True)]
+            mean_d = statistics.mean(diffs)
+            if len(diffs) > 1:
+                sem = statistics.stdev(diffs) / (len(diffs) ** 0.5)
+                tag = "*" if abs(mean_d) > 2 * sem else "ns"
+            else:
+                sem, tag = 0.0, "?"
+            n_pos = sum(1 for d in diffs if d > 0)
+            parts.append(f"{label}={mean_d:+.3f}(sem {sem:.3f}){tag}[{n_pos}/{len(diffs)}+]")
         print(f"  drop {name:10s}: " + "  ".join(parts))
-    print("  * exceeds 2x pooled sd    ns = not distinguishable from seed noise")
+    print("  * exceeds 2x sd-of-mean of the PER-SEED differences   ns = not distinguishable")
+    print("  [k/n+] = how many seeds moved in the same direction; a real effect should be "
+          "consistent,\n  not just large on average.")
     return 0
 
 
