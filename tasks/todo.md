@@ -108,3 +108,11 @@
 - [x] 7.7g **Invariant checker for the draft-value artifacts** (`check_draft_value_invariants.py`). The table took three wrong versions and every one looked publishable — each was caught by an INTERNAL CONTRADICTION, never by an implausible value, and each time by attention rather than by a check. Five assertions, three of them encoding bugs that actually shipped: **I1** survivor count > its own denominator (25 drafted / 28 survivors, the pool mismatch); **I2** low-survival bucket reporting ~0% never-played (survivor-only denominator, truth was 71.6%); **I3** negative floored EV (unfloored VOR let a wasted 7th-rounder outrank a franchise QB); **I4** drafted counts disagreeing across artifacts that read the same CSV; **I5** a later round worth more than an earlier one. NON-VACUITY: each of the five was reproduced in the artifact and confirmed to fire; restored clean.
 
 **The transferable lesson, since it recurred all session:** face validity passed all three wrong tables. What worked was asking *can these numbers be true TOGETHER* — the same check that caught `skills.json` order-alignment and the `data/` gitignore. Prefer cross-consistency assertions over plausibility review.
+
+- [x] 7.7h **7.7b CLOSED — and the cross-sport finding is OVERTURNED.** Built hoops delivery as fantasy VOR to MATCH gridiron's construct (`build_hoops_vor_draft_value.py`): same composite scoring, floored VOR, 5-year window, `1 - log1p(pick)/log1p(MAX_PICK)` expectation, denominator from `draft_history.json` (7,383 players, not survivor-biased `pedigree.json`). Matched result, 10,000 bootstrap resamples:
+
+        gridiron n=1903 r=+0.3950 CI [+0.3463, +0.4433]
+        hoops    n=1508 r=+0.4534 CI [+0.3982, +0.5047]
+        gap gridiron - hoops = -0.0584  CI [-0.1296, +0.0156]  DOES NOT exclude zero
+
+    **The +0.1638 "football draft position is more predictive" result does not survive construct matching.** It reverses in direction and loses significance. hoops moved +0.2598 -> +0.4534 purely from replacing `impact` percentile with fantasy VOR — the construct was doing almost all the work. 7.7b was flagged as the binding caveat and it turned out to BE the finding.

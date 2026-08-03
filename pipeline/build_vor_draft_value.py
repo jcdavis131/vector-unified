@@ -58,6 +58,7 @@ import json
 import re
 import statistics
 import unicodedata
+from math import log1p
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -156,6 +157,7 @@ def main() -> int:
     # 0.0% in almost every cell when a quarter of late-round picks never play at all.
     # draft_picks.csv is the denominator. Read it directly.
     totals: dict[tuple, list[float]] = collections.defaultdict(list)
+    player_rows: list[dict] = []
     zero_seasons: collections.Counter = collections.Counter()
     seen: set[str] = set()
     with DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as fh:
@@ -185,6 +187,13 @@ def main() -> int:
             if not window:
                 zero_seasons[(pos, b)] += 1
             totals[(pos, b)].append(sum(window))
+            # per-player rows so the MATCHED cross-sport correlation (7.7b) can be
+            # computed on the same construct hoops now uses, instead of comparing
+            # `impact` percentile against fantasy PPR percentile
+            player_rows.append({
+                "name": n, "pos": pos, "overall": pick, "bucket": b, "year": yr,
+                "expect_log": round(max(0.0, 1 - log1p(pick) / log1p(262.0)), 4),
+                "vor_total": round(sum(window), 2), "played": bool(window)})
 
     per = surv["report"]["per_position"]
     rows = []
@@ -229,6 +238,10 @@ def main() -> int:
                     "no multiplication by survival — survival is priced in by including "
                     "the players who never played."),
         "draft_year_window": [lo_year, hi_year],
+        "corr_expectation_vor": round(
+            statistics.correlation([r["expect_log"] for r in player_rows],
+                                   [r["vor_total"] for r in player_rows]), 4)
+        if len(player_rows) > 2 else None,
         "cells": rows,
         "ranking_ev_vor": [f"{r['pos']} {r['bucket']}" for r in by_ev],
         "now_cross_position_comparable": (
@@ -238,7 +251,8 @@ def main() -> int:
         "still_true": ("Fantasy PPR remains a FANTASY delivery measure — blind to blocking, "
                        "route running and all defence. VOR fixes the units, not the sport."),
     }
-    OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps({**report, "players": player_rows}, indent=2,
+                              ensure_ascii=False) + "\n", encoding="utf-8")
 
     if args.json:
         print(json.dumps(report, indent=2))
