@@ -324,13 +324,21 @@ def main():
                               "role_ok": bool(role_drop <= args.revert_threshold),
                               "pos_ok": bool(pos_drop <= args.revert_threshold)}
         g1_ok = all(v["role_ok"] and v["pos_ok"] for v in verdict.values())
-        g2_pass = best_g2 <= (1.0 / 3.0 + 0.10)  # chance + 0.10
+        # MAJORITY, NOT 1/3. `chance + 0.10` = 0.4333 was UNREACHABLE: the sports are
+        # 12,966 / 5,323 / 2,430, a majority predictor scores 0.6258, and a perfectly
+        # sport-invariant z gives a classifier nothing but the class prior. Stage 2 was
+        # reported SHIPPABLE=False against a bar no embedding could clear. See 7.20.
+        _sid = M["sport_id"].cpu().numpy()
+        _majority = float(np.bincount(_sid).max()) / len(_sid)
+        g2_pass = best_g2 <= (_majority + 0.10)
         print(f"\n=== Stage 2 verdict (best epoch {best_epoch}) ===")
         for sport in SPORTS:
             v = verdict[sport]
             print(f"  {sport:9s} role_drop={v['role_drop']:+.4f} pos_drop={v['pos_drop']:+.4f} "
                   f"[{'OK' if v['role_ok'] and v['pos_ok'] else 'REGRESSED'}]")
-        print(f"  G2={best_g2:.4f} (target<={1/3+0.10:.2f}) -> {'PASS' if g2_pass else 'FAIL'}  "
+        print(f"  G2={best_g2:.4f} (target<={_majority + 0.10:.4f} = majority "
+              f"{_majority:.4f} + 0.10; SUPERSEDED bar was {1/3+0.10:.4f}) -> "
+              f"{'PASS' if g2_pass else 'FAIL'}  "
               f"G1 -> {'PASS' if g1_ok else 'FAIL'}")
         print(f"  SHIPPABLE: {bool(g1_ok and g2_pass)} "
               f"(G1 {'ok' if g1_ok else 'regressed'} AND G2 {'pass' if g2_pass else 'miss'})")

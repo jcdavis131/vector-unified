@@ -31,6 +31,11 @@ from eval_unified import knn5_acc
 from load_live_encoders import load_live, DEVICE_DEF
 from load_encoders import load_all
 
+# index -> cross-sport archetype LABEL ("A0", "A1", ...). Needed because
+# analogy_triples.json's role_intuitive is a label and arch_id is an index; comparing them
+# directly is always False. See the note at the `im =` line.
+ARCH_NAMES = json.loads((DATA / "unified_meta.json").read_text(encoding="utf-8"))["arch_names"]
+
 ASSETS = Path(__file__).resolve().parents[1] / "assets"
 
 
@@ -91,11 +96,26 @@ def g2(z_full, M):
     clf.fit(Xtr, ytr)
     acc = float(clf.score(Xte, yte))
     rank = float(effective_rank(torch.tensor(z_full)))
+    # THE OLD TARGET WAS NOT MERELY WRONG, IT WAS UNREACHABLE. `g2_pass` was
+    # `acc <= 1/3 + 0.10` = 0.4333, but the sports are 12,966 / 5,323 / 2,430 and a
+    # classifier that always answers "hoops" scores 0.6258. A perfectly sport-invariant z
+    # gives the classifier nothing but the class prior, so 0.6258 is the FLOOR of
+    # achievable accuracy — scoring 0.4333 would require z to actively mislead. Stage 2 has
+    # been reported SHIPPABLE=False since Phase 4 against a bar no embedding could clear.
+    # Confirmed empirically in 7.16: a globally shuffled z scored 0.6257.
+    majority = float(np.bincount(sid).max()) / len(sid)
     return {"sport_acc": round(acc, 4), "chance": round(1.0 / 3.0, 4),
             "delta_vs_chance": round(acc - 1.0 / 3.0, 4),
+            "majority_class_share": round(majority, 4),
+            "delta_vs_majority": round(acc - majority, 4),
+            "g2_target": round(majority + 0.10, 4),
+            "SUPERSEDED_g2_target_chance_plus_10": round(1.0 / 3.0 + 0.10, 4),
             "effective_rank": round(rank, 1),
             "rank_nondeg_pass": bool(rank >= 12),
-            "g2_pass": bool(acc <= 1.0 / 3.0 + 0.10)}
+            "rank_note": ("Detects collapse only. Effective rank is permutation-invariant, "
+                          "so no shuffle null can test it, and random gaussian rows score "
+                          "HIGHER (64.0) than the real embedding (12.4). See 7.19."),
+            "g2_pass": bool(acc <= majority + 0.10)}
 
 
 def g3(z_full, M, sample=6000):
@@ -140,7 +160,13 @@ def g4_analogy(z_full, M, records_by_sport):
         in_top10 = rank_of_b is not None and rank_of_b < 10
         a_arch = int(arch[a]); b_arch = int(arch[b_rows[0]])
         agree = a_arch == b_arch
-        im = t["role_intuitive"] == a_arch
+        # TYPE MISMATCH, and it made this metric structurally zero. role_intuitive is a
+        # STRING label like "A0"; a_arch is an int index. `"A0" == 0` is always False, so
+        # intuition_a_match has reported exactly 0.0000 in every Stage 2 report ever
+        # written — a hard zero that reads as "the model never matches human intuition"
+        # when it means "these two values were never comparable". The same quantity in
+        # analogy_triples_eval.py, which compares string to string, is 0.825.
+        im = str(t["role_intuitive"]) == str(ARCH_NAMES[a_arch])
         if in_top10: hits += 1
         if agree: arch_agree += 1
         if im: intu_a += 1
@@ -149,12 +175,39 @@ def g4_analogy(z_full, M, records_by_sport):
         rows.append({"a": t["a"], "b": t["b"], "role_intuitive": t["role_intuitive"],
                      "a_arch": a_arch, "b_arch": b_arch, "arch_agree": bool(agree),
                      "intuition_matches_a_arch": bool(im),
-                     "b_best_rank": rank_of_b, "in_top10": bool(in_top10)})
-    random_rank = (n - 1) / 2.0
+                     "b_best_rank": rank_of_b, "in_top10": bool(in_top10),
+                     "_a_sport": sa, "_n_b_rows": len(b_rows)})
+    # RANDOM-RANK BASELINE, CORRECTED — two errors in one line. `(n - 1) / 2.0` used the
+    # FULL pool when the ranking is over cross-sport rows only, and it treated B as a
+    # single row when b_best_rank is the MINIMUM over all of B's rows. E[min of k uniform
+    # draws from N] is (N-k)/(k+1). See analogy_triples_eval.py (7.18), where the same
+    # defect turned "3.23x better than random" into 0.98x.
+    #
+    # DIRECTION ALSO FIXED. This file computed mean/random and analogy_triples_eval.py
+    # computes random/mean, under the SAME field name `better_than_random_ratio`, so the
+    # two reports disagreed on whether higher is better. Higher-is-better wins, matching
+    # the name.
+    exp_ranks = []
+    for r in rows:
+        if r.get("b_best_rank") is None:
+            continue
+        pool = int((sport_names != r["_a_sport"]).sum())
+        k = r["_n_b_rows"]
+        exp_ranks.append((pool - k) / (k + 1))
+    random_rank = float(np.mean(exp_ranks)) if exp_ranks else None
+    mean_rank = float(np.mean(ranks)) if ranks else None
+    btr = (random_rank / mean_rank) if (random_rank and mean_rank) else None
+    for r in rows:
+        r.pop("_a_sport", None)
+        r.pop("_n_b_rows", None)
     return {"n": nb, "arch_agreement": round(arch_agree / max(1, nb), 4),
             "retrieval_top10_hit_rate": round(hits / max(1, nb), 4),
-            "mean_b_rank": round(float(np.mean(ranks)), 1) if ranks else None,
-            "better_than_random_ratio": round(float(np.mean(ranks)) / random_rank, 3) if ranks else None,
+            "mean_b_rank": round(mean_rank, 1) if mean_rank else None,
+            "random_expected_rank": round(random_rank, 1) if random_rank else None,
+            "better_than_random_ratio": round(btr, 3) if btr else None,
+            "ratio_note": ("random/mean, so HIGHER is better and 1.0 is chance. This file "
+                           "previously computed mean/random under the same field name, "
+                           "which inverted it relative to analogy_triples_eval.py."),
             "intuition_a_match": round(intu_a / max(1, nb), 4),
             "rows": rows}
 
