@@ -153,7 +153,12 @@ def build(women: bool) -> list[dict]:
                         "location": str(r[i["Location"]]).strip() if "Location" in i else "",
                         "surface": str(r[i["Surface"]]).strip() if "Surface" in i else "",
                         "court": str(r[i["Court"]]).strip() if "Court" in i else "",
-                        "series": str(r[i["Series"]]).strip() if "Series" in i else "",
+                        # ATP files carry `Series`, WTA files carry `Tier`. Reading only
+                        # `Series` left all 33,096 WTA rows with an empty tier — a silent
+                        # half-corpus gap that a per-tour build would have hidden, since
+                        # each tour's own file looks complete on its own.
+                        "series": (str(r[i["Series"]]).strip() if "Series" in i
+                                   else str(r[i["Tier"]]).strip() if "Tier" in i else ""),
                         "matches": 0, "wins": 0, "round_reached": 0,
                         "sets_for": 0.0, "sets_against": 0.0,
                         "games_for": 0.0, "games_against": 0.0,
