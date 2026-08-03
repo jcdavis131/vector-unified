@@ -63,6 +63,8 @@ EXPECT = {
     "Q4830453": "business",
     "Q783794": "company",
     "Q5": "human",
+    # occupation, used to scope the pitch name-resolution query (7.9)
+    "Q937857": "association football player",
 }
 
 # QIDs that must NEVER appear as an operative literal, with the reason. A registry that

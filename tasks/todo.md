@@ -191,3 +191,19 @@
         gap gridiron - hoops = -0.0584  CI [-0.1296, +0.0156]  DOES NOT exclude zero
 
     **The +0.1638 "football draft position is more predictive" result does not survive construct matching.** It reverses in direction and loses significance. hoops moved +0.2598 -> +0.4534 purely from replacing `impact` percentile with fantasy VOR — the construct was doing almost all the work. 7.7b was flagged as the binding caveat and it turned out to BE the finding.
+
+- [x] 7.33 **CORAL and VICReg RESOLVED at 10 paired seeds. Neither earns its keep, and CORAL is detectably counterproductive on its own target.** `full` + `no_coral` + `no_vicreg`, seeds 7-16, 30 trainings, paired rule.
+
+        drop no_coral  : dG3=+0.002(sem 0.001)*[9/10+]  dG4=-0.001(sem 0.001)ns[2/10+]  dG2sport=+0.001(sem 0.007)ns[7/10+]
+        drop no_vicreg : dG3=+0.002(sem 0.001)ns[7/10+] dG4=-0.001(sem 0.001)ns[4/10+]  dG2sport=-0.011(sem 0.007)ns[4/10+]
+        dRANK          : no_coral -0.030(sem 0.073)ns[3/10+]   no_vicreg -0.070(sem 0.067)ns[2/10+]
+
+    **CORAL's target gate is G3, and dropping it makes G3 slightly BETTER — consistently.** dG3 `+0.002` clears 2x sem with 9 of 10 seeds agreeing, so the effect is real; it is also 0.3% of a 0.674 baseline, so it is negligible in size and in the wrong direction. Statistically detectable, practically nil, and pointed the opposite way from its purpose. **VICReg's stated job is preventing collapse, measured by effective rank — dRANK is `-0.070 (sem 0.067) ns` with 2 of 10 seeds positive.** It does not move the quantity it exists to protect. Everything else it touches is `ns` too. **Final ablation verdict across all five, all now at adequate power:**
+
+        SupCon    LOAD-BEARING   dG3 -0.534*  dG4 -0.758*   (drop it and cross-sport coherence collapses)
+        GRL       LOAD-BEARING   dG2sport +0.045*  5.6 sigma, 9/10 seeds
+        CORAL     COUNTERPRODUCTIVE-BUT-NEGLIGIBLE  dG3 +0.002*, wrong direction
+        VICReg    INERT          nothing distinguishable, including its own anti-collapse target
+        task      LOAD-BEARING   dG3 -0.536*  dG4 -0.761*
+
+    Two of five alignment losses justify their place. **Removing CORAL and VICReg is now an evidenced simplification rather than a guess — but it is a training-config change to a shipped model and therefore the operator's call, not a session's.** Note what it took to get here: GRL read `ns` at 3 unpaired seeds, one thousandth from being retired on a test that discarded the pairing. The same discipline that saved GRL is what condemns these two.
