@@ -1,5 +1,33 @@
 #!/usr/bin/env python3
-"""Is the hoops/gridiron difference in draft-slot predictiveness real, or noise?
+"""SUPERSEDED — hoops/gridiron draft-slot comparison on MISMATCHED constructs.
+
+    !! The headline result of this file has been REFUTED. Read this block first. !!
+
+It answered "is the difference real or noise" and got "real": +0.1638, CI excluding zero,
+surviving position stratification. It could not answer the question stacked behind that
+one — whether the two numbers measure the same thing — and they do not. hoops delivery was
+`impact` percentile, a curated composite of on-court value; gridiron was fantasy PPR,
+blind to blocking, route running and all defence.
+
+Rebuilt on MATCHED constructs (build_hoops_vor_draft_value.py + build_vor_draft_value.py:
+fantasy VOR, floored at zero, summed over a 5-year window, identical log-expectation
+transform):
+
+    gridiron  n=1903  r=+0.3950  CI [+0.3463, +0.4433]
+    hoops     n=1508  r=+0.4534  CI [+0.3982, +0.5047]
+    gap       -0.0584            CI [-0.1296, +0.0156]   DOES NOT exclude zero
+
+The difference REVERSES DIRECTION and loses significance. hoops moved +0.2598 -> +0.4534
+on the construct change alone.
+
+KEPT, not deleted, for two reasons. The per-position stratification below is still sound
+and is what led to the QB thread (7.7c/7.7d), which stands. And a refuted result with its
+refutation attached teaches more than a deleted file: the caveat this script recorded
+about its own construct mismatch turned out to BE the finding.
+
+--- original docstring follows ---
+
+Is the hoops/gridiron difference in draft-slot predictiveness real, or noise?
 
 Solo personal project, no connection to employer, built with public/free-tier only
 
@@ -182,8 +210,21 @@ def main() -> int:
         },
         "resamples": RESAMPLES,
         "seed": SEED,
-        "verdict": ("gridiron's draft slot is MORE predictive; the comparability caveat "
-                    "below is now the binding limitation"
+        "SUPERSEDED": (
+            "THIS COMPARISON IS REFUTED. Do not quote its verdict. It compares hoops "
+            "`impact` percentile against gridiron fantasy PPR percentile — different "
+            "constructs, which was logged as the binding caveat (7.7b) and turned out to "
+            "be the whole finding. Rebuilt on MATCHED constructs (fantasy VOR, floored, "
+            "5-year window, identical log-expectation transform): gridiron +0.3950 CI "
+            "[+0.3463, +0.4433], hoops +0.4534 CI [+0.3982, +0.5047], gap -0.0584 CI "
+            "[-0.1296, +0.0156] which DOES NOT exclude zero. The difference reverses "
+            "direction and loses significance. See data/hoops_vor_draft_value.json and "
+            "data/vor_draft_value.json. This file is kept because the position "
+            "stratification below is still sound and because the refutation is worth "
+            "more than the result it replaced."),
+        "verdict": ("SUPERSEDED — on matched constructs the gap is -0.0584 with a CI "
+                    "spanning zero. The unmatched difference below is a construct "
+                    "artefact, not a fact about the two sports."
                     if separated else
                     "CIs overlap — no difference to interpret, and the comparability "
                     "question does not arise"),
