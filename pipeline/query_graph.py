@@ -900,10 +900,140 @@ def positive_control() -> bool:
     return ok
 
 
+def q_company_archetype() -> None:
+    """Q8: within sport, does an org's archetype mix differ by whether a COMPANY named
+    its venue?
+
+    Pre-registered before running, because the tempting version of this analysis is wrong
+    in a way that produces a significant result almost automatically.
+
+    THE UNIT IS THE ORG, NOT THE ATHLETE. The company edge is a property of the club:
+    every player on the Crypto.com Arena roster shares the same naming-rights company.
+    5,248 athletes reach a company, but that reach varies across only ~142 orgs, so
+    athlete-level rows are ~37x replicated within cluster. Testing at athlete level would
+    treat 5,248 correlated rows as independent and manufacture significance out of
+    roster size. This aggregates to one archetype distribution per org first.
+
+    STRATIFIED BY SPORT, for the reason Q1 had to learn: US venues carry naming rights
+    (AT&T, Bank of America) where European clubs carry shirt sponsors instead, and
+    archetype mixes also differ by sport. An unstratified test would recover "gridiron vs
+    pitch" and call it a company effect.
+
+    THE CONTRAST IS BINARY ON PURPOSE. Industry would be the interesting split, but P452
+    is fragmented into 83 values across 103 companies and 93 companies have none at all
+    — that is a power problem dressed as a richness problem. Naming rights is the single
+    cleanest "this club is sponsored" bit available, and it is the one a sponsorship
+    product would actually key on.
+
+    Statistic: L1 distance between the archetype distribution of named-venue orgs and
+    non-named orgs, within sport, averaged over sports with enough orgs on both sides.
+    Null: shuffle the has-company label among orgs WITHIN sport, same statistic.
+    """
+    comp_path = ROOT / "data" / "orgs" / "company_entities.json"
+    if not comp_path.exists():
+        print("\nQ8  no company_entities.json — run build_company_entities.py first.")
+        return
+    comp = json.loads(comp_path.read_text(encoding="utf-8"))
+    players = json.loads(UNIFIED.read_text(encoding="utf-8"))["players"]
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    orgs = {o["org_id"]: o for o in doc["orgs"]}
+
+    named_keys = {e["org_key"] for e in comp["edges"]
+                  if e["rel"] == "named_after" and e.get("org_key")}
+    probed_keys = {e["org_key"] for e in comp["edges"] if e.get("org_key")}
+
+    arch_of = {(norm_name(p["name"]), p["sport"], str(p["season"])): str(p["cross_arch"])
+               for p in players if p.get("cross_arch") is not None}
+
+    # org key -> archetype counts, aggregated across seasons
+    per_org: dict[tuple, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for e in doc["edges"]:
+        oid = e.get("org_id")
+        if not oid or oid not in orgs:
+            continue
+        o = orgs[oid]
+        key = f"{o.get('sport')}::{o.get('team')}"
+        if key not in probed_keys:
+            continue  # only orgs we actually probed can be scored either way
+        a = arch_of.get((e["norm"], e["sport"], str(e["season"])))
+        if a:
+            per_org[(o["sport"], key)][a] += 1
+
+    print("\nQ8  Within sport, does archetype mix differ where a COMPANY named the venue?")
+    print(f"    orgs probed: {len(probed_keys)}   with archetyped players: {len(per_org)}")
+    print("    unit = ORG (the company edge is a club property; athlete rows are clustered)\n")
+
+    MIN_ORGS = 8
+    by_sport: dict[str, list[tuple[bool, dict[str, int]]]] = defaultdict(list)
+    for (sport, key), counts in per_org.items():
+        if sum(counts.values()) >= 5:      # an org with a real roster, not a stub
+            by_sport[sport].append((key in named_keys, counts))
+
+    def l1(group: list[tuple[bool, dict[str, int]]]) -> float | None:
+        yes = [c for f, c in group if f]
+        no = [c for f, c in group if not f]
+        if len(yes) < MIN_ORGS or len(no) < MIN_ORGS:
+            return None
+        def dist(cs):
+            tot: dict[str, int] = defaultdict(int)
+            for c in cs:
+                for a, n in c.items():
+                    tot[a] += n
+            s = sum(tot.values())
+            return {a: n / s for a, n in tot.items()}
+        dy, dn = dist(yes), dist(no)
+        keys = set(dy) | set(dn)
+        return sum(abs(dy.get(k, 0.0) - dn.get(k, 0.0)) for k in keys)
+
+    rng = random.Random(SEED)
+    reported = 0
+    for sport in sorted(by_sport):
+        group = by_sport[sport]
+        yes = sum(1 for f, _ in group if f)
+        obs = l1(group)
+        if obs is None:
+            print(f"    {sport:9} orgs {len(group):3} (named {yes:3}, other {len(group)-yes:3})"
+                  f"  UNDERPOWERED — need >={MIN_ORGS} on both sides. Not a null.")
+            continue
+        flags = [f for f, _ in group]
+        counts = [c for _, c in group]
+        null = []
+        for _ in range(SHUFFLES):
+            rng.shuffle(flags)
+            null.append(l1(list(zip(flags, counts, strict=True))) or 0.0)
+        null.sort()
+        p95 = null[int(0.95 * len(null))]
+        verdict = "DIFFERS" if obs > p95 else "no finding"
+        print(f"    {sport:9} orgs {len(group):3} (named {yes:3}, other {len(group)-yes:3})"
+              f"  L1 {obs:.3f}  shuffle p95 {p95:.3f}  -> {verdict}")
+        reported += 1
+
+    # THE STRUCTURAL FACT IS THE OUTPUT HERE, not the test. Printing per-sport rates
+    # explicitly because "UNDERPOWERED" reads as a shrug, and the reason for it is a
+    # finding a sponsorship product would key on directly.
+    print("\n    named-venue rate by sport (why two sports could not be tested):")
+    for sport in sorted(by_sport):
+        g = by_sport[sport]
+        yes = sum(1 for f, _ in g if f)
+        print(f"      {sport:9} {yes:3}/{len(g):3} = {100.0 * yes / len(g):5.1f}%")
+    print("      Corporate venue naming is effectively TABLE STAKES in US pro sport and")
+    print("      rare in European football. A binary has-a-sponsor contrast has almost no")
+    print("      variance to work with in gridiron/hoops — the useful split there is WHICH")
+    print("      company, not WHETHER, and P452 is too sparse (52.6%) to carry it yet.")
+
+    if reported == 0:
+        print("\n    Nothing was powered enough to test. That is a data statement, not a")
+        print("    null: the company edge varies across too few orgs per sport once the")
+        print("    athlete-level replication is removed.")
+    else:
+        print(f"\n    ({SHUFFLES} permutations, seed {SEED}; labels shuffled WITHIN sport)")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--q", default="all",
-                    choices=["all", "archetype", "roster", "salary", "league", "pay", "band", "quality"])
+                    choices=["all", "archetype", "roster", "salary", "league", "pay", "band",
+                             "quality", "company"])
     args = ap.parse_args()
 
     positive_control()
@@ -930,6 +1060,8 @@ def main() -> int:
         q_pay_within_usage_band()
     if args.q in ("all", "quality"):
         q_pay_within_quality_band()
+    if args.q in ("all", "company"):
+        q_company_archetype()
     return 0
 
 
