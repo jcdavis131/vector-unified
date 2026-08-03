@@ -225,6 +225,13 @@ def main() -> int:
             "cross-sport finding twice. Any T0/T1-style pitch axis built on age must be "
             "labelled WITHIN-PITCH and must not be compared against the hoops or gridiron "
             "draft axes."),
+        # Per-name resolution, persisted so a downstream axis joins THIS table rather than
+        # re-running the query and re-deriving the ambiguity rules. `ambiguous` names are
+        # carried explicitly with their candidate count so a consumer cannot mistake
+        # "not resolved" for "not looked up".
+        "resolved": {nm: {"qid": f["qid"], "dob": f["dob"], "clubs": f["clubs"]}
+                     for nm, f in sorted(found.items())},
+        "ambiguous": dict(sorted(ambiguous.items())),
         "rejected_in_advance": {
             "sitelinks / article count": (
                 "7.11 showed Wikidata coverage dominates this kind of signal and 7.12 "
