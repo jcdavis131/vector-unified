@@ -1,4 +1,18 @@
-# Taxonomies — DRAFT for review
+# Taxonomies
+
+**Operator decisions taken 2026-08-03**, and the draft below is updated to match:
+
+1. **Finer sectors.** 14 → **28**, shipped as `data/sector_map.json`. Applied coverage is
+   **127 / 128 business-typed companies (99.2%)**, against the 39.8% the automatic P279*
+   rollup reached. The one holdout is a Wikidata QID with no resolved label, left
+   unassigned rather than guessed.
+2. **Insurance and Crypto stay distinct** from Financial Services. Both are separate
+   sectors below.
+3. **Split the role axis** — long-term correctness over continuity, games and sites to be
+   reconfigured. Section 3 now specifies a two-axis model: **role** (what a player does)
+   and **trajectory** (how the career is going). See §3.1.
+
+
 
 **Status: proposal.** Nothing here is wired into a pipeline yet. Every layer that already
 exists is shown with its MEASURED coverage; the one new layer (sectors) is hand-authored
@@ -103,13 +117,55 @@ cannot be trained on a role only one sport has.
 | A10 | Elite two-way | deferred |
 | A11 | Floor-raising role player | ✅ |
 
-**A6–A9 are a different KIND of category and should eventually be split out.** A0–A5,
-A10 and A11 describe *what a player does*; A6–A9 describe *how a career is going*
-(pedigree vs delivery, rising, declining). Mixing role and trajectory in one axis means a
-player can be both A1 and A8 and the taxonomy cannot express it. Proposal: keep A0–A5,
-A10, A11 as **role**, and promote A6–A9 to a separate **trajectory** axis — which is
-exactly what vector-hoops already models separately as career classes (stable / migrator
-/ drifter / reinvention / late-bloom).
+### 3.1 The split — DECIDED, two axes
+
+A6–A9 were never the same kind of category as the rest. A0–A5, A10 and A11 describe
+*what a player does*; A6–A9 describe *how a career is going*. One axis cannot express
+"volume producer who is also a riser", and every player has both properties at once.
+
+**Axis 1 — ROLE (what the player does), 8 values.** Unchanged IDs, so existing artifacts
+and the shipped game vocabulary keep resolving:
+
+```
+A0 Offensive engine / primary initiator     A3  Defensive anchor / last line
+A1 Volume producer / scoring load           A5  Connector / two-way grinder
+A2 Explosive perimeter creator              A10 Elite two-way
+A4 Defensive disruptor / ball-hawk          A11 Floor-raising role player
+```
+
+A4 stays deferred from the v0 contrastive anchor (pitch-only native members), and A10
+likewise until it has members in two sports — deferral is about *training scope*, not
+about whether the value exists.
+
+**Axis 2 — TRAJECTORY (how the career is going), 4 values**, promoted from A6–A9:
+
+```
+T0 High-pedigree, under-delivering   (was A6)
+T1 Low-pedigree, over-delivering     (was A7)
+T2 Breakout / riser                  (was A8)
+T3 Declining veteran                 (was A9)
+```
+
+**Why renumber rather than keep A6–A9.** Leaving them in the A-space invites exactly the
+mistake the split exists to prevent: a downstream join that treats A8 as mutually
+exclusive with A1. A distinct prefix makes the two axes obviously non-exclusive at a
+glance, and a stale consumer that still asks for "A8" gets a clean key error instead of
+silently reading a role.
+
+**Trajectory is a career-level label; role is a season-level one.** That difference is
+load-bearing: a player has one trajectory over a span and a role per season. Storing them
+in one field forced a single grain onto both.
+
+**This aligns with what vector-hoops already ships.** Its career classes — stable /
+migrator / drifter / reinvention / late-bloom — are a trajectory axis under a different
+name, computed per career from per-season archetypes. The unified trajectory axis should
+be reconciled against those five rather than invented in parallel; that reconciliation is
+open work, not done here.
+
+**Migration cost, stated plainly:** any consumer keying on A6–A9 breaks. The operator has
+accepted that ("do what makes the most sense long-term and we will reconfigure the games
+and sites accordingly"). `archetype_map.json` must carry both axes before anything is
+regenerated, and `archetypes_in_scope_v0` needs splitting into per-axis scope lists.
 
 ### Family ontology (the bridge that makes cross-sport possible)
 
@@ -173,7 +229,50 @@ NAICS / ISIC / SIC / GICS                     0 / 128 = 0.0%
 
 There is no automatic source. A declared map is the honest remaining option.
 
-### Proposed sectors (14)
+### Sectors (28) — SHIPPED as `data/sector_map.json`
+
+Applied: **127 / 128 business-typed companies (99.2%)**, 28 sectors declared and all 28
+used. Reported against 128, never against the 98 that carry an industry value.
+
+| sector | companies | athletes |
+|---|---|---|
+| Financial Services (non-bank) | 22 | 1,898 |
+| Automotive | 10 | 1,002 |
+| Aviation & Air Transport | 7 | 800 |
+| Insurance | 8 | 768 |
+| Banking | 9 | 726 |
+| Sports & Entertainment Holdings | 9 | 591 |
+| Restaurants & Food Service | 3 | 576 |
+| Software & IT Services | 6 | 536 |
+| Telecommunications | 6 | 516 |
+| Mortgage & Lending | 2 | 507 |
+| Logistics & Delivery | 2 | 502 |
+| Crypto & Digital Assets | 3 | 462 |
+| Retail & Consumer Goods | 11 | 431 |
+| Personal Care & Cosmetics | 2 | 316 |
+| Real Estate & Construction | 2 | 267 |
+| Industrial, Chemicals & Manufacturing | 4 | 255 |
+| Rail & Ground Transport | 2 | 250 |
+| Staffing & HR Services | 4 | 234 |
+| Gambling & Betting | 5 | 233 |
+| Energy, Petroleum & Utilities | 5 | 149 |
+| Investment & Asset Management | 4 | 144 |
+| Hospitality & Leisure | 3 | 138 |
+| Food & Beverage | 5 | 115 |
+| Computer Hardware & Electronics | 4 | 44 |
+| Media & Broadcasting | 4 | 40 |
+| Video Games & Interactive | 2 | 21 |
+| Cybersecurity | 1 | 21 |
+| Internet & Satellite Connectivity | 1 | 5 |
+
+**Do not sum that column.** rows 11,586 vs 4,451 distinct athletes = **2.6x inflation**.
+Excluding `sports_holdings` (a club's own holding entity is not a sponsor): **4,425
+distinct = 71.07% of all athletes**. That second figure is the brand-exposure number.
+
+Fine granularity costs power: six sectors carry one or two companies. Any test split on
+sector must report per-cell n rather than assuming 28 categories grants it.
+
+### Original 14-sector proposal (superseded, kept for the reasoning)
 
 Chosen as the axis a sponsorship conversation actually happens along — a rights-holder
 sells to categories, and category exclusivity is how deals are priced. Ordered by
