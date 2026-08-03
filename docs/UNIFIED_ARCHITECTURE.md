@@ -216,6 +216,13 @@ reversal pushes the encoder to make `z` *unpredictable by sport*.
 - It is balanced against Pillar 3a (per-sort tasks) and the sport token (Pillar 2): we do **not**
   want sport accuracy to hit zero (that would mean collapse / lost signal). Target: sport-classifier
   accuracy clearly below a no-debiasing baseline, but not at chance with a dead embedding.
+  **Note 2026-08-03 (7.20): this framing is the correct one and survived the audit** — it
+  compares against a no-debiasing CONTROL rather than against a constant, which is what
+  `eval_unified.py --baseline-sport-acc` implements and why that arm was immune to the
+  baseline error. Read "at chance" as **the majority-class floor of 0.6258**, not 1/3: the
+  sports are 12,966 / 5,323 / 2,430 and a shuffled `z` scores 0.6257. The `<=0.433` targets
+  that appear in `STAGE2_PLAN.md` and `SPEC.md` came from the 1/3 reading and were
+  unreachable; see `docs/SPEC.md` § CORRECTIONS 2026-08-03.
   Monitor **effective rank / participation ratio of `z`** every epoch — collapse shows up as
   plummeting rank before it shows up in losses.
 

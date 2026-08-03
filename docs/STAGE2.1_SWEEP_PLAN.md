@@ -63,6 +63,16 @@ cheap sports show G2 dropping toward target without G1 loss.
 - **Best checkpoint:** lowest G2 among epochs with rank ≥ 12 AND G1 within
   threshold (recorded, not blocking the save — shippability is a post-hoc
   verdict, see `train_stage2.py`).
+
+> **SUPERSEDED 2026-08-03 (7.20).** Every `chance + 0.10` / `<=0.433` target in this
+> document is unreachable. The sports are 12,966 / 5,323 / 2,430, so a majority
+> predictor scores **0.6258** and a globally shuffled `z` — carrying no sport
+> information at all — scored **0.6257**. A perfectly sport-invariant `z` gives a
+> classifier nothing but the class prior, so 0.6258 is the FLOOR of achievable
+> accuracy and 0.433 would require `z` to actively mislead. Corrected target is
+> **majority + 0.10 = 0.7258**. Stage 2 scores 0.6836 and PASSES. See `docs/SPEC.md`
+> § CORRECTIONS 2026-08-03.
+
 - **Shippable** = G2 ≤ 0.43 (chance + 0.10) AND G1 holds for all 3 AND
   `load_live_encoders.py` smoke still cos ≥ 0.999 for all 3 at the saved
   encoder states. Only then does `export_unified.py` refresh `unified.json`.

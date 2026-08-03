@@ -211,6 +211,71 @@ justified (`document-non-action`). Prefer the sport projects' family/tower namin
 
 ---
 
+### CORRECTIONS 2026-08-03 (Phase 7.16–7.24) — four of the numbers above are wrong
+
+Every gate above was audited against nulls and against its own baseline. The **findings**
+all held. Several of the **tests** could not have failed. Superseded values are struck
+rather than overwritten, because a number that changed meaning is more useful than a
+number that quietly changed value.
+
+**§5 G1 — "position 1.0 all" was a mask used as an index.** `pos_mask` is `int64 {0,1}`, so
+`emb[mask]` in `knn5_acc` was integer fancy-indexing: it selected rows 0 and 1, 12,966
+times, and kNN then separated two vectors carrying two labels perfectly, forever. ~~1.0~~
+scored 1.0 on a *globally shuffled* embedding too. True figures, with majority baselines:
+
+| sport | native e_s → z | [base] | pos e_s → z | [base] |
+|---|---|---|---|---|
+| hoops | 0.841 → 0.949 | 0.170 | 0.738 → **0.784** | 0.211 |
+| gridiron | 0.977 → 0.987 | 0.175 | 0.999 → **0.999** | 0.397 |
+| pitch | 0.961 → 0.986 | 0.189 | 0.893 → **0.879** | 0.437 |
+
+**Pitch position is the one place z is worse than e_s (−1.4pp)** — invisible at 1.0 vs 1.0.
+Gridiron 0.999 is near-saturated because its 18 features are pass/rush/receiving and the
+four positions have disjoint stat profiles: a property of the data, not an achievement.
+
+**§6 G2 — the target was not merely wrong, it was UNREACHABLE.** ~~≤0.433 (chance + 0.10)~~
+assumed balanced classes. The sports are 12,966 / 5,323 / 2,430, so a majority predictor
+scores **0.6258**, and a globally shuffled z — carrying no sport information at all —
+scored **0.6257**. A perfectly sport-invariant z gives a classifier nothing but the class
+prior, so 0.6258 is the FLOOR of achievable accuracy; 0.433 would require z to actively
+mislead. Corrected target **≤0.7258**. Stage 1 leakage is **+0.130 over majority**, not
++0.422 over uniform. `STAGE2_PLAN.md` §184.4 already asked whether "G2≤0.433 is the right
+target" — it was not, and the reason is arithmetic rather than modelling.
+
+**§6 G2 rank — untestable, and it detects only collapse.** Effective rank is
+permutation-invariant: both shuffle nulls score 12.4, exactly the real value, and random
+gaussian rows score *higher* (64.0). A high rank is not evidence of quality and
+`rank_nondeg_pass` must never be quoted as if it were. The two collapsed ablation configs
+carry the highest ranks in the table (19.6, 18.8 against 12.8).
+
+**§7 G3 — ~~silhouette > 0~~ was a bare inequality, and the separation test was vacuous.**
+`within > between` holds on a null roughly half the time by construction and was measured
+up to **+0.0440** across 50 within-sport shuffles with archetype labels randomised. Real
+separation is +0.8448, so the finding was never in doubt — the test was. Both now carry
+floors calibrated against the measured nulls (`SIL_FLOOR`, `SEP_FLOOR` = 0.05).
+
+**§8 G4 — the 0.60 bar had no baseline; it turns out to be a real bar.** Random chance that
+an other-sport neighbour shares the archetype is **0.1712** given the actual archetype mix.
+Real 0.9401 (lift +0.769), and all three nulls land exactly on 0.1712 — which validates the
+baseline and the nulls against each other. The ~~0.978~~ figure predates the checkpoint in
+use; current `unified_best.pt` gives 0.9401 (hoops 0.933, gridiron 0.959, pitch 0.935).
+
+**Curated-triple retrieval: claim withdrawn.** The "3.23× better than random" salvage for
+the 0.000 top-10 hit-rate used `pool / 2` as the baseline, but `b_best_rank` is the MINIMUM
+over all of B's rows. E[min of k draws from N] = (N−k)/(k+1). Corrected: **0.98×** —
+indistinguishable from random, if anything slightly worse. Arch-agreement survives: **0.650
+vs a computed 0.162 baseline**, lift +0.488.
+
+**§155 Stage 2 — `SHIPPABLE=False` was against the unreachable bar.** Re-scored: sport_acc
+0.6836 ≤ 0.7258 → **G2 PASS**, G1 z beats e_s in all three sports, G3 0.7339,
+**`shippable=True`**. Read it weakly: `delta_vs_majority` is **+0.0578**, so sport is still
+partly recoverable. Stage 2 roughly halves Stage 1's +0.130 leakage; it does not achieve
+invariance, and the gate it clears only asks for "within 10 points of the floor".
+**NOTHING HAS BEEN PROMOTED** — `assets/` and `unified_best.pt` remain Stage 1 v0.1. That
+call is the operator's.
+
+---
+
 ## 8. Non-goals (this pass)
 
 - No new data ingestion beyond existing pipelines + cached StatsBomb.
