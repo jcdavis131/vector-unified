@@ -30,8 +30,10 @@ VOR decile and compute coverage per decile:
     USABLE if the ratio is < 2x — coverage is broad enough that a residual means something.
     Between 2x and 5x is reported as PARTIAL and neither claim is made.
 
-Hoops is the test bed because it carries the most coverage (333 athletes). Gridiron cannot
-be tested at all and the reason is itself the finding — see the report.
+Hoops is the test bed because it carries by far the most coverage; gridiron and pitch are
+too thin for a ten-way split. Exact per-sport counts are NOT repeated here — they move
+whenever the pull is re-run, and a stale number in a docstring next to a live one in the
+output is a defect this file has already had once (see `_gridiron_note`).
 
     python pipeline/probe_market_layer_coverage.py
 """
@@ -158,13 +160,18 @@ def main() -> int:
         }
 
     ap_path = MATCHED["award_prestige"]
-    prestige: dict[str, float] = {}
+    prestige: dict[tuple[str, str], float] = {}
     if ap_path.exists():
         d = json.loads(ap_path.read_text(encoding="utf-8"))
         per = collections.Counter()
         for v in d.values():
             per[v.get("sport", "?")] += 1
-            prestige[norm_name(v.get("name", ""))] = float(v.get("AWARD_PRESTIGE") or 0.0)
+            # KEYED BY (sport, name). A bare name key let gridiron's Chris Johnson mark
+            # hoops' Chris Johnson as covered — one collision here, but it is the same
+            # unscoped cross-sport join that produced 17/17 false matches earlier in this
+            # phase (NFL Matt Ryan -> NBA Matt Ryan). Scope it whether or not it bites.
+            prestige[(v.get("sport", "?"), norm_name(v.get("name", "")))] = float(
+                v.get("AWARD_PRESTIGE") or 0.0)
         vals = [float(v.get("AWARD_PRESTIGE") or 0.0) for v in d.values()]
         nz_per = collections.Counter(v.get("sport", "?") for v in d.values()
                                      if float(v.get("AWARD_PRESTIGE") or 0.0) > 0)
@@ -227,7 +234,7 @@ def main() -> int:
         buckets = []
         for i in range(DECILES):
             chunk = pool[int(i * size):int((i + 1) * size)]
-            cov = sum(1 for n in chunk if n in prestige)
+            cov = sum(1 for n in chunk if ("hoops", n) in prestige)
             buckets.append({"decile": i + 1, "n": len(chunk), "covered": cov,
                             "pct": round(100.0 * cov / len(chunk), 1),
                             "median_vor": round(statistics.median(vor[n] for n in chunk), 2)})
