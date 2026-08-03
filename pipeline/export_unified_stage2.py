@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
 import numpy as np
 import torch
@@ -117,19 +116,40 @@ def main():
             f"{SPORTS[s]} count mismatch {counts[SPORTS[s]]} vs meta {_meta['coverage'][SPORTS[s]]}"
 
     verdict = ck.get("verdict", {})
+    # G2's target lives in the SHIPPED asset, so a wrong one is read by every downstream
+    # consumer. 0.433 was `1/3 + 0.10`, which assumed balanced sports. They are 12,966 /
+    # 5,323 / 2,430, so a majority predictor scores 0.6258 and a globally shuffled z —
+    # carrying no sport information at all — scored 0.6257. A perfectly sport-invariant z
+    # gives a classifier nothing but the class prior, making 0.6258 the FLOOR of achievable
+    # accuracy: 0.433 was unreachable, not merely strict. See 7.20 and docs/SPEC.md.
+    sid_np = M["sport_id"].cpu().numpy()
+    majority = float(np.bincount(sid_np).max()) / len(sid_np)
+    g2_target = round(majority + 0.10, 4)
+    g2_acc = ck.get("best_g2")
+    g2_status = ("met" if (g2_acc is not None and g2_acc <= g2_target)
+                 else "not_met" if g2_acc is not None else "unknown")
     out = {
         "built": "2026-07-30",
         "model": "UnifiedTrunk Stage 2.1 (unfrozen encoder alignment, best_epoch="
-                  f"{ck.get('best_epoch')}); G1/G3 hold, G2 sport-invariance is a "
-                  "SOFT TARGET (plateaued, target not met) -- shipped with this "
-                  "caveat per docs/STAGE2.1_SWEEP_PLAN.md §5",
+                  f"{ck.get('best_epoch')})",
         "d_emb": int(z.shape[1]),
         "n_players": int(z.shape[0]),
         "normalization": "per-sport encoders (drifted, unfrozen in Stage 2) -> shared trunk (adapter+era) -> 64-d L2; cross-sport archetype contrastive (SupCon) + task + GRL",
         "g1_verdict": verdict,
-        "g2_sport_acc": ck.get("best_g2"),
-        "g2_target": 0.433,
-        "g2_status": "soft_target_not_met",
+        "g1_pos_caveat": ("pos_drop is 0.0 for every sport because knn5_acc used an int64 "
+                          "mask as an INDEX rather than a mask, scoring exactly 1.0 on both "
+                          "arms and even on a shuffled embedding. Fixed 2026-08-03 (7.21); "
+                          "this field is only meaningful in assets rebuilt after that. True "
+                          "position accuracy is ~0.78 hoops / 0.999 gridiron / 0.88 pitch."),
+        "g2_sport_acc": g2_acc,
+        "g2_target": g2_target,
+        "g2_majority_baseline": round(majority, 4),
+        "g2_delta_vs_majority": (round(g2_acc - majority, 4) if g2_acc is not None else None),
+        "g2_status": g2_status,
+        "g2_note": ("Target is majority + 0.10. The previous 0.433 came from `1/3 + 0.10` "
+                    "and was unreachable on these class sizes. `met` here means 'within 10 "
+                    "points of the achievable floor', which is a weak bar — quote "
+                    "g2_delta_vs_majority, not the status."),
         "sports": [{"id": s, "name": SPORTS[s], "d_native": int(all_sport[SPORTS[s]]["E"].shape[1]),
                     "n": counts[SPORTS[s]]} for s in range(3)],
         "archetypes": [{"id": a["id"], "label": a["label"], "description": a["description"]}
@@ -146,7 +166,8 @@ def main():
 
     print(f"exported assets/unified.json (STAGE 2.1)  players={len(players)}  d_emb={out['d_emb']}")
     print(f"per-sport: {counts}")
-    print(f"G2 sport_acc={ck.get('best_g2')}  target<=0.433  status=soft_target_not_met")
+    print(f"G2 sport_acc={g2_acc}  target<={g2_target} (majority {majority:.4f} + 0.10)  "
+          f"delta_vs_majority={out['g2_delta_vs_majority']}  status={g2_status}")
     print(f"PCA(3) explained variance: {out['proj']['explained_variance']} (sum {sum(out['proj']['explained_variance']):.3f})")
     print("norms: min={:.5f} max={:.5f} (all ~1.0)".format(float(norms.min()), float(norms.max())))
     print("asserts PASS: no NaN, norms=1.0, per-sport counts match meta")

@@ -204,7 +204,7 @@ justified (`document-non-action`). Prefer the sport projects' family/tower namin
 8. **G4:** ≥ 60% of curated cross-sport analogies land in top-k=10 with a sensible role label.
    **✓ PASS — 0.978 via automated cross-sport NN role-coherence (broader than 40 curated triples);
    named panel sensible. Curated `analogy_triples.json` still pending (task 0.3).**
-9. `assets/unified.json` ships (64-d, all sports, one space, PCA(3) map for UI). **✓ — 20,721
+9. `assets/unified.json` ships (64-d, all sports, one space, PCA(3) map for UI). **✓ — 20,719
    players; norms=1.0; per-sport assets untouched (additive).**
 10. Methods page copy honest: "shared role space", "best-guess analogies", never "proven similarity";
     pitch role-only caveat stated. **☐ pending (Phase 5.3).**
@@ -271,8 +271,24 @@ vs a computed 0.162 baseline**, lift +0.488.
 **`shippable=True`**. Read it weakly: `delta_vs_majority` is **+0.0578**, so sport is still
 partly recoverable. Stage 2 roughly halves Stage 1's +0.130 leakage; it does not achieve
 invariance, and the gate it clears only asks for "within 10 points of the floor".
-**NOTHING HAS BEEN PROMOTED** — `assets/` and `unified_best.pt` remain Stage 1 v0.1. That
-call is the operator's.
+**CORRECTION TO MY OWN CLAIM (7.29).** I wrote "nothing has been promoted, `assets/`
+remains Stage 1 v0.1" in 7.20 and repeated it. **That was wrong.** `assets/unified.json`
+has been **Stage 2.1** (`unified_stage2_best.pt`, best_epoch=58) since **2026-07-30** — the
+line at §155 above saying "Stage 1 v0.1 remains shipped" describes the 2026-07-11 Stage 2
+run and was overtaken by the later Stage 2.1 ship. What is *not* promoted is the
+**Stage 2 checkpoint from the 2026-07-11 run**; the shipped asset is a different, later
+model. I conflated the checkpoint with the asset. The promotion question is therefore
+narrower than I stated: Stage 2.1 already ships, and the open call is only whether the
+re-scored Stage 2 run supersedes it.
+
+**The shipped asset carried the unreachable target in its own metadata**, where every
+downstream consumer reads it: `g2_target: 0.433`, `g2_status: "soft_target_not_met"`,
+against `g2_sport_acc: 0.6851`. Under the corrected target of 0.7258 that status is wrong —
+it is met, weakly. `export_unified_stage2.py` now computes the target from the class sizes
+and emits `g2_majority_baseline` and `g2_delta_vs_majority` beside it, with a note saying
+to quote the delta rather than the status. It also carries `g1_pos_caveat`, because the
+asset's `pos_drop: 0.0` for all three sports is the mask-as-index bug baked in.
+**`assets/unified.json` needs a rebuild to pick any of this up.**
 
 ---
 
