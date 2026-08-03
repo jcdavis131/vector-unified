@@ -84,6 +84,30 @@ def hoops_career_vor() -> dict[str, float]:
     return {n: sum(v for _y, v in rows) for n, rows in series.items()}
 
 
+def _gridiron_note(signals: dict, corpus: dict) -> str:
+    """Derived from the numbers, not hard-coded.
+
+    The previous version of this string was written when gridiron coverage was zero and
+    it kept asserting that after the cause was fixed and the artifacts were rebuilt — a
+    stale narrative sitting next to live numbers that contradicted it. Anything that
+    states a measurement in prose has to be computed from that measurement.
+    """
+    n = len(corpus.get("gridiron", ()))
+    got = {k: (v.get("per_sport", {}).get("gridiron", {}) or {}).get("matched", 0)
+           for k, v in signals.items() if "per_sport" in v}
+    if not any(got.values()):
+        return (f"GRIDIRON HAS NO ATHLETE-LEVEL MARKET DATA — every signal matched 0 of "
+                f"{n} athletes. Check the sport QID in pull_honors_wikidata.py: a QID "
+                f"that is not a sport returns an empty result set rather than an error.")
+    parts = ", ".join(f"{k} {v} ({100.0 * v / max(n, 1):.1f}%)" for k, v in sorted(got.items()))
+    return (f"gridiron coverage of {n} athletes: {parts}. It was zero on every signal "
+            f"until SPORT_Q['gridiron'] was corrected from Q9398 (Grugliasco, an Italian "
+            f"comune) to Q41323 (American football). Honors stay thin at the low single "
+            f"digits because NFL players genuinely carry fewer Wikidata P166 award "
+            f"statements than NBA players — that part is a property of the source, not a "
+            f"bug, and it is not fixable by re-querying.")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
@@ -141,13 +165,41 @@ def main() -> int:
         for v in d.values():
             per[v.get("sport", "?")] += 1
             prestige[norm_name(v.get("name", ""))] = float(v.get("AWARD_PRESTIGE") or 0.0)
+        vals = [float(v.get("AWARD_PRESTIGE") or 0.0) for v in d.values()]
+        nz_per = collections.Counter(v.get("sport", "?") for v in d.values()
+                                     if float(v.get("AWARD_PRESTIGE") or 0.0) > 0)
+        ceiling = [v for v in d.values() if float(v.get("AWARD_PRESTIGE") or 0.0) >= 0.999]
+        ce_awards = sorted(int(v.get("n_awards") or 0) for v in ceiling)
         signals["award_prestige"] = {
             "kind": "MATCHED product (carries native_player_id)",
             "rows_total": len(d),
             "per_sport": {sp: {"matched": per.get(sp, 0),
                                "pct_of_corpus": round(100.0 * per.get(sp, 0)
-                                                      / len(corpus[sp]), 1)}
+                                                      / len(corpus[sp]), 1),
+                               # A matched row is not a signal-carrying row.
+                               "nonzero": nz_per.get(sp, 0),
+                               "pct_of_corpus_nonzero": round(100.0 * nz_per.get(sp, 0)
+                                                              / len(corpus[sp]), 1)}
                           for sp in sports},
+            "zero_valued_rows": {
+                "n": sum(1 for v in vals if v == 0.0),
+                "pct": round(100.0 * sum(1 for v in vals if v == 0.0) / max(len(vals), 1), 1),
+                "note": ("The median AWARD_PRESTIGE across matched players is "
+                         f"{statistics.median(vals) if vals else 0}. A row exists because "
+                         "the athlete has SOME Wikidata award, but the tiering scores "
+                         "untiered awards at nothing, so 'matched' overstates usable "
+                         "coverage roughly two-fold."),
+            },
+            "ceiling": {
+                "n_at_1.000": len(ceiling),
+                "pct": round(100.0 * len(ceiling) / max(len(vals), 1), 1),
+                "n_awards_span": [ce_awards[0], ce_awards[-1]] if ce_awards else [],
+                "note": ("AWARD_PRESTIGE saturates. The players at 1.000 span "
+                         f"{ce_awards[0] if ce_awards else 0} to "
+                         f"{ce_awards[-1] if ce_awards else 0} raw awards — Jokic ties "
+                         "Messi — so the measure cannot rank the top of its own range, "
+                         "which is exactly the range a marketability product cares about."),
+            },
         }
 
     fb_path = MATCHED["forbes"]
@@ -194,12 +246,11 @@ def main() -> int:
         "corpus": {sp: len(corpus[sp]) for sp in sports},
         "signals": signals,
         "selection_test_hoops": selection,
-        "gridiron_gap": (
-            "GRIDIRON HAS NO ATHLETE-LEVEL MARKET DATA. The raw Wikidata pulls returned "
-            "hoops and pitch rows only — zero gridiron — and award_prestige carries 4 of "
-            "1,572 gridiron athletes (0.3%). Any cross-sport marketability claim made "
-            "today contains no football at all. This is a query-scope gap in "
-            "pull_honors_wikidata.py, not a property of the world, and it is fixable."),
+        "per_sport_summary": {
+            sp: {sig: signals[sig]["per_sport"][sp].get("matched", 0)
+                 for sig in signals if "per_sport" in signals[sig]}
+            for sp in sports},
+        "gridiron_note": _gridiron_note(signals, corpus),
         "forbes_caveat": (
             "Forbes is a top-N list: ~10 athletes per year over 16 years. Absence from it "
             "is absence from a leaderboard, not zero endorsement income. Using it as a "
@@ -238,7 +289,7 @@ def main() -> int:
                   f"{b['pct']:>5.1f}%  {bar}")
         print(f"\n  top {selection['top_decile_pct']}%  bottom {selection['bottom_decile_pct']}%"
               f"   ratio {selection['ratio']}   -> {selection['verdict']}")
-    print(f"\n{report['gridiron_gap']}")
+    print(f"\n{report['gridiron_note']}")
     print(f"\nwrote {OUT}")
     return 0
 

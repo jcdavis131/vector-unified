@@ -26,7 +26,6 @@ import json
 import re
 import sys
 from collections import defaultdict
-from pathlib import Path
 
 import requests
 
@@ -35,7 +34,13 @@ from match_names import match_external
 
 UA = "VectorUnifiedResearch/0.1 (athlete market/cultural signal research; local build)"
 ENDPOINT = "https://query.wikidata.org/sparql"
-SPORT_Q = {"hoops": "Q5372", "gridiron": "Q9398", "pitch": "Q2736"}
+# Q41323 = American football. It was Q9398, which is GRUGLIASCO, AN ITALIAN COMUNE — so
+# every gridiron query asked Wikidata for people whose sport is a town near Turin and got
+# back nothing. The failure was silent because "0 rows" and "query returned no matches"
+# look identical, and the pull reports row counts rather than checking that each sport
+# produced any. 7.12 measured the consequence before finding the cause: gridiron carried 4
+# of 1,572 athletes in award_prestige, and both raw pulls had zero gridiron rows.
+SPORT_Q = {"hoops": "Q5372", "gridiron": "Q41323", "pitch": "Q2736"}
 SPORT_Q_REV = {v: k for k, v in SPORT_Q.items()}
 
 # ---- award prestige tiers (schema §2) ----
@@ -172,6 +177,20 @@ def main():
             if val(b, "fb"):
                 handles[qidu]["facebook"] = val(b, "fb")
         print(f"  handles: {len(rows)} rows, {len([q for q in handles if handles[q]['sport_unified']==sport])} athletes")
+
+    # REFUSE TO OVERWRITE ON A SILENTLY EMPTY SPORT. A wrong sport QID returns 0 rows and
+    # a healthy query for a sport with no award-holders would too — but the second case
+    # does not exist for these three leagues, so 0 means the query is broken. Writing
+    # anyway is what let a comune in Piedmont stand in for the NFL across two artifacts
+    # and a derived one, until 7.12 measured the hole from the far end.
+    empty = [sp for sp in SPORT_Q
+             if not any(v["sport_unified"] == sp for v in honors.values())
+             or not any(v["sport_unified"] == sp for v in handles.values())]
+    if empty:
+        raise SystemExit(
+            f"REFUSING TO WRITE: no rows for {', '.join(empty)}. Check the sport QID in "
+            f"SPORT_Q ({', '.join(f'{k}={v}' for k, v in SPORT_Q.items())}) — a QID that "
+            f"is not a sport returns an empty result set, not an error.")
 
     # write raw honors + handles
     (MARKET / "honors_wikidata.json").write_text(
