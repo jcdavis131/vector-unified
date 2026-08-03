@@ -216,7 +216,7 @@ no archetype layer; its contribution to the unified model is the entity SHAPE.
 
 ---
 
-## 5. Sector taxonomy — DRAFT, hand-authored
+## 5. Sector taxonomy — SHIPPED, hand-authored
 
 ### Why hand-authored
 
