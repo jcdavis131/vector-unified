@@ -41,6 +41,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PIPE = ROOT / "pipeline"
 DATA = ROOT / "data"
+ASSETS = ROOT / "assets"
 
 # artifact -> (producer script, [extra files whose change also invalidates it])
 PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
@@ -63,6 +64,14 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "trajectory_axis.json": ("build_trajectory_axis.py", []),
     "trajectory_axis_gridiron.json": ("build_trajectory_axis.py", []),
     "gridiron_pedigree.json": ("export_gridiron_pedigree.py", []),
+}
+
+# The SHIPPED asset, checked the same way and for a sharper reason: 7.29 found
+# assets/unified.json carrying `g2_target: 0.433` and `pos_drop: 0.0` in its own metadata,
+# where every downstream consumer reads them. A stale report is a wrong number in a file
+# nobody reads twice; a stale ASSET is a wrong number in the product.
+SHIPPED = {
+    "unified.json": ("export_unified_stage2.py", ["eval_unified.py", "train_stage2.py"]),
 }
 
 # Artifacts that are INPUTS or hand-authored anchors, not generated reports. Listed so the
@@ -106,6 +115,28 @@ def main() -> int:
         else:
             rows.append((name, "fresh", 0.0))
 
+    for name, (producer, extras) in sorted(SHIPPED.items()):
+        art = ASSETS / name
+        if not art.exists():
+            rows.append(("assets/" + name, "MISSING", 0.0))
+            continue
+        a_t = art.stat().st_mtime
+        newest, newest_src = 0.0, ""
+        for src in (producer, *extras):
+            sp = PIPE / src
+            if sp.exists() and sp.stat().st_mtime > newest:
+                newest, newest_src = sp.stat().st_mtime, src
+        if newest > a_t:
+            hours = (newest - a_t) / 3600.0
+            rows.append(("assets/" + name, "STALE", hours))
+            problems.append(
+                f"SHIPPED ASSET assets/{name} is {hours:.1f}h older than {newest_src} — "
+                f"its metadata is what downstream consumers read. Rebuild with "
+                f"`python pipeline/{producer}` (an operator action: it replaces the live "
+                f"artifact)")
+        else:
+            rows.append(("assets/" + name, "fresh", 0.0))
+
     declared = set(PRODUCED_BY) | NOT_GENERATED
     on_disk = {p.name for p in DATA.glob("*.json")}
     for extra in sorted(on_disk - declared):
@@ -114,7 +145,7 @@ def main() -> int:
             f"or to NOT_GENERATED if it is an input; an undeclared report cannot be "
             f"checked for staleness")
 
-    width = max(len(n) for n in PRODUCED_BY)
+    width = max(len(n) for n, _s, _h in rows)
     for name, status, hours in rows:
         extra = f"  ({hours:.1f}h behind)" if status == "STALE" else ""
         print(f"  {status:<7} {name:<{width}}{extra}")
