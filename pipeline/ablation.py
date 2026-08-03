@@ -23,7 +23,9 @@ non-destructive, no per-sport regression risk.
 
 from __future__ import annotations
 
+import argparse
 import json
+import statistics
 import sys
 
 import numpy as np
@@ -43,7 +45,7 @@ _meta = json.loads((DATA / "unified_meta.json").read_text(encoding="utf-8"))
 ARCH_NAMES = _meta["arch_names"]
 
 
-def train_config(M, cfg, epochs=30, warmup=5):
+def train_config(M, cfg, epochs=30, warmup=5, seed=SEED):
     n_pos = [int(_meta["n_pos"][s]) for s in SPORTS]
     model = UnifiedTrunk(sport_dims=[int(_meta["sport_dim"][s]) for s in SPORTS],
                          n_seasons_era=M["n_eras"], d_adapter=48, d_sport_tok=0,
@@ -51,7 +53,8 @@ def train_config(M, cfg, epochs=30, warmup=5):
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     pools = per_sport_pools(M)
     q = 86
-    rng = np.random.default_rng(SEED)
+    torch.manual_seed(seed)
+    rng = np.random.default_rng(seed)
 
     def sport_clf_loss(z, sport_ids, lam):
         zr = GRL.apply(z, lam)
@@ -134,19 +137,44 @@ CONFIGS = {
 }
 
 
+METRICS = ("G2_sport_acc", "G2_rank", "G3_sil", "G4_hit")
+
+
 def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--seeds", type=int, default=1,
+                    help="repeats per config; >1 puts an error bar on every delta")
+    args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     M = load_matrix(DEVICE)
+
+    seeds = [SEED + i for i in range(args.seeds)]
+    runs: dict[str, list[dict]] = {name: [] for name in CONFIGS}
+    for si, sd in enumerate(seeds):
+        for name, cfg in CONFIGS.items():
+            print(f"--- training {name} (seed {sd}, {si + 1}/{len(seeds)}) ---", flush=True)
+            g = gates(encode_all(train_config(M, cfg, seed=sd), M, DEVICE), M)
+            runs[name].append(g)
+            print(f"   {name:10s} G2_acc={g['G2_sport_acc']} rank={g['G2_rank']} "
+                  f"G3_sil={g['G3_sil']} G4_hit={g['G4_hit']}", flush=True)
+
+    def agg(name, key):
+        v = [r[key] for r in runs[name]]
+        return statistics.mean(v), (statistics.stdev(v) if len(v) > 1 else 0.0)
+
     results = {}
-    for name, cfg in CONFIGS.items():
-        print(f"--- training {name} ---", flush=True)
-        model = train_config(M, cfg)
-        z = encode_all(model, M, DEVICE)
-        g = gates(z, M)
-        results[name] = g
-        print(f"   {name:10s} G1={'PASS' if g['G1_pass'] else 'FAIL'} "
-              f"G2_acc={g['G2_sport_acc']} rank={g['G2_rank']} G3_sil={g['G3_sil']} G4_hit={g['G4_hit']}", flush=True)
-    (DATA / "ablation_report.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
+    for name in CONFIGS:
+        r = {k: round(agg(name, k)[0], 4) for k in METRICS}
+        r.update({k + "_sd": round(agg(name, k)[1], 4) for k in METRICS})
+        r["G1_pass"] = all(x["G1_pass"] for x in runs[name])
+        r["G2_delta_vs_majority"] = round(
+            statistics.mean(x["G2_delta_vs_majority"] for x in runs[name]), 4)
+        r["G4_baseline"] = runs[name][0]["G4_baseline"]
+        r["n_seeds"] = len(seeds)
+        results[name] = r
+    (DATA / "ablation_report.json").write_text(
+        json.dumps({"seeds": seeds, "configs": results, "runs": runs}, indent=2),
+        encoding="utf-8")
     print("\n=== Ablation summary (each loss earns its keep if dropping it worsens its target gate) ===")
     # Baselines printed BESIDE the columns, not left for the reader to remember. A G4 of
     # 0.105 is not merely "low" — it is BELOW the 0.1712 chance of a random other-sport
@@ -163,15 +191,27 @@ def main():
         print(f"{name:10s} {'PASS' if g['G1_pass'] else 'FAIL':4s} {g['G2_sport_acc']:>7} "
               f"{g['G2_delta_vs_majority']:>+7.4f} {g['G2_rank']:>5} {g['G3_sil']:>6} "
               f"{g['G4_hit']:>6} {g['G4_hit'] - g4b:>+8.4f}{below}")
-    full = results["full"]
-    print("\nEarns-its-keep verdict (vs full):")
+    # PRE-REGISTERED, and it is the whole point of --seeds. With one run per config a
+    # delta of 0.003 and a delta of zero are the same observation, and the 1-seed table
+    # kept CORAL and VICReg on moves of 0.001-0.003. A loss earns its keep only if
+    # dropping it moves its target metric by more than 2x the pooled seed-to-seed standard
+    # deviation; anything smaller is NOT DISTINGUISHABLE FROM NOISE and is reported that
+    # way rather than as a small effect.
+    print("\nEarns-its-keep verdict (vs full, |delta| > 2x pooled seed sd):")
+    if len(seeds) < 2:
+        print("  NOT DECIDABLE — one seed per config, so no noise floor was measured. "
+              "Re-run with --seeds 3.")
     for name in ("no_supcon", "no_coral", "no_grl", "no_vicreg", "task_only"):
-        g = results[name]
-        dG3 = g["G3_sil"] - full["G3_sil"]
-        dG4 = g["G4_hit"] - full["G4_hit"]
-        dG2 = g["G2_sport_acc"] - full["G2_sport_acc"]
-        dR = g["G2_rank"] - full["G2_rank"]
-        print(f"  drop {name:10s}: dG3={dG3:+.3f} dG4={dG4:+.3f} dG2sport={dG2:+.3f} dRank={dR:+.1f}")
+        parts = []
+        for k, label in (("G3_sil", "dG3"), ("G4_hit", "dG4"), ("G2_sport_acc", "dG2sport")):
+            mu_f, sd_f = agg("full", k)
+            mu_x, sd_x = agg(name, k)
+            delta = mu_x - mu_f
+            pooled = ((sd_f ** 2 + sd_x ** 2) / 2) ** 0.5
+            tag = "?" if len(seeds) < 2 else ("*" if abs(delta) > 2 * pooled else "ns")
+            parts.append(f"{label}={delta:+.3f}(+-{pooled:.3f}){tag}")
+        print(f"  drop {name:10s}: " + "  ".join(parts))
+    print("  * exceeds 2x pooled sd    ns = not distinguishable from seed noise")
     return 0
 
 
