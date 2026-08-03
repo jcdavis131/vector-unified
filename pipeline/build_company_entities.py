@@ -51,13 +51,27 @@ ENDPOINT = "https://query.wikidata.org/sparql"
 UA = "vector-unified/company-entities (solo personal project; contact via repo)"
 BATCH = 60
 
-ATTR_QUERY = """SELECT ?c ?cLabel ?industryLabel ?countryLabel ?inception ?employees ?revenue WHERE {{
+# `isBusiness` is the correction that matters. The edge probe filtered targets to
+# P31/P279* -> organization (Q43229), which excluded PEOPLE but not non-commercial
+# organizations — so families (Maloof, Rooney), football federations (The FA, RFEF),
+# geographic entities (San Francisco Bay Area) and even a club itself (Los Angeles
+# Lakers) were all counted as "companies". 68 of 196, and they carried 797 athletes.
+#
+# Business/company typing (Q4830453 / Q783794) is therefore emitted PER COMPANY rather
+# than used as a silent filter, because Wikidata's typing has false negatives too — GEHA
+# is a real health insurer and types as neither. Dropping on this flag would trade one
+# wrong number for another; tagging lets the consumer choose and lets the report state
+# both figures side by side.
+ATTR_QUERY = """SELECT ?c ?cLabel ?industryLabel ?countryLabel ?inception ?employees ?revenue
+       ?isBusiness WHERE {{
   VALUES ?c {{ {values} }}
   OPTIONAL {{ ?c wdt:P452 ?industry. }}
   OPTIONAL {{ ?c wdt:P17  ?country. }}
   OPTIONAL {{ ?c wdt:P571 ?inception. }}
   OPTIONAL {{ ?c wdt:P1128 ?employees. }}
   OPTIONAL {{ ?c wdt:P2139 ?revenue. }}
+  BIND(EXISTS {{ ?c wdt:P31/wdt:P279* wd:Q4830453. }}
+       || EXISTS {{ ?c wdt:P31/wdt:P279* wd:Q783794. }} AS ?isBusiness)
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
 }}"""
 
@@ -137,6 +151,7 @@ def main() -> int:
                 "industries": set(rec.get("industries") or []),
                 "country": rec.get("country"), "inception": rec.get("inception"),
                 "employees": rec.get("employees"), "revenue": rec.get("revenue"),
+                "is_business": bool(rec.get("is_business")),
             }
         kept = sum(1 for a in attrs.values() if a["industries"])
         print(f"--no-fetch: reused attributes for {len(attrs)} companies "
@@ -152,7 +167,10 @@ def main() -> int:
         for b in rows:
             c = qid(b["c"]["value"])
             a = attrs.setdefault(c, {"industries": set(), "country": None,
-                                     "inception": None, "employees": None, "revenue": None})
+                                     "inception": None, "employees": None, "revenue": None,
+                                     "is_business": False})
+            if b.get("isBusiness", {}).get("value") == "true":
+                a["is_business"] = True
             if "industryLabel" in b:
                 a["industries"].add(b["industryLabel"]["value"])
             for src, dst in (("countryLabel", "country"), ("inception", "inception"),
@@ -166,6 +184,7 @@ def main() -> int:
         rec["industries"] = sorted(a.get("industries", []))
         for k in ("country", "inception", "employees", "revenue"):
             rec[k] = a.get(k)
+        rec["is_business"] = bool(a.get("is_business"))
 
     # ---- reach: athletes per company ----------------------------------------
     # Join on `sport::team`, the key the enriched org dict uses. A bare-name join
@@ -197,6 +216,16 @@ def main() -> int:
 
     reached = {a for c in companies for k in orgs_of_company.get(c, ())
                for a in athletes_of_key.get(k, set())}
+    biz_qids = {c for c, r in companies.items() if r.get("is_business")}
+    reached_biz = {a for c in biz_qids for k in orgs_of_company.get(c, ())
+                   for a in athletes_of_key.get(k, set())}
+    per_sport_biz: dict[str, list[int]] = {}
+    for a in all_athletes:
+        sp = sport_of_athlete.get(a, "?")
+        row = per_sport_biz.setdefault(sp, [0, 0])
+        row[1] += 1
+        if a in reached_biz:
+            row[0] += 1
 
     # ---- industry coverage, the figure that decides the brand question -------
     with_ind = [c for c, r in companies.items() if r["industries"]]
@@ -242,8 +271,24 @@ def main() -> int:
         "edges": len(edges),
         "by_relation": dict(collections.Counter(e["rel"] for e in edges)),
         "athletes_total": len(all_athletes),
-        "athletes_reaching_a_company": len(reached),
-        "pct_athletes": round(100.0 * len(reached) / len(all_athletes), 2) if all_athletes else 0.0,
+        # BOTH figures, because the first one shipped and was wrong. "any organization"
+        # counts families, football federations and clubs; "business-typed" is the number
+        # a sponsorship claim may use. The gap is stated so nobody quotes the larger one
+        # by accident.
+        "athletes_reaching_ANY_org": len(reached),
+        "pct_athletes_ANY_org": round(100.0 * len(reached) / len(all_athletes), 2) if all_athletes else 0.0,
+        "companies_business_typed": len(biz_qids),
+        "athletes_reaching_a_BUSINESS": len(reached_biz),
+        "pct_athletes_BUSINESS": round(100.0 * len(reached_biz) / len(all_athletes), 2) if all_athletes else 0.0,
+        "overstatement_if_any_org_used": {
+            "athletes": len(reached) - len(reached_biz),
+            "points": round(100.0 * (len(reached) - len(reached_biz)) / len(all_athletes), 2)
+            if all_athletes else 0.0,
+        },
+        "pct_business_by_sport": {
+            sp: {"reached": r, "total": t, "pct": round(100.0 * r / t, 2) if t else 0.0}
+            for sp, (r, t) in sorted(per_sport_biz.items())
+        },
         "distinct_industries": len(ind_counter),
         "companies_without_industry": len(companies) - len(with_ind),
         "athletes_reached_only_via_uncategorised_companies": len(no_ind_athletes - listed_union),
@@ -278,8 +323,18 @@ def main() -> int:
           f"{coverage['by_relation']}")
     print(f"with industry (P452): {coverage['companies_with_industry']} "
           f"({coverage['pct_with_industry']}%)   distinct industries: {coverage['distinct_industries']}")
-    print(f"athletes reaching a company: {coverage['athletes_reaching_a_company']} / "
-          f"{coverage['athletes_total']} = {coverage['pct_athletes']}%\n")
+    print(f"athletes reaching ANY org   : {coverage['athletes_reaching_ANY_org']} / "
+          f"{coverage['athletes_total']} = {coverage['pct_athletes_ANY_org']}%"
+          "   <- includes families, federations, clubs. NOT a sponsorship figure.")
+    print(f"athletes reaching a BUSINESS: {coverage['athletes_reaching_a_BUSINESS']} / "
+          f"{coverage['athletes_total']} = {coverage['pct_athletes_BUSINESS']}%"
+          f"   ({coverage['companies_business_typed']} of {coverage['companies']} companies)")
+    ov = coverage["overstatement_if_any_org_used"]
+    print(f"  quoting the first line overstates by {ov['athletes']} athletes "
+          f"({ov['points']} points)")
+    for sp, v in coverage["pct_business_by_sport"].items():
+        print(f"    {sp:10} {v['reached']:5} / {v['total']:5} = {v['pct']:5.1f}%")
+    print()
     print(f"{'industry':38} {'cos':>5} {'athletes':>9}")
     for r in out["top_industries_by_athlete_reach"][:15]:
         print(f"{r['industry'][:38]:38} {r['companies']:>5} {r['athletes']:>9}")

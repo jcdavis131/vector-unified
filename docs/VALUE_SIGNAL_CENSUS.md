@@ -70,12 +70,36 @@ European clubs carry shirt sponsors (Adidas AG, Accor, CMA CGM) instead. The uni
 
 Multiplied through `org_entities.json`'s athlete->org edges (99.98% resolved):
 
-    ATHLETES reaching a company in 2 hops : 5,248 / 6,226 = 84.3%
+    ATHLETES reaching ANY organization    : 5,248 / 6,226 = 84.3%
     athlete -> sponsor, direct (above)    :               0.22%
-    gridiron 88.0%   hoops 95.7%   pitch 63.4%
 
-**This is the first signal in this estate that does not collapse into basketball.** Every
-value and outcome column is hoops-only; the company edge is above 63% in all three sports.
+### CORRECTED 2026-08-03 — 84.3% was too high, and pitch was the casualty
+
+The 84.3% above counts any entity typed `P31/P279* -> organization (Q43229)`. That
+excludes PEOPLE, which is why it was used — and it does not exclude non-commercial
+organizations. **68 of the 196 "companies" are not businesses**: 56 sports organizations
+(football federations owning their national clubs, and in one case the Los Angeles Lakers
+appearing as its own company), 2 families (Maloof, Rooney), plus geographic entities like
+"San Francisco Bay Area". Re-typed against business/company (Q4830453 / Q783794):
+
+    companies, any organization : 196   athletes 5,248 = 84.3%
+    companies, business-typed   : 128   athletes 4,451 = 71.5%
+    overstatement               :        797 athletes, 12.8 points
+
+    business-typed, by sport:  gridiron 82.6%   hoops 95.7%   pitch 24.7%
+
+**Pitch falls from 63.4% to 24.7%**, because most of its company edges were federations
+owning clubs rather than commercial sponsors. So the earlier claim that this is "the first
+signal that does not collapse into basketball" needs narrowing: it does not collapse into
+basketball — gridiron is 82.6% — but it **is a US-sports signal**, and pitch at 24.7% is
+thin. That is a smaller claim than the one first written here, and it is the true one.
+
+`is_business` is emitted PER COMPANY rather than used as a silent filter, because the
+typing has false negatives too: GEHA is a real health insurer and types as neither
+business nor company. Dropping on the flag would trade one wrong number for another, so
+both figures are reported side by side and the consumer chooses.
+
+**Do not quote 84.3% in anything.** The sponsorship-relevant figure is 71.5%.
 
 **What it is NOT.** These are INSTITUTIONAL edges — who owns the club, who named the
 stadium, who is on the shirt. They are not personal endorsement deals, and 84.3% must
