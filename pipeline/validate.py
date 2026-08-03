@@ -46,6 +46,7 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     "wikidata_qids": (["check_wikidata_qids.py", "--check"], True),
     # ~4 min: 50 permutation shuffles, each recomputing G3 over 6,000-point silhouettes.
     "gate_nonvacuity": (["check_gate_nonvacuity.py", "--check"], False),
+    "merged_careers": (["check_merged_careers.py", "--check"], False),
     "artifact_freshness": (["check_artifact_freshness.py", "--check"], False),
 }
 

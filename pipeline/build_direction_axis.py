@@ -190,6 +190,13 @@ def _series(sport: str) -> dict[str, list[tuple[int, float]]]:
         vec = json.loads(mod.VECTORS.read_text(encoding="utf-8"))
         seasons = sorted({str(p["season"]) for p in vec["players"]}, key=mod.season_start)
         series, _ = mod.vor_series(seasons, mod.eligible_pairs(vec))
+        # MERGED CAREERS OUT. A direction axis splits a career into halves and compares
+        # them; when the halves are two different people the label is meaningless. Jaren
+        # Jackson read 0.94 -> 10.09, delta +9.15, D0 "rising" — that is Sr. followed by
+        # Jr. Operator-reported 2026-08-03; see check_merged_careers.py.
+        draft = json.loads(mod.DRAFT.read_text(encoding="utf-8"))["players"]
+        for n in mod.merged_names(series, draft):
+            series.pop(n, None)
         return series
 
     vec = json.loads(mod.GRID_VEC.read_text(encoding="utf-8"))["players"]

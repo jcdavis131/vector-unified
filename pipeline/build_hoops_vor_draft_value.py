@@ -127,6 +127,38 @@ def vor_series(seasons: list[str], eligible: set[tuple[str, str]]):
     return out, seen
 
 
+def merged_names(series: dict, draft: dict) -> set[str]:
+    """Names that provably belong to more than one person. See check_merged_careers.py.
+
+    Operator report 2026-08-03: Jaren Jackson and Jaren Jackson Jr. are one key. The cause
+    is upstream — vector-hoops' vectors.json carries no suffixes and its `id` is a row
+    index, not a player id — so this repo cannot separate them, only refuse to treat them
+    as one career.
+
+    Two definitive tests, no thresholds:
+      * a season strictly BEFORE the name's earliest draft year. Arithmetic; nobody plays
+        before they are drafted. Jaren Jackson has five.
+      * more than one draft entry for the name. Two drafted people share it, and which
+        seasons belong to whom is unknowable from this source.
+
+    A career GAP is deliberately NOT used: Anthony Parker played in Europe 2000-2005 and
+    107 eligible careers carry one. Suggestive is not definitive.
+    """
+    picks_by_norm: dict[str, list] = collections.defaultdict(list)
+    for raw, picks in draft.items():
+        picks_by_norm[norm_name(raw)].extend(picks)
+    out: set[str] = set()
+    for name, rows in series.items():
+        picks = picks_by_norm.get(name) or []
+        if len(picks) > 1:
+            out.add(name)
+            continue
+        yrs = [p["year"] for p in picks if p.get("year")]
+        if yrs and any(y < min(yrs) for y, _ in rows):
+            out.add(name)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
@@ -154,6 +186,7 @@ def main() -> int:
 
     # ---- denominator: every drafted player -----------------------------------
     draft = json.loads(DRAFT.read_text(encoding="utf-8"))["players"]
+    merged = merged_names(vor_of, draft)
     max_draft_year = last_year - WINDOW_YEARS + 1
 
     totals: dict[str, list[float]] = collections.defaultdict(list)
@@ -170,6 +203,10 @@ def main() -> int:
         if yr < first_year or yr > max_draft_year:
             continue
         n = norm_name(name)
+        if n in merged:
+            # Two people under one key. A draft slot cannot be attributed and a career
+            # total is a sum over two careers, so the row is dropped rather than scored.
+            continue
         window = [v for (s, v) in vor_of.get(n, ()) if yr <= s < yr + WINDOW_YEARS]
         total = sum(window)
         if not window:
@@ -207,6 +244,9 @@ def main() -> int:
         "seasons_read": seasons_seen,
         "draft_year_window": [first_year, max_draft_year],
         "drafted_scored": len(rows_out),
+        "merged_names_excluded": len(merged),
+        "merged_note": ("Names that provably cover more than one person are dropped, not "
+                        "scored. See check_merged_careers.py; operator-reported 2026-08-03."),
         "corr_expectation_vor": round(corr, 4),
         "cells": cells,
         "note_7_7b": ("This is the hoops half of the matched comparison. The gridiron half "
