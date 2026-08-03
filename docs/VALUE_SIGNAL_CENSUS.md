@@ -99,7 +99,53 @@ typing has false negatives too: GEHA is a real health insurer and types as neith
 business nor company. Dropping on the flag would trade one wrong number for another, so
 both figures are reported side by side and the consumer chooses.
 
-**Do not quote 84.3% in anything.** The sponsorship-relevant figure is 71.5%.
+**Do not quote 84.3% in anything.** ~~The sponsorship-relevant figure is 71.5%.~~
+
+### CORRECTED AGAIN 2026-08-03 — 71.5% is not a sponsorship figure either
+
+The sentence struck out above was wrong in the same way the 84.3% was, one level down.
+71.5% is the union of **three different commercial facts**, and only one of them is a
+sponsorship (`probe_athlete_sector_signal.py`):
+
+    relation      athletes    pooled    gridiron    hoops    pitch
+    sponsor            870    13.97%       10.6%    15.6%    14.5%
+    owner              750    12.05%        0.2%    16.7%    15.1%
+    named_after      4,055    65.13%       82.6%    94.5%     5.0%
+    any (= 71.5%)    4,451    71.49%
+
+**65 of the 71.5 points are stadium naming rights.** `named_after` says whose name is on
+the building an athlete played in. It is not a sponsorship of anything, least of all of
+him. The pooled number is also two disjoint phenomena added together — naming rights are a
+US pattern (hoops 94.5%, gridiron 82.6%, pitch 5.0%) and shirt sponsorship is a European
+one — so the union describes no single market.
+
+**The sponsorship-relevant figure is 14.0%**, and it is uniformly thin: 10-16% in every
+sport. Roughly 85% of athletes in the corpus have no team-level sponsor edge at all.
+
+### And the variance is entirely team-level
+
+The layer is transitive by construction — athlete → org → company — because the athlete
+side of the census found P859 on 0.22% of athletes. Consequence, not previously stated:
+**an athlete's sector vector is a deterministic function of his set of teams.** Teammates
+have byte-identical vectors. Measured:
+
+    athletes with any sector : 4,451
+    distinct team sets       : 2,231
+    distinct sector vectors  :   864     collapse 5.2x
+    largest class            :   480 athletes, all `financial_services`
+
+So any supervised model mapping athlete features → sector has a label that is constant
+within an equivalence class, and every athlete feature in the estate — archetype, T0/T1
+standing, D0/D1 direction, Forbes rank, honors — contributes exactly zero to that target.
+Not "a little". Zero. A held-out score would still look strong, because an athlete-level
+train/test split puts teammates on both sides and the model memorises the team lookup. The
+only honest split leaves **2,231 independent units, not 4,451**.
+
+**What this leaves standing.** Team ↔ sector matching, which is what the data actually
+measures and has a real unit of analysis. What it does not leave standing is athlete ↔
+sponsor fit: there are no athlete-level sponsorship labels here to fit against or to
+validate against. That is a data-acquisition problem, and no modelling choice substitutes
+for it.
 
 **What it is NOT.** These are INSTITUTIONAL edges — who owns the club, who named the
 stadium, who is on the shirt. They are not personal endorsement deals, and 84.3% must

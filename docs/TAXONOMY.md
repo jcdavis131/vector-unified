@@ -92,6 +92,29 @@ The three company relations are **complementary, not redundant** — US venues c
 rights where European clubs carry shirt sponsors. Any one of them alone is a US-or-Europe
 signal; the union is what makes it cross-sport.
 
+**BUT THE UNION IS NOT A SPONSORSHIP FIGURE, AND MOST OF IT IS NAMING RIGHTS.** Split by
+relation (`probe_athlete_sector_signal.py`, and see `VALUE_SIGNAL_CENSUS.md`):
+
+| relation | athletes | pooled | gridiron | hoops | pitch |
+|---|---:|---:|---:|---:|---:|
+| sponsor | 870 | **13.97%** | 10.6% | 15.6% | 14.5% |
+| owner | 750 | 12.05% | 0.2% | 16.7% | 15.1% |
+| named_after | 4,055 | 65.13% | 82.6% | 94.5% | 5.0% |
+| any | 4,451 | 71.49% | | | |
+
+"Complementary, not redundant" is still true, and it is also the reason the union describes
+no single market: 65 of the 71.5 points are US arena naming rights. **Quote 14.0% for
+anything sponsorship-shaped**, and note that it is 10-16% in every sport — ~85% of athletes
+have no team-level sponsor edge at all.
+
+**Sector is a function of the team set, not of the athlete.** The layer is transitive
+(athlete → org → company), so teammates carry identical sector vectors: 4,451 athletes
+collapse to 864 distinct vectors (5.2×) over 2,231 distinct team sets, with the largest
+class holding 480 athletes all labelled `financial_services`. Every athlete-level axis in
+this document — archetype, T0/T1, D0/D1 — contributes exactly zero to predicting sector,
+and an athlete-level train/test split leaks the class structure. Model **team ↔ sector**;
+athlete ↔ sponsor needs labels that do not exist here.
+
 **Do not model `athlete --endorsed_by--> company`.** Wikidata P859 on athletes is
 13/5,821 = 0.22%, gridiron literally 0. Every company edge here is INSTITUTIONAL — who
 owns the club, who named the stadium, who is on the shirt. The sellable claim is *brand
