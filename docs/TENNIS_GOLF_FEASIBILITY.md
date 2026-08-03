@@ -121,3 +121,45 @@ same disposition as football transfer values in 7.9.
 5. **The equities/business MTNN is a separate thread** and is not blocked by any of this —
    it already has SEC fundamentals; what it lacks is the analyst-consensus join, which is
    its own expectation-prior problem and closer to solvable than golf's.
+
+---
+
+## 5. MEASURED 2026-08-03 — tennis is the best-covered member of the estate
+
+`acquire_tennis.py` fetched all 28 season files (ATP + WTA, 2013-2026) from
+tennis-data.co.uk, respecting a robots.txt that disallows only `/stuff/` and
+`/2000/`-`/2005/`, and measured them:
+
+    seasons                                   28 / 28
+    matches                                   67,081   (ATP 34,591 / WTA 32,490)
+    ranking prior WRank/LRank/WPts/LPts       67,080   100.0%
+    closing odds  AvgW/AvgL                   67,012    99.9%
+    distinct locations                            169
+    surfaces                Hard 39,391 / Clay 19,799 / Grass 7,891
+    Location / Tournament / Surface / Round   present in all 28 seasons
+    Series                                    present in 14 (ATP only)
+
+Set against the rest of the estate, this is not close:
+
+| member | expectation prior | coverage |
+|---|---|---|
+| hoops | draft slot | market prior, full |
+| gridiron | draft slot | market prior, full |
+| pitch | age curve | developmental only; axis scorable on **43.8%** |
+| market layer | — | **2.9%** of athletes carry a nonzero value |
+| company sponsor reach | — | **14.0%** |
+| **tennis** | **ranking AND closing odds** | **100.0% / 99.9%** |
+
+**67,081 matches is over three times the entire current unified corpus** (20,719
+player-seasons), and tennis is the only member with *two* market-like priors where no other
+has one. `AvgW`/`AvgL` are closing odds — literally what the market priced this specific
+match at, which is a closer analogue of a draft slot than a season-level ranking is, and far
+closer than pitch's age curve.
+
+The 169 locations also deliver the operator's location angle — from the data file, not from
+Wikidata, where the same check found location on 12% of tennis tournaments and 7 golf
+tournaments.
+
+**Nothing has been modelled.** This is the coverage number that decides whether a tower is
+worth building, obtained before building it — the order 7.10-7.13 established by getting it
+wrong first.
