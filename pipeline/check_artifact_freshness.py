@@ -67,6 +67,8 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "gridiron_pedigree.json": ("export_gridiron_pedigree.py", []),
     "pitch_expectation_sources.json": ("probe_pitch_expectation_sources.py", []),
     "tennis_coverage.json": ("acquire_tennis.py", []),
+    "tennis_expectation_probe.json": ("probe_tennis_expectation.py",
+                                      ["acquire_tennis.py"]),
     "pitch_age_axis.json": ("build_pitch_age_axis.py",
                             ["probe_pitch_expectation_sources.py"]),
 }

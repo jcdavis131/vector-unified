@@ -163,3 +163,44 @@ tournaments.
 **Nothing has been modelled.** This is the coverage number that decides whether a tower is
 worth building, obtained before building it — the order 7.10-7.13 established by getting it
 wrong first.
+
+---
+
+## 6. The ranking prior works — and the circularity had to be beaten first
+
+`probe_tennis_expectation.py`. A ranking is **computed from results**, so correlating
+in-season rank against that season's win rate is close to correlating results with
+themselves. A draft slot cannot be contaminated that way. The prior is therefore the
+player's **median rank in season t-1** against delivery in season **t**.
+
+    tour        n  lag vs win  lag vs sets  SAME vs win   shrink  verdict
+    atp      1253     +0.6088      +0.6277      +0.7527    0.191  USABLE
+    wta      1232     +0.4962      +0.5044      +0.6750    0.265  USABLE
+
+**The sanity contrast is the point.** Same-season rank correlates at +0.753 / +0.675;
+lagging shrinks it by **19.1% / 26.5%**. The lag removed something real, which is the
+evidence that it was needed. Had the two numbers been equal, neither would have been
+trustworthy.
+
+Against the matched draft axes — hoops **+0.4934**, gridiron **+0.3950** — the lagged ATP
+prior at **+0.6088** is the strongest expectation signal in the estate.
+
+**Closing odds are deliberately not the prior.** They are genuinely pre-match, but a closing
+price is a near-optimal forecast of the very outcome being scored, so `corr(odds, result)`
+is high by construction and says nothing about over- or under-performance. Odds belong here
+as the **baseline a model must beat**, not as the expectation an axis is built against.
+
+**Naming, and the caveat that forces it.** +0.6088 is still partly *persistence* — a good
+player last year tends to be good this year, and a ranking encodes exactly that. A draft
+slot has no such property: it is a one-time pre-career assessment that never updates. So the
+tennis axis measures over/under-performance against **your own recent standing**, not
+against what the market paid to acquire you. That is a third construct, and it gets a third
+prefix:
+
+    T0 / T1   hoops, gridiron   draft slot        one-time pre-career market valuation
+    P0 / P1   pitch             age curve         developmental prior
+    R0 / R1   tennis            lagged ranking    self-referential recent standing
+
+**None of the three may be compared against the others.** That is now the estate's standing
+rule, and it exists because 7.7b's cross-sport finding reversed twice under exactly this
+kind of mismatch.
