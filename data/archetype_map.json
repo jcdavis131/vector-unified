@@ -1,0 +1,489 @@
+{
+  "version": "v0",
+  "note": "Human-authored anchor for cross-sport alignment. The taxonomy (A0-A11) and the sport-agnostic family ontology are stable hand-authored structure. native_to_cross is populated after inspecting data/native_clusters.json (produced by pipeline/archetype_map.py). Pitch rows A6/A7/A9/A10 are n/a because pitch has no pedigree/career data — pitch players are never assigned those archetypes.",
+  "taxonomy": [
+    {
+      "id": "A0",
+      "label": "Offensive engine / primary initiator",
+      "description": "Offense runs through them; highest usage + creation.",
+      "hoops_hint": "high-usage shot+playmaking cluster",
+      "gridiron_hint": "QB / high-usage RB / WR1",
+      "pitch_hint": "high key-pass + prog-carry midfielders"
+    },
+    {
+      "id": "A1",
+      "label": "Volume producer / scoring load",
+      "description": "Carries the scoring/production burden by volume.",
+      "hoops_hint": "shot-volume cluster",
+      "gridiron_hint": "volume RB / target-hog WR",
+      "pitch_hint": "high xG/goals forwards"
+    },
+    {
+      "id": "A2",
+      "label": "Explosive perimeter creator",
+      "description": "Pull-up / drive / YAC creation threat.",
+      "hoops_hint": "pull-up/drive-heavy wing",
+      "gridiron_hint": "scrambling QB / YAC WR",
+      "pitch_hint": "high dribbles + prog-carry wingers"
+    },
+    {
+      "id": "A3",
+      "label": "Defensive anchor / last line",
+      "description": "Last line of defense; rim/interior/deep protection.",
+      "hoops_hint": "rim-protector big",
+      "gridiron_hint": "last-line S / interior DL",
+      "pitch_hint": "low-line pressing CB / sweeper"
+    },
+    {
+      "id": "A4",
+      "label": "Defensive disruptor / ball-hawk",
+      "description": "Steals/blocks/pressure/takeaway specialist.",
+      "hoops_hint": "steals/blocks specialist",
+      "gridiron_hint": "edge rusher / ball-hawk S/DB",
+      "pitch_hint": "high tackles + interceptions"
+    },
+    {
+      "id": "A5",
+      "label": "Connector / two-way grinder",
+      "description": "Glue guy; competes on both ends, modest volume.",
+      "hoops_hint": "3&D / glue guy",
+      "gridiron_hint": "possession WR / pass-catching RB",
+      "pitch_hint": "high pass-completion box-to-box"
+    },
+    {
+      "id": "A6",
+      "label": "High-pedigree, under-delivering",
+      "description": "High draft slot / market value, low return.",
+      "hoops_hint": "high draft slot, low net-rating",
+      "gridiron_hint": "1st-round pick, low opportunity share",
+      "pitch_hint": "n/a (no pedigree data)"
+    },
+    {
+      "id": "A7",
+      "label": "Low-pedigree, over-delivering",
+      "description": "Late-round / undrafted standout producer.",
+      "hoops_hint": "2nd-round / undrafted standout",
+      "gridiron_hint": "late-round / UDFA producer",
+      "pitch_hint": "n/a (no pedigree data)"
+    },
+    {
+      "id": "A8",
+      "label": "Breakout / riser",
+      "description": "Career arc up; form/volume jumping.",
+      "hoops_hint": "DELTA_NORM up, FORM_VOL up",
+      "gridiron_hint": "prior_ppg jump, snap_pct up",
+      "pitch_hint": "limited (tournament snapshot)"
+    },
+    {
+      "id": "A9",
+      "label": "Declining veteran",
+      "description": "Career arc down; load/role shrinking.",
+      "hoops_hint": "career arc down, GP_RATIO down",
+      "gridiron_hint": "exp high, form down",
+      "pitch_hint": "limited"
+    },
+    {
+      "id": "A10",
+      "label": "Elite two-way",
+      "description": "High offense + high defense (rare).",
+      "hoops_hint": "high offense + high defense cluster",
+      "gridiron_hint": "rare in fantasy data",
+      "pitch_hint": "high xG + high pressures (rare)"
+    },
+    {
+      "id": "A11",
+      "label": "Floor-raising role player",
+      "description": "High impact at low usage; raises the floor.",
+      "hoops_hint": "high PIE, low usage",
+      "gridiron_hint": "high EPA/target, low volume",
+      "pitch_hint": "high recovery, low turnover"
+    }
+  ],
+  "family_ontology": [
+    {
+      "cross": "Volume / Usage",
+      "hoops": [
+        "volume",
+        "playmaking"
+      ],
+      "gridiron": [
+        "usage",
+        "opportunity"
+      ],
+      "pitch": [
+        "attacking"
+      ],
+      "pitch_has": true
+    },
+    {
+      "cross": "Efficiency",
+      "hoops": [
+        "efficiency",
+        "shotmix"
+      ],
+      "gridiron": [
+        "form",
+        "ngs"
+      ],
+      "pitch": [
+        "attacking",
+        "passing_control"
+      ],
+      "pitch_has": true
+    },
+    {
+      "cross": "Defense / Disruption",
+      "hoops": [
+        "defense",
+        "rebounding"
+      ],
+      "gridiron": [
+        "defense",
+        "pfr_adv"
+      ],
+      "pitch": [
+        "defending_duel"
+      ],
+      "pitch_has": true
+    },
+    {
+      "cross": "Playmaking / Initiation",
+      "hoops": [
+        "playmaking"
+      ],
+      "gridiron": [
+        "context",
+        "opportunity"
+      ],
+      "pitch": [
+        "passing_control"
+      ],
+      "pitch_has": true
+    },
+    {
+      "cross": "Physical / Bio",
+      "hoops": [
+        "bio"
+      ],
+      "gridiron": [
+        "meta"
+      ],
+      "pitch": [],
+      "pitch_has": false
+    },
+    {
+      "cross": "Market / Pedigree",
+      "hoops": [
+        "market",
+        "pedigree"
+      ],
+      "gridiron": [
+        "market",
+        "pedigree"
+      ],
+      "pitch": [],
+      "pitch_has": false
+    },
+    {
+      "cross": "Career / Arc",
+      "hoops": [
+        "career",
+        "form"
+      ],
+      "gridiron": [
+        "meta"
+      ],
+      "pitch": [],
+      "pitch_has": false
+    },
+    {
+      "cross": "Team / Competition context",
+      "hoops": [
+        "team",
+        "competition",
+        "roster"
+      ],
+      "gridiron": [
+        "context",
+        "conditions"
+      ],
+      "pitch": [],
+      "pitch_has": "partial"
+    },
+    {
+      "cross": "Honors / Clutch",
+      "hoops": [
+        "honors",
+        "playoffs"
+      ],
+      "gridiron": [],
+      "pitch": [],
+      "pitch_has": false
+    },
+    {
+      "cross": "Form (recent)",
+      "hoops": [
+        "form"
+      ],
+      "gridiron": [
+        "form"
+      ],
+      "pitch": [],
+      "pitch_has": "partial"
+    }
+  ],
+  "archetypes_in_scope_v0": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A5",
+    "A11"
+  ],
+  "archetypes_deferred_v0": [
+    "A4",
+    "A6",
+    "A7",
+    "A8",
+    "A9",
+    "A10"
+  ],
+  "scope_note_v0": "Role archetypes A0,A1,A2,A3,A5,A11 have native-cluster members in at least TWO sports and are the v0 contrastive anchor. A4 (defensive disruptor/ball-hawk) is DEFERRED to v1: it had pitch-only members (cluster 2, 81% DEF) with no hoops/gridiron counterpart, so cross-sport analogy was trivially impossible (G4 hit 0.000) — pitch cluster 2 now folds into A3 (defensive anchor) which spans hoops centers + pitch defenders. A4 needs gridiron defensive data (DL/DB) + a hoops steals/blocks specialist cluster to become a real shared archetype. A6/A7 (pedigree), A8/A9 (career arc), A10 (elite two-way) have NO native-cluster members in any sport — feature-based labeler deferred. Gridiron contributes only to A0/A1/A2/A5/A11 (offense-only skill positions; open data has no defensive players). Pitch never gets A6/A7/A9/A10 (no pedigree/career data). Cluster ids for pitch/gridiron are size-sorted (see data/native_clusters.json) and must be re-derived deterministically (seed 7) by build_unified_matrix.py via the same k-means used here.",
+  "native_to_cross": {
+    "hoops": {
+      "0": "A3",
+      "1": "A11",
+      "2": "A2",
+      "3": "A3",
+      "4": "A1",
+      "5": "A2",
+      "6": "A0",
+      "7": "A1"
+    },
+    "pitch": {
+      "0": "A5",
+      "1": "A1",
+      "2": "A11",
+      "3": "A3",
+      "4": "A3",
+      "5": "A2",
+      "6": "A0",
+      "7": "A1"
+    },
+    "gridiron": {
+      "0": "A1",
+      "1": "A5",
+      "2": "A2",
+      "3": "A1",
+      "4": "A2",
+      "5": "A0",
+      "6": "A11",
+      "7": "A11"
+    }
+  },
+  "notes": {
+    "pitch_remap_after_supcon": "2026-07-11: rematched size-sorted pitch k-means clusters to prior native_to_cross via pos_dist L1 after e_p SupCon promotion"
+  },
+  "axes": {
+    "note": "Two axes, split 2026-08-03 (operator: 'do what makes the most sense long-term'). A0-A5/A10/A11 describe WHAT A PLAYER DOES and are a per-SEASON label. A6-A9 described HOW A CAREER IS GOING and are a per-CAREER label. One field forced a single grain onto both and made 'volume producer who is also a riser' inexpressible, because the values were mutually exclusive by construction.",
+    "blast_radius_measured": "Smaller than first stated, and the correction matters: A4, A6, A7, A8, A9 and A10 are DECLARED but NEVER ASSIGNED — assets/unified.json carries only A0/A1/A2/A3/A5/A11 across 20,719 player-seasons. So no player record changes and no consumer that reads real data can break. This is a declaration cleanup, not a data migration. Consumers of archetype_map.json live only in vector-unified (14 files); vector-hoops, -gridiron, -pitch, -equities and dottie reference it zero times.",
+    "role": {
+      "grain": "player-season",
+      "ids": [
+        "A0",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A10",
+        "A11"
+      ],
+      "in_scope_v0": [
+        "A0",
+        "A1",
+        "A2",
+        "A3",
+        "A5",
+        "A11"
+      ],
+      "deferred_v0": [
+        "A4",
+        "A10"
+      ],
+      "members": [
+        {
+          "id": "A0",
+          "label": "Offensive engine / primary initiator",
+          "description": "Offense runs through them; highest usage + creation.",
+          "hoops_hint": "high-usage shot+playmaking cluster",
+          "gridiron_hint": "QB / high-usage RB / WR1",
+          "pitch_hint": "high key-pass + prog-carry midfielders"
+        },
+        {
+          "id": "A1",
+          "label": "Volume producer / scoring load",
+          "description": "Carries the scoring/production burden by volume.",
+          "hoops_hint": "shot-volume cluster",
+          "gridiron_hint": "volume RB / target-hog WR",
+          "pitch_hint": "high xG/goals forwards"
+        },
+        {
+          "id": "A2",
+          "label": "Explosive perimeter creator",
+          "description": "Pull-up / drive / YAC creation threat.",
+          "hoops_hint": "pull-up/drive-heavy wing",
+          "gridiron_hint": "scrambling QB / YAC WR",
+          "pitch_hint": "high dribbles + prog-carry wingers"
+        },
+        {
+          "id": "A3",
+          "label": "Defensive anchor / last line",
+          "description": "Last line of defense; rim/interior/deep protection.",
+          "hoops_hint": "rim-protector big",
+          "gridiron_hint": "last-line S / interior DL",
+          "pitch_hint": "low-line pressing CB / sweeper"
+        },
+        {
+          "id": "A4",
+          "label": "Defensive disruptor / ball-hawk",
+          "description": "Steals/blocks/pressure/takeaway specialist.",
+          "hoops_hint": "steals/blocks specialist",
+          "gridiron_hint": "edge rusher / ball-hawk S/DB",
+          "pitch_hint": "high tackles + interceptions"
+        },
+        {
+          "id": "A5",
+          "label": "Connector / two-way grinder",
+          "description": "Glue guy; competes on both ends, modest volume.",
+          "hoops_hint": "3&D / glue guy",
+          "gridiron_hint": "possession WR / pass-catching RB",
+          "pitch_hint": "high pass-completion box-to-box"
+        },
+        {
+          "id": "A10",
+          "label": "Elite two-way",
+          "description": "High offense + high defense (rare).",
+          "hoops_hint": "high offense + high defense cluster",
+          "gridiron_hint": "rare in fantasy data",
+          "pitch_hint": "high xG + high pressures (rare)"
+        },
+        {
+          "id": "A11",
+          "label": "Floor-raising role player",
+          "description": "High impact at low usage; raises the floor.",
+          "hoops_hint": "high PIE, low usage",
+          "gridiron_hint": "high EPA/target, low volume",
+          "pitch_hint": "high recovery, low turnover"
+        }
+      ]
+    },
+    "trajectory": {
+      "grain": "career",
+      "note": "CORRECTED TWICE. (1) An early note claimed vector-hoops 'already ships a trajectory axis' as stable/migrator/drifter/reinvention/late-bloom. Those classify ROLE-CHANGE PATTERN ('did your role move?'), not PERFORMANCE VS EXPECTATION ('did you beat your billing?') — a player can be stable AND under-delivering, so merging them destroys information in both. (2) The correction then claimed T0/T1 'have NO counterpart anywhere in the estate'. Also wrong, and measured: vector-hoops ships assets/pedigree.json (2,415 players: overall pick, round, expect_slot on a stated rookie-scale curve, draft year, drafting team) and it joins the unified hoops athlete set at 2,415/2,415 = 100%. vector-gridiron carries a `pedigree` feature family (draft_pick_log, draft_round, combine_forty, combine_vertical) plus build_adp.py, whose own docstring describes flagging 'where the model likes a player more than the room is paying for him' — which IS T0/T1, already shipped as a product surface.",
+      "in_scope_v0": [],
+      "members": [
+        {
+          "id": "T0",
+          "was": "A6",
+          "label": "High-pedigree, under-delivering",
+          "description": "High draft slot / market value, low return.",
+          "hoops_hint": "high draft slot, low net-rating",
+          "gridiron_hint": "1st-round pick, low opportunity share",
+          "pitch_hint": "n/a (no pedigree data)"
+        },
+        {
+          "id": "T1",
+          "was": "A7",
+          "label": "Low-pedigree, over-delivering",
+          "description": "Late-round / undrafted standout producer.",
+          "hoops_hint": "2nd-round / undrafted standout",
+          "gridiron_hint": "late-round / UDFA producer",
+          "pitch_hint": "n/a (no pedigree data)"
+        },
+        {
+          "id": "T2",
+          "was": "A8",
+          "label": "Breakout / riser",
+          "description": "Career arc up; form/volume jumping.",
+          "hoops_hint": "DELTA_NORM up, FORM_VOL up",
+          "gridiron_hint": "prior_ppg jump, snap_pct up",
+          "pitch_hint": "limited (tournament snapshot)"
+        },
+        {
+          "id": "T3",
+          "was": "A9",
+          "label": "Declining veteran",
+          "description": "Career arc down; load/role shrinking.",
+          "hoops_hint": "career arc down, GP_RATIO down",
+          "gridiron_hint": "exp high, form down",
+          "pitch_hint": "limited"
+        }
+      ],
+      "distinct_from": {
+        "vector-hoops career classes": "role-change pattern, not performance — do not merge",
+        "vector-hoops skill arc": "closest existing analogue to T2/T3, computed on skills",
+        "blocked": "T0/T1 need pedigree data (draft slot or market value); not joined anywhere"
+      },
+      "expectation_signal_by_model": {
+        "hoops": "assets/pedigree.json — 2,415 players, joins the unified set at 100%. READY.",
+        "gridiron": "pedigree family inside pipeline/build_features.py + consensus ADP. Exists but is NOT exported as a name-joinable artifact; needs an export step.",
+        "pitch": "none. Consistent with its 0.58% salary coverage.",
+        "equities": "SEC fundamentals only; no analyst-consensus or estimate join. The expectation side would be consensus estimates or the market price itself."
+      },
+      "join_caveat_MEASURED": "THE PEDIGREE JOIN MUST BE SPORT-SCOPED. Joining pedigree.json by normalised name across the whole unified set matches 16 gridiron and 1 pitch athlete, and ALL 17 ARE FALSE POSITIVES — NFL Matt Ryan matched an NBA Matt Ryan, NFL A.J. Green matched NBA AJ Green, NFL James Robinson matched an NBA James Robinson drafted 1993 by POR. Some collisions carry draft_year=None, so the wrong record looks like a benign 'undrafted' rather than an obvious error. Any pedigree join must filter to sport == 'hoops'.",
+      "blocked_on": "Not data, for hoops — the join. A0-A11 were fit on ROLE features (volume/efficiency/defense/playmaking); the family_ontology declares a 'Market / Pedigree' family for hoops and gridiron but it never entered the contrastive anchor, which is why T0-T3 read as 'never assigned'."
+    },
+    "legacy_a_to_axis": {
+      "A0": {
+        "axis": "role",
+        "id": "A0"
+      },
+      "A1": {
+        "axis": "role",
+        "id": "A1"
+      },
+      "A2": {
+        "axis": "role",
+        "id": "A2"
+      },
+      "A3": {
+        "axis": "role",
+        "id": "A3"
+      },
+      "A4": {
+        "axis": "role",
+        "id": "A4"
+      },
+      "A5": {
+        "axis": "role",
+        "id": "A5"
+      },
+      "A10": {
+        "axis": "role",
+        "id": "A10"
+      },
+      "A11": {
+        "axis": "role",
+        "id": "A11"
+      },
+      "A6": {
+        "axis": "trajectory",
+        "id": "T0"
+      },
+      "A7": {
+        "axis": "trajectory",
+        "id": "T1"
+      },
+      "A8": {
+        "axis": "trajectory",
+        "id": "T2"
+      },
+      "A9": {
+        "axis": "trajectory",
+        "id": "T3"
+      }
+    }
+  },
+  "taxonomy_deprecated": "`taxonomy` is retained UNCHANGED so nothing reading it breaks, but it mixes the two axes and should not be used for new work. Read `axes.role` and `axes.trajectory`. A6-A9 remain listed there and resolve to trajectory IDs via `axes.legacy_a_to_axis`."
+}
