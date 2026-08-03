@@ -30,7 +30,6 @@ import re
 import sys
 import unicodedata
 from collections import defaultdict
-from pathlib import Path
 
 from load_encoders import load_all, ROOT
 
@@ -54,6 +53,42 @@ def name_norm(name: str) -> str:
     return " ".join(toks)
 
 
+def _verify_season_years(players: list[dict]) -> None:
+    """Every derived year must sit within a year of the label it came from.
+
+    A guard rather than a comment, because the century bug it catches was invisible for
+    the same reason every other defect this phase was: the output looked like years.
+    2097 is a plausible-looking integer in a column of plausible-looking integers, and
+    5.6% of them were wrong. Only labels that BEGIN with a 4-digit year are checkable —
+    pitch carries "Euro 2020" and "WC 2018", which this deliberately skips rather than
+    guessing at.
+    """
+    bad: list[str] = []
+    for p in players:
+        # Recomputed from the labels rather than zipped against season_years: the two
+        # lists are built with independent de-duplication, so their positions do not
+        # correspond and a zip would compare unrelated pairs.
+        for s in p["seasons"]:
+            m = re.match(r"^(\d{4})", str(s))
+            if not m:
+                continue
+            y = season_year(s, p["sport"])
+            if y is None:
+                continue
+            start = int(m.group(1))
+            if not (start - 1 <= y <= start + 1):
+                bad.append(f"{p['sport']} {p['name']}: season {s!r} -> year {y}")
+        derived = {season_year(s, p["sport"]) for s in p["seasons"]} - {None}
+        if derived != set(p["season_years"]):
+            bad.append(f"{p['sport']} {p['name']}: season_years {sorted(p['season_years'])} "
+                       f"!= years derivable from its labels {sorted(derived)}")
+    if bad:
+        raise SystemExit(
+            f"REFUSING TO WRITE: {len(bad)} season_year value(s) do not match their own "
+            f"season label.\n  " + "\n  ".join(bad[:5])
+            + ("\n  ..." if len(bad) > 5 else ""))
+
+
 def season_year(season, sport: str):
     """Normalize a sport-native season label to an int year (for season-varying joins)."""
     s = str(season).strip()
@@ -71,7 +106,17 @@ def season_year(season, sport: str):
         end = m.group(2)
         if end:
             end_i = int(end)
-            end_i = end_i + 2000 if end_i < 100 else end_i
+            if end_i < 100:
+                # CENTURY COMES FROM `start`, NOT FROM A HARD-CODED 2000. The previous
+                # `end_i + 2000` dated every 20th-century season a hundred years late:
+                # "1996-97" -> 2097, and AC Green's career read [2000, 2001, 2097, 2098].
+                # 1,168 of 20,689 values (5.6%) across 530 of 5,837 players. Nothing
+                # consumed season_years yet, so nothing downstream was wrong — but the
+                # field's own docstring says it exists "for season-varying joins", which
+                # is precisely the use that would have attached 1996 data to 2097.
+                end_i += start - (start % 100)
+                if end_i < start:
+                    end_i += 100        # "1999-00" -> 1900 -> 2000
             return end_i
         return start
     if sport == "pitch":
@@ -120,6 +165,7 @@ def main():
                 rec["season_years"].append(sy)
 
     players = list(per_player.values())
+    _verify_season_years(players)
     # sort seasons
     for p in players:
         p["seasons"] = sorted(p["seasons"], key=str)
