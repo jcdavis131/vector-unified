@@ -16,6 +16,12 @@ assets/**/*.json
 
 # Acquired + intermediate data (27 MB; re-fetchable via pipeline/acquire_*.py)
 data/
+# EXCEPT the hand-authored anchors. These are SOURCE, not generated output, and both
+# describe themselves as "version-controlled, changed only in a commit" — which was not
+# true: `data/` swallowed them, `git add -A` skips ignored paths silently, and three
+# commits reported shipping changes to archetype_map.json that never entered the repo.
+!data/archetype_map.json
+!data/sector_map.json
 pipeline/data/
 
 # Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).
