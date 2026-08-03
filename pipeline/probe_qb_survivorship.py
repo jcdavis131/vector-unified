@@ -94,6 +94,21 @@ def main() -> int:
     for p in vec:
         charted[norm_name(p["name"])] += 1
 
+    # SAME EXCLUSION AS THE VALUE TABLE. build_vor_draft_value.py drops names that
+    # provably cover more than one player; if this probe kept them, the two artifacts would
+    # count different denominators and I4 would fire — which is exactly what happened when
+    # the exclusion landed here first. The invariant caught the divergence rather than
+    # letting a 109-name gap sit between two files that read the same CSV.
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from build_vor_draft_value import merged_names as _merged_names
+    _series: dict[str, list] = collections.defaultdict(list)
+    for p in vec:
+        _v = (p.get("ppg") or {}).get("ppr")
+        if _v is not None:
+            _series[norm_name(p["name"])].append((int(p["season"]), float(_v)))
+    merged = _merged_names(_series, DRAFT_CSV)
+
     # denominator side: every drafted player at a fantasy position, in-window
     max_draft_year = last_season - MIN_SEASONS + 1
     rows = []
@@ -116,7 +131,7 @@ def main() -> int:
             if year < first_season or year > max_draft_year:
                 continue
             key = norm_name(name)
-            if key in seen:
+            if key in seen or key in merged:
                 continue
             seen.add(key)
             rows.append({

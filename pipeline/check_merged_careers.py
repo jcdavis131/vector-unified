@@ -62,11 +62,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import build_hoops_vor_draft_value as B  # noqa: E402
+import build_vor_draft_value as G  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
+# artifact -> (row key, WHICH SPORT'S merged set applies). Scoped per sport because a name
+# merged in gridiron says nothing about hoops: the first version unioned both sets and
+# applied them to every artifact, flagging `james jones` and `anthony johnson` in the HOOPS
+# table on the strength of a gridiron collision.
 AXES = {
-    "direction_axis_hoops.json": "careers",
-    "hoops_vor_draft_value.json": "players",
+    "direction_axis_hoops.json": ("careers", "hoops"),
+    "hoops_vor_draft_value.json": ("players", "hoops"),
+    "direction_axis_gridiron.json": ("careers", "gridiron"),
+    "vor_draft_value.json": ("player_rows", "gridiron"),
 }
 OUT = ROOT / "data" / "merged_careers.json"
 GAP_YEARS = 3
@@ -114,16 +121,29 @@ def main() -> int:
             review[name] = {"gaps": gaps, "span": [years[0], years[-1]],
                             "n_seasons": len(years)}
 
-    definitive = set(impossible) | set(ambiguous)
+    # GRIDIRON TOO. The operator's report named a hoops pair, but the defect is larger
+    # here: 318 draft names carry more than one distinct draft year against hoops' 250, and
+    # `antonio brown` was this estate's number-one gridiron D0 example at +6.93 while
+    # holding seasons from 2003 and 2005 against a 2010 draft.
+    gvec = json.loads(G.GRID_VEC.read_text(encoding="utf-8"))["players"]
+    gseries: dict[str, list] = collections.defaultdict(list)
+    for p in gvec:
+        ppr = (p.get("ppg") or {}).get("ppr")
+        if ppr is not None:
+            gseries[G.norm_name(p["name"])].append((int(p["season"]), float(ppr)))
+    gmerged = G.merged_names(gseries, G.DRAFT_CSV)
+
+    by_sport = {"hoops": set(impossible) | set(ambiguous), "gridiron": gmerged}
+    definitive = by_sport["hoops"] | by_sport["gridiron"]
 
     contaminated = {}
-    for fn, key in AXES.items():
+    for fn, (key, sport) in AXES.items():
         p = ROOT / "data" / fn
         if not p.exists():
             continue
         doc = json.loads(p.read_text(encoding="utf-8"))
         rows = doc.get(key) or doc.get("report", {}).get(key) or []
-        bad = [r for r in rows if r.get("name") in definitive]
+        bad = [r for r in rows if r.get("name") in by_sport[sport]]
         if bad:
             contaminated[fn] = [
                 {"name": r["name"],
@@ -145,6 +165,11 @@ def main() -> int:
         "ambiguous_count": len(ambiguous),
         "review_count": len(review),
         "definitive_count": len(definitive),
+        "gridiron_merged_count": len(gmerged),
+        "gridiron_note": ("Same two definitive tests applied to gridiron via "
+                          "build_vor_draft_value.merged_names. The defect is larger there: "
+                          "318 draft names with >1 distinct draft year, and `antonio brown` "
+                          "was the top D0 example while carrying pre-draft seasons."),
         "impossible": dict(sorted(impossible.items())),
         "ambiguous": dict(sorted(ambiguous.items())[:40]),
         "review_sample": dict(sorted(review.items())[:20]),
@@ -171,6 +196,7 @@ def main() -> int:
               f"{d['span'][0]}  ({len(d['seasons_before_draft'])} impossible)")
     print(f"  AMBIGUOUS  (>1 draft entry for the name) : {len(ambiguous)}")
     print(f"  REVIEW     (gap only, NOT excluded)      : {len(review)}")
+    print(f"gridiron definitively-merged names          : {len(gmerged)}")
 
     if contaminated:
         print(f"\n{sum(len(v) for v in contaminated.values())} contaminated row(s) in "

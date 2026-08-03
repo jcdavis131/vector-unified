@@ -221,6 +221,22 @@ def _series(sport: str) -> dict[str, list[tuple[int, float]]]:
         if b is None:
             continue
         out[mod.norm_name(p["name"])].append((int(p["season"]), max(0.0, float(ppr) - b)))
+    # MERGED CAREERS OUT, same rule as hoops. `antonio brown` was this axis's number-one
+    # D0 example at +6.93 and the name carries seasons from 2003 and 2005 against a 2010
+    # draft — the Steelers Antonio Brown did not play in 2003. Splitting a career into
+    # halves is meaningless when the halves are two people.
+    # Detected on the FULL vector set, not on `out`. `out` only holds seasons that had a
+    # replacement baseline for their (season, pos), so a pre-draft season sitting outside
+    # that filter would be invisible here and visible to check_merged_careers.py — the
+    # detector and the exclusion must see the same data or the guard reports contamination
+    # the builder cannot remove. `larry johnson` was exactly that.
+    full: dict[str, list] = collections.defaultdict(list)
+    for p in vec:
+        v = (p.get("ppg") or {}).get("ppr")
+        if v is not None:
+            full[mod.norm_name(p["name"])].append((int(p["season"]), float(v)))
+    for n in mod.merged_names(full, mod.DRAFT_CSV):
+        out.pop(n, None)
     return out
 
 

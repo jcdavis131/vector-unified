@@ -96,6 +96,47 @@ def bucket(pick) -> str | None:
     return "R4-7"
 
 
+def merged_names(seasons_of: dict, draft_csv) -> set[str]:
+    """Names that provably cover more than one player. Mirrors the hoops version.
+
+    Operator report 2026-08-03 was about hoops (Jaren Jackson Sr./Jr.), but the same defect
+    is LARGER here: 318 gridiron draft names carry more than one distinct draft year, and
+    ten names record a season before they were drafted.
+
+    It hit a published finding directly. `antonio brown` was the number-one D0 example in
+    the gridiron direction axis — pick 195, +6.93, quoted repeatedly as the headline riser
+    — and the name holds seasons from 2003 and 2005 against a 2010 draft. The Steelers
+    Antonio Brown did not play in 2003. "First half 1.86 -> second half 8.79" was partly
+    one player becoming another.
+
+    Two definitive tests, no thresholds:
+      * a season strictly BEFORE the name's earliest draft year
+      * more than one distinct draft year for the name
+
+    A career gap is NOT used, here or in hoops: injury and overseas years produce them.
+    """
+    dy: dict[str, set[int]] = collections.defaultdict(set)
+    with draft_csv.open(encoding="utf-8", errors="replace", newline="") as fh:
+        for row in csv.DictReader(fh):
+            raw = (row.get("pfr_player_name") or "").strip()
+            if not raw:
+                continue
+            try:
+                dy[norm_name(raw)].add(int(float(row["season"])))
+            except (KeyError, TypeError, ValueError):
+                continue
+    out: set[str] = set()
+    for name, rows in seasons_of.items():
+        yrs = dy.get(name)
+        if not yrs:
+            continue
+        if len(yrs) > 1:
+            out.add(name)
+        elif any(y < min(yrs) for y, _ in rows):
+            out.add(name)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
@@ -156,6 +197,8 @@ def main() -> int:
     # survivor bias this rewrite exists to remove, and the symptom was `never played` at
     # 0.0% in almost every cell when a quarter of late-round picks never play at all.
     # draft_picks.csv is the denominator. Read it directly.
+    merged = merged_names(seasons_of, DRAFT_CSV)
+
     totals: dict[tuple, list[float]] = collections.defaultdict(list)
     player_rows: list[dict] = []
     zero_seasons: collections.Counter = collections.Counter()
@@ -179,6 +222,10 @@ def main() -> int:
             if n in seen:
                 continue
             seen.add(n)
+            if n in merged:
+                # Two players under one key. A draft slot cannot be attributed and a
+                # career total sums two careers, so the row is dropped rather than scored.
+                continue
             b = bucket(pick)
             if not b:
                 continue
