@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""No report may be older than the code that produced it. (7.23)
+
+Solo personal project, no connection to employer, built with public/free-tier only
+
+Phase 7 corrected the definition of nearly every gate in this repo — G2's baseline, G3's
+two thresholds, G4's baseline, the position mask, the random-rank formula in two files.
+Each correction changes what the numbers MEAN, and a report written before the correction
+still sits on disk reading like a current measurement.
+
+That is the same defect twice already caught in prose: `probe_market_layer_coverage.py`
+asserting "GRIDIRON HAS NO ATHLETE-LEVEL MARKET DATA" beside live numbers that
+contradicted it, and `compare_trajectory_sports.py` emitting a verdict its own data had
+refuted. Both were found by reading. This finds them by asking.
+
+    data/ablation_report.json was written 2026-07-10 and its producer was edited
+    2026-08-03 — twenty-four days and four gate redefinitions apart. Its G4 column was
+    computed on a 4,000-row sample against no baseline. Nothing said so.
+
+METHOD, and its limit stated up front: mtime comparison. If the producing script is newer
+than its artifact, the artifact is stale. This is crude — it cannot tell a comment edit
+from a formula change, and it will report stale after a docstring fix. That is the right
+direction to err: a false "re-run this" costs a re-run, a false "fresh" costs a wrong
+number in a report. It also cannot detect staleness from a changed INPUT rather than a
+changed producer; those are declared per entry as `also_depends_on`.
+
+REGISTRATION IS MANDATORY, as in check_wikidata_qids.py and validate.py. A generated
+artifact that nobody declared cannot be checked, so an unregistered data/*.json under the
+declared roots is a FAILURE, not a skip.
+
+    python pipeline/check_artifact_freshness.py
+    python pipeline/check_artifact_freshness.py --check   # exit 1 on any stale artifact
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+PIPE = ROOT / "pipeline"
+DATA = ROOT / "data"
+
+# artifact -> (producer script, [extra files whose change also invalidates it])
+PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
+    "unified_report.json": ("eval_unified.py", []),
+    "stage2_report.json": ("stage2_eval.py", ["eval_unified.py"]),
+    "analogy_report.json": ("analogy_panel.py", ["eval_unified.py"]),
+    "analogy_triples_report.json": ("analogy_triples_eval.py", []),
+    "ablation_report.json": ("ablation.py", ["eval_unified.py"]),
+    "gate_nonvacuity.json": ("check_gate_nonvacuity.py", ["eval_unified.py"]),
+    "matched_draft_value_comparison.json": ("compare_matched_draft_value.py", []),
+    "hoops_vor_draft_value.json": ("build_hoops_vor_draft_value.py", []),
+    "vor_draft_value.json": ("build_vor_draft_value.py", []),
+    "direction_axis_hoops.json": ("build_direction_axis.py",
+                                  ["build_hoops_vor_draft_value.py"]),
+    "direction_axis_gridiron.json": ("build_direction_axis.py",
+                                     ["build_vor_draft_value.py"]),
+    "draft_value_curve.json": ("build_draft_value_curve.py", []),
+    "qb_survivorship_probe.json": ("probe_qb_survivorship.py", []),
+    "trajectory_axis.json": ("build_trajectory_axis.py", []),
+    "trajectory_axis_gridiron.json": ("build_trajectory_axis.py", []),
+    "gridiron_pedigree.json": ("export_gridiron_pedigree.py", []),
+}
+
+# Artifacts that are INPUTS or hand-authored anchors, not generated reports. Listed so the
+# unregistered check stays meaningful instead of being switched off.
+NOT_GENERATED = {
+    "archetype_map.json", "sector_map.json", "analogy_triples.json",
+    "native_clusters.json", "unified_meta.json", "stage2_history.json",
+    "stage2_baselines.json", "trajectory_sport_comparison.json",
+}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--check", action="store_true", help="exit 1 on any stale artifact")
+    args = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    problems: list[str] = []
+    rows: list[tuple[str, str, float]] = []
+
+    for name, (producer, extras) in sorted(PRODUCED_BY.items()):
+        art = DATA / name
+        if not art.exists():
+            rows.append((name, "MISSING", 0.0))
+            continue
+        a_t = art.stat().st_mtime
+        newest, newest_src = 0.0, ""
+        for src in (producer, *extras):
+            sp = PIPE / src
+            if not sp.exists():
+                problems.append(f"{name}: declared producer {src} does not exist")
+                continue
+            if sp.stat().st_mtime > newest:
+                newest, newest_src = sp.stat().st_mtime, src
+        if newest > a_t:
+            hours = (newest - a_t) / 3600.0
+            rows.append((name, "STALE", hours))
+            problems.append(
+                f"{name} is {hours:.1f}h older than {newest_src} — re-run "
+                f"`python pipeline/{producer}`")
+        else:
+            rows.append((name, "fresh", 0.0))
+
+    declared = set(PRODUCED_BY) | NOT_GENERATED
+    on_disk = {p.name for p in DATA.glob("*.json")}
+    for extra in sorted(on_disk - declared):
+        problems.append(
+            f"UNREGISTERED artifact data/{extra} — add it to PRODUCED_BY with its producer "
+            f"or to NOT_GENERATED if it is an input; an undeclared report cannot be "
+            f"checked for staleness")
+
+    width = max(len(n) for n in PRODUCED_BY)
+    for name, status, hours in rows:
+        extra = f"  ({hours:.1f}h behind)" if status == "STALE" else ""
+        print(f"  {status:<7} {name:<{width}}{extra}")
+
+    if not problems:
+        print(f"\nall {len(rows)} declared artifact(s) are at least as new as their producers.")
+        return 0
+    print(f"\n{len(problems)} problem(s):")
+    for p in problems:
+        print(f"  {p}")
+    print("\nmtime is a crude test: it cannot tell a comment edit from a formula change, "
+          "and\nit errs toward re-running. That is the cheap direction to be wrong in.")
+    return 1 if args.check else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
