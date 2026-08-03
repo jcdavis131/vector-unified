@@ -64,6 +64,8 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "qb_survivorship_probe.json": ("probe_qb_survivorship.py", []),
     "merged_careers.json": ("check_merged_careers.py",
                             ["build_hoops_vor_draft_value.py"]),
+    "hoops_name_collisions.json": ("probe_hoops_name_collisions.py",
+                                   ["build_hoops_vor_draft_value.py"]),
     "trajectory_axis.json": ("build_trajectory_axis.py", []),
     "trajectory_axis_gridiron.json": ("build_trajectory_axis.py", []),
     "gridiron_pedigree.json": ("export_gridiron_pedigree.py", []),
