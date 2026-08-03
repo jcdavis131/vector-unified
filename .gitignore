@@ -47,3 +47,7 @@ venv/
 .DS_Store
 Thumbs.db
 *.swp
+
+# transient logs from a detached ablation re-run
+ablation_rerun.log
+ablation_rerun.err

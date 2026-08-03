@@ -148,9 +148,21 @@ def main():
               f"G2_acc={g['G2_sport_acc']} rank={g['G2_rank']} G3_sil={g['G3_sil']} G4_hit={g['G4_hit']}", flush=True)
     (DATA / "ablation_report.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
     print("\n=== Ablation summary (each loss earns its keep if dropping it worsens its target gate) ===")
-    print(f"{'config':10s} {'G1':4s} {'G2acc':>6s} {'rank':>5s} {'G3sil':>6s} {'G4hit':>6s}")
+    # Baselines printed BESIDE the columns, not left for the reader to remember. A G4 of
+    # 0.105 is not merely "low" — it is BELOW the 0.1712 chance of a random other-sport
+    # neighbour sharing the archetype, which is a categorically different statement, and
+    # the bare number never said it. Same for G2: the floor is the majority share, not 0.
+    g4b = results["full"]["G4_baseline"]
+    majority = results["full"]["G2_sport_acc"] - results["full"]["G2_delta_vs_majority"]
+    print(f"  baselines: G2 majority-class {majority:.4f} (floor, lower is better)   "
+          f"G4 random {g4b:.4f} (higher is better)")
+    print(f"{'config':10s} {'G1':4s} {'G2acc':>7s} {'dMaj':>7s} {'rank':>5s} {'G3sil':>6s} "
+          f"{'G4hit':>6s} {'vs rand':>8s}")
     for name, g in results.items():
-        print(f"{name:10s} {'PASS' if g['G1_pass'] else 'FAIL':4s} {g['G2_sport_acc']:>6} {g['G2_rank']:>5} {g['G3_sil']:>6} {g['G4_hit']:>6}")
+        below = " BELOW" if g["G4_hit"] < g4b else ""
+        print(f"{name:10s} {'PASS' if g['G1_pass'] else 'FAIL':4s} {g['G2_sport_acc']:>7} "
+              f"{g['G2_delta_vs_majority']:>+7.4f} {g['G2_rank']:>5} {g['G3_sil']:>6} "
+              f"{g['G4_hit']:>6} {g['G4_hit'] - g4b:>+8.4f}{below}")
     full = results["full"]
     print("\nEarns-its-keep verdict (vs full):")
     for name in ("no_supcon", "no_coral", "no_grl", "no_vicreg", "task_only"):
