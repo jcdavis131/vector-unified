@@ -186,9 +186,29 @@ So the estate has **three career-level axes**, not one:
 
 hoops' **skill arc** (first-half vs second-half grade delta) is the closest existing
 measure to T2 riser / T3 decliner, but it is computed on skills rather than archetypes.
-**T0 and T1 have no counterpart anywhere in the estate** — they need draft position or
-market value, which no repo currently joins. That is the actual blocker on the trajectory
-axis, and it is an acquisition problem, not a modelling one.
+**CORRECTED AGAIN — T0/T1 DO have counterparts, and one is complete.** The sentence here
+previously read "T0 and T1 have no counterpart anywhere in the estate". Measured:
+
+| model | expectation signal | status |
+|---|---|---|
+| hoops | `assets/pedigree.json` — 2,415 players: overall pick, round, `expect_slot`, draft year, team | **joins the unified hoops set at 2,415/2,415 = 100%** |
+| gridiron | `pedigree` feature family (`draft_pick_log`, `draft_round`, combine) + consensus ADP | exists, **not exported** as a joinable artifact |
+| pitch | none | consistent with 0.58% salary coverage |
+| equities | SEC fundamentals; no analyst-consensus join | expectation side not built |
+
+`build_adp.py`'s own docstring is the sharpest statement of the axis anywhere in the
+estate: flag "where the model likes a player more than the room is paying for him."
+
+**THE JOIN MUST BE SPORT-SCOPED, and this was measured rather than assumed.** Joining
+pedigree by normalised name across the whole unified set matches 16 gridiron and 1 pitch
+athlete, and **all 17 are false positives**: NFL Matt Ryan → an NBA Matt Ryan, NFL
+A.J. Green → NBA AJ Green, NFL James Robinson → an NBA James Robinson drafted 1993 by POR.
+Several collisions carry `draft_year: None`, so the wrong record reads as a benign
+"undrafted" rather than an obvious error. Filter to `sport == "hoops"`.
+
+**So the blocker is the join, not the data.** A0–A11 were fit on ROLE features; the family
+ontology declares `Market / Pedigree` for hoops and gridiron, but it never entered the
+contrastive anchor — which is exactly why T0–T3 read as "never assigned".
 
 **Migration cost — MEASURED, and smaller than first stated.** This section originally read
 "any consumer keying on A6–A9 breaks". That is technically true and practically vacuous:
