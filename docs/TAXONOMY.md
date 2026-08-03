@@ -14,9 +14,10 @@
 
 
 
-**Status: proposal.** Nothing here is wired into a pipeline yet. Every layer that already
-exists is shown with its MEASURED coverage; the one new layer (sectors) is hand-authored
-and marked as such, because two automatic routes were measured and rejected first
+**Status: sectors SHIPPED (`data/sector_map.json` + `pipeline/apply_sector_map.py`); the
+role/trajectory split is SPECIFIED but not yet migrated into `archetype_map.json`.** Every
+layer is shown with its MEASURED coverage. The sector layer is hand-authored and marked as
+such, because two automatic routes were measured and rejected first
 (`build_company_sectors.py`: P279* rollup 39.8%, NAICS/ISIC/SIC/GICS 0/128).
 
 The estate already has a precedent for a declared human taxonomy —
@@ -33,13 +34,15 @@ categories in a notebook after seeing the result.
 |---|---|---|---|
 | **Entity** | athlete / org / company / location | built | live |
 | **Relation** | which edges exist and what they mean | built | live |
-| **Role (cross-sport)** | A0–A11 over athletes | `archetype_map.json` | live, 6 of 12 in scope |
+| **Role (cross-sport)** | A0–A5, A10, A11 over athletes | `archetype_map.json` | live; split from trajectory SPECIFIED, not migrated |
 | **Role (native)** | K=8 per sport | per-repo model | live |
-| **Sector** | company → industry group | **this document** | **DRAFT** |
+| **Trajectory** | T0–T3 over careers | was A6–A9 | specified, not migrated |
+| **Sector** | company → industry group | `data/sector_map.json` | **live, 127/128** |
 
 Roles answer *what an athlete does*. Sectors answer *what a brand sells*. The business
-question dumbmodels.com is built on is the join between them, and it is currently
-untestable because the sector layer does not exist — that is the gap this draft fills.
+question dumbmodels.com is built on is the join between them. The sector layer now exists
+at 127/128 coverage, so that join is TESTABLE for the first time — Q8 previously came back
+UNDERPOWERED because the only available split, "has a sponsor", is 96% true in US sport.
 
 ---
 
@@ -96,9 +99,9 @@ exposure through the employer*, never *this athlete has a sponsorship deal*.
 
 ---
 
-## 3. Role taxonomy — cross-sport (existing, unchanged)
+## 3. Role taxonomy — cross-sport
 
-Twelve archetypes, six in v0 scope. Scope is not arbitrary: an archetype qualifies only
+Twelve archetypes as originally defined, six in v0 scope; §3.1 splits them onto two axes. Scope is not arbitrary: an archetype qualifies only
 if it has native-cluster members in **at least two sports**, so the contrastive anchor
 cannot be trained on a role only one sport has.
 
