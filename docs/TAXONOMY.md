@@ -159,11 +159,36 @@ silently reading a role.
 load-bearing: a player has one trajectory over a span and a role per season. Storing them
 in one field forced a single grain onto both.
 
-**This aligns with what vector-hoops already ships.** Its career classes — stable /
-migrator / drifter / reinvention / late-bloom — are a trajectory axis under a different
-name, computed per career from per-season archetypes. The unified trajectory axis should
-be reconciled against those five rather than invented in parallel; that reconciliation is
-open work, not done here.
+**CORRECTED — vector-hoops does NOT already ship this axis.** An earlier version of this
+section said its career classes were "a trajectory axis under a different name" and should
+be reconciled against T0–T3. Reading `pipeline/career_trajectories.py` shows that is a
+category error:
+
+```
+stable      modal archetype covers >=75% of seasons
+reinvention one sustained switch (>=75% modal before & after)
+migrator    3+ distinct archetypes, none reaching 60% share
+drifter     everything else
+```
+
+Those classify **role-change pattern** — *did your role move?* T0–T3 classify
+**performance vs expectation** — *did you outperform your billing?* A player can be
+`stable` and `T0 under-delivering` at the same time. Merging them would have destroyed
+information in both.
+
+So the estate has **three career-level axes**, not one:
+
+| axis | question | status |
+|---|---|---|
+| role-change pattern | did your role move? | shipped, hoops only |
+| performance vs expectation (T0–T3) | did you beat your billing? | declared, never assigned |
+| skill arc | did your skills rise or fall? | shipped, hoops only |
+
+hoops' **skill arc** (first-half vs second-half grade delta) is the closest existing
+measure to T2 riser / T3 decliner, but it is computed on skills rather than archetypes.
+**T0 and T1 have no counterpart anywhere in the estate** — they need draft position or
+market value, which no repo currently joins. That is the actual blocker on the trajectory
+axis, and it is an acquisition problem, not a modelling one.
 
 **Migration cost — MEASURED, and smaller than first stated.** This section originally read
 "any consumer keying on A6–A9 breaks". That is technically true and practically vacuous:
