@@ -1029,11 +1029,138 @@ def q_company_archetype() -> None:
         print(f"\n    ({SHUFFLES} permutations, seed {SEED}; labels shuffled WITHIN sport)")
 
 
+def q_company_sector() -> None:
+    """Q9: within sport, does archetype mix differ by the SECTOR of the attached company?
+
+    Q8 could not test this: its only split was "has a naming-rights deal", which is 96%
+    true in US sport. data/sector_map.json now assigns 127/128 businesses to 28 sectors,
+    so the split exists. Whether it is TESTABLE is a separate question, and this answers
+    it before reporting any statistic.
+
+    THE CEILING IS ORGS, NOT THE TAXONOMY, and it does not move with more acquisition.
+    Sector is a club property, so the unit is the org — the same clustering argument as
+    Q8. Enriched org counts are hoops 31 and gridiron 32, because there are 30 NBA teams
+    and 32 NFL franchises. Splitting ~31 orgs across 28 sectors leaves ~1 org per cell.
+    Using org = team x season would give 892 hoops orgs but NOT 892 independent ones:
+    sector is not time-sliced (see company_entities.json's time_caveat), so every season
+    of a team carries the same sector and the effective n stays ~30.
+
+    So a within-sport sector test is permanently underpowered in exactly the two sports
+    where the company edge is strongest. That is a fact about league structure, not about
+    this dataset, and it bounds what a sponsorship product may claim from it.
+
+    pitch is the one sport with enough sectors to test (13 with >=3 orgs) and it has the
+    WEAKEST company coverage (24.7% of athletes). That caveat travels with its result.
+    """
+    apath = ROOT / "data" / "orgs" / "company_sectors_applied.json"
+    cpath = ROOT / "data" / "orgs" / "company_entities.json"
+    if not (apath.exists() and cpath.exists()):
+        print("\nQ9  no sector layer — run apply_sector_map.py first.")
+        return
+    applied = json.loads(apath.read_text(encoding="utf-8"))
+    comp = json.loads(cpath.read_text(encoding="utf-8"))
+    players = json.loads(UNIFIED.read_text(encoding="utf-8"))["players"]
+    doc = json.loads(ORGS.read_text(encoding="utf-8"))
+    orgs = {o["org_id"]: o for o in doc["orgs"]}
+
+    co_by_label = {c["label"]: c for c in comp["companies"]}
+    # org_key -> sectors. sports_holdings excluded: a club's own holding entity is not
+    # a sponsor, and leaving it in would let a club predict its own archetype mix.
+    sec_of_key: dict[str, set[str]] = defaultdict(set)
+    for sec, labels in applied["sector_companies"].items():
+        if sec == "sports_holdings":
+            continue
+        for lab in labels:
+            for k in co_by_label.get(lab, {}).get("orgs", []):
+                sec_of_key[k].add(sec)
+
+    arch_of = {(norm_name(p["name"]), p["sport"], str(p["season"])): str(p["cross_arch"])
+               for p in players if p.get("cross_arch") is not None}
+    per_org: dict[tuple, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for e in doc["edges"]:
+        oid = e.get("org_id")
+        o = orgs.get(oid) if oid else None
+        if not o:
+            continue
+        key = f"{o.get('sport')}::{o.get('team')}"
+        if key not in sec_of_key:
+            continue
+        a = arch_of.get((e["norm"], e["sport"], str(e["season"])))
+        if a:
+            per_org[(o["sport"], key)][a] += 1
+
+    print("\nQ9  Within sport, does archetype mix differ by the SECTOR of the company?")
+    print(f"    orgs with >=1 non-holding sector: {len(sec_of_key)}"
+          f"   with archetyped players: {len(per_org)}")
+    print("    unit = ORG. sports_holdings excluded (a club owning itself is not a sponsor).\n")
+
+    MIN_ORGS_PER_SECTOR = 3
+    MIN_SECTORS = 3
+    rng = random.Random(SEED)
+    for sport in ("hoops", "gridiron", "pitch"):
+        keys = [(sp, k) for (sp, k) in per_org if sp == sport]
+        bysec: dict[str, list[dict[str, int]]] = defaultdict(list)
+        for sp, k in keys:
+            for sec in sec_of_key[k]:
+                bysec[sec].append(per_org[(sp, k)])
+        usable = {s: v for s, v in bysec.items() if len(v) >= MIN_ORGS_PER_SECTOR}
+        if len(usable) < MIN_SECTORS:
+            print(f"    {sport:9} orgs {len(keys):3}   sectors with >={MIN_ORGS_PER_SECTOR} "
+                  f"orgs: {len(usable)}  UNDERPOWERED — need >={MIN_SECTORS}. Not a null.")
+            continue
+
+        def dist(cs):
+            tot: dict[str, int] = defaultdict(int)
+            for c in cs:
+                for a, n in c.items():
+                    tot[a] += n
+            s = sum(tot.values())
+            return {a: n / s for a, n in tot.items()} if s else {}
+
+        def mean_l1(groups: dict[str, list[dict[str, int]]]) -> float:
+            glob = dist([c for v in groups.values() for c in v])
+            ds = []
+            for v in groups.values():
+                d = dist(v)
+                ds.append(sum(abs(d.get(a, 0.0) - glob.get(a, 0.0))
+                              for a in set(d) | set(glob)))
+            return sum(ds) / len(ds) if ds else 0.0
+
+        obs = mean_l1(usable)
+        # Null: reassign each org's COUNTS to a shuffled sector membership, preserving
+        # the number of orgs per sector so a big sector cannot look distinctive purely
+        # by being big.
+        flat = [(s, c) for s, v in usable.items() for c in v]
+        counts_only = [c for _, c in flat]
+        labels = [s for s, _ in flat]
+        null = []
+        for _ in range(SHUFFLES):
+            rng.shuffle(labels)
+            g: dict[str, list[dict[str, int]]] = defaultdict(list)
+            for s, c in zip(labels, counts_only, strict=True):
+                g[s].append(c)
+            null.append(mean_l1(g))
+        null.sort()
+        p95 = null[int(0.95 * len(null))]
+        verdict = "DIFFERS" if obs > p95 else "no finding"
+        print(f"    {sport:9} orgs {len(keys):3}   sectors used {len(usable):2}"
+              f"   mean L1 {obs:.3f}  shuffle p95 {p95:.3f}  -> {verdict}")
+
+    print(f"\n    ({SHUFFLES} permutations, seed {SEED}; sector labels shuffled WITHIN sport)")
+    print("\n    THE CEILING IS LEAGUE STRUCTURE, NOT DATA. 30 NBA teams and 32 NFL")
+    print("    franchises means ~31 enriched orgs per US sport; 28 sectors over 31 orgs")
+    print("    is ~1 org per cell. team x season would give 892 hoops orgs but not 892")
+    print("    INDEPENDENT ones — sector is not time-sliced, so every season of a team")
+    print("    carries the same sector and effective n stays ~30. More company")
+    print("    acquisition does not fix this; only pooling sports or a coarser sector")
+    print("    grouping would, and both change the question being asked.")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--q", default="all",
                     choices=["all", "archetype", "roster", "salary", "league", "pay", "band",
-                             "quality", "company"])
+                             "quality", "company", "sector"])
     args = ap.parse_args()
 
     positive_control()
@@ -1062,6 +1189,8 @@ def main() -> int:
         q_pay_within_quality_band()
     if args.q in ("all", "company"):
         q_company_archetype()
+    if args.q in ("all", "sector"):
+        q_company_sector()
     return 0
 
 
