@@ -29,7 +29,7 @@ import torch
 
 from load_encoders import SPORTS, ROOT, load_all
 from train_unified import load_matrix
-from eval_unified import load_model, encode_all
+from eval_unified import load_model, encode_all, g4_random_baseline
 
 DATA = ROOT / "data"
 # index -> cross-sport archetype id, in the order build_unified_matrix assigned them
@@ -97,20 +97,13 @@ def main():
     hits = arch[nn_idx] == arch
     g4 = float(hits.mean())
 
-    # BASELINE, COMPUTED. The 0.60 bar was stated without one, and an archetype hit-rate
-    # is only interpretable against the chance that a random OTHER-SPORT row happens to
-    # share the archetype. The mix is 0.249 / 0.235 / 0.192 / 0.148 / 0.113 / 0.063, so
-    # that chance is ~0.1712 — 0.60 is a real bar, unlike G2's `chance = 1/3` which was
-    # 29 points too generous (see check_gate_nonvacuity.py, 7.16). Confirmed empirically:
-    # all three nulls in that checker land on 0.167-0.171.
-    n_rows = len(arch)
-    g4_baseline = 0.0
-    for a_ in np.unique(arch):
-        for s_ in np.unique(sid):
-            n_q = int(((arch == a_) & (sid == s_)).sum())
-            pool = int((sid != s_).sum())
-            if pool:
-                g4_baseline += (n_q / n_rows) * (int(((arch == a_) & (sid != s_)).sum()) / pool)
+    # BASELINE, COMPUTED, and imported rather than re-derived — this was a fourth copy
+    # of the same loop. The 0.60 bar was stated without a baseline, and an archetype hit
+    # rate is only interpretable against the chance that a random OTHER-SPORT row shares
+    # the archetype (~0.1712 given the real mix). All three nulls in
+    # check_gate_nonvacuity.py land on it, which validates both at once.
+    g4_baseline = g4_random_baseline(M)
+
     # per-sport + per-arch breakdown
     per_sport = {}
     for s in range(3):

@@ -25,21 +25,17 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn.functional as F
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import silhouette_score
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
 
-from load_encoders import SPORTS, ROOT, UCACHE
+from load_encoders import SPORTS, ROOT
 from train_unified import (UnifiedTrunk, GRL, load_matrix, per_sport_pools, gather_batch,
                            supcon_loss, coral_loss, var_loss, cov_loss,
-                           effective_rank, SEED)
-from eval_unified import g1_per_sport, encode_all
+                           SEED)
+from eval_unified import (g1_per_sport, encode_all, g2_sport_invariance,
+                          g3_silhouette, g4_hit_rate, g4_random_baseline)
 
 DATA = ROOT / "data"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -108,30 +104,24 @@ def train_config(M, cfg, epochs=30, warmup=5):
 
 
 def gates(z, M):
-    sid = M["sport_id"].cpu().numpy()
-    arch = M["arch_id"].cpu().numpy()
     g1 = g1_per_sport(z, M)
     g1_pass = all(d["native_knn5_z"] >= d["native_knn5_e_s"] - 0.02
                   for d in g1.values() if d["native_knn5_e_s"] is not None)
-    # G2
-    Xtr, Xte, ytr, yte = train_test_split(z, sid, test_size=0.2, random_state=SEED, stratify=sid)
-    sport_acc = float(LogisticRegression(max_iter=400).fit(Xtr, ytr).score(Xte, yte))
-    rank = float(effective_rank(torch.tensor(z)))
-    # G3
-    sel = np.random.default_rng(SEED).choice(len(arch), min(len(arch), 6000), replace=False)
-    sil = float(silhouette_score(z[sel], arch[sel], metric="cosine"))
-    # G4 sampled (cross-sport NN role coherence on 4000 sample for speed)
-    rng = np.random.default_rng(SEED)
-    samp = rng.choice(len(sid), 4000, replace=False)
-    zn = z / (np.linalg.norm(z, axis=1, keepdims=True) + 1e-9)
-    sim = zn[samp] @ zn.T
-    same = sid[samp][:, None] == sid[None, :]
-    sim = np.where(same, -np.inf, sim)
-    nn_idx = sim.argmax(axis=1)
-    g4 = float((arch[nn_idx] == arch[samp]).mean())
+    # G2/G3/G4 IMPORTED, not re-derived. This block previously carried its own
+    # LogisticRegression, its own silhouette, and its own cross-sport-NN loop — the last
+    # of which SAMPLED 4,000 rows for speed, so the ablation table's G4 column was never
+    # comparable to the shipped G4 it sat next to. It also predated the baseline
+    # corrections in 7.16-7.17, so an ablation decision could rest on a definition the
+    # ship gate no longer used.
+    g2 = g2_sport_invariance(z, M)
+    g3 = g3_silhouette(z, M)
+    g4 = g4_hit_rate(z, M)
     return {"G1_pass": g1_pass, "G1_hoops_z": round(g1["hoops"]["native_knn5_z"], 3),
-            "G2_sport_acc": round(sport_acc, 3), "G2_rank": round(rank, 1),
-            "G3_sil": round(sil, 3), "G4_hit": round(g4, 3)}
+            "G2_sport_acc": g2["sport_acc"],
+            "G2_delta_vs_majority": g2["delta_vs_majority"],
+            "G2_rank": g2["effective_rank"],
+            "G3_sil": g3["silhouette"], "G4_hit": round(g4, 3),
+            "G4_baseline": round(g4_random_baseline(M), 4)}
 
 
 CONFIGS = {
@@ -162,7 +152,7 @@ def main():
     for name, g in results.items():
         print(f"{name:10s} {'PASS' if g['G1_pass'] else 'FAIL':4s} {g['G2_sport_acc']:>6} {g['G2_rank']:>5} {g['G3_sil']:>6} {g['G4_hit']:>6}")
     full = results["full"]
-    print(f"\nEarns-its-keep verdict (vs full):")
+    print("\nEarns-its-keep verdict (vs full):")
     for name in ("no_supcon", "no_coral", "no_grl", "no_vicreg", "task_only"):
         g = results[name]
         dG3 = g["G3_sil"] - full["G3_sil"]

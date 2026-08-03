@@ -69,6 +69,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import eval_unified as EV  # noqa: E402
+from eval_unified import g4_hit_rate, g4_random_baseline  # noqa: E402
 from load_encoders import SPORTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -88,37 +89,6 @@ def nulls(z: np.ndarray, sid: np.ndarray, rng: np.random.Generator) -> dict[str,
     g = rng.normal(size=z.shape).astype(np.float32)
     out["random_gaussian"] = g / (np.linalg.norm(g, axis=1, keepdims=True) + 1e-9)
     return out
-
-
-def g4_random_baseline(arch: np.ndarray, sid: np.ndarray) -> float:
-    """P(a random OTHER-SPORT row shares the query's archetype).
-
-    G4's stated bar is 0.60 against an unstated baseline. The archetypes are not uniform
-    — 0.249 / 0.235 / 0.192 / 0.148 / 0.113 / 0.063 — and G4 draws its neighbour only
-    from the other two sports, so the honest null is this quantity, not 1/n_arch. Same
-    defect shape as G2's `chance = 1/3`, which is why it is computed rather than assumed.
-    """
-    n = len(arch)
-    tot = 0.0
-    for a in np.unique(arch):
-        for s in np.unique(sid):
-            n_q = int(((arch == a) & (sid == s)).sum())
-            pool = int((sid != s).sum())
-            same = int(((arch == a) & (sid != s)).sum())
-            if pool:
-                tot += (n_q / n) * (same / pool)
-    return tot
-
-
-def g4_hit_rate(z: np.ndarray, M) -> float:
-    """analogy_panel.py's G4, replicated: cross-sport NN shares the archetype."""
-    arch = M["arch_id"].cpu().numpy()
-    sid = M["sport_id"].cpu().numpy()
-    zn = z / (np.linalg.norm(z, axis=1, keepdims=True) + 1e-9)
-    sim = zn @ zn.T
-    sim = np.where(sid[:, None] == sid[None, :], -np.inf, sim)
-    np.fill_diagonal(sim, -np.inf)
-    return float((arch[sim.argmax(axis=1)] == arch).mean())
 
 
 def gate_verdicts(z: np.ndarray, M) -> dict:
@@ -203,7 +173,7 @@ def main() -> int:
     z = EV.encode_all(model, M, device)
     sid = M["sport_id"].cpu().numpy()
 
-    g4_base = g4_random_baseline(M["arch_id"].cpu().numpy(), sid)
+    g4_base = g4_random_baseline(M)
     real = gate_verdicts(z, M)
     rng = np.random.default_rng(SEED)
     null_results = {name: gate_verdicts(zz, M) for name, zz in nulls(z, sid, rng).items()}

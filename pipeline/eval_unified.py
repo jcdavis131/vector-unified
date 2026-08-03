@@ -139,6 +139,44 @@ def g1_per_sport(z_full, M):
     return out
 
 
+def g4_hit_rate(z_full, M) -> float:
+    """Cross-sport NN shares the archetype. THE ONE IMPLEMENTATION.
+
+    There were four copies of this loop — analogy_panel.py, check_gate_nonvacuity.py,
+    ablation.py, and a curated variant in stage2_eval.py — and ablation.py's sampled 4,000
+    rows for speed, so its number was never comparable to the shipped one while sitting in
+    the same table. Same shape as the VOR duplicate in 7.8a: two copies of a rule means
+    fixing it once fixes it once.
+    """
+    arch = M["arch_id"].cpu().numpy()
+    sid = M["sport_id"].cpu().numpy()
+    zn = z_full / (np.linalg.norm(z_full, axis=1, keepdims=True) + 1e-9)
+    sim = zn @ zn.T
+    sim = np.where(sid[:, None] == sid[None, :], -np.inf, sim)
+    np.fill_diagonal(sim, -np.inf)
+    return float((arch[sim.argmax(axis=1)] == arch).mean())
+
+
+def g4_random_baseline(M) -> float:
+    """P(a random OTHER-SPORT row shares the query's archetype). Also one implementation.
+
+    G4's 0.60 bar was stated without a baseline. Archetypes are not uniform and the
+    neighbour is drawn only from the other two sports, so the honest null is this, not
+    1/n_arch — the same defect as G2's `chance = 1/3` (7.16).
+    """
+    arch = M["arch_id"].cpu().numpy()
+    sid = M["sport_id"].cpu().numpy()
+    n = len(arch)
+    tot = 0.0
+    for a in np.unique(arch):
+        for s in np.unique(sid):
+            n_q = int(((arch == a) & (sid == s)).sum())
+            pool = int((sid != s).sum())
+            if pool:
+                tot += (n_q / n) * (int(((arch == a) & (sid != s)).sum()) / pool)
+    return tot
+
+
 def g2_sport_invariance(z_full, M):
     sid = M["sport_id"].cpu().numpy()
     Xtr, Xte, ytr, yte = train_test_split(z_full, sid, test_size=0.2,
