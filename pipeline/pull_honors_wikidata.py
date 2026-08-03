@@ -1,7 +1,7 @@
 """Vector Unified — Wikidata honors + social-handles pull (cross-sport, free, no anti-bot).
 
 Queries the Wikidata SPARQL endpoint for athletes in our three sports
-(basketball Q5372 / american football Q9398 / association football Q2736) who have:
+(basketball Q5372 / american football Q41323 / association football Q2736) who have:
   - awards received (P166)  -> award ledger -> AWARD_PRESTIGE / AWARD_RECENT
   - Twitter/X handle (P2002) and/or Facebook (P2013) -> social handle seed
 

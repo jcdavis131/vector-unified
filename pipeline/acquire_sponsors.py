@@ -57,7 +57,12 @@ ENDPOINT = "https://query.wikidata.org/sparql"
 UA = "vector-unified/0.1 (personal research; contact via github)"
 
 # Same three sports the corpus covers (pull_honors_wikidata.py:38).
-SPORT_Q = {"hoops": "Q5372", "gridiron": "Q9398", "pitch": "Q2736"}
+# Q41323 = American football. This carried Q9398 — GRUGLIASCO, AN ITALIAN COMUNE — same as
+# pull_honors_wikidata.py did, because the wrong value was copied between the two files.
+# The consequence is not cosmetic: the 0.22% athlete-side sponsor census that has been
+# quoted all through Phase 7 as "athlete-level sponsorship does not exist in Wikidata"
+# reported gridiron `with_sponsor: 0`, and that zero was the QID, not a measurement.
+SPORT_Q = {"hoops": "Q5372", "gridiron": "Q41323", "pitch": "Q2736"}
 
 
 def norm_name(name: str) -> str:
