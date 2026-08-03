@@ -82,7 +82,19 @@ def encode_all(model, M, device):
 def knn5_acc(emb, labels, mask=None):
     """Stratified 80/20 kNN-5 accuracy. emb/labels already L2/filtered to one sport."""
     if mask is not None:
+        # BOOL, AND THIS IS THE WHOLE BUG. pos_mask is int64 {0,1} (build_unified_matrix.py
+        # writes `1 if pid >= 0 else 0` as np.int64), so `emb[mask]` was INTEGER FANCY
+        # INDEXING, not masking: it selected row 0 or row 1 of the array, 12,966 times.
+        # Two distinct vectors carrying two distinct labels — so kNN-5 scored EXACTLY 1.0
+        # for every sport, for both the z and e_s arms, and for a globally shuffled
+        # embedding. `pos_knn5 = 1.0` has been in every report since Phase 2 and meant
+        # nothing at all. The length assertion below is what makes a recurrence loud.
+        mask = np.asarray(mask).astype(bool)
         emb, labels = emb[mask], labels[mask]
+        if len(labels) != int(mask.sum()):
+            raise AssertionError(
+                f"mask selected {len(labels)} rows but has {int(mask.sum())} true entries "
+                f"— the mask is being used as an index, not a mask")
     if len(labels) < 50:
         return None
     try:
@@ -107,12 +119,22 @@ def g1_per_sport(z_full, M):
         native = M["native"].cpu().numpy()[idx]
         pos = M["pos_id"].cpu().numpy()[idx]
         posm = M["pos_mask"].cpu().numpy()[idx]
+        # Majority baselines, because an accuracy with no null is not interpretable —
+        # the lesson of 7.16-7.20. hoops position has 5 classes at 21.1% majority;
+        # gridiron 4 at 39.7%; pitch 3 at 43.7%. Gridiron position is near-perfectly
+        # recoverable (0.999) because its 18 features are pass/rush/receiving and the
+        # positions have disjoint stat profiles — that is a property of the data, not a
+        # model achievement, and it should not be read as one.
+        pmask = posm.astype(bool)
         out[SPORTS[s]] = {
             "n": int(m.sum()),
             "native_knn5_e_s": knn5_acc(e_s, native),
             "native_knn5_z": knn5_acc(z_s, native),
+            "native_majority_baseline": round(float(np.bincount(native).max()) / len(native), 4),
             "pos_knn5_e_s": knn5_acc(e_s, pos, posm) if posm.any() else None,
             "pos_knn5_z": knn5_acc(z_s, pos, posm) if posm.any() else None,
+            "pos_majority_baseline": (round(float(np.bincount(pos[pmask]).max())
+                                            / int(pmask.sum()), 4) if pmask.any() else None),
         }
     return out
 
@@ -262,7 +284,9 @@ def main():
         ne, nz = d["native_knn5_e_s"], d["native_knn5_z"]
         pe, pz = d["pos_knn5_e_s"], d["pos_knn5_z"]
         print(f"  {s:8s} n={d['n']:>5}  native e_s={ne:.3f} z={nz:.3f} (d{nz-ne:+.3f})"
-              f"  pos e_s={pe if pe is None else round(pe,3)} z={pz if pz is None else round(pz,3)}")
+              f" [base {d['native_majority_baseline']:.3f}]"
+              f"  pos e_s={pe if pe is None else round(pe, 3)} z={pz if pz is None else round(pz, 3)}"
+              f" [base {d['pos_majority_baseline']}]")
     bmsg = ""
     if args.baseline_sport_acc is not None:
         bmsg = f"  baseline={args.baseline_sport_acc:.3f} dVsBase={g2['delta_vs_baseline']:+.3f}"
