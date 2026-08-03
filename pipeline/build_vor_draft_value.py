@@ -193,7 +193,12 @@ def main() -> int:
             player_rows.append({
                 "name": n, "pos": pos, "overall": pick, "bucket": b, "year": yr,
                 "expect_log": round(max(0.0, 1 - log1p(pick) / log1p(262.0)), 4),
-                "vor_total": round(sum(window), 2), "played": bool(window)})
+                "vor_total": round(sum(window), 2), "played": bool(window),
+                # FULL-career qualifying season count, not the 5-year window. It exists so
+                # check_draft_value_invariants.py I6 can assert that the direction axis
+                # derived the same series this table did. The hoops half of that pair
+                # silently used a different eligibility rule for a whole build.
+                "seasons_total": len(seasons_of.get(n, ()))})
 
     per = surv["report"]["per_position"]
     rows = []

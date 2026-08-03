@@ -94,6 +94,39 @@ def season_start(season: str) -> int:
     return int(str(season).split("-")[0])
 
 
+def eligible_pairs(vec: dict) -> set[tuple[str, str]]:
+    """(season, normalised name) that clear vectors.json's minutes gate."""
+    return {(str(p["season"]), norm_name(p["name"])) for p in vec["players"]}
+
+
+def vor_series(seasons: list[str], eligible: set[tuple[str, str]]):
+    """name -> [(year, floored VOR)]. THE ONE IMPLEMENTATION.
+
+    build_direction_axis.py previously carried its own copy of this loop, so applying the
+    eligibility filter here left that copy still reading the raw cache — the direction
+    axis kept reporting Damion James rising 0.00 -> 38.16 on one eligible season after the
+    bug was supposedly fixed. Two copies of a rule means fixing it once fixes it once.
+    """
+    out: dict[str, list[tuple[int, float]]] = collections.defaultdict(list)
+    seen = 0
+    for season in seasons:
+        f = CACHE / f"base_{season}.json"
+        if not f.exists():
+            continue
+        seen += 1
+        rows = json.loads(f.read_text(encoding="utf-8"))
+        comps = {norm_name(k): composite(v) for k, v in rows.items()
+                 if (season, norm_name(k)) in eligible}
+        if not comps:
+            continue
+        ranked = sorted(comps.values(), reverse=True)
+        base = ranked[min(REPLACEMENT_RANK, len(ranked)) - 1]
+        y = season_start(season)
+        for n, c in comps.items():
+            out[n].append((y, max(0.0, c - base)))
+    return out, seen
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
@@ -107,21 +140,17 @@ def main() -> int:
     seasons = sorted({str(p["season"]) for p in vec["players"]}, key=season_start)
     first_year, last_year = season_start(seasons[0]), season_start(seasons[-1])
 
+    # ELIGIBILITY FILTER, and it is not optional. base_<season>.json is the RAW cache;
+    # vectors.json applies a schedule-aware minutes gate ("15% of season GP (clamp 10-15)
+    # + 6% of 48mpg schedule total minutes, floor 450") and 572 raw players in 2023-24
+    # become 484 eligible. Because the composite is PER-100 POSSESSIONS, a player with a
+    # handful of minutes posts an enormous rate off nothing — the direction axis surfaced
+    # Damion James rising 0.00 -> 38.16 on a career with ONE eligible season. Reading the
+    # raw cache silently bypassed a gate the rest of the estate applies everywhere.
+    eligible = eligible_pairs(vec)
+
     # ---- composite + replacement per season ----------------------------------
-    vor_of: dict[str, list[tuple[int, float]]] = collections.defaultdict(list)
-    seasons_seen = 0
-    for season in seasons:
-        f = CACHE / f"base_{season}.json"
-        if not f.exists():
-            continue
-        seasons_seen += 1
-        rows = json.loads(f.read_text(encoding="utf-8"))
-        comps = {norm_name(k): composite(v) for k, v in rows.items()}
-        ranked = sorted(comps.values(), reverse=True)
-        base = ranked[min(REPLACEMENT_RANK, len(ranked)) - 1]
-        y = season_start(season)
-        for n, c in comps.items():
-            vor_of[n].append((y, max(0.0, c - base)))
+    vor_of, seasons_seen = vor_series(seasons, eligible)
 
     # ---- denominator: every drafted player -----------------------------------
     draft = json.loads(DRAFT.read_text(encoding="utf-8"))["players"]
@@ -148,7 +177,10 @@ def main() -> int:
         totals[b].append(total)
         rows_out.append({"name": n, "overall": overall, "bucket": b, "year": yr,
                          "expect_log": round(max(0.0, 1 - log1p(overall) / log1p(MAX_PICK)), 4),
-                         "vor_total": round(total, 2), "played": bool(window)})
+                         "vor_total": round(total, 2), "played": bool(window),
+                         # FULL-career eligible season count, not the 5-year window — see
+                         # I6 in check_draft_value_invariants.py.
+                         "seasons_total": len(vor_of.get(n, ()))})
 
     cells = []
     for _lo, _hi, b in BUCKETS:

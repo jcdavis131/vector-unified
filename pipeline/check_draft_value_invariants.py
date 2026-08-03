@@ -36,6 +36,16 @@ Plus two structural ones that would have caught related mistakes:
       nature, but a violation means either a real and remarkable finding or a bug, and it
       should never pass unnoticed.
 
+  I6  The direction axis and the value table must agree on how many qualifying seasons a
+      career has. This is the fourth failure, added after the fact. The hoops direction
+      axis carried its OWN copy of the composite/replacement loop, so when the eligibility
+      gate was added to the value table the axis kept reading the raw per-100 cache — and
+      reported a one-eligible-season player as the biggest riser in the NBA
+      (0.00 -> 38.16). Nothing in I1-I5 could see it: both artifacts were internally
+      consistent, individually plausible, and describing different populations. The two
+      implementations are now one function, and this assertion is what proves they stayed
+      one.
+
     python pipeline/check_draft_value_invariants.py
     python pipeline/check_draft_value_invariants.py --check   # exit 1 on any violation
 """
@@ -50,6 +60,14 @@ ROOT = Path(__file__).resolve().parent.parent
 SURV = ROOT / "data" / "qb_survivorship_probe.json"
 VOR = ROOT / "data" / "vor_draft_value.json"
 ORDER = ["R1", "R2", "R3", "R4-7"]
+
+# I6 pairs: (value table, direction axis) per sport. Both carry per-player rows keyed by
+# the same normalised name, and both claim to count the same qualifying seasons.
+AXIS_PAIRS = {
+    "gridiron": (VOR, ROOT / "data" / "direction_axis_gridiron.json"),
+    "hoops": (ROOT / "data" / "hoops_vor_draft_value.json",
+              ROOT / "data" / "direction_axis_hoops.json"),
+}
 
 
 def check() -> list[str]:
@@ -115,6 +133,40 @@ def check() -> list[str]:
                     f"I5 {pos}: {b1} ({v1}) is worth MORE than {b0} ({v0}). Either a "
                     f"remarkable finding or a bug — it must not pass unnoticed")
 
+    problems += check_axis_agreement()
+    return problems
+
+
+def check_axis_agreement() -> list[str]:
+    """I6 — the direction axis and the value table must count the same seasons.
+
+    Skipped, not failed, when either artifact is absent: the axes are optional downstream
+    products and a missing file is a build-order fact, not an inconsistency. A DISAGREEMENT
+    is never skipped.
+    """
+    problems: list[str] = []
+    for sport, (val_p, axis_p) in AXIS_PAIRS.items():
+        if not (val_p.exists() and axis_p.exists()):
+            continue
+        val = json.loads(val_p.read_text(encoding="utf-8"))
+        players = val.get("players") or val.get("player_rows") or []
+        table = {r["name"]: r.get("seasons_total") for r in players
+                 if r.get("seasons_total") is not None}
+        if not table:
+            problems.append(
+                f"I6 {sport}: {val_p.name} carries no seasons_total — rebuild it; without "
+                f"that field the axis and the table cannot be checked against each other")
+            continue
+        axis = json.loads(axis_p.read_text(encoding="utf-8")).get("careers") or []
+        bad = [(r["name"], r["seasons"], table[r["name"]]) for r in axis
+               if r["name"] in table and r["seasons"] != table[r["name"]]]
+        if bad:
+            shown = ", ".join(f"{n} axis={a} table={t}" for n, a, t in bad[:3])
+            problems.append(
+                f"I6 {sport}: {len(bad)} career(s) where the direction axis and the value "
+                f"table disagree on qualifying-season count ({shown}). The two are reading "
+                f"the same source under DIFFERENT rules — that is how a one-season player "
+                f"became the league's biggest riser")
     return problems
 
 
@@ -131,6 +183,7 @@ def main() -> int:
         print("  I3 no negative floored EV")
         print("  I4 drafted counts agree across artifacts")
         print("  I5 value does not rise with later rounds")
+        print("  I6 direction axis and value table count the same seasons")
         return 0
 
     print(f"{len(problems)} invariant violation(s):\n")
