@@ -41,10 +41,18 @@ import argparse
 import collections
 import csv
 import json
-import re
-import unicodedata
+import sys
 from math import log1p
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# THE ONE GRIDIRON NORMALISER. This file used to carry a private copy that stripped
+# `jr|sr|ii|iii|iv|v` unconditionally, which merged Marvin Harrison with Marvin Harrison Jr.
+# — and, worse, disagreed with the VOR table that keys off the same names. `gridiron_
+# pedigree.json`'s KEYS are norm_names, so a private copy here silently re-keys the whole
+# artifact relative to every consumer of it. Import, never re-implement.
+from build_vor_draft_value import norm_name  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 GRIDIRON = Path("C:/Users/jcdav/vector-gridiron")
@@ -53,14 +61,6 @@ VECTORS = GRIDIRON / "assets" / "vectors.json"
 OUT = ROOT / "data" / "gridiron_pedigree.json"
 
 MAX_PICK = 262.0  # deepest modern 7-round draft; structural, not tuned
-
-
-def norm_name(name: str) -> str:
-    s = unicodedata.normalize("NFD", name or "")
-    s = "".join(c for c in s if not unicodedata.combining(c))
-    s = re.sub(r"[.'\u2019-]", "", s.lower())
-    s = re.sub(r"\s+(jr|sr|ii|iii|iv|v)$", "", s.strip())
-    return re.sub(r"\s+", " ", s)
 
 
 def expect_log(overall: int) -> float:

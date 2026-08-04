@@ -143,6 +143,17 @@ def merged_names(series: dict, draft: dict) -> set[str]:
 
     A career GAP is deliberately NOT used: Anthony Parker played in Europe 2000-2005 and
     107 eligible careers carry one. Suggestive is not definitive.
+
+    THE SECOND TEST IS NOT DEFINITIVE and the docstring above used to claim it was. A player
+    who is drafted and does not sign can re-enter, so ONE person can hold two rows:
+
+        arvydas sabonis   1985 #77 (Atlanta, voided as underage) + 1986 #24 (Portland)
+                          Wikidata: one qid, Q297750, born 1964
+
+    ">1 draft entry" answers "does this name have more than one draft row", which is a
+    different question from "are there two people". `acquitted_names()` below is the
+    correction; callers that exclude should subtract it. The year gap is NOT a usable
+    discriminator — three of the five 1-year-span names are genuine collisions.
     """
     picks_by_norm: dict[str, list] = collections.defaultdict(list)
     for raw, picks in draft.items():
@@ -157,6 +168,28 @@ def merged_names(series: dict, draft: dict) -> set[str]:
         if yrs and any(y < min(yrs) for y, _ in rows):
             out.add(name)
     return out
+
+
+COLLISIONS = Path(__file__).resolve().parent.parent / "data" / "hoops_name_collisions.json"
+
+
+def acquitted_names() -> set[str]:
+    """Names `merged_names()` flags that Wikidata shows to be ONE person.
+
+    Evidence, not assumption: the suffix sweep in probe_hoops_name_collisions.py re-queries
+    each flagged name across ["", " Jr.", " Sr.", " II", " III", " IV"] — a bare-label query
+    cannot see Glen Rice Jr. (Q4811246, b.1991) when the corpus display name is "Glen Rice"
+    — and a name is acquitted only when that sweep, having had every chance to find a second
+    person, still returns exactly one age-plausible QID.
+
+    RETURNS EMPTY WHEN THE ARTIFACT IS ABSENT, which is the conservative direction: callers
+    subtract this from an exclusion set, so an empty set excludes MORE, never less. A missing
+    probe must not be able to quietly re-admit a merged career.
+    """
+    if not COLLISIONS.exists():
+        return set()
+    doc = json.loads(COLLISIONS.read_text(encoding="utf-8"))
+    return set((doc.get("SUFFIX_SWEEP") or {}).get("acquitted") or {})
 
 
 def main() -> int:
@@ -186,7 +219,10 @@ def main() -> int:
 
     # ---- denominator: every drafted player -----------------------------------
     draft = json.loads(DRAFT.read_text(encoding="utf-8"))["players"]
-    merged = merged_names(vor_of, draft)
+    # Minus the names Wikidata clears as one person. Dropping all 45 discarded 21 real
+    # careers — Patrick Ewing, Glen Rice, Mike Dunleavy among them — on the strength of
+    # their SONS' draft rows appearing under the same normalised key.
+    merged = merged_names(vor_of, draft) - acquitted_names()
     max_draft_year = last_year - WINDOW_YEARS + 1
 
     totals: dict[str, list[float]] = collections.defaultdict(list)

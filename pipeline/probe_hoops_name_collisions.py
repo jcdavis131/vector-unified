@@ -35,6 +35,27 @@ CROSS-CHECK IS THE DELIVERABLE. Two independent methods should agree on the case
 see. If DOB does not re-find Jaren Jackson, one of the two is wrong and the disagreement is
 worth more than either result alone.
 
+AND IT ALREADY PAID, in the direction that matters — by ACQUITTING. `check_merged_careers.py`
+calls a name AMBIGUOUS when it holds more than one draft row and its docstring called that
+"definitive that two people share the name". It is not. A player who is drafted and does not
+sign can re-enter, so one person can hold two rows:
+
+    arvydas sabonis   draft 1985 #77 (Atlanta, voided as underage) + 1986 #24 (Portland)
+                      Wikidata: ONE qid, Q297750, born 1964
+
+AMBIGUOUS answers "does this name have more than one draft row", which is a different
+question from "are there two people". The year gap is NOT the discriminator either, and that
+is worth recording because it looked like one: the ambiguous year-spans are bimodal with an
+empty region at 2-3y, five names sitting at exactly 1y. Three of those five are real
+collisions —
+
+    justin jackson    3 qids (1990, 1995, 1997)
+    marcus williams   3 qids (1985, 1986, 2002)
+    larry robinson    2 qids (1951, 1968)
+
+— so a 1-year cut would have been wrong 3 times out of 5. The empty 2-3y region is a
+five-sample artifact, not a separation. DOB is the arbiter; a span is not.
+
     python pipeline/probe_hoops_name_collisions.py
     python pipeline/probe_hoops_name_collisions.py --limit 300   # quick pass
 """
@@ -128,7 +149,7 @@ def main() -> int:
               f"{len(cands)} names with a candidate", flush=True)
         time.sleep(SLEEP)
 
-    colliding, resolved, unmatched = {}, 0, 0
+    colliding, resolved, unmatched = {}, [], 0
     for n in names:
         cs = cands.get(n) or []
         if not cs:
@@ -150,7 +171,12 @@ def main() -> int:
             colliding[n] = {"qids": seen, "corpus_seasons": [lo, hi],
                             "birth_years": sorted(set(seen.values()))}
         elif len(seen) == 1:
-            resolved += 1
+            # KEEP THE NAMES, not just the count. Exactly one age-plausible person for a
+            # name is positive evidence of a SINGLE person, and that is the only thing that
+            # can acquit a name the arithmetic detector flagged as AMBIGUOUS. Arvydas
+            # Sabonis holds two draft rows — 1985 #77 voided as underage, 1986 #24 — and one
+            # QID born 1964. Storing `resolved` as an int threw away the acquittal.
+            resolved.append(n)
 
     # ---- cross-check against the arithmetic detector -------------------------
     seasons = sorted({str(p["season"]) for p in vec["players"]}, key=B.season_start)
@@ -161,6 +187,48 @@ def main() -> int:
     dob_only = sorted(set(colliding) - arith)
     arith_only = sorted(arith - set(colliding))
 
+    # ---- SUFFIX SWEEP, and it exists because the pass above cannot acquit --------
+    # The query matches labels EXACTLY, and the corpus display name carries no suffix, so
+    # asking for "Glen Rice" never returns Glen Rice Jr. (Q4811246, born 1991) and the name
+    # comes back resolved-single. Acquitting on that would clear a genuine father/son pair.
+    # `resolved_single_person` above answers "how many exact-label matches are age-plausible",
+    # which is a different question from "how many people have this name".
+    #
+    # Scoped to the arithmetic-flagged names because that is the only place the answer
+    # changes a decision — extra candidates can never turn a collision back into one person,
+    # so names already colliding need no sweep. 45 names is one batch; sweeping all 2,415
+    # across four suffixes would be ~227 batches for no decision it could alter.
+    SUFFIXES = ["", " Jr.", " Sr.", " II", " III", " IV"]
+    sweep_targets = sorted(arith)
+    sweep: dict[str, dict[str, int]] = collections.defaultdict(dict)
+    sweep_failed = 0
+    probe_names = [display.get(n, n) + s for n in sweep_targets for s in SUFFIXES]
+    for i in range(0, len(probe_names), BATCH):
+        try:
+            res = query(probe_names[i:i + BATCH])
+        except Exception as e:                                        # noqa: BLE001
+            sweep_failed += 1
+            print(f"  sweep batch {i // BATCH + 1} failed: {str(e)[:70]}")
+            continue
+        for b in res:
+            nm = B.norm_name(b.get("name", {}).get("value", ""))
+            dob = (b.get("dob") or {}).get("value")
+            if not (dob and dob[:4].lstrip("-").isdigit()):
+                continue
+            by = int(dob[:4])
+            if nm in span and any(MIN_AGE <= y - by <= MAX_AGE for y in span[nm]):
+                sweep[nm][b["item"]["value"].rsplit("/", 1)[-1]] = by
+        time.sleep(SLEEP)
+
+    # A name is ACQUITTED only when the suffix sweep — which had every chance to find a
+    # second person and did not — still returns exactly one age-plausible QID.
+    acquitted = {n: sweep[n] for n in sweep_targets if len(sweep.get(n, {})) == 1}
+    confirmed = {n: sweep[n] for n in sweep_targets if len(sweep.get(n, {})) >= 2}
+    unknown = [n for n in sweep_targets if not sweep.get(n)]
+    # Excluded = arithmetic flag NOT overturned by DOB. Unknown stays excluded: no evidence
+    # is not evidence of one person.
+    exclusion = sorted(set(arith) - set(acquitted))
+
     report = {
         "operator_report": (
             "Same-exact-name players need date of birth and team to separate. "
@@ -169,7 +237,12 @@ def main() -> int:
         "names_probed": len(names),
         "matched_to_wikidata": len(cands),
         "unmatched": unmatched,
-        "resolved_single_person": resolved,
+        "resolved_single_person": len(resolved),
+        # The full list, not a sample. A downstream consumer needs to ask "is THIS name
+        # resolved?", which a truncated list answers wrongly and silently — the same trap
+        # `colliding` set below: it reported 119 while storing 80, and reading a `False` off
+        # it for `marcus williams` nearly acquitted a genuine three-person collision.
+        "resolved_names": sorted(resolved),
         "colliding_names": len(colliding),
         "WHAT_COLLIDING_MEANS": (
             "A SUPERSET OF SUSPICION, not a definitive set. It says two basketball players "
@@ -186,6 +259,25 @@ def main() -> int:
             "Cristiano Ronaldo matches his own son. A name is COLLIDING when two or more "
             "distinct QIDs are both plausible by birth year against the corpus season span. "
             "Nothing is merged and nothing is picked."),
+        "SUFFIX_SWEEP": {
+            "what": ("Re-queries the arithmetic-flagged names across "
+                     f"{SUFFIXES} because label matching is EXACT and the corpus display "
+                     "name carries no suffix — asking for 'Glen Rice' never returns Glen "
+                     "Rice Jr. (Q4811246, b.1991). Without this the bare pass reports him "
+                     "as one person and the father/son pair is acquitted."),
+            "names_swept": len(sweep_targets),
+            "failed_batches": sweep_failed,
+            "acquitted": {k: v for k, v in sorted(acquitted.items())},
+            "confirmed_two_or_more": {k: v for k, v in sorted(confirmed.items())},
+            "no_wikidata_answer": unknown,
+            "EXCLUSION_SET": exclusion,
+            "rule": ("EXCLUDE = arithmetic-flagged AND NOT acquitted by the suffix sweep. "
+                     "A name with no Wikidata answer stays excluded — no evidence is not "
+                     "evidence of one person. DOB-colliding names that the arithmetic test "
+                     "did NOT flag are deliberately absent: `colliding` is a superset of "
+                     "suspicion (a second same-name player existing somewhere does not put "
+                     "him in this corpus), so it never excludes on its own."),
+        },
         "cross_check": {
             "arithmetic_detector_count": len(arith),
             "found_by_both": both,
@@ -198,12 +290,21 @@ def main() -> int:
                      "ARITHMETIC-only cases are names Wikidata has one or zero entries "
                      "for, which is a coverage limit of the DOB method, not a refutation."),
         },
-        "colliding": dict(sorted(colliding.items())[:80]),
+        # ALL of them. This was `[:80]` while `colliding_names` reported 119, so the file
+        # said 119 and answered questions about 80 — a silent cap that reads as coverage.
+        "colliding": dict(sorted(colliding.items())),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     print(f"\nmatched {len(cands)}/{len(names)}   unmatched {unmatched}   "
-          f"single-person {resolved}   COLLIDING {len(colliding)}")
+          f"single-person {len(resolved)}   COLLIDING {len(colliding)}")
+    print(f"\nsuffix sweep over the {len(sweep_targets)} arithmetic-flagged names:")
+    print(f"  ACQUITTED (one person, re-draft) : {len(acquitted)}  "
+          f"{sorted(acquitted)[:5]}")
+    print(f"  CONFIRMED (>=2 people)           : {len(confirmed)}  "
+          f"{sorted(confirmed)[:5]}")
+    print(f"  no Wikidata answer               : {len(unknown)}  {unknown[:5]}")
+    print(f"  EXCLUSION SET                    : {len(exclusion)}")
     print(f"\ncross-check vs the arithmetic detector ({len(arith)} names):")
     print(f"  found by BOTH        : {len(both)}  {both[:6]}")
     print(f"  found by DOB only    : {len(dob_only)}  {dob_only[:6]}")

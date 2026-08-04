@@ -79,7 +79,19 @@ AXES = {
     # artifact was passing this check VACUOUSLY — a checker that reads nothing reports
     # clean. Caught by printing the row count instead of trusting the green line.
     "vor_draft_value.json": ("players", "gridiron"),
+    # The trajectory axes measure delivery-vs-pedigree over a whole career, which is
+    # precisely "treat a career as one person's" — the same exposure as the direction axes
+    # and they were simply never registered here. An artifact that qualifies but is not in
+    # AXES is silently unchecked, the same failure mode validate.py's unregistered-checker
+    # rule exists to catch. ROW_KEYS below turns "not in AXES" into a FAILURE.
+    "trajectory_axis_gridiron.json": ("careers", "gridiron"),
+    "trajectory_axis.json": ("careers", "hoops"),
 }
+
+# Every data/ artifact carrying career-level rows keyed by player name must appear in AXES.
+# Discovery by glob, refusal on omission — registration is mandatory for the same reason it
+# is in validate.py: the thing you forget to register is the thing that goes unchecked.
+CAREER_ARTIFACT_GLOB = ("direction_axis*.json", "trajectory_axis*.json", "*vor_draft_value.json")
 OUT = ROOT / "data" / "merged_careers.json"
 GAP_YEARS = 3
 
@@ -143,16 +155,31 @@ def main() -> int:
             gseries[G.norm_name(p["name"])].append((int(p["season"]), float(ppr)))
     gmerged = G.merged_names(gseries, G.DRAFT_CSV)
 
-    by_sport = {"hoops": set(impossible) | set(ambiguous), "gridiron": gmerged}
+    # AMBIGUOUS is overturnable and IMPOSSIBLE is not. A name with two draft rows may be one
+    # person who re-entered the draft — Sabonis, 1985 #77 voided, 1986 #24 — so the suffix
+    # sweep in probe_hoops_name_collisions.py gets to acquit. IMPOSSIBLE is arithmetic and
+    # stays: a season before the draft year is not explainable by a re-draft.
+    acquitted = B.acquitted_names() - set(impossible)
+    by_sport = {"hoops": (set(impossible) | set(ambiguous)) - acquitted, "gridiron": gmerged}
     definitive = by_sport["hoops"] | by_sport["gridiron"]
 
+    unregistered = sorted(
+        {p.name for pat in CAREER_ARTIFACT_GLOB for p in (ROOT / "data").glob(pat)}
+        - set(AXES))
+
     contaminated = {}
+    empty_reads = []
     for fn, (key, sport) in AXES.items():
         p = ROOT / "data" / fn
         if not p.exists():
             continue
         doc = json.loads(p.read_text(encoding="utf-8"))
         rows = doc.get(key) or doc.get("report", {}).get(key) or []
+        # A zero-row read is how this check went vacuous the first time: the key was wrong,
+        # the list came back empty, and "no contamination" was reported over nothing. An
+        # artifact that exists but yields no rows is a WRONG KEY, not a clean bill.
+        if not rows:
+            empty_reads.append(f"{fn} (key {key!r} yielded 0 rows)")
         bad = [r for r in rows if r.get("name") in by_sport[sport]]
         if bad:
             contaminated[fn] = [
@@ -175,6 +202,15 @@ def main() -> int:
         "ambiguous_count": len(ambiguous),
         "review_count": len(review),
         "definitive_count": len(definitive),
+        "acquitted_count": len(acquitted),
+        "acquitted": sorted(acquitted),
+        "acquittal_note": (
+            "AMBIGUOUS was documented as 'definitive that two people share the name'. It is "
+            "not — a drafted player who does not sign can re-enter, so one person can hold "
+            "two rows. Arvydas Sabonis: 1985 #77 voided as underage, 1986 #24 Portland, one "
+            "Wikidata qid born 1964. These names are flagged by arithmetic and cleared by "
+            "the suffix sweep in probe_hoops_name_collisions.py. IMPOSSIBLE is never "
+            "acquitted: a season before the draft year survives no re-draft explanation."),
         "gridiron_merged_count": len(gmerged),
         "gridiron_note": ("Same two definitive tests applied to gridiron via "
                           "build_vor_draft_value.merged_names. The defect is larger there: "
@@ -205,9 +241,12 @@ def main() -> int:
         print(f"      {n:24} drafted {d['earliest_draft_year']}, seasons from "
               f"{d['span'][0]}  ({len(d['seasons_before_draft'])} impossible)")
     print(f"  AMBIGUOUS  (>1 draft entry for the name) : {len(ambiguous)}")
+    print(f"  ACQUITTED by DOB (one person, re-draft)  : {len(acquitted)}")
     print(f"  REVIEW     (gap only, NOT excluded)      : {len(review)}")
+    print(f"hoops exclusion set after acquittal         : {len(by_sport['hoops'])}")
     print(f"gridiron definitively-merged names          : {len(gmerged)}")
 
+    problems = 0
     if contaminated:
         print(f"\n{sum(len(v) for v in contaminated.values())} contaminated row(s) in "
               f"{len(contaminated)} artifact(s):")
@@ -215,8 +254,22 @@ def main() -> int:
             for r in rows:
                 print(f"  {fn}: {r}")
         print("\nThese treat two people as one career. Exclude them or supply a DOB key.")
+        problems += 1
+    if unregistered:
+        print(f"\n{len(unregistered)} career artifact(s) not registered in AXES — an "
+              f"artifact outside this check is silently unchecked:")
+        for fn in unregistered:
+            print(f"  {fn}")
+        problems += 1
+    if empty_reads:
+        print(f"\n{len(empty_reads)} artifact(s) read ZERO rows — wrong key, not clean:")
+        for e in empty_reads:
+            print(f"  {e}")
+        problems += 1
+
+    if problems:
         return 1 if args.check else 0
-    print("\nno axis artifact carries a definitively-merged career.")
+    print(f"\nno merged career in any of the {len(AXES)} registered axis artifacts.")
     return 0
 
 

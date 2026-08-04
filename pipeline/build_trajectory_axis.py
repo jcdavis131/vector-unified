@@ -47,11 +47,24 @@ and forcing it into T0/T1 would manufacture a finding:
 from __future__ import annotations
 
 import argparse
+import csv
 import json
-import re
 import statistics
-import unicodedata
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# ONE NORMALISER PER SPORT, and that is the whole point of the two imports. Suffix policy
+# is conflict-aware -- a suffix is kept only when the stripped form ALREADY EXISTS in the
+# same source -- so the policy is a property of a source, not a global. Sharing one
+# normaliser across sports would apply gridiron's `marvin harrison`/`marvin harrison jr`
+# protection to hoops names, the same cross-sport contamination that made the first version
+# of check_merged_careers.py flag `james jones` in the HOOPS table on a gridiron collision.
+import build_hoops_vor_draft_value as H  # noqa: E402
+import build_vor_draft_value as G  # noqa: E402
+from build_hoops_vor_draft_value import norm_name as norm_hoops  # noqa: E402
+from build_vor_draft_value import norm_name as norm_gridiron  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 HOOPS = Path("C:/Users/jcdav/vector-hoops")
@@ -68,14 +81,6 @@ MIN_SEASONS = 4      # same floor vector-hoops uses for its career classes
 TAIL_PCT = 20.0      # top/bottom fifth of the residual distribution
 HIGH_EXPECT_Q = 60.0  # "high billing" = expect_slot above this percentile
 LOW_EXPECT_Q = 40.0
-
-
-def norm_name(name: str) -> str:
-    s = unicodedata.normalize("NFD", name or "")
-    s = "".join(c for c in s if not unicodedata.combining(c))
-    s = re.sub(r"[.'\u2019-]", "", s.lower())
-    s = re.sub(r"\s+(jr|sr|ii|iii|iv|v)$", "", s.strip())
-    return re.sub(r"\s+", " ", s)
 
 
 def pct_rank(sorted_vals: list[float], v: float) -> float:
@@ -119,12 +124,30 @@ def run_gridiron(args) -> int:
         pool = pools.get((p["season"], p.get("pos")))
         if not pool or len(pool) < 10:
             continue
-        per_player.setdefault(norm_name(p["name"]), []).append(pct_rank(pool, float(ppr)))
+        per_player.setdefault(norm_gridiron(p["name"]), []).append(pct_rank(pool, float(ppr)))
 
-    rows, dropped = [], {"no_pedigree": 0, "too_few_seasons": 0}
+    # MERGED CAREERS ARE NOT SCORABLE HERE, and this axis was scoring them until now — it
+    # was simply never registered in check_merged_careers.AXES, which found 10 contaminated
+    # gridiron rows the moment it was. This axis regresses a career-mean delivery on a draft
+    # slot; when the seasons belong to two people the mean is a blend and the slot is one
+    # person's, so the residual is a real number answering a different question.
+    with G.DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as fh:
+        _dn = [(r.get("pfr_player_name") or "").strip() for r in csv.DictReader(fh)]
+    G.configure_norm([p["name"] for p in vec], [n for n in _dn if n])
+    gs: dict[str, list] = {}
+    for p in vec:
+        _ppr = (p.get("ppg") or {}).get("ppr")
+        if _ppr is not None:
+            gs.setdefault(norm_gridiron(p["name"]), []).append((int(p["season"]), float(_ppr)))
+    merged = G.merged_names(gs, G.DRAFT_CSV)
+
+    rows, dropped = [], {"no_pedigree": 0, "too_few_seasons": 0, "merged_career": 0}
     for name, dels in per_player.items():
         if len(dels) < MIN_SEASONS:
             dropped["too_few_seasons"] += 1
+            continue
+        if name in merged:
+            dropped["merged_career"] += 1
             continue
         pd = ped.get(name)
         if not pd:
@@ -262,15 +285,27 @@ def main() -> int:
     # ---- career-level delivery ------------------------------------------------
     per_player: dict[str, list[float]] = {}
     for pl, g in zip(vplayers, grades, strict=True):
-        per_player.setdefault(norm_name(pl["name"]), []).append(float(g[idx]))
+        per_player.setdefault(norm_hoops(pl["name"]), []).append(float(g[idx]))
 
-    pednorm = {norm_name(k): v for k, v in ped.items()}
+    pednorm = {norm_hoops(k): v for k, v in ped.items()}
+
+    # Same exclusion as the gridiron branch, MINUS the names Wikidata clears. The arithmetic
+    # test flags 45 hoops names; 21 of them are one person who re-entered the draft, and
+    # excluding those would discard real careers — Patrick Ewing, Glen Rice and Mike Dunleavy
+    # among them — on the strength of their sons' draft rows.
+    hseasons = sorted({str(p["season"]) for p in vplayers}, key=H.season_start)
+    hseries, _ = H.vor_series(hseasons, H.eligible_pairs({"players": vplayers}))
+    hdraft = json.loads(H.DRAFT.read_text(encoding="utf-8"))["players"]
+    hmerged = H.merged_names(hseries, hdraft) - H.acquitted_names()
 
     rows = []
-    dropped = {"no_pedigree": 0, "too_few_seasons": 0}
+    dropped = {"no_pedigree": 0, "too_few_seasons": 0, "merged_career": 0}
     for name, impacts in per_player.items():
         if len(impacts) < MIN_SEASONS:
             dropped["too_few_seasons"] += 1
+            continue
+        if name in hmerged:
+            dropped["merged_career"] += 1
             continue
         pd = pednorm.get(name)
         if not pd:
