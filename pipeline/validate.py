@@ -55,6 +55,9 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # Every fabrication this project produced was a superlative, six for six, and a
     # warning in the generator prompt demonstrably did not stop the sixth. Local only.
     "superlatives": (["check_superlatives.py", "--check"], False),
+    # The G1 position arm was pinned at 1.0/0.0 by the mask bug from Phase 2 to 7.21.
+    # This is the first thing that can report it regressing.
+    "g1_position": (["probe_g1_position.py", "--check"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:

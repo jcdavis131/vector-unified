@@ -118,6 +118,8 @@ PRODUCED_BY.update({
     # the same knn5_acc, but only the standalone one can be run without launching a
     # Stage 2 training run — so it is the producer a staleness message should name.
     "stage2_baselines.json": ("build_stage2_baselines.py", ["eval_unified.py"]),
+    "g1_position_probe.json": ("probe_g1_position.py",
+                               ["eval_unified.py", "export_unified_stage2.py"]),
     "stage2_history.json": ("train_stage2.py", []),
     "trajectory_sport_comparison.json": ("compare_trajectory_sports.py", []),
 })
