@@ -94,6 +94,30 @@ def _bump_mtime(path: Path) -> None:
     os.utime(path, (t, t))
 
 
+def _break_invariant(doc):
+    """Change a drafted COUNT the invariant actually reads.
+
+    I4 compares surv["per_position"][pos]["by_bucket"][b]["drafted"] against the value
+    table's own cell — a PRECOMPUTED count in the report, not a count of players[] rows.
+    The first version of this mutation deleted a WR from players[] and the guard exited 0,
+    because nothing it reads had changed. That is the third mutation in this suite to target
+    a field the guard does not look at, all three from assuming a checker's inputs rather
+    than reading them. The guards exist to catch exactly that assumption; so does this note.
+
+    I4 caught two real defects this phase: five private norm_name() copies disagreeing by
+    one WR, and a value table rebuilt without its probe.
+    """
+    # Under doc["report"], not at top level — check_draft_value_invariants.py line 79 does
+    # `json.loads(...)["report"]`. Reading that line is what finally located it, after two
+    # wrong guesses.
+    per = (doc.get("report") or {}).get("per_position") or {}
+    for pos, blob in per.items():
+        for b, cell in (blob.get("by_bucket") or {}).items():
+            if isinstance(cell.get("drafted"), int):
+                cell["drafted"] += 1
+                return
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -134,6 +158,11 @@ MUTATIONS = [
                            '"Q19204627": "American football player"',
                            '"Q19204627": "association football"'),
      "a registered QID relabelled to the wrong entity"),
+    ("draft_value_invariants/I4_count_drift",
+     ["check_draft_value_invariants.py", "--check"],
+     ROOT / "data" / "qb_survivorship_probe.json", _break_invariant,
+     "a drafted count bumped by one — the probe and the value table now disagree "
+     "about who was drafted, from the same CSV"),
     ("merged_careers/contamination",
      ["check_merged_careers.py", "--check"],
      ROOT / "data" / "direction_axis_hoops.json", _contaminate_axis,
