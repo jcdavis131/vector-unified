@@ -1,0 +1,54 @@
+{
+ "question": "Does train_stage2.py's new --seed flag actually change anything?",
+ "answer": "YES. Verified by running, not by inspection.",
+ "how": "--smoke (2 epochs) at seeds 7 and 11, run IN PLACE with every write target backed up and restored. The isolated-copy trick used for pitch and gridiron does NOT work here: load_live_encoders resolves the three sibling repos relative to vector-unified's own ROOT, so a copy at a scratch path looks for scratch/stage2_seed/vector-hoops/pipeline/train_mtnn.py and dies.",
+ "write_targets_enumerated_across_the_import_closure": {
+  "data/stage2_baselines.json": "train_stage2.py:217",
+  "data/stage2_history.json": "train_stage2.py:367",
+  "pipeline/data/unified_stage2_best.pt": "train_stage2.py:361",
+  "pipeline/data/gridiron_season_emb.npz": "load_encoders.py:244 -- NOT in train_stage2. Written by a module imported two levels down, cached behind an mtime check so it usually does not fire, and it is the same file build_venue_edges.py reads for the gridiron team column. Backing up only the trainer's own three writes would have left it exposed.",
+  "not_written": "eval_unified.py:369 writes unified_report.json but its main() is never called from here -- only knn5_acc is imported."
+ },
+ "safety": {
+  "write_targets_restored": true,
+  "readonly_files_intact": true,
+  "before": {
+   "stage2_baselines.json": "a7531f8b37271282",
+   "stage2_history.json": "e22629381c4db5c0",
+   "unified_stage2_best.pt": "b055641c03760624",
+   "gridiron_season_emb.npz": "7982eab5ff00a51c"
+  },
+  "after": {
+   "stage2_baselines.json": "a7531f8b37271282",
+   "stage2_history.json": "e22629381c4db5c0",
+   "unified_stage2_best.pt": "b055641c03760624",
+   "gridiron_season_emb.npz": "7982eab5ff00a51c"
+  }
+ },
+ "non_vacuity": {
+  "checkpoint_sha_seed7": "311bea45c9898836",
+  "checkpoint_sha_seed11": "f8ad760309b983bf",
+  "checkpoints_differ": true,
+  "history_numeric_fields": 26,
+  "fields_that_differ": 12
+ },
+ "SMOKE_VALUES_ARE_NOT_THE_MODEL": "2 epochs is not converged and none of these numbers describe the shipped Stage 2 trunk. They establish that the flag reaches the output and nothing else. In particular the epoch-1 g3 moved 0.0269 -> 0.1266 between two seeds -- a 4.7x swing on the metric whose gate floor is 0.05 -- and epoch-0 rank moved 22.1 -> 23.0 against a shipped effective_rank of 12.0. Quoting either as evidence about G3 or G2 at convergence would be the exact error this phase keeps correcting. A real floor needs full-length runs at several seeds, which overwrite the shipped checkpoint and is an operator decision.",
+ "seed7_selected_fields": {
+  "epoch": 2,
+  "sup": 0.0,
+  "task": 2.901069598538535,
+  "sport": 0.0,
+  "g2": 0.9988,
+  "g3": 0.0269,
+  "rank": 12.4
+ },
+ "seed11_selected_fields": {
+  "epoch": 2,
+  "sup": 0.0,
+  "task": 2.8881458384650096,
+  "sport": 0.0,
+  "g2": 0.9964,
+  "g3": 0.1266,
+  "rank": 12.4
+ }
+}
