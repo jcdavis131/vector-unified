@@ -202,6 +202,35 @@ def main() -> int:
                     row.append("live-match")
         print("  ".join(row))
 
+    # ---- ADVISORY: artifacts a page might want and does not cite --------------
+    # Staleness only tracks files a page ALREADY cites, so a brand-new artifact about a
+    # sport the page covers is invisible to it — tennis_forward_report.json existed for a
+    # full commit before anything noticed the tennis card had no prediction in it.
+    #
+    # REPORTED, NOT FAILED, and the distinction is deliberate. An uncited artifact is an
+    # OMISSION; an unverified superlative is a potential LIE, which is why that one fails
+    # the build and this does not. A page cannot cite everything, and this heuristic cannot
+    # know intent — it only knows the filename starts with the slug.
+    #
+    # Worth having because the signal is CLEAN: measured across all six pages it returns 4
+    # hits and no junk. The prose-number sweep tried earlier returned dozens, nearly all
+    # legitimate citations, and was dropped for that reason.
+    uncited: list[str] = []
+    for slug in SLUGS:
+        f = DATA / f"{slug}.json"
+        if not f.exists():
+            continue
+        doc = json.loads(f.read_text(encoding="utf-8"))
+        cited = {Path(x).name for x in (doc.get("source_files") or [])}
+        for a in sorted((ROOT / "data").glob(f"{slug}_*.json")):
+            if a.name not in cited:
+                uncited.append(f"{slug}: does not cite data/{a.name}")
+    if uncited:
+        print(f"\n  advisory — {len(uncited)} artifact(s) a page may want and does not "
+              f"cite (not a failure):")
+        for u in uncited:
+            print(f"      {u}")
+
     print()
     if problems:
         print(f"{len(problems)} problem(s):")
