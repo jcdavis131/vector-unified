@@ -89,8 +89,10 @@ ROLE_WORDS = {
 def corporate_ceo(rows):
     """(name, title, how) picking the CEO whose title names no division.
 
-    Returns how='exact' when exactly one CEO-role title is pure role words,
-    'ambiguous' when several or none are, 'absent' when there is no CEO row."""
+    how is one of: exact, same_person_two_titles, sole_ceo_row (a name is
+    returned); transition_or_multiple, all_candidates_divisional, absent (None is).
+    Kept identical to vector-equities/pipeline/audit_ceo_resolution.py -- two copies of
+    a rule that drift apart is how two numbers that should agree stop agreeing."""
     ceos = [r for r in rows if (r.get("role") or "") == "CEO"]
     if not ceos:
         return None, None, "absent"
@@ -102,9 +104,21 @@ def corporate_ceo(rows):
             pure.append(r)
     if len(pure) == 1:
         return pure[0]["name"], pure[0]["title"], "exact"
+    if len(pure) > 1:
+        # Several pure-role rows naming ONE person is a title-spelling artifact, not
+        # ambiguity: "Chair and CEO" plus "Chairman and CEO" for one human. Refusing
+        # those cost 319 ticker-years in the audit. Several pure-role rows naming
+        # DIFFERENT people is a CEO TRANSITION -- ACN_2019 carries Nanterme (died in
+        # January), Rowland (interim) and Sweet (from September), all real -- and there
+        # the refusal is the correct answer, because the year has no single CEO and
+        # picking one erases the succession.
+        names = {r["name"].strip().upper() for r in pure}
+        if len(names) == 1:
+            return pure[0]["name"], pure[0]["title"], "same_person_two_titles"
+        return None, None, "transition_or_multiple"
     if len(ceos) == 1:
         return ceos[0]["name"], ceos[0]["title"], "sole_ceo_row"
-    return None, None, "ambiguous"
+    return None, None, "all_candidates_divisional"
 
 
 def load_ceo_of():
@@ -170,7 +184,9 @@ def main() -> int:
             "ceo_resolution": how,
             "ceo_candidates_if_ambiguous": (
                 [f"{o['name']} | {o['title']}" for o in offs
-                 if (o.get("role") or "") == "CEO"] if how == "ambiguous" else None),
+                 if (o.get("role") or "") == "CEO"]
+                if how in ("transition_or_multiple", "all_candidates_divisional")
+                else None),
             "equities_ceo_of_would_say": eq_name,
             "equities_ceo_of_unambiguous": eq_unambig,
             "named_roles_present": sorted(by_role),

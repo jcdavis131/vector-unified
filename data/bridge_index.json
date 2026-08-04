@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T17:06:16",
+ "built": "2026-08-04T17:16:25",
  "chain": "athlete(player-season) -> team -> venue -> city -> company(ticker) -> named executives",
  "per_hop_survival": {
   "note": "A chain is only as long as its narrowest join. Four hops each at 'good' coverage can still multiply out to nothing, so every hop is reported rather than a single headline.",
@@ -394,7 +394,7 @@
    "officers_in_latest_year": 17,
    "ceo_latest": null,
    "ceo_title": null,
-   "ceo_resolution": "ambiguous",
+   "ceo_resolution": "transition_or_multiple",
    "ceo_candidates_if_ambiguous": [
     "REILLY PAUL C | Chair & CEO",
     "Shoukry Paul M | CEO"
