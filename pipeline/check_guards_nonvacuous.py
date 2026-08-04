@@ -141,6 +141,21 @@ def _unknown_repo_root(doc):
         doc["source_files"][0] = "vector-cricket/data/nope.json"
 
 
+def _phantom_cited_field(doc):
+    """Cite a field name that exists under NO reading of the citation.
+
+    check_cited_fields.py accepts either a top-level field or one under an implied prefix,
+    because the corpus writes `model.report.n_params, n_features` and means both under
+    model.report. That permissiveness is what stops false accusations — and it is exactly
+    the kind of permissiveness that can quietly swallow the real case, so the planted field
+    must exist under neither reading.
+    """
+    ins = doc.get("insights") or []
+    if len(ins) > 4:
+        ins[4]["source"] = ("pipeline/data/mtnn_report.json -> next_profile.val, "
+                            "totally_invented_field")
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -195,6 +210,10 @@ MUTATIONS = [
      HUB / "tennis.json", _absolute_path,
      "a laptop path published as the reader's provenance — the state the site shipped in "
      "for 45 citations, under a heading promising where every number came from"),
+    ("cited_fields/phantom_field",
+     ["check_cited_fields.py", "--check"],
+     HUB / "equities.json", _phantom_cited_field,
+     "a page cites a field its source file does not contain, under any reading"),
     ("hub_freshness/unresolvable_root",
      ["check_hub_freshness.py", "--check", "--offline"],
      HUB / "tennis.json", _unknown_repo_root,

@@ -55,6 +55,12 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # Every fabrication this project produced was a superlative, six for six, and a
     # warning in the generator prompt demonstrably did not stop the sixth. Local only.
     "superlatives": (["check_superlatives.py", "--check"], False),
+    # A page's `source` strings are machine-readable citations, and nothing had ever read
+    # them as anything but prose. Checks that a cited field EXISTS in the file cited.
+    # Covers 76 of 126 references; the other 48 use an indexed or prose shorthand this
+    # deliberately refuses to guess at, and it prints that count every run rather than
+    # implying full coverage.
+    "cited_fields": (["check_cited_fields.py", "--check"], False),
     # The G1 position arm was pinned at 1.0/0.0 by the mask bug from Phase 2 to 7.21.
     # This is the first thing that can report it regressing.
     "g1_position": (["probe_g1_position.py", "--check"], False),
