@@ -225,7 +225,16 @@ def main() -> int:
             confirmed[n] = seen
         else:
             unknown.append(n)
-    exclusion = sorted(arith - set(acquitted))
+    # gsis is the OTHER acquittal and it is stronger where it reaches — the NFL's own player
+    # id versus an age-plausibility inference. Reported here so this artifact's
+    # EXCLUSION_SET matches what merged_names() actually excludes; without it the file said
+    # 68 while the pipeline used 62, which is the same "a real value answering a different
+    # question" shape this whole probe exists to fix.
+    # Intersected with `overturnable`, exactly as merged_names() does. Subtracting from all
+    # of `arith` cleared one season-before-draft name and made this file report 61 while the
+    # pipeline excluded 62 — a checker disagreeing with the thing it checks, by one.
+    gsis_acq = G.gsis_acquitted(gs) & set(overturnable)
+    exclusion = sorted(arith - set(acquitted) - gsis_acq)
 
     report = {
         "source": "Wikidata SPARQL — free, no key",
@@ -268,9 +277,22 @@ def main() -> int:
             "confirmed_two_or_more": dict(sorted(confirmed.items())),
             "no_wikidata_answer": unknown,
             "EXCLUSION_SET": exclusion,
-            "rule": ("EXCLUDE = arithmetic-flagged AND NOT acquitted. A name with no "
-                     "Wikidata answer stays excluded — no evidence is not evidence of one "
-                     "person."),
+            "rule": ("EXCLUDE = arithmetic-flagged AND NOT acquitted by EITHER method. A "
+                     "name with no answer from either stays excluded — no evidence is not "
+                     "evidence of one person."),
+            "gsis_acquitted_of_flagged": sorted(gsis_acq & arith),
+            "gsis_note": (
+                "vector-gridiron's train_matrix.npz carries `gsis`, the NFL's own player id "
+                "— direct evidence where this probe's age band is an inference. It only "
+                "covers 2016-2025 against vectors.json's 1999-2025, so a name qualifies "
+                "only when its ENTIRE corpus span sits inside that window; otherwise 'one "
+                "gsis' means 'one person since 2016', not 'one person'. "
+                "CONFIRMED_TWO_OR_MORE IS NOT A REASON TO EXCLUDE and gsis proves it: of "
+                "the 13 flagged names gsis can arbitrate, DOB's confirmed verdict was wrong "
+                "on all 5 it claimed (jesse james, tyler davis, anthony miller, chad "
+                "williams, mike davis are each one person). Two same-name footballers being "
+                "age-plausible does not put both in this corpus — the exclusion rests on "
+                "the ARITHMETIC flag, and confirmed merely fails to lift it."),
         },
         "cross_check": {
             "found_by_both": sorted(set(colliding) & arith),
@@ -287,9 +309,11 @@ def main() -> int:
           f"single-person {len(resolved)}   COLLIDING {len(colliding)}")
     print(f"\narithmetic-flagged {len(arith)}  "
           f"(season-before-draft {len(impossible)}, overturnable {len(overturnable)})")
-    print(f"  ACQUITTED (one person)  : {len(acquitted)}  {sorted(acquitted)[:5]}")
+    print(f"  ACQUITTED by DOB        : {len(acquitted)}  {sorted(acquitted)[:5]}")
     print(f"  CONFIRMED (>=2 people)  : {len(confirmed)}  {sorted(confirmed)[:5]}")
     print(f"  no Wikidata answer      : {len(unknown)}  {unknown[:5]}")
+    print(f"  ACQUITTED by NFL gsis   : {len(gsis_acq & arith)}  "
+          f"(+{len(gsis_acq & arith - set(acquitted))} the age band could not clear)")
     print(f"  EXCLUSION SET           : {len(exclusion)}   (was {len(arith)})")
     print(f"\nwrote {OUT}")
     return 0

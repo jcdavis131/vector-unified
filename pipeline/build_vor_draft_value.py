@@ -189,6 +189,54 @@ def bucket(pick) -> str | None:
 
 
 COLLISIONS = Path(__file__).resolve().parent.parent / "data" / "gridiron_name_collisions.json"
+GRID_MATRIX = Path("C:/Users/jcdav/vector-gridiron/pipeline/data/train_matrix.npz")
+
+
+def gsis_acquitted(seasons_of: dict) -> set[str]:
+    """Names cleared by the NFL's OWN player id, which beats anything this repo infers.
+
+    vectors.json has no identity key — its `id` is a row index and Alex Smith has 22 of them
+    — which is why the DOB probe exists at all. But vector-gridiron's train_matrix.npz
+    carries `gsis`, the real NFL id, and where it reaches, it is direct evidence rather than
+    an age-plausibility inference. 1,575 distinct gsis against 1,573 distinct names.
+
+    IT DOES NOT REACH FAR. The matrix covers 2016-2025 while vectors.json spans 1999-2025,
+    so ONE gsis does NOT mean one person — it means one person since 2016, and a name held
+    by a 2003-2010 player and a 2018-2024 player shows exactly one. The window test is
+    therefore mandatory: a name qualifies only when its ENTIRE corpus span sits inside the
+    matrix window, where "one gsis" really does mean one person.
+
+    Measured: 15 of the 101 arithmetic-flagged names qualify, all 15 with exactly one gsis.
+    The DOB sweep independently acquits 8 of those 15 and contradicts none of them, so the
+    two methods agree wherever both can see, and gsis adds 7 the age band could not clear.
+
+    WHY THIS IS NEEDED ON TOP OF DOB, stated because it looks redundant. The DOB sweep's
+    "confirmed >=2 people" verdict is a SUPERSET OF SUSPICION by construction — two
+    same-name footballers being age-plausible does not put both in this corpus — so leaving
+    a name excluded because DOB failed to acquit it is over-conservative. Checked against
+    gsis on the 13 names where it can arbitrate, DOB's confirmed verdict was wrong on all 5
+    it claimed: jesse james, tyler davis, anthony miller, chad williams, mike davis are each
+    one person. An arithmetic flag means the NAME has two draft rows, which is not the same
+    claim as the SEASONS belonging to two people.
+    """
+    if not GRID_MATRIX.exists():
+        return set()
+    import numpy as np
+    a = np.load(GRID_MATRIX, allow_pickle=True)
+    if "gsis" not in a or "name" not in a or "season" not in a:
+        return set()
+    lo, hi = int(a["season"].min()), int(a["season"].max())
+    ids: dict[str, set] = collections.defaultdict(set)
+    for gid, nm in zip(a["gsis"], a["name"], strict=True):
+        ids[norm_name(str(nm))].add(str(gid))
+    out = set()
+    for name, rows in seasons_of.items():
+        yrs = [y for y, _ in rows]
+        if not yrs or min(yrs) < lo or max(yrs) > hi:
+            continue
+        if len(ids.get(name, ())) == 1:
+            out.add(name)
+    return out
 
 
 def acquitted_names() -> set[str]:
@@ -265,8 +313,14 @@ def merged_names(seasons_of: dict, draft_csv, acquit: bool = True) -> set[str]:
         elif any(y < min(yrs) for y, _ in rows):
             out.add(name)
     # Acquittal touches only the overturnable half. A season before the draft year is
-    # arithmetic and stays flagged even if Wikidata finds exactly one person for the name.
-    return out - (acquitted_names() & overturnable) if acquit else out
+    # arithmetic and stays flagged even if a single identity is found for the name.
+    if not acquit:
+        return out
+    # gsis first: the NFL's own id is direct evidence, the DOB band is an inference. They
+    # never disagree in the acquit direction on the 15 names both can see, so this is a
+    # union rather than a precedence rule — but the ordering is the honest one if that
+    # ever changes.
+    return out - ((gsis_acquitted(seasons_of) | acquitted_names()) & overturnable)
 
 
 def main() -> int:
