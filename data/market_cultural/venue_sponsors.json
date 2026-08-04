@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T16:36:40",
+ "built": "2026-08-04T17:02:42",
  "question": "Do US venue naming rights join the athlete corpus to the equities corpus, where the Wikidata athlete-sponsor edge (0.22%) and the tennis tournament-name edge (0 of 6 in corpus) both did not?",
  "source": "Wikipedia via MediaWiki API — free, no key",
  "pages": {
@@ -16,35 +16,60 @@
   "gridiron": 53
  },
  "venues_with_a_match": {
-  "hoops": 72,
+  "hoops": 73,
   "gridiron": 29
  },
  "venues_with_an_sp500_token_match": 36,
- "venues_with_a_UNIQUE_PHRASE_match": 16,
+ "venues_with_a_UNIQUE_PHRASE_match": 17,
  "tier_note": "TIER 1 (unique phrase) is the joinable edge. The token count is the loose upper bound and contains State Farm Arena -> State Street, which is wrong and carries no ambiguity flag because it is the only candidate. Quote the phrase number.",
- "match_rate_pct": 54.3,
+ "match_rate_pct": 54.84,
  "prior_edges_for_comparison": {
   "wikidata_P859_athlete_sponsor_pct": 0.22,
   "tennis_confirmed_sponsors_in_trained_corpus": 0,
   "tennis_confirmed_sponsors_adjudicated_real": 6
  },
  "what_this_is_not": "A token match is not entity resolution. 'rogers' matches both Rogers Communications (RCI) and Rogers Corporation (ROG); 'viking' matches Viking Therapeutics and never the correct answer. Rows carrying more than one candidate are flagged `ambiguous` and are candidates, not edges.",
- "adjudication_of_the_16_unique_phrase_matches": {
-  "correct": 14,
+ "adjudication_of_the_unique_phrase_matches": {
+  "emitted": 17,
+  "correct": 15,
   "wrong": 2,
-  "precision_pct": 87.5,
+  "precision_pct": 88.2,
   "wrong_rows": [
    "Boston Garden -> BSX Boston Scientific",
    "Cincinnati Gardens -> CINF Cincinnati Financial"
   ],
   "wrong_class": "GEOGRAPHY. Both venues are named for their city and both cities lend their name to an S&P 500 company. This is the same false-positive class build_tennis_sponsors.py named for the Melbourne 2021 events and also declined to hand-filter, for the same reason: an exclusion list written against these two rows would be tuned against the cases it judges.",
   "known_false_negatives": [
-   "FedExForum -> FDX. Wikipedia writes the venue as one word, so word-boundary matching cannot see 'fedex' inside 'fedexforum'. The substring version caught this one and paid for it with eight wrong rows.",
+   "FIXED: FedExForum -> FDX. Wikipedia writes the venue as one word, so word-boundary matching could not see 'fedex' inside 'fedexforum'. Now split when a building noun is glued onto a token, then broken out of the FDX / FDXF tie by exact equality. The substring version caught this one too and paid for it with eight wrong rows.",
    "Caesars Superdome -> CZR. The phrase is 'caesars superdome' and the company is 'caesars entertainment'; neither is a contiguous run of the other. A token-level fallback would catch it and would also resurrect the geography class."
   ],
-  "note": "Precision is over the 16 rows the phrase tier emits, not over all 186 links. Recall is not measured and is certainly below 1.0 -- the two false negatives above are the ones found by reading, not by a systematic check."
+  "note": "Precision is over the rows the phrase tier emits, not over all 186 links. See recall_audit_nba_arenas below for the other half."
  },
- "headline": "16 venues resolve to a unique S&P 500 company by phrase, 14 of them correctly. The tennis tournament-name edge resolved 6 sponsors and 0 of them were in the trained corpus. The difference is not method quality, it is that US venue naming rights are bought by the same population of firms the equities corpus is drawn from.",
+ "recall_audit_nba_arenas": {
+  "why": "Precision alone flatters a matcher: refusing everything scores 100%. The 30 current NBA arenas are a closed, checkable set, so recall is measurable there even though it is not measurable over all 186 links.",
+  "denominator": "arenas whose sponsor IS in the trained 500-ticker corpus",
+  "in_corpus": 11,
+  "caught": 8,
+  "recall_pct": 72.7,
+  "caught_list": [
+   "Ball->BALL",
+   "Capital One->COF",
+   "Chase->JPM",
+   "Delta->DAL",
+   "FedExForum->FDX",
+   "Fiserv->FISV",
+   "Intuit->INTU",
+   "Target->TGT"
+  ],
+  "missed_and_why": {
+   "United Center -> UAL": "AMBIGUOUS BY CONSTRUCTION. 'united' equals none of United Airlines Holdings / United Parcel Service / United Rentals, so all three survive and the row is refused. It really is United Airlines. A string cannot know that, and guessing to raise the hit count is how the State Farm -> State Street row happened.",
+   "Xfinity Mobile Arena -> CMCSA": "BRAND != COMPANY. Xfinity is Comcast's consumer brand and shares no token with 'Comcast'. Needs an entity-resolution source, exactly as build_tennis_sponsors.py concluded for its own token matches.",
+   "Spectrum Center -> CHTR": "BRAND != COMPANY. Spectrum is Charter Communications' brand. Same class as Xfinity."
+  },
+  "correctly_refused": "PAYC, RKT, AAL, TM, TD, BCS, KIA, CFR and the private or mutual sponsors (Crypto.com, Gainbridge, Golden 1, Kaseya, Little Caesars, Moda, Mortgage Matchup, Smoothie King, State Farm, Madison Square Garden, Scotiabank) are genuinely absent from the trained corpus, so not matching them is correct, not a miss. Paycom (PAYC) and American Airlines (AAL) are the sharpest cases: both are real US listed venue sponsors and neither is an S&P 500 constituent in this file.",
+  "two_miss_classes": "One mechanical (tokenisation), one semantic (brand vs legal entity). The mechanical class was fixable and was fixed -- FedExForum needed a glued building-noun split and an exact-equality tiebreak. The semantic class is not fixable by string work at all."
+ },
+ "headline": "17 venues resolve to a unique S&P 500 company by phrase, 15 of them correctly. The tennis tournament-name edge resolved 6 sponsors and 0 of them were in the trained corpus. The difference is not method quality, it is that US venue naming rights are bought by the same population of firms the equities corpus is drawn from.",
  "matches": {
   "hoops": [
    {
@@ -1635,6 +1660,22 @@
       ]
      ]
     },
+    "ambiguous": false
+   },
+   {
+    "venue": "FedExForum",
+    "sponsor_phrase": "fedex",
+    "tokens": [
+     "FedExForum"
+    ],
+    "tier1_phrase_match": [
+     [
+      "FDX",
+      "FedEx"
+     ]
+    ],
+    "sp500_matches": {},
+    "full_universe_matches": {},
     "ambiguous": false
    },
    {
@@ -5091,7 +5132,7 @@
    },
    {
     "venue": "Richfield, Ohio",
-    "sponsor_phrase": "richfield ohio",
+    "sponsor_phrase": "rich ohio",
     "tokens": [
      "Richfield",
      "Ohio"
@@ -6026,7 +6067,7 @@
    },
    {
     "venue": "Caesars Superdome",
-    "sponsor_phrase": "caesars superdome",
+    "sponsor_phrase": "caesars super",
     "tokens": [
      "Caesars",
      "Superdome"
@@ -7292,7 +7333,7 @@
    },
    {
     "venue": "Caesars Superdome",
-    "sponsor_phrase": "caesars superdome",
+    "sponsor_phrase": "caesars super",
     "tokens": [
      "Caesars",
      "Superdome"
