@@ -42,7 +42,12 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     M = load_matrix(device)
-    model, ck = load_model(device)
+    # NAMED EXPLICITLY. This is the STAGE 1 exporter and it wants the Stage 1
+    # checkpoint, but it was relying on load_model's DEFAULT to get it — so
+    # retargeting that default (which the Stage 2 work wanted to do) would have
+    # silently repointed this exporter at a different model. A default that one
+    # caller depends on invisibly is not a default, it is a hidden argument.
+    model, ck = load_model(device, "unified_best.pt")
     z = encode_all(model, M, device)
     sid = M["sport_id"].cpu().numpy()
     arch = M["arch_id"].cpu().numpy()

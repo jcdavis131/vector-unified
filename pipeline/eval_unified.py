@@ -1,6 +1,7 @@
 """Vector Unified — Stage 1 evaluation harness (G1-G3).
 
-Loads the saved unified_best.pt, encodes every player-season into z (64-d), and
+Loads the SHIPPED checkpoint (unified_stage2_best.pt by default), encodes every
+player-season into z (64-d) under that checkpoint's own encoder contract, and
 scores the three automatic gates from UNIFIED_ARCHITECTURE §6:
 
   G1  Per-sport non-inferiority (hard)  — does z recover each sport's native role

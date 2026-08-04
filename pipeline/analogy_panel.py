@@ -1,6 +1,7 @@
 """Vector Unified — cross-sport analogy panel (G4 face-validity).
 
-Loads the saved unified_best.pt, encodes every player-season into z, and answers
+Loads the SHIPPED checkpoint via eval_unified.load_and_encode, encodes every
+player-season into z under that checkpoint's own encoder contract, and answers
 the user's actual question: "what does a power forward have in common with a
 strong safety?" Concretely:
 
