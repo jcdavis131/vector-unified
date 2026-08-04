@@ -1,8 +1,9 @@
 """Turn the venue->sponsor MATCH LIST into an actual edge on player-seasons, and measure it.
 
 acquire_venue_sponsors.py answered "does a joinable athlete<->company edge exist at all?"
--- yes, 16 venues resolve to a unique S&P 500 company, 14 correctly, against 0 for the
-tennis tournament-name route. It closed by naming what it had NOT answered:
+-- yes, 17 venues resolve to a unique S&P 500 company, 15 correctly (88.2%), with recall
+8 of 11 on the closed NBA set, against 0 for the tennis tournament-name route. It closed
+by naming what it had NOT answered:
 
     "14 venues is the edge, not the coverage."
 
@@ -278,6 +279,25 @@ def main() -> int:
                           "player_seasons_while_named": n_sa})
             season_aware.append(n_sa)
 
+    # SUMMING PER-EDGE IS ONLY A DISTINCT COUNT WHILE NO TEAM HAS TWO EDGES.
+    # A team plays in one home venue, so today the sum is exact -- but MetLife Stadium
+    # already serves two teams (NYG and NYJ), which is fine because those are distinct
+    # player-seasons. The reverse would not be: a team appearing in two edges, e.g. after
+    # a mid-corpus relocation or a shared arena entering the match list, would double
+    # count every one of its player-seasons and inflate the headline silently. Checked
+    # rather than assumed, because "1,609 player-seasons" is the number this whole thread
+    # produced and a quiet 2x on part of it would not look wrong.
+    for label, es in (("gridiron", edges),):
+        seen_teams_ct = {}
+        for e in es:
+            seen_teams_ct[e["team_code"]] = seen_teams_ct.get(e["team_code"], 0) + 1
+        dupes = {k: v for k, v in seen_teams_ct.items() if v > 1}
+        if dupes:
+            print(f"FAIL: {label} teams appear in more than one edge: {dupes}. Summing "
+                  "per-edge player-seasons would double count them. Deduplicate by "
+                  "(team, season) before reporting a total.", file=sys.stderr)
+            return 5
+
     all_ps = sum(e["player_seasons_all"] for e in edges)
     sa_ps = sum(season_aware)
     total = len(team_arr)
@@ -333,6 +353,14 @@ def main() -> int:
                     "player_seasons_all": len(rows_all),
                     "player_seasons_while_named": len(rows_named),
                 })
+        hct = {}
+        for e in hedges:
+            hct[e["team_code"]] = hct.get(e["team_code"], 0) + 1
+        hdupes = {k: v for k, v in hct.items() if v > 1}
+        if hdupes:
+            print(f"FAIL: hoops teams appear in more than one edge: {hdupes}. Summing "
+                  "per-edge player-seasons would double count them.", file=sys.stderr)
+            return 5
         h_all = sum(e["player_seasons_all"] for e in hedges)
         h_named = sum(e["player_seasons_while_named"] for e in hedges)
         hoops = {
