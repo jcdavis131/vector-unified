@@ -54,10 +54,31 @@ def normalise_slug(raw: str) -> str | None:
     return s if s in SLUGS else None
 
 
-def check(spec: dict, verdict: dict | None, allow_unverified: bool) -> tuple[list[str], dict]:
+def check(spec: dict, verdict: dict | None, allow_unverified: bool,
+          drops: list[tuple[int, str]] | None = None,
+          clear_flag: bool = False) -> tuple[list[str], dict]:
     """Returns (blocking problems, cleaned spec). Never mutates the input."""
     problems: list[str] = []
     spec = json.loads(json.dumps(spec))  # deep copy
+    drops = drops or []
+
+    # Operator-directed removal of a specific flagged round. Applied BEFORE the fabrication
+    # check so that clearing the flag is only possible once the offending round is actually
+    # gone — the flag can never be waved away on its own.
+    if drops:
+        rs = (spec.get("game") or {}).get("rounds") or []
+        removed = []
+        for idx, reason in sorted(drops, key=lambda t: -t[0]):
+            if 0 <= idx < len(rs):
+                gone = rs.pop(idx)
+                removed.append(f"round {idx} REMOVED ({gone.get('a',{}).get('name')} vs "
+                               f"{gone.get('b',{}).get('name')}): {reason}")
+            else:
+                problems.append(f"--drop-round index {idx} out of range (0..{len(rs)-1})")
+        spec.setdefault("_round_notes", []).extend(removed)
+    if clear_flag and not drops:
+        problems.append("--clear-fabrication-flag passed with no --drop-round for that "
+                        "slug: the fabrication is still in the spec")
 
     for k in REQUIRED:
         if k not in spec or spec[k] in (None, "", [], {}):
@@ -75,8 +96,14 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool) -> tuple[lis
                         "verifier is the only thing distinguishing a read number from an "
                         "invented one")
     elif v == "FABRICATED":
-        problems.append(f"verifier says FABRICATED: "
-                        f"{'; '.join((verdict.get('details') or [])[:4])}")
+        if clear_flag and drops:
+            spec["_verification"] = (
+                "PARTIALLY VERIFIED — the adversarial verifier confirmed every other "
+                "figure and flagged specific round(s), which were REMOVED rather than "
+                "corrected. See _round_notes.")
+        else:
+            problems.append(f"verifier says FABRICATED: "
+                            f"{'; '.join((verdict.get('details') or [])[:4])}")
     elif v == "UNVERIFIABLE":
         if allow_unverified:
             spec["_verification"] = "UNVERIFIABLE — written under --allow-unverified"
@@ -127,18 +154,40 @@ def main() -> int:
                     help="JSON file: either one spec, or {spec:..., verdict:...}, "
                          "or a list of those")
     ap.add_argument("--allow-unverified", action="store_true")
+    ap.add_argument("--drop-round", action="append", default=[], metavar="SLUG:IDX:REASON",
+                    help="Drop one round the verifier flagged, e.g. "
+                         "gridiron:6:'reveal contradicted by projections.json'. Use when a "
+                         "verifier finds a bad round among otherwise-verified ones — "
+                         "discarding ten confirmed rounds over one bad reveal string is its "
+                         "own kind of dishonesty. The drop and its reason are written into "
+                         "the artifact, never applied silently.")
+    ap.add_argument("--clear-fabrication-flag", action="append", default=[], metavar="SLUG",
+                    help="Only valid alongside --drop-round for the SAME slug: the flagged "
+                         "round is gone, so the spec no longer contains the fabrication. "
+                         "Refused if nothing was dropped for that slug.")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     raw = json.loads(Path(args.spec).read_text(encoding="utf-8"))
     items = raw if isinstance(raw, list) else [raw]
 
+    drops_by_slug: dict[str, list[tuple[int, str]]] = {}
+    for spec_str in args.drop_round:
+        parts = spec_str.split(":", 2)
+        if len(parts) != 3 or not parts[1].isdigit():
+            print(f"  bad --drop-round {spec_str!r} — want SLUG:IDX:REASON")
+            return 2
+        drops_by_slug.setdefault(parts[0], []).append((int(parts[1]), parts[2]))
+    clear = set(args.clear_fabrication_flag)
+
     OUTDIR.mkdir(parents=True, exist_ok=True)
     wrote, refused = 0, 0
     for item in items:
         spec = item.get("spec", item) if isinstance(item, dict) else item
         verdict = item.get("verdict") if isinstance(item, dict) else None
-        problems, cleaned = check(spec, verdict, args.allow_unverified)
+        s = normalise_slug(spec.get("slug", "")) or ""
+        problems, cleaned = check(spec, verdict, args.allow_unverified,
+                                  drops_by_slug.get(s), s in clear)
         label = cleaned.get("slug") or spec.get("slug") or "?"
         if problems:
             refused += 1
