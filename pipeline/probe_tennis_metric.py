@@ -43,6 +43,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MATRIX = ROOT / "pipeline" / "data" / "tennis_matrix.npz"
 META = ROOT / "pipeline" / "data" / "meta_tennis_matrix.json"
 OUT = ROOT / "data" / "tennis_metric_probe.json"
+OUT_ENR = ROOT / "data" / "tennis_metric_probe_enriched.json"
 K = 10
 CUT = 2022
 DIM = 16
@@ -91,6 +92,14 @@ def train_linear(Fz, tr_pairs, tours, seed, dim=DIM):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true")
+    # ONE IMPLEMENTATION OF THE METRIC TEST, TWO FEATURE SETS. The original ran over the 16
+    # and found no gain; 4821c78 then showed the 16 were the limitation, adding 12 schedule
+    # and shot candidates for a 5.3-sigma retrieval gain. Whether a learned map helps over
+    # the RICHER set is a different question and the one that decides if an MTNN is
+    # warranted. Copying this file to ask it would leave two metric tests to keep in sync.
+    ap.add_argument("--enriched", action="store_true",
+                    help="use the 16 + the 12 candidates from "
+                         "probe_tennis_candidate_features.py")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -111,6 +120,23 @@ def main() -> int:
              if (m["player"], m["year"] + 1, m["tour"]) in idx]
     tr = [(a_, b) for a_, b, y in pairs if y <= CUT]
     te = [(a_, b) for a_, b, y in pairs if y > CUT]
+
+    if args.enriched:
+        # Built by the same code that measured them, imported not duplicated.
+        from probe_tennis_candidate_features import CANDIDATES, build
+        cand = build()
+        keys = [(m["player"], m["year"], m["tour"]) for m in meta]
+        C = np.full((len(keys), len(CANDIDATES)), np.nan)
+        for r_, k in enumerate(keys):
+            v = cand.get(k)
+            if v:
+                for c_, nm in enumerate(CANDIDATES):
+                    if v.get(nm) is not None:
+                        C[r_, c_] = v[nm]
+        CM = (~np.isnan(C)).astype(float)
+        X = np.hstack([X, np.nan_to_num(C)])
+        M = np.hstack([M, CM])
+        print(f"enriched: {X.shape[1]} features (16 + {len(CANDIDATES)} candidates)")
 
     F = np.hstack([X, M])
     mu, sd = F.mean(0), F.std(0)
@@ -139,13 +165,16 @@ def main() -> int:
     beats = int((g > base).sum())
     print(f"  seeds beating the baseline: {beats}/{len(SEEDS)}")
 
-    verdict = ("A LEARNED MAP HELPS — an MTNN is worth building and must beat this, "
-               "not the raw baseline" if lift > 0.01 and beats == len(SEEDS) else
-               "NO — a learned linear metric does not improve on raw cosine over these 16 "
-               "features, so a deeper model over the same 16 is a poor bet")
+    nfeat = X.shape[1]
+    verdict = (f"A LEARNED MAP HELPS over {nfeat} features — an MTNN is worth building and "
+               f"must beat THIS, not the raw baseline"
+               if lift > 0.01 and beats == len(SEEDS) else
+               f"NO — a learned linear metric does not improve on raw cosine over these "
+               f"{nfeat} features, so a deeper model over the same {nfeat} is a poor bet")
     print(f"\n  verdict: {verdict}")
 
-    OUT.write_text(json.dumps({
+    (OUT_ENR if args.enriched else OUT).write_text(json.dumps({
+        "feature_set": ("16 + 12 candidates" if args.enriched else "the original 16"),
         "question": ("Can a learned linear metric beat raw cosine at retrieving a tennis "
                      f"player's adjacent year (recall@{K}, within tour)?"),
         "why_before_an_mtnn": (
@@ -165,7 +194,7 @@ def main() -> int:
         "n_pairs": len(pairs), "n_train": len(tr), "n_test": len(te),
         "verdict": verdict,
     }, indent=2) + "\n", encoding="utf-8")
-    print(f"\nwrote {OUT}")
+    print(f"\nwrote {OUT_ENR if args.enriched else OUT}")
     if args.check and not te:
         return 1
     return 0
