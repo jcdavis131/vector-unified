@@ -63,9 +63,18 @@ def load_model(device, ckpt_name="unified_best.pt"):
     mk = a["market"] if isinstance(a, dict) and "market" in a else getattr(a, "market", False)
     ct = a.get("cultural_text", False) if isinstance(a, dict) else getattr(a, "cultural_text", False)
     d_text = a.get("d_text", 384) if isinstance(a, dict) else getattr(a, "d_text", 384)
+    # DEFENSIVE LIKE EVERY OTHER OPTIONAL ARG ABOVE. `dropout` was the one bare a["dropout"]
+    # in an otherwise-guarded loader, and it is exactly the key train_stage2.py's argparse
+    # does not define (it warm-starts the Stage 1 trunk architecture as-is). So this
+    # function raised KeyError on the SHIPPED checkpoint, which is why
+    # check_gate_nonvacuity.py defaults to unified_best.pt: the non-vacuity evidence for
+    # every gate in this repo was computed on Stage 1 because Stage 2.1 could not be loaded.
+    # 0.2 matches train_unified.py's own default and is inert anyway once .eval() runs —
+    # export_unified_stage2.py has carried the same workaround all along, in one place only.
+    dr = a.get("dropout", 0.2) if isinstance(a, dict) else getattr(a, "dropout", 0.2)
     model = UnifiedTrunk(sport_dims=ck["sport_dim"], n_seasons_era=ck["n_eras"],
                          d_adapter=a["d_adapter"], d_sport_tok=d_st, d_emb=a["d_emb"], n_arch=8,
-                         n_pos=ck["n_pos"], dropout=a["dropout"], shared_adapter=sh,
+                         n_pos=ck["n_pos"], dropout=dr, shared_adapter=sh,
                          market_heads=mk, cultural_text=ct, d_text=d_text).to(device)
     model.load_state_dict(ck["state"])
     model.eval()

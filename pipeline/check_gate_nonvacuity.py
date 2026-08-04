@@ -161,7 +161,12 @@ def sport_pair_mix(M, rng_seed: int = SEED) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--ckpt", default="unified_best.pt")
+    # DEFAULTS TO THE SHIPPED MODEL. It defaulted to unified_best.pt (Stage 1) while
+    # assets/unified.json ships Stage 2.1, so the non-vacuity evidence for every gate
+    # in this repo described a model nobody uses. It could not have been otherwise:
+    # EV.load_model raised KeyError('dropout') on the Stage 2 checkpoint until that
+    # loader was made defensive, so the wrong default was load-bearing.
+    ap.add_argument("--ckpt", default="unified_stage2_best.pt")
     ap.add_argument("--check", action="store_true", help="exit 1 if any gate is vacuous")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -170,7 +175,30 @@ def main() -> int:
     model, _ck = EV.load_model(device, args.ckpt)
     from train_unified import load_matrix
     M = load_matrix(device)
-    z = EV.encode_all(model, M, device)
+
+    # WHICH ENCODERS. EV.encode_all uses the FROZEN cached per-sport outputs in M["E"].
+    # That is correct for a Stage 1 checkpoint and WRONG for Stage 2, whose entire premise
+    # is that the encoders were unfrozen and drifted — export_unified_stage2.py builds the
+    # shipped z with load_live() + full_z() for exactly that reason. Pairing a Stage 2 trunk
+    # with Stage 1 frozen encoders produces a chimera that corresponds to no shipped
+    # artifact, and it looks like a real measurement: it scored G2 0.8345 / G3 0.8076 /
+    # G4 0.8935 and would have read as "Stage 2.1 is worse than Stage 1" when it is
+    # measuring a combination that was never trained or exported.
+    #
+    # Detected by the checkpoint's own contents rather than by its filename: a Stage 2
+    # checkpoint carries `enc_states`, the drifted encoder weights.
+    if "enc_states" in _ck:
+        from load_live_encoders import load_live
+        from train_stage2 import full_z
+        live = load_live(device)
+        for sport in live:
+            live[sport].model.load_state_dict(_ck["enc_states"][sport])
+        z = full_z(model, live, M, device)
+        z_source = "drifted live encoders + Stage 2 trunk (matches the shipped export)"
+    else:
+        z = EV.encode_all(model, M, device)
+        z_source = "frozen cached encoders + trunk (Stage 1 contract)"
+    print(f"  z built from: {z_source}")
     sid = M["sport_id"].cpu().numpy()
 
     g4_base = g4_random_baseline(M)
@@ -306,6 +334,7 @@ def main() -> int:
                     "file. Chance for this problem is the class prior, not 1/K."),
         },
         "seed": SEED,
+        "z_source": z_source,
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
