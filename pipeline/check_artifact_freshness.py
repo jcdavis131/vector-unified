@@ -81,6 +81,7 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "gridiron_pedigree.json": ("export_gridiron_pedigree.py", ["build_vor_draft_value.py"]),
     "pitch_expectation_sources.json": ("probe_pitch_expectation_sources.py", []),
     "tennis_coverage.json": ("acquire_tennis.py", []),
+    "tennis_sponsors.json": ("build_tennis_sponsors.py", ["build_tennis_entities.py"]),
     "tennis_entities.json": ("build_tennis_entities.py", ["acquire_tennis.py"]),
     "tennis_ranking_axis.json": ("build_tennis_ranking_axis.py",
                                  ["build_tennis_entities.py"]),

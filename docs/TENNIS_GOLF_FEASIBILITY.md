@@ -37,6 +37,31 @@ Second try, the tournament level, since a title sponsor is a naming fact and tho
     golf_tournament          1,576        1            9         7
 
 **0.29% of tennis tournaments and 1 of 1,576 golf tournaments carry a sponsor edge.**
+
+> **CORRECTED 2026-08-03 — this measured the wrong source, and the conclusion drawn from it
+> was wrong.** 0.29% is **Wikidata P859 coverage**, and P859 is a sparse editorial property.
+> It is not sponsor coverage. The sponsor of a tennis tournament is *its name*, and the name
+> was already sitting in the tennis-data.co.uk xlsx this repo had downloaded — no new fetch,
+> no key, no API. Re-measured in `pipeline/build_tennis_sponsors.py`:
+>
+> | signal | count | rate |
+> |---|---|---|
+> | tournament × location pairs | 307 | — |
+> | pairs with a candidate sponsor token | 162 | **52.8%** |
+> | locations with a rename across years | 60 of 169 | **35.5%** |
+> | CONFIRMED (company-name match **and** rename) | 36 tokens | — |
+>
+> The renames are dated corporate actions: `BNP Paribas Fortis → European Open` at Antwerp,
+> `BB&T → Atlanta Open` (BB&T merged into Truist, 2019), `Sony Ericsson → Miami Open`,
+> `Family Circle Cup → Volvo Car Open` at Charleston. Strongest single piece of evidence is
+> **AEGON → Viking appearing at Birmingham and Eastbourne in the same year** — one rebrand
+> surfacing simultaneously at two unrelated venues, which a tokeniser cannot manufacture.
+>
+> Same defect class this phase has been chasing throughout: *a real value answering a
+> different question than the one it appears to answer.* The 0.29% figure was accurate and
+> the inference from it was not. Known false-positive class (toponyms outside the `location`
+> column) is documented in the artifact rather than filtered, because a hand-written
+> exclusion list would be tuned against the cases it judges.
 Locations are better for tennis (12%) and effectively absent for golf.
 
 So both halves of the stated rationale fail on the source the estate actually has. This
