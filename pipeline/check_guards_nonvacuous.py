@@ -54,6 +54,28 @@ def run(argv: list[str]) -> tuple[int, str]:
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
+# WHY a registered check still has no planted defect. A bare list of uncovered names reads
+# as neglect and cannot be argued with; a recorded obstacle can be checked, disputed, and
+# eventually removed. tennis_forward sat on this list as "blocked on the harness" until the
+# harness grew a .npz path — the reason is what made it obviously fixable rather than fixed.
+UNCOVERED_REASON = {
+    "check_gate_nonvacuity.py": (
+        "REACHABLE, NOT CHEAP. Its vacuity arm needs a gate that passes on BOTH real and "
+        "shuffled data, which means rewriting arch_id inside the 16 MB assets/unified.json "
+        "so archetype tracks sport (then within_sport_shuffle changes nothing and the null "
+        "survives). The run is 43s, so the harness's clean/planted/restored triple adds "
+        "~130s plus three 16 MB copies to every validate.py. Deferred on cost, not "
+        "difficulty. Its artifact currently records vacuous_gates: [], so the arm has not "
+        "fired on live data either — this is a real gap, not a formality."),
+    "check_guards_nonvacuous.py": (
+        "CIRCULAR. This file IS the mutation harness; planting a defect in it means asking "
+        "it to detect its own vacuity while running as the thing under test. Its own "
+        "failure paths are exercised in practice instead — every guard that has ever "
+        "regressed showed up as a FAIL row here, and its bugs this session (a lowercase-only "
+        "regex, a missing `import re`) surfaced by running it, not by mutating it."),
+}
+
+
 def _patch_text(path: Path, old: str, new: str) -> None:
     t = path.read_text(encoding="utf-8")
     assert t.count(old) == 1, f"{path.name}: expected 1 occurrence of {old!r}"
@@ -64,6 +86,27 @@ def patch_json(path: Path, mutate) -> None:
     doc = json.loads(path.read_text(encoding="utf-8"))
     mutate(doc)
     path.write_text(json.dumps(doc, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
+def patch_npz(path: Path, mutate) -> None:
+    """Mutate a .npz in place.
+
+    ADDED TO CLOSE A GAP THIS FILE HAD PUBLISHED ABOUT ITSELF. The coverage report listed
+    tennis_forward as never once seen to fail, with "blocked on the harness" as the reason:
+    its input is tennis_matrix.npz and the mutation path handled JSON and .py only. That is
+    a fixable limitation, not a blocker, and leaving it recorded as one would have turned an
+    honest gap report into a permanent excuse.
+
+    The arrays are handed to the mutation as a plain dict so mutations stay ordinary
+    functions. Restore is unaffected by what this writes: the harness backs up with
+    shutil.copy2 and restores byte-for-byte, so compression or dtype drift introduced here
+    cannot survive the run.
+    """
+    import numpy as np
+    with np.load(path, allow_pickle=True) as a:
+        arrays = {k: a[k] for k in a.files}
+    mutate(arrays)
+    np.savez(path, **arrays)
 
 
 # name -> (checker argv, target file, mutation, what the guard must notice)
@@ -212,6 +255,34 @@ def _skills_carry_no_signal(doc):
             row[i] = v
 
 
+def _tennis_extras_are_nothing(arrays):
+    """Zero every feature except ENTERING_RANK_LOG, in the values AND the mask.
+
+    build_tennis_forward.py's --check fails when the gain is indistinguishable from
+    shuffling the extra columns (p >= 0.05). That arm had never been seen to fail.
+
+    ZEROING RATHER THAN COPYING THE RANK COLUMN, and the difference decides whether this
+    mutation works at all. Copying rank into the extras makes them collinear with the
+    baseline, so the real gain is ~0 — but the NULL shuffles those copies, which breaks the
+    collinearity and makes the null gain NEGATIVE. p = P(null >= real) would then go to ~0
+    and the guard would PASS on a mutation that destroyed the signal. Constant columns
+    survive shuffling unchanged, so null gain == real gain exactly and p goes to 1.0.
+
+    The mask is zeroed too. Leaving it at 1 would keep 15 columns of real observed/missing
+    structure in the design matrix, which is information, and the point is to leave none.
+    """
+    feats = [str(f) for f in arrays["features"]]
+    if "ENTERING_RANK_LOG" not in feats:
+        return
+    j = feats.index("ENTERING_RANK_LOG")
+    for key in ("X", "M"):
+        A = arrays[key]
+        keep = A[:, j].copy()
+        A[:, :] = 0
+        A[:, j] = keep
+        arrays[key] = A
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -285,6 +356,11 @@ MUTATIONS = [
      Path("C:/Users/jcdav/vector-hoops/assets/skills.json"), _skills_carry_no_signal,
      "every skill column made a copy of the target — the extras can add nothing, so the "
      "p >= 0.05 arm must fire"),
+    ("tennis_forward/extras_carry_nothing",
+     ["build_tennis_forward.py", "--check"],
+     ROOT / "pipeline" / "data" / "tennis_matrix.npz", _tennis_extras_are_nothing,
+     "every feature but rank zeroed in values and mask — the p >= 0.05 arm must fire, and "
+     "this closes the coverage gap the suite published about itself"),
     ("hub_freshness/unresolvable_root",
      ["check_hub_freshness.py", "--check", "--offline"],
      HUB / "tennis.json", _unknown_repo_root,
@@ -319,6 +395,8 @@ def main() -> int:
                 _bump_mtime(target)
             elif target.suffix == ".py":
                 mutate(None)          # text mutation, applies itself
+            elif target.suffix == ".npz":
+                patch_npz(target, mutate)
             else:
                 patch_json(target, mutate)
             dirty, dirty_out = run(argv)
@@ -388,7 +466,11 @@ def main() -> int:
         if gaps:
             print(f"  {len(gaps)} with NO mutation — never once seen to fail:")
             for g in gaps:
-                print(f"      {g}")
+                script = g.split("(")[-1].rstrip(")")
+                why = UNCOVERED_REASON.get(script, "no reason recorded — that is itself a "
+                                                   "gap, since an unexplained gap reads as "
+                                                   "neglect and cannot be argued with")
+                print(f"      {g}\n          {why}")
     except OSError as e:
         print(f"\ncoverage: could not read validate.py ({e}) — gap unknown, not zero")
     if vacuous:
