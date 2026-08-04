@@ -8,13 +8,20 @@ tennis tournament-name route. It closed by naming what it had NOT answered:
 
 This script answers that. venue -> team -> player-season, then counts.
 
-WHY ONLY GRIDIRON. The unified matrix carries sport_id, era_id, arch_id, pos_id and
-player_idx -- and no team column at all. Of the three sports only gridiron keeps team on
-its own artifact (gridiron_season_emb.npz, 5,323 rows, 2016-2025, 32 codes). So the
-gridiron half is joinable today and the hoops half is not, and that is a fact about what
-is on disk, not a judgement about which sport matters. The NBA venue->team table is parsed
-and written out anyway so the hoops join is a lookup away once a team column exists;
-`hoops_join_blocked_by` in the report names exactly what is missing.
+BOTH SPORTS JOIN. The first version of this script reported hoops as blocked, on the
+grounds that unified_matrix.npz carries sport_id/era_id/arch_id/pos_id/player_idx and no
+team column. That was true and it was not the whole shelf: vector-hoops/assets/
+player_meta.json carries `roster`, a "Name|Season" -> team map over 3,385 player-seasons
+(2015-16..2025-26). It also claimed the NBA venue->team table was "parsed and written
+out" -- it wrote an EMPTY list, because parse_table() matches the NFL page's
+`! scope="row"` shape and the NBA page uses `| '''[[Arena]]'''` with the team and
+location columns in the opposite order. Zero rows, no error, and a commit message
+asserting the opposite.
+
+A name-keyed join is the exact hazard behind the Jaren Jackson / Jaren Jackson Jr. bug,
+so it is checked rather than assumed: zero "Name|Season" keys in the hoops corpus map to
+more than one player_id. If that ever changes the build refuses instead of merging two
+careers.
 
 WHAT AN EDGE HERE MEANS, PRECISELY. "This player-season was played by a team whose home
 venue was, at some point, named for this S&P 500 company." It does NOT mean the venue
@@ -52,6 +59,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "data" / "market_cultural" / "_venue_wikitext_cache.json"
 MATCHES = ROOT / "data" / "market_cultural" / "venue_sponsors.json"
 GRID_EMB = ROOT / "pipeline" / "data" / "gridiron_season_emb.npz"
+HOOPS_META = Path(r"C:\Users\jcdav\vector-hoops\assets\player_meta.json")
+HOOPS_EMB = Path(r"C:\Users\jcdav\vector-hoops\pipeline\data\embedding_v3.npz")
 OUT = ROOT / "data" / "venue_edges.json"
 
 # nflverse team codes. Hardcoded because they are a naming convention, not a derivable
@@ -97,7 +106,35 @@ NAMING_YEAR = {
     "AT&T Stadium": 2013,           # opened 2009 as Cowboys Stadium
 }
 
+# NBA arena naming years. Same discipline as the NFL map above and it MATTERS MORE here:
+# four of these six names went up inside the corpus window (2015-16..2025-26), so an
+# all-seasons count would be wrong by construction rather than wrong-in-principle-only.
+NBA_NAMING_YEAR = {
+    "Chase Center": 2019,       # Warriors moved from Oracle Arena
+    "Fiserv Forum": 2018,       # opened as Fiserv Forum
+    "Delta Center": 2023,       # was Vivint Arena / Vivint Smart Home Arena
+    "Intuit Dome": 2024,        # opened as Intuit Dome
+    "Ball Arena": 2020,         # was Pepsi Center until Oct 2020
+    "Capital One Arena": 2017,  # was Verizon Center until Aug 2017
+    "Target Center": 1990,      # named from opening
+}
+
+NBA_ABBR = {
+    "Atlanta Hawks": "ATL", "Boston Celtics": "BOS", "Brooklyn Nets": "BKN",
+    "Charlotte Hornets": "CHA", "Chicago Bulls": "CHI", "Cleveland Cavaliers": "CLE",
+    "Dallas Mavericks": "DAL", "Denver Nuggets": "DEN", "Detroit Pistons": "DET",
+    "Golden State Warriors": "GSW", "Houston Rockets": "HOU", "Indiana Pacers": "IND",
+    "Los Angeles Clippers": "LAC", "Los Angeles Lakers": "LAL",
+    "Memphis Grizzlies": "MEM", "Miami Heat": "MIA", "Milwaukee Bucks": "MIL",
+    "Minnesota Timberwolves": "MIN", "New Orleans Pelicans": "NOP",
+    "New York Knicks": "NYK", "Oklahoma City Thunder": "OKC", "Orlando Magic": "ORL",
+    "Philadelphia 76ers": "PHI", "Phoenix Suns": "PHX", "Portland Trail Blazers": "POR",
+    "Sacramento Kings": "SAC", "San Antonio Spurs": "SAS", "Toronto Raptors": "TOR",
+    "Utah Jazz": "UTA", "Washington Wizards": "WAS",
+}
+
 ROW = re.compile(r'!\s*scope="row"\s*\|\s*\[\[([^\]|]+)(?:\|[^\]]+)?\]\]')
+NBA_ARENA_CELL = re.compile(r"^\s*'''\[\[([^\]|]+)(?:\|[^\]]+)?\]\]'''")
 CELL_LINKS = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 
 
@@ -129,6 +166,42 @@ def parse_table(wikitext: str) -> list[dict]:
             opened = int(om.group(1))
         rows.append({"venue": venue, "teams": teams, "location": location,
                      "opened": opened})
+    return rows
+
+
+def parse_nba_table(wikitext: str) -> list[dict]:
+    """The NBA page uses a DIFFERENT table shape from the NFL page and parse_table()
+    silently returned zero rows for it.
+
+    NFL:  ! scope="row"|[[Venue]]  then | [[Team]] | [[Location]]
+    NBA:  | '''[[Arena]]'''        then | [[Location]] | [[Team]]
+
+    Note the column ORDER is also swapped. A parser that found the arena but read the
+    cells positionally by the NFL layout would have attached every arena to its city
+    instead of its team -- which is not a crash, it is a plausible-looking wrong join,
+    so the team is matched against NBA_ABBR by name rather than taken by position."""
+    rows = []
+    for block in re.split(r"\n\|-", wikitext):
+        cells = [c.strip() for c in block.split("\n|") if c.strip()]
+        arena = None
+        for c in cells:
+            m = NBA_ARENA_CELL.match(c)
+            if m:
+                arena = m.group(1).strip()
+                break
+        if not arena:
+            continue
+        teams, location = [], ""
+        for c in cells:
+            for a, b in CELL_LINKS.findall(c):
+                t = (a or b).strip()
+                if t in NBA_ABBR:
+                    teams.append(t)
+                elif not location and "," in t and "File:" not in t:
+                    location = t
+        if teams:
+            rows.append({"venue": arena, "teams": sorted(set(teams)),
+                         "location": location})
     return rows
 
 
@@ -208,6 +281,82 @@ def main() -> int:
     sa_ps = sum(season_aware)
     total = len(team_arr)
 
+    # --- hoops ---------------------------------------------------------------
+    # UNBLOCKED since the first version of this script, which reported the hoops join as
+    # impossible. It is not: vector-hoops/assets/player_meta.json carries a `roster` map
+    # of "Name|Season" -> team code. It covers 3,385 of the 12,966 corpus player-seasons
+    # (26.1%, seasons 2015-16..2025-26 only), so the hoops denominator below is the
+    # ROSTER-COVERED subset, not the corpus.
+    #
+    # Name-keyed joins are the exact hazard behind the Jaren Jackson / Jaren Jackson Jr.
+    # bug, so this is checked rather than assumed: zero "Name|Season" keys in the corpus
+    # map to more than one player_id, so the key is unique here and the join is safe. If
+    # that ever stops being true the build refuses.
+    hoops = {"blocked": None}
+    if HOOPS_META.exists() and HOOPS_EMB.exists():
+        roster = json.loads(HOOPS_META.read_text(encoding="utf-8"))["roster"]
+        hz = np.load(HOOPS_EMB, allow_pickle=True)
+        hkeys = [f"{n}|{s}" for n, s in zip(
+            (str(x) for x in hz["name"]), (str(x) for x in hz["season"]))]
+        collide = {}
+        for k, pid in zip(hkeys, (str(x) for x in hz["player_id"])):
+            collide.setdefault(k, set()).add(pid)
+        ambiguous = {k for k, v in collide.items() if len(v) > 1}
+        if ambiguous:
+            print(f"FAIL: {len(ambiguous)} Name|Season keys map to more than one "
+                  f"player_id, e.g. {sorted(ambiguous)[:3]}. A name-keyed join would "
+                  "merge two players' careers -- the Jaren Jackson bug. Refusing.",
+                  file=sys.stderr)
+            return 4
+
+        nba = parse_nba_table(raw["hoops"])
+        unmapped_arena = [r["venue"] for r in nba if not r["teams"]]
+        hedges = []
+        for r in nba:
+            if r["venue"] not in v2c:
+                continue
+            tk, co = v2c[r["venue"]]
+            named = NBA_NAMING_YEAR.get(r["venue"])
+            for t in r["teams"]:
+                ab = NBA_ABBR[t]
+                # season strings are "2015-16"; the start year is what NAMING_YEAR
+                # compares against
+                rows_all = [k for k in hkeys if roster.get(k) == ab]
+                rows_named = [k for k in rows_all
+                              if named and int(k.split("|")[1].split("-")[0]) >= named]
+                hedges.append({
+                    "venue": r["venue"], "team_wiki": t, "team_code": ab,
+                    "ticker": tk, "company": co, "location": r["location"],
+                    "sponsor_name_from": named,
+                    "naming_year_source": "hand-verified" if named else "UNKNOWN",
+                    "player_seasons_all": len(rows_all),
+                    "player_seasons_while_named": len(rows_named),
+                })
+        h_all = sum(e["player_seasons_all"] for e in hedges)
+        h_named = sum(e["player_seasons_while_named"] for e in hedges)
+        hoops = {
+            "corpus_player_seasons": len(hkeys),
+            "roster_covered_player_seasons": sum(1 for k in hkeys if k in roster),
+            "roster_seasons": "2015-16..2025-26",
+            "name_season_keys_colliding_on_player_id": 0,
+            "nba_table_rows_parsed": len(nba),
+            "nba_rows_without_a_mapped_team": unmapped_arena,
+            "n_edges": len(hedges),
+            "n_distinct_tickers": len({e["ticker"] for e in hedges}),
+            "all_season_edges_player_seasons": h_all,
+            "named_window_edges_player_seasons": h_named,
+            "denominator_note": "Percentages here are over the 3,385 roster-covered "
+                                "player-seasons, NOT the 12,966-row corpus. Quoting them "
+                                "against the corpus would overstate coverage 3.8x.",
+            "named_window_pct_of_roster_covered": None,
+            "edges": sorted(hedges, key=lambda e: -e["player_seasons_while_named"]),
+        }
+        cov = hoops["roster_covered_player_seasons"]
+        hoops["named_window_pct_of_roster_covered"] = round(100.0 * h_named / cov, 2) \
+            if cov else 0.0
+        hoops["all_season_pct_of_roster_covered"] = round(100.0 * h_all / cov, 2) \
+            if cov else 0.0
+
     out = {
         "built": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "question": "How many player-seasons does the venue->sponsor edge actually reach?",
@@ -236,15 +385,16 @@ def main() -> int:
                                            "one fetch per matched venue. Required before "
                                            "this edge list grows past the hand-checked 5.",
         },
-        "hoops_join_blocked_by": "No team column exists for the hoops corpus. "
-                                 "unified_matrix.npz carries sport_id/era_id/arch_id/"
-                                 "pos_id/player_idx and gridiron_season_emb.npz carries "
-                                 "team, but nothing maps a hoops player-season to a "
-                                 "franchise. The NBA venue->team table is parsed and "
-                                 "written below so this is a lookup away, not a rebuild.",
+        "hoops": hoops,
+        "CORRECTION_hoops_was_not_actually_blocked": "8ea1d98 reported the hoops join as "
+            "impossible because unified_matrix.npz has no team column, and claimed the "
+            "NBA venue->team table was 'parsed and written out'. Both were wrong. "
+            "vector-hoops/assets/player_meta.json carries roster: Name|Season -> team, "
+            "and parse_table() had silently returned ZERO rows for the NBA page because "
+            "that page uses a different table shape. The commit shipped an empty list "
+            "under a claim that it was populated.",
         "dropped_adjudicated_false_positives": dropped,
         "edges": sorted(edges, key=lambda e: -e["player_seasons_while_named"]),
-        "nba_venue_teams": [r for r in tables["hoops"] if r["teams"]][:40],
     }
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
@@ -256,6 +406,20 @@ def main() -> int:
           f"({out['gridiron']['all_season_coverage_pct']}%)")
     print(f"  named-window {sa_ps:>5} player-seasons  "
           f"({out['gridiron']['named_window_coverage_pct']}%)  <- quote this one")
+    if hoops.get("n_edges"):
+        print(f"hoops corpus: {hoops['corpus_player_seasons']} player-seasons, "
+              f"{hoops['roster_covered_player_seasons']} covered by the roster map "
+              f"({hoops['roster_seasons']})")
+        print(f"  {hoops['n_edges']} venue->team edges over "
+              f"{hoops['n_distinct_tickers']} distinct tickers")
+        print(f"  naive        {hoops['all_season_edges_player_seasons']:>5} "
+              f"player-seasons  ({hoops['all_season_pct_of_roster_covered']}%)")
+        print(f"  named-window {hoops['named_window_edges_player_seasons']:>5} "
+              f"player-seasons  ({hoops['named_window_pct_of_roster_covered']}%)"
+              f"  <- quote this one")
+        print(f"  the naming-year filter removes "
+              f"{hoops['all_season_edges_player_seasons'] - hoops['named_window_edges_player_seasons']}"
+              f" player-seasons here; on gridiron it removed 0")
     print(f"wrote {OUT}")
     return 0
 
