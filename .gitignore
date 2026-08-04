@@ -13,6 +13,15 @@
 # Generated joint-embedding artifacts (assets/unified.json alone is 16.7 MB)
 assets/*.json
 assets/**/*.json
+# ...and their TIMESTAMPED BACKUPS, which the two rules above miss. A file named
+# `unified.json.pre_hoops_resync_20260731_063030` does not end in `.json`, so the ignore
+# never applied and a 16 MB backup of a deliberately-ignored build output became the single
+# largest tracked object in an 11 MB repo. The suffix convention is shared across this
+# estate — vector-equities carries 18 of them (`.pre_*`, `.fixed_seed7_*`) — so match the
+# pattern rather than the one file that happened to slip through.
+assets/**/*.json.*
+assets/**/*.npz.*
+assets/**/*.pt.*
 
 # Acquired + intermediate data (27 MB; re-fetchable via pipeline/acquire_*.py)
 data/*
@@ -22,6 +31,13 @@ data/*
 # commits reported shipping changes to archetype_map.json that never entered the repo.
 !data/archetype_map.json
 !data/sector_map.json
+# Same category, same reason. Each entry is a HUMAN judgement that a superlative on a live
+# page was checked against its artifact, with the evidence written down. Losing it on a
+# fresh clone would not merely lose a report — every cleared claim reverts to UNCHECKED and
+# check_superlatives.py --check fails for anyone but me. `git add -A` skips ignored paths
+# SILENTLY, which is how archetype_map.json was reported as shipped in three commits it
+# never entered; caught here only because git printed the hint.
+!data/superlative_registry.json
 pipeline/data/
 
 # Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).

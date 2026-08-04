@@ -1,0 +1,124 @@
+{
+  "what": "Superlative claims on the live dumbmodel.com model cards that have been checked against their artifacts, keyed by a hash of the claim TEXT.",
+  "why_hashed": "A clearance is for a SENTENCE, not a location. If the text changes, the verification is void and the claim returns to UNCHECKED. Keying by slug+location instead would let a re-extraction inherit the previous sentence's clearance — the same stale-verification defect this repo has been correcting everywhere else.",
+  "verdicts": {
+    "TRUE": "checked against the named artifact and it holds",
+    "OVER_FIRE": "the detector matched but the sentence makes no rank claim about data",
+    "UNCHECKED": "not in this file"
+  },
+  "entries": [
+    {
+      "slug": "gridiron",
+      "loc": "insight[1].body",
+      "text_sha": "39d4b59c7d9cf524",
+      "claim": "QB also carries the worst points error (6.371 MAE vs 3.486 for TE) and the widest 80% conformal band",
+      "verdict": "TRUE",
+      "evidence": "projections.json -> model.report.per_pos_mae = {QB 6.371, RB 4.397, WR 4.109, TE 3.486}; QB is the max. conformal_q_by_pos = {QB 10.29, RB 6.808, WR 6.657, TE 5.412}; QB is the max."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "insight[2].body",
+      "text_sha": "6b3f1315b40fd49a",
+      "claim": "Week 18 is the worst of all 17 scored weeks and Week 17 the second worst; the peak was 0.744",
+      "verdict": "TRUE",
+      "evidence": "eval_backtest.json -> overall.per_week has 17 entries mapped to weeks 2-18. Sorted ascending: wk18=0.561 lowest, wk17=0.652 second lowest, max=0.744."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "insight[4].body",
+      "text_sha": "ca536accc67d894b",
+      "claim": "so the worst busts never appear at all",
+      "verdict": "OVER_FIRE",
+      "evidence": "Describes a selection effect (careers under 4 seasons are dropped), not a rank claim about a value in the data. Nothing to check."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[0].reveal",
+      "text_sha": "eade99914b8a5a14",
+      "claim": "it lists Jefferson as Robinson's third-closest comp at 0.986 similarity",
+      "verdict": "TRUE",
+      "evidence": "projections.json -> players[Wan'Dale Robinson].comps = [A.J. Brown 0.998, Rashee Rice 0.991, Justin Jefferson 0.986, ...]. Third position confirmed by the adversarial verifier on 2026-08-03."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[1].reveal",
+      "text_sha": "b2160596cdd2e39d",
+      "claim": "Jackson is Dart's closest comp at 0.986",
+      "verdict": "TRUE",
+      "evidence": "projections.json -> players[Jaxson Dart].comps[0] = Lamar Jackson 0.986. Confirmed by the adversarial verifier on 2026-08-03."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[7].reveal",
+      "text_sha": "b8d5458175c285b3",
+      "claim": "Chase carries the highest projected receiving yardage of any WR in the file at 70.9 a game",
+      "verdict": "TRUE",
+      "evidence": "projections.json -> Ja'Marr Chase line.rec_yds = 70.9 is the max among all WRs AND all players in the file; next is JSN at 70.3. Exhaustively checked by the adversarial verifier on 2026-08-03."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[9].reveal",
+      "text_sha": "d1a5e5ed89016a61",
+      "claim": "McBride is the only tight end anywhere in the model's top 50 overall, at #16",
+      "verdict": "TRUE",
+      "evidence": "projections.json -> Trey McBride rank_overall = 16, and he is the only TE with rank_overall <= 50. Exhaustively checked by the adversarial verifier on 2026-08-03."
+    },
+    {
+      "slug": "hoops",
+      "loc": "caveat",
+      "text_sha": "b76604d7810337b3",
+      "claim": "The worst busts leave the league before they accumulate a career",
+      "verdict": "OVER_FIRE",
+      "evidence": "Same selection-effect statement as the gridiron one. Not a rank claim about a stored value."
+    },
+    {
+      "slug": "pitch",
+      "loc": "insight[0].body",
+      "text_sha": "d2fb93f31ad06168",
+      "claim": "the top-1 nearest neighbour of a player-season shares its position label 85.3% of the time",
+      "verdict": "OVER_FIRE",
+      "evidence": "'top-1 nearest neighbour' is the NAME of a metric, not a superlative claim about a ranking. The 85.3% figure is a plain statistic and was verified CLEAN by the pitch verifier."
+    },
+    {
+      "slug": "pitch",
+      "loc": "insight[3].body",
+      "text_sha": "98a2568be4e7c71c",
+      "claim": "Transfermarkt is the only real one and scraping it at corpus scale is neither polite nor reliable",
+      "verdict": "OVER_FIRE",
+      "evidence": "A quoted judgement from probe_pitch_expectation_sources.py, presented as a quotation with attribution. Not a computed rank claim."
+    },
+    {
+      "slug": "tennis",
+      "loc": "insight[0].body",
+      "text_sha": "168cbbceccfb1ed8",
+      "claim": "'viking' appears at both venues in 2021 and in no other year at either",
+      "verdict": "TRUE",
+      "evidence": "tennis_sponsors.json -> CONFIRMED_detail.viking = [Birmingham years_present [2021], Eastbourne years_present [2021]]. No other year at either venue."
+    },
+    {
+      "slug": "tennis",
+      "loc": "round[0].reveal",
+      "text_sha": "573b5cfed9673589",
+      "claim": "mean draw progress lands on 7.0 - the top of the observed scale",
+      "verdict": "TRUE",
+      "evidence": "pipeline/data/tennis_matrix.npz -> DRAW_PROGRESS_MEAN over mask-observed rows: min 1.0000, max 7.0000. Exactly one row sits at the max."
+    },
+    {
+      "slug": "unified",
+      "loc": "stat[3].label",
+      "text_sha": "c989cabbc0706a6e",
+      "claim": "declared archetypes that are actually assigned to a row anywhere in the asset",
+      "verdict": "TRUE",
+      "evidence": "assets/unified.json -> archetypes[] declares 12; distinct players[].cross_arch across all 20,719 rows is exactly 6: A0, A1, A2, A3, A5, A11."
+    },
+    {
+      "slug": "unified",
+      "loc": "insight[3].body",
+      "text_sha": "abdd3cca9180a950",
+      "claim": "The top-10 hit rate is 0.000 across all forty",
+      "verdict": "OVER_FIRE",
+      "evidence": "'top-10 hit rate' is the metric's name. The 0.000 and n=40 are read directly from analogy_triples_report.json and were verified."
+    }
+  ],
+  "how_keyed": "text_sha = sha256 of the whole whitespace-normalised field. Any edit to that field voids the clearance and the claim returns to UNCHECKED."
+}
