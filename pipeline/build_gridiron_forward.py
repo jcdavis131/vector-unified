@@ -257,6 +257,26 @@ def main() -> int:
             "Unfiltered pooled persistence is reported alongside so the effect is visible."),
         "era_note": ("Features are z-scored within season, so a 1999 rate and a 2025 rate "
                      "both mean 'how far from that year's mean'. No era term is added."),
+        # HEADLINE FIELDS, UNIQUELY NAMED AND TOP-LEVEL. The per-group numbers live inside
+        # per_group[], where `gain` occurs five times with five different values — so
+        # check_cited_fields.py correctly refuses to verify a page citing `gain=-0.0151`,
+        # because it cannot tell which of the five was meant. Anything published from this
+        # report would therefore be unverifiable exactly where it is most interesting.
+        # A report whose headline numbers can only be reached by indexing into a list is
+        # awkward for a human consumer and unusable for a mechanical one; these names are
+        # unambiguous, so a citation to them can be checked.
+        "headline_positions_earning_keep": len(earners),
+        "headline_positions_tested": len(per_pos),
+        "headline_pooled_persistence_r": next(
+            (w["persistence_r"] for w in scored if w["group"].startswith("POOLED")), None),
+        "headline_qb_persistence_r": next(
+            (w["persistence_r"] for w in scored if w["group"] == "QB"), None),
+        "headline_qb_gain": next((w["gain"] for w in scored if w["group"] == "QB"), None),
+        "headline_te_gain_at_main_cut": next(
+            (w["gain"] for w in scored if w["group"] == "TE"), None),
+        "headline_te_gain_at_2021_cut": next(
+            (c["gain"] for w in scored if w["group"] == "TE"
+             for c in (w.get("cut_year_sweep") or []) if c["cut_year"] == 2021), None),
         "n_pairs_raw": len(raw), "n_excluded_merged_names": excluded,
         "n_pairs_used": len(src),
         "split": f"TEMPORAL — train on target season <= {CUT_YEAR}, test strictly after",

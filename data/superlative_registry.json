@@ -1,140 +1,148 @@
 {
-  "what": "Superlative claims on the live dumbmodel.com model cards that have been checked against their artifacts, keyed by a hash of the claim TEXT.",
-  "why_hashed": "A clearance is for a SENTENCE, not a location. If the text changes, the verification is void and the claim returns to UNCHECKED. Keying by slug+location instead would let a re-extraction inherit the previous sentence's clearance — the same stale-verification defect this repo has been correcting everywhere else.",
-  "verdicts": {
-    "TRUE": "checked against the named artifact and it holds",
-    "OVER_FIRE": "the detector matched but the sentence makes no rank claim about data",
-    "UNCHECKED": "not in this file"
+ "what": "Superlative claims on the live dumbmodel.com model cards that have been checked against their artifacts, keyed by a hash of the claim TEXT.",
+ "why_hashed": "A clearance is for a SENTENCE, not a location. If the text changes, the verification is void and the claim returns to UNCHECKED. Keying by slug+location instead would let a re-extraction inherit the previous sentence's clearance — the same stale-verification defect this repo has been correcting everywhere else.",
+ "verdicts": {
+  "TRUE": "checked against the named artifact and it holds",
+  "OVER_FIRE": "the detector matched but the sentence makes no rank claim about data",
+  "UNCHECKED": "not in this file"
+ },
+ "entries": [
+  {
+   "slug": "pitch",
+   "loc": "insight[0].body",
+   "text_sha": "d2fb93f31ad06168",
+   "claim": "the top-1 nearest neighbour of a player-season shares its position label 85.3% of the time",
+   "verdict": "OVER_FIRE",
+   "evidence": "'top-1 nearest neighbour' is the NAME of a metric, not a superlative claim about a ranking. The 85.3% figure is a plain statistic and was verified CLEAN by the pitch verifier."
   },
-  "entries": [
-    {
-      "slug": "pitch",
-      "loc": "insight[0].body",
-      "text_sha": "d2fb93f31ad06168",
-      "claim": "the top-1 nearest neighbour of a player-season shares its position label 85.3% of the time",
-      "verdict": "OVER_FIRE",
-      "evidence": "'top-1 nearest neighbour' is the NAME of a metric, not a superlative claim about a ranking. The 85.3% figure is a plain statistic and was verified CLEAN by the pitch verifier."
-    },
-    {
-      "slug": "pitch",
-      "loc": "insight[3].body",
-      "text_sha": "98a2568be4e7c71c",
-      "claim": "Transfermarkt is the only real one and scraping it at corpus scale is neither polite nor reliable",
-      "verdict": "OVER_FIRE",
-      "evidence": "A quoted judgement from probe_pitch_expectation_sources.py, presented as a quotation with attribution. Not a computed rank claim."
-    },
-    {
-      "slug": "unified",
-      "loc": "stat[3].label",
-      "text_sha": "c989cabbc0706a6e",
-      "claim": "declared archetypes that are actually assigned to a row anywhere in the asset",
-      "verdict": "TRUE",
-      "evidence": "assets/unified.json -> archetypes[] declares 12; distinct players[].cross_arch across all 20,719 rows is exactly 6: A0, A1, A2, A3, A5, A11."
-    },
-    {
-      "slug": "unified",
-      "loc": "insight[3].body",
-      "text_sha": "cb76146acf620828",
-      "claim": "0 of 40 curated pairs land in the top 10",
-      "verdict": "OVER_FIRE",
-      "evidence": "'top 10' is the metric's NAME (retrieval_top10_hit_rate_informational = 0.0), not a rank claim. All numbers confirmed: analogy_report.json G4 0.9828 vs random 0.1712; analogy_triples_report.json mean_b_rank 2114.18 vs random_expected_rank 2067.15, better_than_random_ratio 0.978, G4_curated_arch_agreement 0.65 vs arch_agreement_random_baseline 0.1621."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "insight[0].body",
-      "text_sha": "55d29af4f69d7b4a",
-      "claim": "Over 17 scored weeks of 2025 the model's ordering hit 0.6899 Spearman against 0.6539 for a last-4-game average",
-      "verdict": "OVER_FIRE",
-      "evidence": "'the last-4-game average' is a baseline's NAME. eval_backtest.json overall.spearman 0.6899, baseline_last4 0.6539, weeks 17 — all confirmed."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "insight[1].body",
-      "text_sha": "d922fc1d6458ea73",
-      "claim": "QB walk-forward Spearman is 0.4314 with a week-to-week standard deviation of 0.1524 — more than three times th",
-      "verdict": "TRUE",
-      "evidence": "QB spearman 0.4314 and spearman_sd 0.1524 vs overall spearman_sd 0.0402 => ratio 3.79, so 'more than three times' holds. eval_backtest.json positions.QB / overall."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "insight[3].body",
-      "text_sha": "72c8cda82cfb9b57",
-      "claim": "Across 1,156 charted careers the correlation between draft-capital expectation and career PPR-per-game deliver",
-      "verdict": "OVER_FIRE",
-      "evidence": "No rank claim; trajectory_axis_gridiron.json report.careers_scored 1156 and fit.corr_expectation_delivery 0.4175 both confirmed."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[1].reveal",
-      "text_sha": "30e45ac3a4dd8ba5",
-      "claim": "Dart's projected 20.3 rushing yards a game beats Jackson's 13.1, and the two are near-twins in embedding space",
-      "verdict": "TRUE",
-      "evidence": "projections.json: Jaxson Dart line.rush_yds 20.3 vs Lamar Jackson 13.1; Dart comps[0] = Lamar Jackson at 0.986. Confirmed."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[8].reveal",
-      "text_sha": "8ceb33f4cb6679dc",
-      "claim": "McBride is the only tight end in the model's top 50 overall, at #16, projected for 5.2 catches and 59.3 yards ",
-      "verdict": "TRUE",
-      "evidence": "Trey McBride rank_overall 16 and the only TE with rank_overall <= 50 — exhaustively checked over projections.json players[]."
-    },
-    {
-      "slug": "hoops",
-      "loc": "round[4].reveal",
-      "text_sha": "5990d9604cb24ea8",
-      "claim": "Curry was picked eight slots earlier and still wins: 89.625 delivery against a 53.3776 bar beats Giannis's 82.",
-      "verdict": "OVER_FIRE",
-      "evidence": "Not a rank claim. trajectory_axis.json: stephen curry delivery 89.625 predicted 53.3776 pick 7; giannis antetokounmpo delivery 82.923 predicted 49.3317 pick 15. Confirmed."
-    },
-    {
-      "slug": "hoops",
-      "loc": "round[8].reveal",
-      "text_sha": "453823d629635b6c",
-      "claim": "Hornacek's 51.1858 is the largest residual in the file — no career scores above it — off 96.250 delivery over ",
-      "verdict": "TRUE",
-      "evidence": "EXHAUSTIVE: sorted all 1,293 careers[] by residual. jeff hornacek 51.1858 IS the maximum; next are manu ginobili 49.1233 and nikola jokic 49.1176. 'no career scores above it' holds."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[0].reveal",
-      "text_sha": "eade99914b8a5a14",
-      "claim": "Jefferson is Robinson's third-closest comp at 0.986 similarity",
-      "verdict": "TRUE",
-      "evidence": "projections.json: Wan'Dale Robinson line.rec 5.2 / rec_yds 62.6, prev_team NYG; Justin Jefferson 5.1 / 61.0. Robinson.comps = [A.J. Brown 0.998, Rashee Rice 0.991, Justin Jefferson 0.986, ...] so Jefferson IS third. Confirmed by the adversarial verifier on 2026-08-03 and re-read here."
-    },
-    {
-      "slug": "hoops",
-      "loc": "insight[0].body",
-      "text_sha": "0ea74f0a16ee1001",
-      "claim": "a ridge regression over the 12 skill grades — not the 64-d MTNN embedding",
-      "verdict": "OVER_FIRE",
-      "evidence": "A disambiguation between two models, not a rank claim. Numbers confirmed against hoops_forward_report.json: persistence 0.4514, ridge1 0.4514, ridge12 0.5138, gain +0.0625, 112 of 10,108 pairs excluded as merged names, null_extras p=0.0."
-    },
-    {
-      "slug": "hoops",
-      "loc": "round[9].reveal",
-      "text_sha": "d0021dd0b371d446",
-      "claim": "the second and third largest residuals in the file, sixteen draft slots apart",
-      "verdict": "TRUE",
-      "evidence": "EXHAUSTIVE over all 1,293 careers[] in trajectory_axis.json sorted by residual: #1 jeff hornacek 51.1858 (pick 46), #2 manu ginobili 49.1233 (pick 57), #3 nikola jokic 49.1176 (pick 41). 57-41 = 16 slots. Both the rank claim and the slot arithmetic hold."
-    },
-    {
-      "slug": "hoops",
-      "loc": "caveat",
-      "text_sha": "b93246749c9b2d31",
-      "claim": "quotation from trajectory_axis.json caveat_survivorship",
-      "verdict": "OVER_FIRE",
-      "evidence": "A verbatim quotation, presented as one with attribution. Not a computed rank claim."
-    },
-    {
-      "slug": "tennis",
-      "loc": "insight[2].body",
-      "text_sha": "02c9b6f424d1f953",
-      "claim": "the largest spread on the quality columns is 2.631 against 2.225 on the behavioural ones",
-      "verdict": "TRUE",
-      "evidence": "tennis_archetype_probe.json: max_spread_quality_cols 2.631, max_spread_behavioural_cols 2.225, pc1_variance_share 0.3748, pc2_variance_share 0.1036, per_cluster['4'].n 487."
-    }
-  ],
-  "how_keyed": "text_sha = sha256 of the whole whitespace-normalised field. Any edit to that field voids the clearance and the claim returns to UNCHECKED."
+  {
+   "slug": "pitch",
+   "loc": "insight[3].body",
+   "text_sha": "98a2568be4e7c71c",
+   "claim": "Transfermarkt is the only real one and scraping it at corpus scale is neither polite nor reliable",
+   "verdict": "OVER_FIRE",
+   "evidence": "A quoted judgement from probe_pitch_expectation_sources.py, presented as a quotation with attribution. Not a computed rank claim."
+  },
+  {
+   "slug": "unified",
+   "loc": "stat[3].label",
+   "text_sha": "c989cabbc0706a6e",
+   "claim": "declared archetypes that are actually assigned to a row anywhere in the asset",
+   "verdict": "TRUE",
+   "evidence": "assets/unified.json -> archetypes[] declares 12; distinct players[].cross_arch across all 20,719 rows is exactly 6: A0, A1, A2, A3, A5, A11."
+  },
+  {
+   "slug": "unified",
+   "loc": "insight[3].body",
+   "text_sha": "cb76146acf620828",
+   "claim": "0 of 40 curated pairs land in the top 10",
+   "verdict": "OVER_FIRE",
+   "evidence": "'top 10' is the metric's NAME (retrieval_top10_hit_rate_informational = 0.0), not a rank claim. All numbers confirmed: analogy_report.json G4 0.9828 vs random 0.1712; analogy_triples_report.json mean_b_rank 2114.18 vs random_expected_rank 2067.15, better_than_random_ratio 0.978, G4_curated_arch_agreement 0.65 vs arch_agreement_random_baseline 0.1621."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "insight[0].body",
+   "text_sha": "55d29af4f69d7b4a",
+   "claim": "Over 17 scored weeks of 2025 the model's ordering hit 0.6899 Spearman against 0.6539 for a last-4-game average",
+   "verdict": "OVER_FIRE",
+   "evidence": "'the last-4-game average' is a baseline's NAME. eval_backtest.json overall.spearman 0.6899, baseline_last4 0.6539, weeks 17 — all confirmed."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "insight[1].body",
+   "text_sha": "d922fc1d6458ea73",
+   "claim": "QB walk-forward Spearman is 0.4314 with a week-to-week standard deviation of 0.1524 — more than three times th",
+   "verdict": "TRUE",
+   "evidence": "QB spearman 0.4314 and spearman_sd 0.1524 vs overall spearman_sd 0.0402 => ratio 3.79, so 'more than three times' holds. eval_backtest.json positions.QB / overall."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "insight[3].body",
+   "text_sha": "72c8cda82cfb9b57",
+   "claim": "Across 1,156 charted careers the correlation between draft-capital expectation and career PPR-per-game deliver",
+   "verdict": "OVER_FIRE",
+   "evidence": "No rank claim; trajectory_axis_gridiron.json report.careers_scored 1156 and fit.corr_expectation_delivery 0.4175 both confirmed."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "round[1].reveal",
+   "text_sha": "30e45ac3a4dd8ba5",
+   "claim": "Dart's projected 20.3 rushing yards a game beats Jackson's 13.1, and the two are near-twins in embedding space",
+   "verdict": "TRUE",
+   "evidence": "projections.json: Jaxson Dart line.rush_yds 20.3 vs Lamar Jackson 13.1; Dart comps[0] = Lamar Jackson at 0.986. Confirmed."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "round[8].reveal",
+   "text_sha": "8ceb33f4cb6679dc",
+   "claim": "McBride is the only tight end in the model's top 50 overall, at #16, projected for 5.2 catches and 59.3 yards ",
+   "verdict": "TRUE",
+   "evidence": "Trey McBride rank_overall 16 and the only TE with rank_overall <= 50 — exhaustively checked over projections.json players[]."
+  },
+  {
+   "slug": "hoops",
+   "loc": "round[4].reveal",
+   "text_sha": "5990d9604cb24ea8",
+   "claim": "Curry was picked eight slots earlier and still wins: 89.625 delivery against a 53.3776 bar beats Giannis's 82.",
+   "verdict": "OVER_FIRE",
+   "evidence": "Not a rank claim. trajectory_axis.json: stephen curry delivery 89.625 predicted 53.3776 pick 7; giannis antetokounmpo delivery 82.923 predicted 49.3317 pick 15. Confirmed."
+  },
+  {
+   "slug": "hoops",
+   "loc": "round[8].reveal",
+   "text_sha": "453823d629635b6c",
+   "claim": "Hornacek's 51.1858 is the largest residual in the file — no career scores above it — off 96.250 delivery over ",
+   "verdict": "TRUE",
+   "evidence": "EXHAUSTIVE: sorted all 1,293 careers[] by residual. jeff hornacek 51.1858 IS the maximum; next are manu ginobili 49.1233 and nikola jokic 49.1176. 'no career scores above it' holds."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "round[0].reveal",
+   "text_sha": "eade99914b8a5a14",
+   "claim": "Jefferson is Robinson's third-closest comp at 0.986 similarity",
+   "verdict": "TRUE",
+   "evidence": "projections.json: Wan'Dale Robinson line.rec 5.2 / rec_yds 62.6, prev_team NYG; Justin Jefferson 5.1 / 61.0. Robinson.comps = [A.J. Brown 0.998, Rashee Rice 0.991, Justin Jefferson 0.986, ...] so Jefferson IS third. Confirmed by the adversarial verifier on 2026-08-03 and re-read here."
+  },
+  {
+   "slug": "hoops",
+   "loc": "insight[0].body",
+   "text_sha": "0ea74f0a16ee1001",
+   "claim": "a ridge regression over the 12 skill grades — not the 64-d MTNN embedding",
+   "verdict": "OVER_FIRE",
+   "evidence": "A disambiguation between two models, not a rank claim. Numbers confirmed against hoops_forward_report.json: persistence 0.4514, ridge1 0.4514, ridge12 0.5138, gain +0.0625, 112 of 10,108 pairs excluded as merged names, null_extras p=0.0."
+  },
+  {
+   "slug": "hoops",
+   "loc": "round[9].reveal",
+   "text_sha": "d0021dd0b371d446",
+   "claim": "the second and third largest residuals in the file, sixteen draft slots apart",
+   "verdict": "TRUE",
+   "evidence": "EXHAUSTIVE over all 1,293 careers[] in trajectory_axis.json sorted by residual: #1 jeff hornacek 51.1858 (pick 46), #2 manu ginobili 49.1233 (pick 57), #3 nikola jokic 49.1176 (pick 41). 57-41 = 16 slots. Both the rank claim and the slot arithmetic hold."
+  },
+  {
+   "slug": "hoops",
+   "loc": "caveat",
+   "text_sha": "b93246749c9b2d31",
+   "claim": "quotation from trajectory_axis.json caveat_survivorship",
+   "verdict": "OVER_FIRE",
+   "evidence": "A verbatim quotation, presented as one with attribution. Not a computed rank claim."
+  },
+  {
+   "slug": "tennis",
+   "loc": "insight[2].body",
+   "text_sha": "02c9b6f424d1f953",
+   "claim": "the largest spread on the quality columns is 2.631 against 2.225 on the behavioural ones",
+   "verdict": "TRUE",
+   "evidence": "tennis_archetype_probe.json: max_spread_quality_cols 2.631, max_spread_behavioural_cols 2.225, pc1_variance_share 0.3748, pc2_variance_share 0.1036, per_cluster['4'].n 487."
+  },
+  {
+   "slug": "gridiron",
+   "loc": "insight[5].body",
+   "text_sha": "3392c2e4320f4755",
+   "claim": "Quarterback is the only negative of the four",
+   "verdict": "TRUE",
+   "evidence": "Read from data/gridiron_forward_report.json per_group[], all four per-position gains at the 2018 cut: QB -0.0151, RB +0.0044, WR +0.0071, TE +0.0105. QB is the only one below zero, so 'the only negative of the four' is exact rather than comparative. The earlier wording was 'the sharpest negative', which implied a ranking among several negatives when there is exactly one — flagged UNCHECKED by check_superlatives.py and corrected rather than cleared as written. The companion claim in the same body, 'QB persistence is the weakest of the four at 0.4914', holds against RB 0.7405, TE 0.7507, WR 0.7731."
+  }
+ ],
+ "how_keyed": "text_sha = sha256 of the whole whitespace-normalised field. Any edit to that field voids the clearance and the claim returns to UNCHECKED."
 }

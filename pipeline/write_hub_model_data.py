@@ -148,6 +148,24 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
                             "override, and say so on the page if you do)")
     elif v == "CLEAN":
         spec["_verification"] = "CLEAN — adversarially verified against source artifacts"
+    elif v == "MECHANICAL":
+        # A THIRD KIND OF VERIFICATION, added because claiming CLEAN for it would misstate
+        # the method. check_cited_fields.py compares every cited `field=value` against the
+        # artifact programmatically. For NUMBERS that is stronger than a reviewer reading
+        # prose — it cannot mis-read, tire, or agree with a plausible figure.
+        #
+        # FOR PROSE IT IS WEAKER, AND THIS IS THE PART WORTH SAYING OUT LOUD. It proves each
+        # value matches its source. It proves nothing about whether the sentence built
+        # around that value draws a fair conclusion. Every fabrication this project produced
+        # was a SUPERLATIVE — "the closest call on this board" — a claim whose numbers were
+        # all real. A page marked MECHANICAL has had its arithmetic checked and its
+        # reasoning taken on trust, and a reader deserves to know which.
+        prior = "; ".join((verdict.get("details") or [])[:2]) or "scope unspecified"
+        spec["_verification"] = (
+            f"MECHANICAL — every cited numeric claim compared against its artifact by "
+            f"check_cited_fields.py. Stronger than review for NUMBERS, weaker for PROSE: it "
+            f"proves each value matches its source and says nothing about whether the "
+            f"sentence around it draws a fair conclusion. Scope: {prior}")
 
     # ---- structural: the game must not lie about its own answer key -------------
     rounds = ((spec.get("game") or {}).get("rounds") or [])
