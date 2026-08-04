@@ -52,7 +52,8 @@ META = ROOT / "pipeline" / "data" / "meta_tennis_matrix.json"
 OUT = ROOT / "data" / "tennis_forward_report.json"
 SEED = 7
 CUT_YEAR = 2022          # train on target years <= this, test strictly after
-NULL_TOL = 0.15          # a shuffled target must land within this of zero
+# NULL_TOL is gone: it was an ASSERTED tolerance on a degenerate quantity.
+NULL_P = 0.05            # the gain must beat the shuffled-extras null at this p
 
 
 def ridge(Xtr, ytr, Xte, lam=1.0):
@@ -65,6 +66,38 @@ def ridge(Xtr, ytr, Xte, lam=1.0):
 
 def r(a, b):
     return float(np.corrcoef(a, b)[0, 1]) if len(a) > 2 else float("nan")
+
+
+def null_extras_gain(F, keep_col, y_prev, y_next, tr, te, reps=60):
+    """The gain you would see if the EXTRA features carried nothing.
+
+    THE NULL THIS FILE ORIGINALLY USED WAS BADLY CHOSEN AND HAPPENED TO PASS. It permuted
+    the TARGET and required the resulting r to sit within an ASSERTED 0.15 of zero. Two
+    things were wrong with it. First the tolerance was asserted, not computed — the same
+    defect this repo spent a phase correcting in G2's 0.433 bar. Second, and worse, the
+    quantity is degenerate: with a permuted target the ridge fits approximately the mean, so
+    its predictions are near-constant and their correlation with anything is numerically
+    unstable. Measured over 40 seeds it had sd 0.1487 and a |r| 95th percentile of 0.2943,
+    so a 0.15 tolerance would have FAILED a perfectly sound evaluation about a third of the
+    time, and passing it meant almost nothing.
+
+    This null instead keeps the target AND the persistence column intact and shuffles ONLY
+    the extra columns. That isolates the question actually being asked — do the extras add
+    anything, or would noise in their place do as well — and it stays well-conditioned
+    because the persistence signal is still real. Its spread is small enough to be
+    interpretable: sd 0.0012 on hoops, 0.0022 on tennis.
+    """
+    import numpy as _np
+    base = r(ridge(y_prev[tr, None], y_next[tr], y_prev[te, None]), y_next[te])
+    others = [j for j in range(F.shape[1]) if j != keep_col]
+    out = []
+    for seed in range(reps):
+        rng = _np.random.default_rng(seed)
+        Fs = F.copy()
+        for j in others:
+            Fs[:, j] = F[rng.permutation(len(F)), j]
+        out.append(r(ridge(Fs[tr], y_next[tr], Fs[te]), y_next[te]) - base)
+    return _np.array(out)
 
 
 def main() -> int:
@@ -115,6 +148,8 @@ def main() -> int:
     rng = np.random.default_rng(SEED)
     yperm = y_next[tr][rng.permutation(int(tr.sum()))]
     rnull = r(ridge(F[src][tr], yperm, F[src][te]), y_next[te])
+    ndist = null_extras_gain(F[src], rank_j, y_prev, y_next, tr, te)
+    p_val = float((ndist >= (r16 - r1)).mean())
 
     # ROBUSTNESS ACROSS CUTS, because one split can be lucky and a single +0.09 is not a
     # finding. Every cut year with a usable test set gets the same two models.
@@ -132,15 +167,14 @@ def main() -> int:
     all_positive = bool(gains) and all(g > 0 for g in gains)
 
     gain = r16 - r1
-    null_ok = abs(rnull) <= NULL_TOL
-    earns = gain > 0.01 and null_ok and all_positive
+    earns = gain > 0.01 and all_positive and p_val < 0.05
 
     print(f"\n  persistence (this rank -> next)        r = {persistence:.4f}")
     print(f"  RIDGE-1  (rank only)                   r = {r1:.4f}")
     print(f"  RIDGE-16 (all features + masks)        r = {r16:.4f}")
     print(f"  gain from the other 15 features        {gain:+.4f}")
-    print(f"  SHUFFLED-TARGET null                   r = {rnull:.4f}  "
-          f"{'collapses, evaluation is sound' if null_ok else 'DOES NOT COLLAPSE'}")
+    print(f"  NULL (extras shuffled) gain            mean {ndist.mean():+.4f}  "
+          f"sd {ndist.std():.4f}  ->  p = {p_val:.3f}")
     print(f"\n  verdict: {'style adds signal beyond rank' if earns else 'NO — the other features do not beat rank alone'}")
 
     OUT.write_text(json.dumps({
@@ -160,8 +194,22 @@ def main() -> int:
         "cut_year_sweep": sweep,
         "gain_positive_at_every_cut": all_positive,
         "gain_mean_across_cuts": round(float(np.mean(gains)), 4),
-        "shuffled_target_null_r": round(rnull, 4),
-        "null_collapses": bool(null_ok),
+        "null_extras_shuffled": {
+            "mean": round(float(ndist.mean()), 4), "sd": round(float(ndist.std()), 4),
+            "pct95": round(float(np.percentile(ndist, 95)), 4),
+            "p_value_of_real_gain": p_val, "reps": int(len(ndist)),
+            "what": ("Keeps the target and ENTERING_RANK_LOG intact, shuffles only the "
+                     "other columns. The gain you would see if they carried nothing."),
+        },
+        "superseded_shuffled_target_null_r": round(rnull, 4),
+        "superseded_null_note": (
+            "The original check permuted the TARGET and required |r| <= an ASSERTED 0.15. "
+            "The tolerance was asserted rather than computed, and the quantity is degenerate "
+            "— a permuted target makes the ridge fit ~the mean, so predictions are "
+            "near-constant and their correlation is unstable. Measured over 40 seeds: sd "
+            "0.1487, |r| 95th percentile 0.2943. A 0.15 bar would have failed a sound "
+            "evaluation about a third of the time. Kept for the record, not used."),
+        "gain_beats_null": bool(p_val < NULL_P),
         "verdict": ("style adds signal beyond rank" if earns else
                     "NO — the other 15 features do not improve on rank alone out of sample"),
         "honest_note": ("The interesting number is the GAIN, not the raw r. A raw r near "
@@ -174,9 +222,9 @@ def main() -> int:
     }, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {OUT}")
 
-    if args.check and not null_ok:
-        print(f"\nFAIL shuffled-target null r={rnull:.4f} exceeds {NULL_TOL} — the "
-              f"evaluation leaks and the real number cannot be trusted")
+    if args.check and p_val >= 0.05:
+        print(f"\nFAIL the gain is not distinguishable from shuffling the extra features "
+              f"(p={p_val:.3f}) — the other fifteen columns are not earning their place")
         return 1
     return 0
 

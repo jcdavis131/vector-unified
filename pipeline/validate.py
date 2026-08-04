@@ -65,6 +65,7 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # Fails if the shuffled-target arm does not collapse — i.e. if the tennis
     # evaluation is leaking and its +0.0949 gain cannot be trusted.
     "tennis_forward": (["build_tennis_forward.py", "--check"], False),
+    "hoops_forward": (["build_hoops_forward.py", "--check"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
