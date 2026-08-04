@@ -116,6 +116,32 @@ def main():
             f"{SPORTS[s]} count mismatch {counts[SPORTS[s]]} vs meta {_meta['coverage'][SPORTS[s]]}"
 
     verdict = ck.get("verdict", {})
+
+    # THE CHECKPOINT'S pos_drop IS THE BUGGY ONE AND A REBUILD DOES NOT FIX IT. `verdict`
+    # comes straight out of unified_stage2_best.pt, which was written before the 7.21
+    # knn5_acc fix, so every pos_drop in it is 0.0 — both arms were pinned at exactly 1.0 by
+    # the mask-used-as-an-index bug. The old caveat below told the reader "this field is
+    # only meaningful in assets rebuilt after that", which is WRONG REMEDIATION ADVICE: the
+    # value is baked into the checkpoint, so re-exporting reproduces it forever and only a
+    # retrain would move it. Substituting the measured values instead of shipping a known
+    # -bad number with a misleading note.
+    _probe = DATA / "g1_position_probe.json"
+    _pos_source = "checkpoint (STALE — carries the 7.21 mask bug)"
+    if _probe.exists():
+        _pd = json.loads(_probe.read_text(encoding="utf-8")).get("per_sport") or {}
+        _patched = 0
+        for _sp, _row in _pd.items():
+            if _sp in verdict and _row.get("pos_drop") is not None:
+                verdict[_sp] = dict(verdict[_sp])
+                verdict[_sp]["pos_drop"] = _row["pos_drop"]
+                verdict[_sp]["pos_ok"] = bool(_row.get("pos_ok"))
+                verdict[_sp]["pos_baseline_e_s"] = _row.get("baseline_e_s")
+                verdict[_sp]["pos_joint_z"] = _row.get("joint_z")
+                _patched += 1
+        if _patched:
+            _pos_source = (f"data/g1_position_probe.json — measured with the fixed "
+                           f"knn5_acc over {_patched} sports, NOT the checkpoint's value")
+    print(f"  G1 pos_drop source: {_pos_source}")
     # G2's target lives in the SHIPPED asset, so a wrong one is read by every downstream
     # consumer. 0.433 was `1/3 + 0.10`, which assumed balanced sports. They are 12,966 /
     # 5,323 / 2,430, so a majority predictor scores 0.6258 and a globally shuffled z —
@@ -136,11 +162,22 @@ def main():
         "n_players": int(z.shape[0]),
         "normalization": "per-sport encoders (drifted, unfrozen in Stage 2) -> shared trunk (adapter+era) -> 64-d L2; cross-sport archetype contrastive (SupCon) + task + GRL",
         "g1_verdict": verdict,
-        "g1_pos_caveat": ("pos_drop is 0.0 for every sport because knn5_acc used an int64 "
-                          "mask as an INDEX rather than a mask, scoring exactly 1.0 on both "
-                          "arms and even on a shuffled embedding. Fixed 2026-08-03 (7.21); "
-                          "this field is only meaningful in assets rebuilt after that. True "
-                          "position accuracy is ~0.78 hoops / 0.999 gridiron / 0.88 pitch."),
+        "g1_pos_source": _pos_source,
+        "g1_pos_caveat": (
+            "HISTORY, because this field read 0.0 for every sport from Phase 2 until "
+            "2026-08-03 and meant nothing: knn5_acc used the int64 pos_mask as an INDEX "
+            "rather than a mask, so both arms scored exactly 1.0 — on the real embedding "
+            "and on a shuffled one alike — and their difference was 0.0 by construction. "
+            "The earlier version of this note said the field 'is only meaningful in assets "
+            "rebuilt after' the fix. That was WRONG REMEDIATION ADVICE. `verdict` is read "
+            "straight from unified_stage2_best.pt, so a re-export reproduces the buggy "
+            "value forever and only a RETRAIN would move it. pos_drop here is therefore "
+            "substituted from data/g1_position_probe.json, measured with the fixed "
+            "knn5_acc against the shipped z. Convention is baseline(e_s) - joint(z), so "
+            "NEGATIVE means the joint space recovers position better. Measured: hoops "
+            "-0.0526 (0.7385 -> 0.7911), gridiron 0.0000 (0.9991, already at ceiling), "
+            "pitch +0.0021 (0.8930 -> 0.8909). The gate passes, and now it passes on "
+            "evidence: a globally shuffled z drops +0.5493 / +0.6920 / +0.5617."),
         "g2_sport_acc": g2_acc,
         "g2_target": g2_target,
         "g2_majority_baseline": round(majority, 4),
