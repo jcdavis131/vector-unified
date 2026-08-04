@@ -58,6 +58,10 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # The G1 position arm was pinned at 1.0/0.0 by the mask bug from Phase 2 to 7.21.
     # This is the first thing that can report it regressing.
     "g1_position": (["probe_g1_position.py", "--check"], False),
+    # Plants a defect in front of each guard and requires it to notice. The guards
+    # were each mutation-tested once, by hand, in the turn that created them — and a
+    # commit message does not run.
+    "guards_nonvacuous": (["check_guards_nonvacuous.py", "--check"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
