@@ -46,10 +46,17 @@ PIPE = ROOT / "pipeline"
 HUB = Path("C:/Users/jcdav/vector-hub/assets/data")
 
 
-def run(argv: list[str]) -> int:
-    return subprocess.run([sys.executable, str(PIPE / argv[0]), *argv[1:]],
-                          capture_output=True, text=True, encoding="utf-8",
-                          errors="replace", cwd=str(ROOT)).returncode
+def run(argv: list[str]) -> tuple[int, str]:
+    r = subprocess.run([sys.executable, str(PIPE / argv[0]), *argv[1:]],
+                       capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", cwd=str(ROOT))
+    return r.returncode, (r.stdout or "") + (r.stderr or "")
+
+
+def _patch_text(path: Path, old: str, new: str) -> None:
+    t = path.read_text(encoding="utf-8")
+    assert t.count(old) == 1, f"{path.name}: expected 1 occurrence of {old!r}"
+    path.write_text(t.replace(old, new), encoding="utf-8")
 
 
 def patch_json(path: Path, mutate) -> None:
@@ -80,6 +87,20 @@ def _contaminate_axis(doc):
         rows[0] = dict(rows[0], name="jaren jackson")
 
 
+def _bump_mtime(path: Path) -> None:
+    """Make a producer look newer than its artifact. Not a JSON edit — restored by mtime."""
+    import os, time
+    t = time.time() + 7200
+    os.utime(path, (t, t))
+
+
+def _bad_qid(doc):
+    # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
+    # on. Swapping the label is the exact confusion the registry exists to catch.
+    if "Q19204627" in doc:
+        doc["Q19204627"] = "association football"
+
+
 MUTATIONS = [
     ("hub_freshness/contract",
      ["check_hub_freshness.py", "--check", "--offline"],
@@ -93,6 +114,26 @@ MUTATIONS = [
      ["check_superlatives.py", "--check"],
      HUB / "equities.json", _false_superlative,
      "'the closest call on this board' planted on the WIDEST round"),
+    ("artifact_freshness/producer_newer",
+     ["check_artifact_freshness.py", "--check"],
+     PIPE / "build_vor_draft_value.py", _bump_mtime,
+     "a producer script made newer than the artifact it writes",
+     "STALE   vor_draft_value.json"),
+    ("g1_position/row_mismatch",
+     ["probe_g1_position.py", "--check"],
+     ROOT / "assets" / "unified.json", lambda d: d["players"].pop(),
+     "asset and matrix row counts disagree — a positional join would describe the "
+     "wrong player", 2),
+    # The first version of this mutation edited data/superlative_registry.json and the
+    # guard exited 0 — because check_wikidata_qids.py reads its EXPECT registry from its OWN
+    # SOURCE. The test was wrong, not the guard. Mutate what the guard actually reads.
+    ("wikidata_qids/wrong_label",
+     ["check_wikidata_qids.py", "--check"],
+     PIPE / "check_wikidata_qids.py",
+     lambda _: _patch_text(PIPE / "check_wikidata_qids.py",
+                           '"Q19204627": "American football player"',
+                           '"Q19204627": "association football"'),
+     "a registered QID relabelled to the wrong entity"),
     ("merged_careers/contamination",
      ["check_merged_careers.py", "--check"],
      ROOT / "data" / "direction_axis_hoops.json", _contaminate_axis,
@@ -111,7 +152,9 @@ def main() -> int:
         print(f"  {len(strays)} stray .guardbak file(s) from a killed run: {strays[:4]}")
 
     vacuous, ok = [], 0
-    for name, argv, target, mutate, what in MUTATIONS:
+    for entry in MUTATIONS:
+        name, argv, target, mutate, what = entry[:5]
+        expect = entry[5] if len(entry) > 5 else 1
         if not target.exists():
             vacuous.append(f"{name}: target {target} missing — cannot test")
             print(f"  SKIP  {name:34} target missing")
@@ -119,24 +162,47 @@ def main() -> int:
         bak = target.with_suffix(target.suffix + ".guardbak")
         shutil.copy2(target, bak)
         try:
-            clean = run(argv)
-            patch_json(target, mutate)
-            dirty = run(argv)
+            clean, clean_out = run(argv)
+            if mutate is _bump_mtime:
+                _bump_mtime(target)
+            elif target.suffix == ".py":
+                mutate(None)          # text mutation, applies itself
+            else:
+                patch_json(target, mutate)
+            dirty, dirty_out = run(argv)
         finally:
+            # copy2 restores BOTH content and mtime, which is what makes the mtime mutation
+            # safe to undo — a plain copy would leave every consumer looking stale.
             shutil.copy2(bak, target)
             bak.unlink(missing_ok=True)
-        restored = run(argv)
+        restored, restored_out = run(argv)
 
-        good = clean == 0 and dirty == 1 and restored == 0
+        if isinstance(expect, str):
+            # The baseline may be legitimately red for an UNRELATED artifact — here
+            # stage2_history.json, which only a training run can refresh. Comparing exit
+            # codes would make this guard permanently untestable for a reason that has
+            # nothing to do with it. So compare WHICH problem appears instead: the planted
+            # target must be named when planted and absent when clean. Match the STALE
+            # MARKER, not the bare filename: this checker prints every artifact with its
+            # status, so "vor_draft_value.json" is present in the clean output too — as a
+            # `fresh` row. A substring test that cannot tell fresh from stale proves
+            # nothing, which is the same shape as the defects it is here to detect.
+            good = (expect not in clean_out) and (expect in dirty_out) and (expect not in restored_out)
+        else:
+            good = clean == 0 and dirty == expect and restored == 0
         if good:
             ok += 1
         else:
             why = []
-            if clean != 0:
+            if isinstance(expect, str):
+                why.append(f"planted target {expect!r} "
+                           f"{'was already flagged clean' if expect in clean_out else 'never appeared'}")
+            elif clean != 0:
                 why.append(f"was already failing before the mutation (exit {clean})")
-            if dirty != 1:
-                why.append(f"DID NOT NOTICE the planted defect (exit {dirty})")
-            if restored != 0:
+            if not isinstance(expect, str) and dirty != expect:
+                why.append(f"DID NOT NOTICE the planted defect "
+                           f"(exit {dirty}, wanted {expect})")
+            if not isinstance(expect, str) and restored != 0:
                 why.append(f"still failing after restore (exit {restored}) — tree may be dirty")
             vacuous.append(f"{name}: {'; '.join(why)}")
         print(f"  {'ok  ' if good else 'FAIL'}  {name:34} clean={clean} planted={dirty} "
