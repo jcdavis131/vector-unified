@@ -280,10 +280,31 @@ def main() -> int:
             "random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not "
             "evidence of quality either. rank_nondeg_pass detects collapse, nothing more."),
         "note_G2": ("G2 has no pass/fail here on purpose — it is a leakage measure, not a "
-                    "quality gate, and a null SHOULD drive sport accuracy toward chance. "
-                    "Its value under each null is reported as a sanity check on the nulls "
-                    "themselves: if global_shuffle does not collapse sport accuracy toward "
-                    "0.333, the null is not doing its job."),
+                    "quality gate, and a null SHOULD drive sport accuracy toward the FLOOR. "
+                    "Its value under each null is a sanity check on the nulls themselves: "
+                    f"if global_shuffle does not collapse sport accuracy toward the majority "
+                    f"share ({majority:.4f}), the null is not doing its job."),
+        # THE CRITERION WAS WRONG IN THIS FILE'S OWN NOTE, and it was the error this same
+        # file corrects 100 lines above. `g2_baseline_correction` states that
+        # eval_unified.py's `chance = 1/3` is wrong because the sports are 12,966/5,323/
+        # 2,430 — and then note_G2 said the null should "collapse sport accuracy toward
+        # 0.333". It does not and must not: a shuffled embedding carries no sport signal, so
+        # a classifier gets the CLASS PRIOR, which is the majority share. Measured, both
+        # nulls land there — global_shuffle 0.6257 and random_gaussian 0.6257 against a
+        # 0.6258 majority. Under the old wording a perfectly functioning null read as broken.
+        #
+        # Now an ASSERTION rather than a sentence, because a criterion nobody evaluates is a
+        # criterion that can stay wrong for as long as this one did.
+        "g2_null_lands_at_floor": {
+            "majority_share": round(majority, 4),
+            "global_shuffle": round(null_results["global_shuffle"]["G2_sport_acc"], 4),
+            "abs_gap": round(abs(null_results["global_shuffle"]["G2_sport_acc"] - majority), 4),
+            "tolerance": 0.02,
+            "pass": bool(abs(null_results["global_shuffle"]["G2_sport_acc"] - majority) <= 0.02),
+            "why": ("A null that does NOT land at the majority share means the shuffle left "
+                    "sport signal behind, which would invalidate every other null in this "
+                    "file. Chance for this problem is the class prior, not 1/K."),
+        },
         "seed": SEED,
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
