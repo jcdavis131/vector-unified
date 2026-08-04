@@ -43,6 +43,10 @@ data/*
 # analogy_triples_REPORT.json. It is irreplaceable human work and was ignored until now,
 # while two evaluators read it as a required input.
 !data/analogy_triples.json
+# Symbol-level dependency hashes. Losing these on a fresh clone would not lose a report --
+# it would silently RE-ADD three permanent false STALE entries and send the next reader
+# into 23 training runs they do not need.
+!data/symbol_dep_registry.json
 pipeline/data/
 
 # Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).

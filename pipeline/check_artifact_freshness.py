@@ -35,6 +35,9 @@ declared roots is a FAILURE, not a skip.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import re
 import sys
 from pathlib import Path
 
@@ -129,11 +132,50 @@ NOT_GENERATED = {
     # checked against its artifact, with the evidence. It is written by a human decision,
     # so an mtime check would only ever say "the checker is newer than your judgement".
     "superlative_registry.json",
+    # Hand-recorded symbol hashes granting narrow mtime exemptions. A human decision,
+    # re-verified against live source on every run.
+    "symbol_dep_registry.json",
     # 40 hand-written cross-sport pairs (Brady <-> Curry). NO script writes this file; it is
     # irreplaceable if lost, and it was gitignored until now.
     "analogy_triples.json",
     "archetype_map.json", "sector_map.json",
 }
+
+SYMBOL_DEPS = ROOT / "data" / "symbol_dep_registry.json"
+
+
+def symbol_exempt(name: str) -> tuple[bool, str]:
+    """Is this artifact's mtime staleness explained by a SYMBOL-level dependency that has
+    not actually changed?
+
+    mtime is file-granular, and that is wrong when a consumer imports a handful of functions
+    from a large module: editing an unrelated part of eval_unified.py marked three ablation
+    artifacts stale, and regenerating those means 23 training runs for a change that cannot
+    reach them. A gate permanently red for a reason everyone knows is false trains its
+    reader to ignore it.
+
+    THE EXEMPTION CANNOT OUTLIVE THE CODE IT WAS GRANTED AGAINST. Every declared symbol is
+    re-hashed from current source on every run; one mismatch and the artifact is stale again.
+    """
+    if not SYMBOL_DEPS.exists():
+        return False, ""
+    reg = json.loads(SYMBOL_DEPS.read_text(encoding="utf-8")).get("entries", {})
+    want = reg.get(name)
+    if not want:
+        return False, ""
+    for key, recorded in want.items():
+        mod, _, sym = key.partition("::")
+        src_p = PIPE / mod
+        if not src_p.exists():
+            return False, f"{mod} is gone"
+        text = src_p.read_text(encoding="utf-8")
+        m = re.search(rf"^def {re.escape(sym)}\(.*?(?=^def |\Z)", text, re.M | re.S)
+        if not m:
+            return False, f"{key} no longer exists"
+        now = hashlib.sha256(m.group(0).encode()).hexdigest()[:16]
+        if now != recorded:
+            return False, f"{key} changed ({recorded} -> {now})"
+    return True, f"{len(want)} declared symbols unchanged"
 
 
 def main() -> int:
@@ -161,10 +203,16 @@ def main() -> int:
                 newest, newest_src = sp.stat().st_mtime, src
         if newest > a_t:
             hours = (newest - a_t) / 3600.0
-            rows.append((name, "STALE", hours))
-            problems.append(
-                f"{name} is {hours:.1f}h older than {newest_src} — re-run "
-                f"`python pipeline/{producer}`")
+            exempt, why = symbol_exempt(name)
+            if exempt:
+                rows.append((name, f"fresh*", 0.0))
+                print(f"  NOTE {name}: {hours:.1f}h behind {newest_src} by mtime, but "
+                      f"{why} — see data/symbol_dep_registry.json")
+            else:
+                rows.append((name, "STALE", hours))
+                problems.append(
+                    f"{name} is {hours:.1f}h older than {newest_src} — re-run "
+                    f"`python pipeline/{producer}`" + (f" ({why})" if why else ""))
         else:
             rows.append((name, "fresh", 0.0))
 

@@ -1,0 +1,35 @@
+{
+  "what": "Artifacts whose dependency on a module is limited to SPECIFIC SYMBOLS, with the hash of each symbol's source at the time the artifact was last verified.",
+  "why": "check_artifact_freshness.py compares FILE mtimes. That is right almost always and wrong here: ablation.py imports seven functions from eval_unified.py, and editing an UNRELATED part of that file (adding load_and_encode, changing an argparse default) marked three ablation artifacts stale. Regenerating them means 23 training runs \u2014 3 seeds plus 10 plus 10 \u2014 for a change that provably cannot affect them. A gate that is permanently red for a reason everyone knows is false trains its reader to ignore it, which is the failure this repo keeps correcting.",
+  "how": "If every declared symbol still hashes to the recorded value, the mtime difference is ignored. If ANY differs, the artifact is STALE and must be regenerated \u2014 the escape hatch cannot outlive the code it was granted against.",
+  "verified_on": "2026-08-04, against ebfc9c6..HEAD: all seven byte-identical",
+  "entries": {
+    "ablation_report.json": {
+      "eval_unified.py::g1_per_sport": "e67901e5ee19f3af",
+      "eval_unified.py::encode_all": "436e516638835502",
+      "eval_unified.py::g2_sport_invariance": "510df1e5cdae8c32",
+      "eval_unified.py::g3_silhouette": "ef20cd7d18f31508",
+      "eval_unified.py::g4_hit_rate": "d74f0a1f18d7af2e",
+      "eval_unified.py::g4_random_baseline": "9825cd8e90301a20",
+      "eval_unified.py::knn5_acc": "c9d5e450269619e2"
+    },
+    "ablation_grl_seeds.json": {
+      "eval_unified.py::g1_per_sport": "e67901e5ee19f3af",
+      "eval_unified.py::encode_all": "436e516638835502",
+      "eval_unified.py::g2_sport_invariance": "510df1e5cdae8c32",
+      "eval_unified.py::g3_silhouette": "ef20cd7d18f31508",
+      "eval_unified.py::g4_hit_rate": "d74f0a1f18d7af2e",
+      "eval_unified.py::g4_random_baseline": "9825cd8e90301a20",
+      "eval_unified.py::knn5_acc": "c9d5e450269619e2"
+    },
+    "ablation_coral_vicreg_seeds.json": {
+      "eval_unified.py::g1_per_sport": "e67901e5ee19f3af",
+      "eval_unified.py::encode_all": "436e516638835502",
+      "eval_unified.py::g2_sport_invariance": "510df1e5cdae8c32",
+      "eval_unified.py::g3_silhouette": "ef20cd7d18f31508",
+      "eval_unified.py::g4_hit_rate": "d74f0a1f18d7af2e",
+      "eval_unified.py::g4_random_baseline": "9825cd8e90301a20",
+      "eval_unified.py::knn5_acc": "c9d5e450269619e2"
+    }
+  }
+}
