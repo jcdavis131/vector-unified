@@ -1,0 +1,488 @@
+{
+ "built": "2026-08-04T17:06:16",
+ "chain": "athlete(player-season) -> team -> venue -> city -> company(ticker) -> named executives",
+ "per_hop_survival": {
+  "note": "A chain is only as long as its narrowest join. Four hops each at 'good' coverage can still multiply out to nothing, so every hop is reported rather than a single headline.",
+  "1_venues_resolved_to_a_unique_company": 17,
+  "1_of_which_correct": 15,
+  "2_venues_that_map_to_a_team_in_a_corpus": 13,
+  "3_player_seasons_reached": 1609,
+  "4_bridge_tickers": 13,
+  "5_bridge_tickers_with_officer_data": 13,
+  "6_bridge_tickers_with_an_identified_CEO": 10,
+  "6_note": "identified = exactly one CEO-role title made of pure role words, or a sole CEO row. Never a guess among several.",
+  "narrowest_hop": "hop 1 -> 2. Of 17 venues resolved to a company, only 13 sit in a league whose corpus this repo holds; the rest are NHL, defunct, or foreign (Uber Arena is in Berlin)."
+ },
+ "what_this_does_not_claim": "A venue-naming edge is a commercial relationship between a company and a FRANCHISE, not between that company and any individual athlete. 'Player X is connected to JPMorgan' is false. 'Player X played a season for a team whose arena carried JPMorgan's brand' is true and is all this supports.",
+ "ceo_field_provenance": "vector-equities/pipeline/officer_features.py ceo_of(), imported rather than reimplemented. That function already handles the divisional-CEO case -- JPM lists both a Chairman & CEO and a CEO of Asset & Wealth Management, and a naive 'first row with role CEO' picks whichever the parser emitted first. `ceo_unambiguous` carries its verdict.",
+ "companies": [
+  {
+   "ticker": "BALL",
+   "company": "Ball Corporation",
+   "sector": "Materials",
+   "venues": [
+    "Ball Arena"
+   ],
+   "cities": [
+    "Denver, Colorado"
+   ],
+   "teams": [
+    "hoops:DEN"
+   ],
+   "player_seasons_while_named": 58,
+   "officer_years": [
+    2022,
+    2025
+   ],
+   "officers_in_latest_year": 17,
+   "ceo_latest": "Lewis Ronald J.",
+   "ceo_title": "Chief Executive Officer",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "Lewis Ronald J.",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CHAIR",
+    "CHRO",
+    "CIO",
+    "CLO",
+    "COO",
+    "CXO_OTHER",
+    "SVP",
+    "UNLABELLED",
+    "VP"
+   ]
+  },
+  {
+   "ticker": "COF",
+   "company": "Capital One",
+   "sector": "Financials",
+   "venues": [
+    "Capital One Arena"
+   ],
+   "cities": [
+    "Washington, D.C."
+   ],
+   "teams": [
+    "hoops:WAS"
+   ],
+   "player_seasons_while_named": 88,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 19,
+   "ceo_latest": "FAIRBANK RICHARD D",
+   "ceo_title": "Chairman and CEO",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "FAIRBANK RICHARD D",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CHRO",
+    "CIO",
+    "CLO",
+    "CXO_OTHER",
+    "PRESIDENT",
+    "UNLABELLED"
+   ]
+  },
+  {
+   "ticker": "DAL",
+   "company": "Delta Air Lines",
+   "sector": "Industrials",
+   "venues": [
+    "Delta Center"
+   ],
+   "cities": [
+    "Salt Lake City, Utah"
+   ],
+   "teams": [
+    "hoops:UTA"
+   ],
+   "player_seasons_while_named": 33,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 11,
+   "ceo_latest": "Bastian Edward H",
+   "ceo_title": "Chief Executive Officer",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "Bastian Edward H",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CHRO",
+    "CXO_OTHER",
+    "EVP",
+    "PRESIDENT"
+   ]
+  },
+  {
+   "ticker": "F",
+   "company": "Ford Motor Company",
+   "sector": "Consumer Discretionary",
+   "venues": [
+    "Ford Field"
+   ],
+   "cities": [
+    "Detroit, Michigan"
+   ],
+   "teams": [
+    "gridiron:DET"
+   ],
+   "player_seasons_while_named": 170,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 16,
+   "ceo_latest": "FARLEY JR JAMES D",
+   "ceo_title": "President and CEO",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "FARLEY JR JAMES D",
+   "equities_ceo_of_unambiguous": false,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CHAIR",
+    "CHRO",
+    "COO",
+    "CXO_OTHER",
+    "PRESIDENT",
+    "UNLABELLED"
+   ]
+  },
+  {
+   "ticker": "FDX",
+   "company": "FedEx",
+   "sector": "Industrials",
+   "venues": [
+    "FedExForum"
+   ],
+   "cities": [
+    "Memphis, Tennessee"
+   ],
+   "teams": [
+    "hoops:MEM"
+   ],
+   "player_seasons_while_named": 112,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 13,
+   "ceo_latest": "Subramaniam Rajesh",
+   "ceo_title": "President/CEO",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "Krishnasamy Sriram",
+   "equities_ceo_of_unambiguous": false,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CHAIR",
+    "CHRO",
+    "COO",
+    "CXO_OTHER",
+    "EVP"
+   ]
+  },
+  {
+   "ticker": "FISV",
+   "company": "Fiserv",
+   "sector": "Financials",
+   "venues": [
+    "Fiserv Forum"
+   ],
+   "cities": [
+    "Milwaukee, Wisconsin"
+   ],
+   "teams": [
+    "hoops:MIL"
+   ],
+   "player_seasons_while_named": 78,
+   "officer_years": [
+    2015,
+    2025
+   ],
+   "officers_in_latest_year": 4,
+   "ceo_latest": null,
+   "ceo_title": null,
+   "ceo_resolution": "absent",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": null,
+   "equities_ceo_of_unambiguous": false,
+   "named_roles_present": [
+    "CAO",
+    "CFO",
+    "CXO_OTHER",
+    "PRESIDENT"
+   ]
+  },
+  {
+   "ticker": "INTU",
+   "company": "Intuit",
+   "sector": "Technology",
+   "venues": [
+    "Intuit Dome"
+   ],
+   "cities": [
+    "Inglewood, California"
+   ],
+   "teams": [
+    "hoops:LAC"
+   ],
+   "player_seasons_while_named": 21,
+   "officer_years": [
+    2015,
+    2025
+   ],
+   "officers_in_latest_year": 11,
+   "ceo_latest": "Goodarzi Sasan K",
+   "ceo_title": "CEO, President and Director",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "Goodarzi Sasan K",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CTO",
+    "EVP",
+    "UNLABELLED"
+   ]
+  },
+  {
+   "ticker": "JPM",
+   "company": "JPMorgan Chase",
+   "sector": "Financials",
+   "venues": [
+    "Chase Center"
+   ],
+   "cities": [
+    "San Francisco, California"
+   ],
+   "teams": [
+    "hoops:GSW"
+   ],
+   "player_seasons_while_named": 82,
+   "officer_years": [
+    2015,
+    2025
+   ],
+   "officers_in_latest_year": 13,
+   "ceo_latest": "DIMON JAMES",
+   "ceo_title": "Chairman & CEO",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "DIMON JAMES",
+   "equities_ceo_of_unambiguous": false,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CIO",
+    "CLO",
+    "COO",
+    "CRO",
+    "HEAD"
+   ]
+  },
+  {
+   "ticker": "MET",
+   "company": "MetLife",
+   "sector": "Financials",
+   "venues": [
+    "MetLife Stadium"
+   ],
+   "cities": [
+    "East Rutherford, New Jersey"
+   ],
+   "teams": [
+    "gridiron:NYG",
+    "gridiron:NYJ"
+   ],
+   "player_seasons_while_named": 360,
+   "officer_years": [
+    2015,
+    2025
+   ],
+   "officers_in_latest_year": 10,
+   "ceo_latest": "Khalaf Michel",
+   "ceo_title": "President & CEO",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "Khalaf Michel",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CLO",
+    "CRO",
+    "CXO_OTHER",
+    "EVP",
+    "PRESIDENT"
+   ]
+  },
+  {
+   "ticker": "MTB",
+   "company": "M&T Bank",
+   "sector": "Financials",
+   "venues": [
+    "M&T Bank Stadium"
+   ],
+   "cities": [
+    "Baltimore, Maryland"
+   ],
+   "teams": [
+    "gridiron:BAL"
+   ],
+   "player_seasons_while_named": 172,
+   "officer_years": [
+    2015,
+    2025
+   ],
+   "officers_in_latest_year": 13,
+   "ceo_latest": "JONES RENE F",
+   "ceo_title": "Chairman of the Board and CEO",
+   "ceo_resolution": "sole_ceo_row",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "JONES RENE F",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CHAIR",
+    "CLO",
+    "EVP"
+   ]
+  },
+  {
+   "ticker": "RJF",
+   "company": "Raymond James Financial",
+   "sector": "Financials",
+   "venues": [
+    "Raymond James Stadium"
+   ],
+   "cities": [
+    "Tampa, Florida"
+   ],
+   "teams": [
+    "gridiron:TB"
+   ],
+   "player_seasons_while_named": 172,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 17,
+   "ceo_latest": null,
+   "ceo_title": null,
+   "ceo_resolution": "ambiguous",
+   "ceo_candidates_if_ambiguous": [
+    "REILLY PAUL C | Chair & CEO",
+    "Shoukry Paul M | CEO"
+   ],
+   "equities_ceo_of_would_say": "REILLY PAUL C",
+   "equities_ceo_of_unambiguous": false,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CHAIR",
+    "CHRO",
+    "COO",
+    "CRO",
+    "CSO",
+    "CXO_OTHER",
+    "EVP",
+    "PRESIDENT",
+    "UNLABELLED"
+   ]
+  },
+  {
+   "ticker": "T",
+   "company": "AT&T",
+   "sector": "Communication",
+   "venues": [
+    "AT&T Stadium"
+   ],
+   "cities": [
+    "Arlington, Texas"
+   ],
+   "teams": [
+    "gridiron:DAL"
+   ],
+   "player_seasons_while_named": 159,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 12,
+   "ceo_latest": "STANKEY JOHN T",
+   "ceo_title": "CEO & President",
+   "ceo_resolution": "exact",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": "STANKEY JOHN T",
+   "equities_ceo_of_unambiguous": true,
+   "named_roles_present": [
+    "CAO",
+    "CEO",
+    "CFO",
+    "CMO",
+    "COO",
+    "CSO",
+    "CTO",
+    "CXO_OTHER",
+    "EVP",
+    "UNLABELLED"
+   ]
+  },
+  {
+   "ticker": "TGT",
+   "company": "Target Corporation",
+   "sector": "Consumer Staples",
+   "venues": [
+    "Target Center"
+   ],
+   "cities": [
+    "Minneapolis, Minnesota"
+   ],
+   "teams": [
+    "hoops:MIN"
+   ],
+   "player_seasons_while_named": 104,
+   "officer_years": [
+    2014,
+    2025
+   ],
+   "officers_in_latest_year": 12,
+   "ceo_latest": null,
+   "ceo_title": null,
+   "ceo_resolution": "absent",
+   "ceo_candidates_if_ambiguous": null,
+   "equities_ceo_of_would_say": null,
+   "equities_ceo_of_unambiguous": false,
+   "named_roles_present": [
+    "CAO",
+    "UNLABELLED"
+   ]
+  }
+ ]
+}
