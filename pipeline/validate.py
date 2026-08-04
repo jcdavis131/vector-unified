@@ -66,6 +66,7 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # evaluation is leaking and its +0.0949 gain cannot be trusted.
     "tennis_forward": (["build_tennis_forward.py", "--check"], False),
     "hoops_forward": (["build_hoops_forward.py", "--check"], False),
+    "equities_forward": (["build_equities_forward.py", "--check"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:

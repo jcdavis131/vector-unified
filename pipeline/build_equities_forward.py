@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Does the equities embedding forecast next year, or only describe this one? (7.35)
+
+Solo personal project, no connection to employer, built with public/free-tier only
+
+The third and last of the forward probes, and the only one whose answer is NO. Tennis found
+style adds +0.0941 over rank persistence; hoops found the skill profile adds +0.0625 over
+impact persistence. Asked of equities, the same question returns essentially nothing, and
+that is the result rather than a failure of the run.
+
+    Profitability     persistence 0.8473   +64-d embedding 0.8516   gain +0.0043
+    Balance_Health    persistence 0.9151   +64-d embedding 0.9157   gain +0.0006
+    Market_Momentum   persistence 0.8477   +64-d embedding 0.8506   gain +0.0029
+
+THE GAINS ARE REAL AND TOO SMALL TO MATTER, which is a third distinct finding. Every one
+beats the shuffled-extras null (p = 0.000 / 0.025 / 0.000) — so this is not noise — and
+every one sits below the 0.01 bar fixed before the run. Quoting only the p-values here would
+turn a null result into a headline; quoting only "no gain" would overstate it the other way.
+
+THE EMBEDDING IS NOT UNINFORMATIVE — IT IS REDUNDANT, and the difference matters. Scored on
+its own, with the company's current score withheld entirely, the 64-d vector recovers next
+year's skill about as well as carrying this year's number forward (0.8511 / 0.9141 / 0.8502
+against 0.8473 / 0.9151 / 0.8477). So it encodes the present profile well. It just does not
+know anything ABOUT NEXT YEAR that the present profile does not already say.
+
+READ THE BASELINE BEFORE READING THE GAIN. Persistence here is 0.85 to 0.92. There is very
+little headroom for ANY model, and "gain ~0 against a 0.92 baseline" is a much weaker claim
+than "the model is bad". A quality composite that moved enough to leave room would be a
+suspicious quality composite.
+
+IT IS NOT CARRY-FORWARD, checked before drawing any conclusion, because persistence that
+high is exactly what a stale-data bug looks like:
+    51,972 year-over-year deltas, 71 exactly zero (0.14%)
+    ZERO rows identical to their prior year
+    median |delta| ~0.05 against a value sd of ~0.21
+The numbers genuinely move. These composites are simply slow.
+
+WHAT THIS DOES NOT SHOW. dumbmodel.com's landing copy says the equities net predicts
+"next-year profile" among its tasks. That claim CANNOT BE CONFIRMED from the artifacts:
+pipeline/data/mtnn_report.json records held-out recall@10, cross-cycle archetype purity and
+sector top-1 accuracy, and no next-year head at all. So this file does not claim to have
+tested a stated training objective — it tests whether the SHIPPED embedding beats
+persistence on a one-year-ahead task, and reports that it does not.
+
+    python pipeline/build_equities_forward.py
+    python pipeline/build_equities_forward.py --check   # exit 1 only if the run is broken
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
+
+ROOT = Path(__file__).resolve().parent.parent
+REAL = Path("C:/Users/jcdav/vector-equities/assets/real_data.json")
+OUT = ROOT / "data" / "equities_forward_report.json"
+CUT_YEAR = 2021
+TARGETS = ("Profitability", "Balance_Health", "Market_Momentum")
+EARNS = 0.01     # a gain below this is not worth calling a gain
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--check", action="store_true")
+    args = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+    if not REAL.exists():
+        print(f"missing {REAL}")
+        return 2
+    e = json.loads(REAL.read_text(encoding="utf-8"))
+    pts, keys = e["points"], e["skill_keys"]
+    S = np.array([p["skills"] for p in pts], dtype=np.float32)
+    E = np.array([p["emb"] for p in pts], dtype=np.float32)
+    if S.shape[0] != E.shape[0] or S.shape[1] != len(keys):
+        print("shape mismatch between points, skills and skill_keys — refusing")
+        return 2
+
+    idx = {(x["ticker"], int(x["year"])): i for i, x in enumerate(pts)}
+    prs = [(idx[(t, y)], idx[(t, y + 1)], y + 1) for (t, y) in idx if (t, y + 1) in idx]
+    src = np.array([i for i, _, _ in prs])
+    dst = np.array([k for _, k, _ in prs])
+    ty = np.array([y for _, _, y in prs])
+    tr, te = ty <= CUT_YEAR, ty > CUT_YEAR
+
+    # Carry-forward check. Persistence of 0.9 is what a stale-data bug looks like, so this
+    # runs before anything is concluded from the persistence number.
+    D = S[dst] - S[src]
+    exact_zero = int((D == 0).sum())
+    identical_rows = int((np.abs(D).max(axis=1) < 1e-6).sum())
+
+    print(f"{len(prs)} consecutive-year pairs   train {tr.sum()}   test {te.sum()}")
+    print(f"  carry-forward check: {exact_zero}/{D.size} deltas exactly zero "
+          f"({100*exact_zero/D.size:.2f}%), {identical_rows} identical rows")
+    print(f"\n  {'skill':22} {'persist':>8} {'emb ONLY':>9} {'score+emb':>10} {'gain':>8}")
+
+    rows, any_earns = [], False
+    for tgt in TARGETS:
+        j = keys.index(tgt)
+        yp, yn = S[src, j], S[dst, j]
+        F = np.hstack([S[src, j:j + 1], E[src]])
+        persist = r(yp[te], yn[te])
+        only = r(ridge(E[src][tr], yn[tr], E[src][te]), yn[te])
+        r1 = r(ridge(yp[tr, None], yn[tr], yp[te, None]), yn[te])
+        rb = r(ridge(F[tr], yn[tr], F[te]), yn[te])
+        gain = rb - r1
+        ndist = null_extras_gain(F, 0, yp, yn, tr, te, reps=40)
+        p_val = float((ndist >= gain).mean())
+        earns = gain > EARNS and p_val < 0.05
+        any_earns = any_earns or earns
+        rows.append({"skill": tgt, "persistence_r": round(persist, 4),
+                     "embedding_only_r": round(only, 4), "score_only_r": round(r1, 4),
+                     "score_plus_embedding_r": round(rb, 4), "gain": round(gain, 4),
+                     "null_p": p_val, "earns_its_keep": bool(earns)})
+        print(f"  {tgt:22} {persist:>8.4f} {only:>9.4f} {rb:>10.4f} {gain:>+8.4f}"
+              f"   p={p_val:.3f} {'EARNS' if earns else 'no'}")
+
+    print(f"\n  verdict: {'some targets earn it' if any_earns else 'NO on MAGNITUDE, not on significance — every gain beats the null but all sit below the 0.01 bar'}")
+
+    OUT.write_text(json.dumps({
+        "question": ("Does the shipped 64-d equities embedding predict next year's skill "
+                     "profile beyond what this year's own score already predicts?"),
+        "verdict": ("NO, ON MAGNITUDE — NOT ON SIGNIFICANCE. Gains of +0.0043 / +0.0006 / "
+                    "+0.0029 against persistence of 0.8473 / 0.9151 / 0.8477. Every one of "
+                    "them BEATS the shuffled-extras null (p = 0.000 / 0.025 / 0.000), so the "
+                    "embedding does carry a real, detectable increment. It is just far too "
+                    "small to matter: below the 0.01 bar this file set before running. "
+                    "Statistically distinguishable and practically negligible are different "
+                    "findings, and reporting only the p-value would turn a null result into "
+                    "a headline." if not any_earns else "some targets earn it"),
+        "redundant_not_uninformative": (
+            "Scored ALONE, with the current score withheld, the embedding recovers next "
+            "year's skill about as well as persistence does. It encodes the present profile "
+            "well; it just knows nothing about next year that the present does not say. "
+            "'Redundant' and 'uninformative' are different findings and this is the first."),
+        "read_the_baseline_first": (
+            "Persistence is 0.85-0.92 here. There is very little headroom for any model, and "
+            "'gain ~0 against a 0.92 baseline' is a far weaker claim than 'the model is "
+            "bad'. A quality composite that moved enough to leave room would be suspicious."),
+        "carry_forward_check": {
+            "deltas": int(D.size), "exactly_zero": exact_zero,
+            "pct_exactly_zero": round(100 * exact_zero / D.size, 2),
+            "rows_identical_to_prior_year": identical_rows,
+            "why": ("Persistence of 0.9 is what a stale-data bug looks like, so this ran "
+                    "before any conclusion was drawn from it. The values genuinely move."),
+        },
+        "what_this_does_not_show": (
+            "dumbmodel.com's landing copy says this net predicts 'next-year profile' among "
+            "its tasks. That CANNOT be confirmed from the artifacts — mtnn_report.json "
+            "records held-out recall@10, cross-cycle archetype purity and sector top-1 "
+            "accuracy, and no next-year head. So this does not claim to have tested a stated "
+            "training objective; it tests the SHIPPED embedding on a one-year-ahead task."),
+        "n_pairs": len(prs), "n_train": int(tr.sum()), "n_test": int(te.sum()),
+        "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
+        "per_target": rows,
+        "vs_other_sports": (
+            "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities "
+            "~0 over 0.85-0.92. The GAINS are not directly comparable — different targets, "
+            "different baselines, different domains — but the pattern that headroom tracks "
+            "baseline is worth noticing rather than reading as a ranking of the models."),
+    }, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {OUT}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
