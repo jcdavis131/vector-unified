@@ -106,6 +106,10 @@ SHIPPED = {
 # Artifacts that are INPUTS or hand-authored anchors, not generated reports. Listed so the
 # unregistered check stays meaningful instead of being switched off.
 NOT_GENERATED = {
+    # HAND-CURATED, not generated. Each entry records a superlative on a live page that was
+    # checked against its artifact, with the evidence. It is written by a human decision,
+    # so an mtime check would only ever say "the checker is newer than your judgement".
+    "superlative_registry.json",
     "archetype_map.json", "sector_map.json", "analogy_triples.json",
     "native_clusters.json", "unified_meta.json", "stage2_history.json",
     "stage2_baselines.json", "trajectory_sport_comparison.json",
