@@ -114,7 +114,10 @@ SHIPPED = {
 PRODUCED_BY.update({
     "native_clusters.json": ("archetype_map.py", []),
     "unified_meta.json": ("build_unified_matrix.py", []),
-    "stage2_baselines.json": ("train_stage2.py", []),
+    # build_stage2_baselines.py, NOT train_stage2.py. Both write this file and both call
+    # the same knn5_acc, but only the standalone one can be run without launching a
+    # Stage 2 training run — so it is the producer a staleness message should name.
+    "stage2_baselines.json": ("build_stage2_baselines.py", ["eval_unified.py"]),
     "stage2_history.json": ("train_stage2.py", []),
     "trajectory_sport_comparison.json": ("compare_trajectory_sports.py", []),
 })
