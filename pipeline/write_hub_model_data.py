@@ -36,6 +36,7 @@ STRUCTURAL CHECKS TOO, because a verifier verdict is a judgement and these are a
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -229,6 +230,15 @@ def main() -> int:
             for p in problems:
                 print(f"      {p}")
             continue
+        # CONTENT HASH OF EVERY CITED SOURCE, so staleness can be judged on what the
+        # artifact SAYS rather than when it was touched. check_merged_careers.py rewrites
+        # its report on every validate.py run with byte-identical content, which under an
+        # mtime rule marks every consumer stale forever — a check that fires constantly
+        # trains its reader to ignore it, which is worse than not having it at all.
+        cleaned["source_hashes"] = {
+            f: hashlib.sha256(Path(f).read_bytes()).hexdigest()[:16]
+            for f in (cleaned.get("source_files") or []) if Path(f).exists()
+        }
         out = OUTDIR / f"{cleaned['slug']}.json"
         out.write_text(json.dumps(cleaned, indent=1, ensure_ascii=False) + "\n",
                        encoding="utf-8")

@@ -48,6 +48,10 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     "gate_nonvacuity": (["check_gate_nonvacuity.py", "--check"], False),
     "merged_careers": (["check_merged_careers.py", "--check"], False),
     "artifact_freshness": (["check_artifact_freshness.py", "--check"], False),
+    # The PUBLISHED site, checked the same way and for the reason 7.30 found the hard
+    # way: dumbmodel.com served "48-d" for weeks after mtnn_meta.json said 64. Needs
+    # network for the live-vs-committed comparison.
+    "hub_freshness": (["check_hub_freshness.py", "--check"], True),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
