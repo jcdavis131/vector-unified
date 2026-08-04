@@ -1,0 +1,249 @@
+{
+  "question": "Does an NFL season's 18-feature profile predict next season's PPR points-per-game beyond what this season's PPR already predicts?",
+  "verdict": "0 of 4 positions earn it: none. The PER-POSITION rows are the finding; the pooled row is reported and is confounded.",
+  "cut_sweep_changed_a_verdict": "TE cleared both bars on the single 2018 cut \u2014 gain +0.0105 against a 0.01 threshold at p=0.000 \u2014 and would have shipped as 'the tight-end profile forecasts next season'. At the 2021 cut the same gain is -0.0022. A result that changes sign with where the boundary was drawn is a fact about the boundary. The first version of this file had no sweep; build_tennis_forward.py already had one for this reason, so its absence here was an omission rather than a difference between the sports.",
+  "qb_note": "The profile makes QB prediction WORSE (-0.0151, p=0.500 \u2014 the null beats the real gain half the time), and QB persistence is itself the weakest at 0.4914 against 0.74-0.77 elsewhere. QB output is the least self-similar season to season, and the volume-dominated features add noise on the smallest sample.",
+  "why_per_position_is_the_finding": "Pooling QB/RB/WR/TE puts a 14.48-mean population beside a 5.86-mean one, and the 18 features are z-scored WITHIN SEASON ACROSS ALL FOUR positions, so PASS_ATT_PG is strongly negative for every non-QB. A ridge can recover position from them almost exactly, and 'the model knows a quarterback is a quarterback' would be reported as forecasting skill. Pooled persistence is 0.7642 against per-position 0.58-0.74 for exactly that reason.",
+  "merged_name_note": "vectors.json has NO player key \u2014 `id` is a row index, 10,700 distinct over 10,700 rows, and 2,014 names own more than one. 227 of 7262 name-keyed pairs join two different people across the season boundary. Excluded via merged_names() in build_vor_draft_value.py, the one gridiron normaliser, which applies the gsis and Wikidata acquittals internally.",
+  "min_games": 8,
+  "min_games_note": "Pre-registered before the run, not tuned. A 2-game season's per-game rate is mostly noise, and noise in the target depresses baseline and model equally. Unfiltered pooled persistence is reported alongside so the effect is visible.",
+  "era_note": "Features are z-scored within season, so a 1999 rate and a 2025 rate both mean 'how far from that year's mean'. No era term is added.",
+  "n_pairs_raw": 7262,
+  "n_excluded_merged_names": 227,
+  "n_pairs_used": 6005,
+  "split": "TEMPORAL \u2014 train on target season <= 2018, test strictly after",
+  "target": "ppg.ppr (PPR fantasy points per game)",
+  "per_group": [
+    {
+      "group": "POOLED (position-confounded)",
+      "n_pairs": 6005,
+      "n_train": 4244,
+      "n_test": 1761,
+      "persistence_r": 0.8,
+      "ridge1_ppr_only_r": 0.8,
+      "profile_only_r": 0.8083,
+      "ridge19_r": 0.8099,
+      "gain": 0.0099,
+      "null_p": 0.0,
+      "null_sd": 0.001,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2012,
+          "n_test": 3146,
+          "ppr_only_r": 0.7824,
+          "with_profile_r": 0.7925,
+          "gain": 0.0102
+        },
+        {
+          "cut_year": 2015,
+          "n_test": 2446,
+          "ppr_only_r": 0.7914,
+          "with_profile_r": 0.8011,
+          "gain": 0.0097
+        },
+        {
+          "cut_year": 2018,
+          "n_test": 1761,
+          "ppr_only_r": 0.8,
+          "with_profile_r": 0.8099,
+          "gain": 0.0099
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 1044,
+          "ppr_only_r": 0.801,
+          "with_profile_r": 0.8148,
+          "gain": 0.0138
+        }
+      ],
+      "gain_positive_at_every_cut": true,
+      "gain_mean_across_cuts": 0.0109,
+      "earns_its_keep": false
+    },
+    {
+      "group": "QB",
+      "n_pairs": 636,
+      "n_train": 454,
+      "n_test": 182,
+      "persistence_r": 0.4914,
+      "ridge1_ppr_only_r": 0.4914,
+      "profile_only_r": 0.4738,
+      "ridge19_r": 0.4763,
+      "gain": -0.0151,
+      "null_p": 0.5,
+      "null_sd": 0.0124,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2012,
+          "n_test": 326,
+          "ppr_only_r": 0.5037,
+          "with_profile_r": 0.4778,
+          "gain": -0.0259
+        },
+        {
+          "cut_year": 2015,
+          "n_test": 253,
+          "ppr_only_r": 0.5171,
+          "with_profile_r": 0.4959,
+          "gain": -0.0212
+        },
+        {
+          "cut_year": 2018,
+          "n_test": 182,
+          "ppr_only_r": 0.4914,
+          "with_profile_r": 0.4763,
+          "gain": -0.0151
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 106,
+          "ppr_only_r": 0.5022,
+          "with_profile_r": 0.527,
+          "gain": 0.0248
+        }
+      ],
+      "gain_positive_at_every_cut": false,
+      "gain_mean_across_cuts": -0.0094,
+      "earns_its_keep": false
+    },
+    {
+      "group": "RB",
+      "n_pairs": 1609,
+      "n_train": 1154,
+      "n_test": 455,
+      "persistence_r": 0.7405,
+      "ridge1_ppr_only_r": 0.7405,
+      "profile_only_r": 0.7432,
+      "ridge19_r": 0.7449,
+      "gain": 0.0044,
+      "null_p": 0.0,
+      "null_sd": 0.0034,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2012,
+          "n_test": 820,
+          "ppr_only_r": 0.7104,
+          "with_profile_r": 0.7109,
+          "gain": 0.0005
+        },
+        {
+          "cut_year": 2015,
+          "n_test": 630,
+          "ppr_only_r": 0.7233,
+          "with_profile_r": 0.7217,
+          "gain": -0.0016
+        },
+        {
+          "cut_year": 2018,
+          "n_test": 455,
+          "ppr_only_r": 0.7405,
+          "with_profile_r": 0.7449,
+          "gain": 0.0044
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 262,
+          "ppr_only_r": 0.7302,
+          "with_profile_r": 0.7397,
+          "gain": 0.0095
+        }
+      ],
+      "gain_positive_at_every_cut": false,
+      "gain_mean_across_cuts": 0.0032,
+      "earns_its_keep": false
+    },
+    {
+      "group": "WR",
+      "n_pairs": 2509,
+      "n_train": 1776,
+      "n_test": 733,
+      "persistence_r": 0.7731,
+      "ridge1_ppr_only_r": 0.7731,
+      "profile_only_r": 0.7791,
+      "ridge19_r": 0.7802,
+      "gain": 0.0071,
+      "null_p": 0.0,
+      "null_sd": 0.0022,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2012,
+          "n_test": 1308,
+          "ppr_only_r": 0.7529,
+          "with_profile_r": 0.7596,
+          "gain": 0.0066
+        },
+        {
+          "cut_year": 2015,
+          "n_test": 1026,
+          "ppr_only_r": 0.7605,
+          "with_profile_r": 0.7681,
+          "gain": 0.0076
+        },
+        {
+          "cut_year": 2018,
+          "n_test": 733,
+          "ppr_only_r": 0.7731,
+          "with_profile_r": 0.7802,
+          "gain": 0.0071
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 439,
+          "ppr_only_r": 0.7767,
+          "with_profile_r": 0.7871,
+          "gain": 0.0104
+        }
+      ],
+      "gain_positive_at_every_cut": true,
+      "gain_mean_across_cuts": 0.0079,
+      "earns_its_keep": false
+    },
+    {
+      "group": "TE",
+      "n_pairs": 1251,
+      "n_train": 860,
+      "n_test": 391,
+      "persistence_r": 0.7507,
+      "ridge1_ppr_only_r": 0.7507,
+      "profile_only_r": 0.7055,
+      "ridge19_r": 0.7612,
+      "gain": 0.0105,
+      "null_p": 0.0,
+      "null_sd": 0.0052,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2012,
+          "n_test": 692,
+          "ppr_only_r": 0.7208,
+          "with_profile_r": 0.7267,
+          "gain": 0.0059
+        },
+        {
+          "cut_year": 2015,
+          "n_test": 537,
+          "ppr_only_r": 0.7433,
+          "with_profile_r": 0.7524,
+          "gain": 0.0091
+        },
+        {
+          "cut_year": 2018,
+          "n_test": 391,
+          "ppr_only_r": 0.7507,
+          "with_profile_r": 0.7612,
+          "gain": 0.0105
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 237,
+          "ppr_only_r": 0.775,
+          "with_profile_r": 0.7728,
+          "gain": -0.0022
+        }
+      ],
+      "gain_positive_at_every_cut": false,
+      "gain_mean_across_cuts": 0.0058,
+      "earns_its_keep": false
+    }
+  ],
+  "vs_other_sports": "tennis +0.0941 over 0.7486, hoops +0.0625 over 0.4514, equities ~0 over 0.85-0.92. The GAINS are not comparable across sports \u2014 different targets, baselines and domains \u2014 and quoting one against another would be the apples-to-oranges this repo keeps refusing to make."
+}

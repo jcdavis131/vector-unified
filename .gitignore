@@ -47,7 +47,7 @@ data/*
 # it would silently RE-ADD three permanent false STALE entries and send the next reader
 # into 23 training runs they do not need.
 !data/symbol_dep_registry.json
-# The three forward-probe reports. A DIFFERENT reason from the four above — these ARE
+# The four forward-probe reports. A DIFFERENT reason from the four above — these ARE
 # generated, and the rule at the top of this file says generated artifacts stay out. They
 # are the exception because dumbmodel.com CITES THEM BY PATH as the source of published
 # numbers, and check_hub_freshness.py fails a page whose cited source does not exist
@@ -57,13 +57,15 @@ data/*
 # recomputable from public sources", and a citation pointing at a file git never carried
 # does not meet that claim.
 #
-# Safe to track because they are byte-DETERMINISTIC — fixed seeds, no timestamps; all three
-# re-ran identical (2,872 / 3,024 / 3,543 bytes) before this line was written. A generated
-# file that churns each run belongs ignored, so the check is the precondition, not a
-# formality. If a future probe writes a timestamp, it does NOT get a line here.
+# Safe to track because they are byte-DETERMINISTIC — fixed seeds, no timestamps; all four
+# re-ran identical (2,872 / 3,024 / 3,543 / 8,768 bytes) before their lines were written. A
+# generated file that churns each run belongs ignored, so the check is the precondition, not
+# a formality — gridiron was re-run and compared before being added here, not after. If a
+# future probe writes a timestamp, it does NOT get a line here.
 !data/tennis_forward_report.json
 !data/hoops_forward_report.json
 !data/equities_forward_report.json
+!data/gridiron_forward_report.json
 pipeline/data/
 
 # Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).

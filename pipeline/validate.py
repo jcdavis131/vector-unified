@@ -61,6 +61,10 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # deliberately refuses to guess at, and it prints that count every run rather than
     # implying full coverage.
     "cited_fields": (["check_cited_fields.py", "--check"], False),
+    # The fourth and last forward probe. Fails only if the RUN is broken — PPR carrying
+    # forward (which would make persistence an artefact of duplication) or a null with no
+    # spread. Not on a negative answer: 0 of 4 positions earning their keep IS the finding.
+    "gridiron_forward": (["build_gridiron_forward.py", "--check"], False),
     # The G1 position arm was pinned at 1.0/0.0 by the mask bug from Phase 2 to 7.21.
     # This is the first thing that can report it regressing.
     "g1_position": (["probe_g1_position.py", "--check"], False),

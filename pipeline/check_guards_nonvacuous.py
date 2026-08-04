@@ -283,6 +283,25 @@ def _tennis_extras_are_nothing(arrays):
         arrays[key] = A
 
 
+def _gridiron_ppr_carries_forward(doc):
+    """Copy each player-season's PPR onto his next season.
+
+    build_gridiron_forward.py's --check exists because build_equities_forward.py shipped
+    with a --check that had no body and ran as a registered gate that could not fail. The
+    arm it guards is carry-forward: pooled persistence of 0.77-0.80 is exactly what
+    duplicated data looks like, and every number in the report would still print as a
+    finding about football.
+    """
+    by_name: dict[str, list] = {}
+    for p in doc.get("players") or []:
+        if isinstance(p.get("ppg"), dict) and p["ppg"].get("ppr") is not None:
+            by_name.setdefault(p["name"], []).append(p)
+    for rows in by_name.values():
+        rows.sort(key=lambda x: int(x["season"]))
+        for prev, nxt in zip(rows, rows[1:]):
+            nxt["ppg"]["ppr"] = prev["ppg"]["ppr"]
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -361,6 +380,12 @@ MUTATIONS = [
      ROOT / "pipeline" / "data" / "tennis_matrix.npz", _tennis_extras_are_nothing,
      "every feature but rank zeroed in values and mask — the p >= 0.05 arm must fire, and "
      "this closes the coverage gap the suite published about itself"),
+    ("gridiron_forward/carry_forward",
+     ["build_gridiron_forward.py", "--check"],
+     Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json"),
+     _gridiron_ppr_carries_forward,
+     "every player-season's PPR copied onto his next — persistence of 0.77-0.80 would be "
+     "measuring duplication and would still print as a finding about football"),
     ("hub_freshness/unresolvable_root",
      ["check_hub_freshness.py", "--check", "--offline"],
      HUB / "tennis.json", _unknown_repo_root,
