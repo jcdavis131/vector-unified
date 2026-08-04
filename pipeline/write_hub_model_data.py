@@ -41,6 +41,10 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from portable_paths import find_absolute, resolve, to_portable  # noqa: E402
+
 HUB = Path("C:/Users/jcdav/vector-hub")
 OUTDIR = HUB / "assets" / "data"
 SLUGS = {"hoops", "gridiron", "pitch", "equities", "tennis", "unified"}
@@ -176,10 +180,56 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
         # that it is never applied silently.
         spec.setdefault("_round_notes", []).extend(dropped)
 
+    # ---- no machine-local path may be PUBLISHED ---------------------------------
+    # model.js renders source_files under "Every number above came from these files", so an
+    # absolute path is not an internal note — it is the provenance the page offers a reader,
+    # pointing at a disk they do not have. Rewritten rather than refused, because the
+    # citation is CORRECT and only its form is unusable; refusing would throw away a true
+    # statement over a fixable defect. The rewrite is recorded so it is never silent.
+    portable_fixes: list[str] = []
+    for i, f in enumerate(spec.get("source_files") or []):
+        p = to_portable(f)
+        if p != f:
+            spec["source_files"][i] = p
+            portable_fixes.append(f)
+    for key in ("insights", "headline_stats"):
+        for item in spec.get(key) or []:
+            if isinstance(item, dict) and isinstance(item.get("source"), str):
+                p = to_portable(item["source"])
+                if p != item["source"]:
+                    item["source"] = p
+                    portable_fixes.append(f"{key}[].source")
+    if portable_fixes:
+        spec.setdefault("_portable_path_rewrites", []).extend(portable_fixes)
+
+    # Whole-document sweep AFTER the rewrite, because the two loops above only know the
+    # fields that carry citations TODAY and that list has already grown twice. Anything
+    # still absolute here is somewhere I did not think to look, which is exactly the case
+    # worth failing on rather than shipping.
+    strays = find_absolute(spec)
+    if strays:
+        problems.append(
+            f"machine-local path(s) would be PUBLISHED at {[k for k, _ in strays[:4]]} — "
+            f"model.js renders sources to the reader, and a path on one laptop is not the "
+            f"'recomputable from public sources' the site's fine print promises")
+
     # ---- every cited file must exist -------------------------------------------
-    missing = [f for f in (spec.get("source_files") or []) if not Path(f).exists()]
+    # Resolved through the portable map. resolve() returns None for an unknown repo root,
+    # and that is treated as a FAILURE, not a skip: "I cannot find where this lives" is the
+    # state most likely to hide a wrong citation, so it must not pass quietly.
+    missing, unresolvable = [], []
+    for f in spec.get("source_files") or []:
+        q = resolve(f)
+        if q is None:
+            unresolvable.append(f)
+        elif not q.exists():
+            missing.append(f)
     if missing:
         problems.append(f"cited source file(s) do not exist: {missing}")
+    if unresolvable:
+        problems.append(f"cited source(s) name no known repo, so existence cannot be "
+                        f"checked at all: {unresolvable} (known roots: see "
+                        f"portable_paths.REPOS)")
 
     return problems, spec
 
@@ -263,10 +313,18 @@ def main() -> int:
         # its report on every validate.py run with byte-identical content, which under an
         # mtime rule marks every consumer stale forever — a check that fires constantly
         # trains its reader to ignore it, which is worse than not having it at all.
-        cleaned["source_hashes"] = {
-            f: hashlib.sha256(Path(f).read_bytes()).hexdigest()[:16]
-            for f in (cleaned.get("source_files") or []) if Path(f).exists()
-        }
+        # Keyed by the PORTABLE citation and read through resolve(), so the hash map and
+        # source_files agree on their keys. Keying by the absolute path while source_files
+        # held the portable one would leave every lookup missing, and check_hub_freshness
+        # silently DEGRADES to mtime when a hash is absent — turning the content rule this
+        # block exists to provide back into the mtime rule it exists to replace, with
+        # nothing anywhere reporting the downgrade.
+        cleaned["source_hashes"] = {}
+        for f in (cleaned.get("source_files") or []):
+            q = resolve(f)
+            if q is not None and q.exists():
+                cleaned["source_hashes"][f] = hashlib.sha256(
+                    q.read_bytes()).hexdigest()[:16]
         out = OUTDIR / f"{cleaned['slug']}.json"
         out.write_text(json.dumps(cleaned, indent=1, ensure_ascii=False) + "\n",
                        encoding="utf-8")

@@ -1,0 +1,65 @@
+{
+  "question": "Does a tennis player's playing style predict next year's ranking beyond what this year's ranking already predicts?",
+  "n_pairs": 2926,
+  "n_train": 2032,
+  "n_test": 894,
+  "split": "TEMPORAL \u2014 train on target year <= 2022, test strictly after",
+  "why_temporal": "A random split puts the same player's adjacent years on opposite sides. Rank is persistent enough (r=0.7575 overall) that the model would score well by memorising the player rather than learning anything, and the split would not match the use \u2014 predicting a season that has not happened.",
+  "persistence_r": 0.7486,
+  "ridge1_rank_only_r": 0.7486,
+  "ridge16_all_features_r": 0.8427,
+  "gain_over_rank_alone": 0.0941,
+  "cut_year_sweep": [
+    {
+      "cut_year": 2019,
+      "n_test": 1525,
+      "rank_only_r": 0.7581,
+      "all16_r": 0.846,
+      "gain": 0.0879
+    },
+    {
+      "cut_year": 2020,
+      "n_test": 1337,
+      "rank_only_r": 0.7538,
+      "all16_r": 0.8411,
+      "gain": 0.0873
+    },
+    {
+      "cut_year": 2021,
+      "n_test": 1140,
+      "rank_only_r": 0.7334,
+      "all16_r": 0.8393,
+      "gain": 0.1059
+    },
+    {
+      "cut_year": 2022,
+      "n_test": 894,
+      "rank_only_r": 0.7486,
+      "all16_r": 0.8427,
+      "gain": 0.0941
+    },
+    {
+      "cut_year": 2023,
+      "n_test": 671,
+      "rank_only_r": 0.7546,
+      "all16_r": 0.854,
+      "gain": 0.0993
+    }
+  ],
+  "gain_positive_at_every_cut": true,
+  "gain_mean_across_cuts": 0.0949,
+  "null_extras_shuffled": {
+    "mean": -0.003,
+    "sd": 0.0022,
+    "pct95": -0.0001,
+    "p_value_of_real_gain": 0.0,
+    "reps": 60,
+    "what": "Keeps the target and ENTERING_RANK_LOG intact, shuffles only the other columns. The gain you would see if they carried nothing."
+  },
+  "superseded_shuffled_target_null_r": 0.0124,
+  "superseded_null_note": "The original check permuted the TARGET and required |r| <= an ASSERTED 0.15. The tolerance was asserted rather than computed, and the quantity is degenerate \u2014 a permuted target makes the ridge fit ~the mean, so predictions are near-constant and their correlation is unstable. Measured over 40 seeds: sd 0.1487, |r| 95th percentile 0.2943. A 0.15 bar would have failed a sound evaluation about a third of the time. Kept for the record, not used.",
+  "gain_beats_null": true,
+  "verdict": "style adds signal beyond rank",
+  "honest_note": "The interesting number is the GAIN, not the raw r. A raw r near 0.75 here is earned by persistence, not by the model, and quoting it would be a real value answering a different question.",
+  "mask_note": "Each feature is fed alongside its mask column. X carries 0.0 where a feature was unobserved \u2014 a player who never played grass did not lose every grass match \u2014 so an unmasked zero would be read as a measurement."
+}

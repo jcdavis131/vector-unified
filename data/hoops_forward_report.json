@@ -1,0 +1,66 @@
+{
+  "question": "Does an NBA season's skill profile predict next season's impact beyond what this season's impact already predicts?",
+  "n_pairs_raw": 10108,
+  "n_excluded_merged_names": 112,
+  "n_pairs_used": 9996,
+  "n_train": 7706,
+  "n_test": 2290,
+  "split": "TEMPORAL \u2014 train on target season <= 2019, test strictly after",
+  "merged_name_note": "vectors.json has NO player identity key \u2014 its `id` is a row index and LeBron James has 23 of them \u2014 so 112 of 10108 name-keyed consecutive-season pairs join TWO DIFFERENT PEOPLE across the boundary. Left in, the model would be scored partly on predicting one man's next season from another man's last one. Excluded using the same merged_names() set every axis here uses, minus the Wikidata DOB acquittals.",
+  "era_note": "skills.json grades are PERCENTILE WITHIN SEASON POOL, so a 1997 grade and a 2025 grade are both 'how good among peers that year'. No era term is added; one would double-count.",
+  "persistence_r": 0.4514,
+  "ridge1_impact_only_r": 0.4514,
+  "ridge12_all_skills_r": 0.5138,
+  "gain_over_impact_alone": 0.0625,
+  "cut_year_sweep": [
+    {
+      "cut_year": 2010,
+      "n_test": 5466,
+      "impact_only_r": 0.476,
+      "all12_r": 0.5286,
+      "gain": 0.0526
+    },
+    {
+      "cut_year": 2013,
+      "n_test": 4423,
+      "impact_only_r": 0.4642,
+      "all12_r": 0.5239,
+      "gain": 0.0597
+    },
+    {
+      "cut_year": 2016,
+      "n_test": 3345,
+      "impact_only_r": 0.4654,
+      "all12_r": 0.5214,
+      "gain": 0.056
+    },
+    {
+      "cut_year": 2019,
+      "n_test": 2290,
+      "impact_only_r": 0.4514,
+      "all12_r": 0.5138,
+      "gain": 0.0625
+    },
+    {
+      "cut_year": 2022,
+      "n_test": 1160,
+      "impact_only_r": 0.4795,
+      "all12_r": 0.5284,
+      "gain": 0.0488
+    }
+  ],
+  "gain_positive_at_every_cut": true,
+  "gain_mean_across_cuts": 0.0559,
+  "null_extras_shuffled": {
+    "mean": -0.0007,
+    "sd": 0.0012,
+    "pct95": 0.0012,
+    "p_value_of_real_gain": 0.0,
+    "reps": 60,
+    "what": "Keeps the target and the impact column intact, shuffles only the other eleven skills. The gain you would see if they carried nothing."
+  },
+  "superseded_shuffled_target_null_r": -0.096,
+  "superseded_null_note": "A permuted-TARGET null with an ASSERTED 0.15 tolerance was used first. It is degenerate \u2014 the ridge fits ~the mean, predictions go near-constant, and the correlation is unstable: sd 0.1487 over 40 seeds. It would have failed a sound evaluation about a third of the time. Kept for the record, not used.",
+  "verdict": "the profile adds signal beyond impact",
+  "vs_tennis": "build_tennis_forward.py asks the same question of tennis and finds +0.0941 over a 0.7486 persistence baseline. The two GAINS are not directly comparable \u2014 different targets, different baselines, different sports \u2014 and quoting one against the other would be the cross-sport apples-to-oranges this repo keeps refusing to make."
+}

@@ -51,6 +51,10 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from portable_paths import find_absolute, resolve  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 HUB = Path("C:/Users/jcdav/vector-hub")
 DATA = HUB / "assets" / "data"
@@ -114,10 +118,25 @@ def main() -> int:
         # its report with identical bytes each time. Falls back to mtime when a data file
         # predates the hash field, and SAYS which rule it used rather than implying the
         # stronger one.
+        # PUBLISHED PATHS MUST NOT BE MACHINE-LOCAL. model.js:216 renders every
+        # source_files entry under "Every number above came from these files", so this is
+        # what the page offers a reader as provenance. 45 entries and 14 insight sources
+        # shipped as C:/Users/jcdav/... — correct, resolvable on one computer, and useless
+        # as the citation the heading promises. Whole-document walk, because the set of
+        # fields carrying citations has grown twice already.
+        for loc, val in find_absolute(doc):
+            problems.append(f"{slug}: {loc} publishes a machine-local path ({val[:60]}...) "
+                            f"— the page renders sources to the reader")
+
         hashes = doc.get("source_hashes") or {}
         changed = []
         for f in doc.get("source_files") or []:
-            q = Path(f)
+            q = resolve(f)
+            if q is None:
+                problems.append(f"{slug}: cited source {f} names no known repo root, so "
+                                f"its existence and freshness cannot be checked at all — "
+                                f"add the repo to portable_paths.REPOS or fix the citation")
+                continue
             if not q.exists():
                 problems.append(f"{slug}: cited source {f} no longer exists")
                 continue

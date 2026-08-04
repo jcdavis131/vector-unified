@@ -1,0 +1,51 @@
+{
+  "question": "Does the shipped 64-d equities embedding predict next year's skill profile beyond what this year's own score already predicts?",
+  "verdict": "NO, ON MAGNITUDE \u2014 NOT ON SIGNIFICANCE. Gains of +0.0043 / +0.0006 / +0.0029 against persistence of 0.8473 / 0.9151 / 0.8477. Every one of them BEATS the shuffled-extras null (p = 0.000 / 0.025 / 0.000), so the embedding does carry a real, detectable increment. It is just far too small to matter: below the 0.01 bar this file set before running. Statistically distinguishable and practically negligible are different findings, and reporting only the p-value would turn a null result into a headline.",
+  "redundant_not_uninformative": "Scored ALONE, with the current score withheld, the embedding recovers next year's skill about as well as persistence does. It encodes the present profile well; it just knows nothing about next year that the present does not say. 'Redundant' and 'uninformative' are different findings and this is the first.",
+  "read_the_baseline_first": "Persistence is 0.85-0.92 here. There is very little headroom for any model, and 'gain ~0 against a 0.92 baseline' is a far weaker claim than 'the model is bad'. A quality composite that moved enough to leave room would be suspicious.",
+  "carry_forward_check": {
+    "deltas": 51972,
+    "exactly_zero": 71,
+    "pct_exactly_zero": 0.14,
+    "rows_identical_to_prior_year": 0,
+    "why": "Persistence of 0.9 is what a stale-data bug looks like, so this ran before any conclusion was drawn from it. The values genuinely move."
+  },
+  "scope_corrected": "An earlier version said the landing copy's 'next-year profile' claim could not be confirmed. It can: model.py:274 defines self.next_profile_head, and train_mtnn.py:456 trains it with smooth_l1_loss against game_z[nxt_t] at loss weight 0.10. Absence from mtnn_report.json is not absence from the model. What this probe tests is the SHIPPED EMBEDDING (the trunk output in real_data.json, which is what the site serves) under a linear read. It does NOT test the next_profile head, whose weights are not in the shipped asset \u2014 that head may beat persistence where a ridge on the embedding does not, and no claim is made either way.",
+  "n_pairs": 4331,
+  "n_train": 2841,
+  "n_test": 1490,
+  "split": "TEMPORAL \u2014 train on target year <= 2021, test strictly after",
+  "per_target": [
+    {
+      "skill": "Profitability",
+      "persistence_r": 0.8473,
+      "embedding_only_r": 0.8511,
+      "score_only_r": 0.8473,
+      "score_plus_embedding_r": 0.8516,
+      "gain": 0.0043,
+      "null_p": 0.0,
+      "earns_its_keep": false
+    },
+    {
+      "skill": "Balance_Health",
+      "persistence_r": 0.9151,
+      "embedding_only_r": 0.9141,
+      "score_only_r": 0.9151,
+      "score_plus_embedding_r": 0.9157,
+      "gain": 0.0006,
+      "null_p": 0.025,
+      "earns_its_keep": false
+    },
+    {
+      "skill": "Market_Momentum",
+      "persistence_r": 0.8477,
+      "embedding_only_r": 0.8502,
+      "score_only_r": 0.8477,
+      "score_plus_embedding_r": 0.8506,
+      "gain": 0.0029,
+      "null_p": 0.0,
+      "earns_its_keep": false
+    }
+  ],
+  "vs_other_sports": "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities ~0 over 0.85-0.92. The GAINS are not directly comparable \u2014 different targets, different baselines, different domains \u2014 but the pattern that headroom tracks baseline is worth noticing rather than reading as a ranking of the models."
+}

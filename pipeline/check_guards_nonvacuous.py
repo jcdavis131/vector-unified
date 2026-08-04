@@ -118,6 +118,29 @@ def _break_invariant(doc):
                 return
 
 
+def _absolute_path(doc):
+    """Put a machine-local path back into a PUBLISHED citation.
+
+    model.js:216 renders every source_files entry under "Every number above came from these
+    files", so this is the provenance the page hands a reader. 45 of them shipped as
+    C:/Users/jcdav/... — every one correct, every one openable on exactly one computer.
+    """
+    if doc.get("source_files"):
+        doc["source_files"][0] = "C:/Users/jcdav/vector-unified/data/tennis_forward_report.json"
+
+
+def _unknown_repo_root(doc):
+    """Cite a repo that portable_paths.py has never heard of.
+
+    The failure mode being guarded is not the bad citation itself but the TEMPTING handling
+    of it: an unresolvable path is the one case where "skip it" reads as reasonable, and
+    skipping would make freshness vacuous for exactly the entries most likely to be wrong.
+    resolve() returns None and the checker must turn that into a failure, not a shrug.
+    """
+    if doc.get("source_files"):
+        doc["source_files"][0] = "vector-cricket/data/nope.json"
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -167,6 +190,16 @@ MUTATIONS = [
      ["check_merged_careers.py", "--check"],
      ROOT / "data" / "direction_axis_hoops.json", _contaminate_axis,
      "a known-merged career (jaren jackson) present in an axis artifact"),
+    ("hub_freshness/machine_local_path",
+     ["check_hub_freshness.py", "--check", "--offline"],
+     HUB / "tennis.json", _absolute_path,
+     "a laptop path published as the reader's provenance — the state the site shipped in "
+     "for 45 citations, under a heading promising where every number came from"),
+    ("hub_freshness/unresolvable_root",
+     ["check_hub_freshness.py", "--check", "--offline"],
+     HUB / "tennis.json", _unknown_repo_root,
+     "a citation naming no known repo — must FAIL, because 'I cannot find this' is the "
+     "case where skipping is most tempting and most wrong"),
 ]
 
 
