@@ -1,0 +1,147 @@
+{
+ "question": "Do the Stage-1 gates fail on data they should reject?",
+ "checkpoint": "unified_stage2_best.pt",
+ "real": {
+  "G1_native_knn5_z": {
+   "hoops": 0.978,
+   "gridiron": 0.9887,
+   "pitch": 0.9938
+  },
+  "G1_pass": true,
+  "G2_sport_acc": 0.6798,
+  "G2_effective_rank": 12.1,
+  "G3_silhouette": 0.7254,
+  "G3_silhouette_pass": true,
+  "G3_within_cos": 0.7845,
+  "G3_between_cos": -0.151,
+  "G3_separation": 0.9355,
+  "G3_separation_pass": true,
+  "G4_hit_rate": 0.9814,
+  "G4_pass": true
+ },
+ "nulls": {
+  "global_shuffle": {
+   "G1_native_knn5_z": {
+    "hoops": 0.1315,
+    "gridiron": 0.1315,
+    "pitch": 0.1811
+   },
+   "G1_pass": false,
+   "G2_sport_acc": 0.6257,
+   "G2_effective_rank": 12.1,
+   "G3_silhouette": -0.0178,
+   "G3_silhouette_pass": false,
+   "G3_within_cos": 0.0138,
+   "G3_between_cos": -0.004,
+   "G3_separation": 0.0177,
+   "G3_separation_pass": false,
+   "G4_hit_rate": 0.1719,
+   "G4_pass": false
+  },
+  "within_sport_shuffle": {
+   "G1_native_knn5_z": {
+    "hoops": 0.1442,
+    "gridiron": 0.1465,
+    "pitch": 0.1646
+   },
+   "G1_pass": false,
+   "G2_sport_acc": 0.6713,
+   "G2_effective_rank": 12.1,
+   "G3_silhouette": -0.0346,
+   "G3_silhouette_pass": false,
+   "G3_within_cos": -0.0015,
+   "G3_between_cos": -0.0191,
+   "G3_separation": 0.0176,
+   "G3_separation_pass": false,
+   "G4_hit_rate": 0.1617,
+   "G4_pass": false
+  },
+  "random_gaussian": {
+   "G1_native_knn5_z": {
+    "hoops": 0.1488,
+    "gridiron": 0.1653,
+    "pitch": 0.1564
+   },
+   "G1_pass": false,
+   "G2_sport_acc": 0.6257,
+   "G2_effective_rank": 64.0,
+   "G3_silhouette": -0.0054,
+   "G3_silhouette_pass": false,
+   "G3_within_cos": 0.001,
+   "G3_between_cos": 0.0025,
+   "G3_separation": -0.0015,
+   "G3_separation_pass": false,
+   "G4_hit_rate": 0.1712,
+   "G4_pass": false
+  }
+ },
+ "g3_sport_pair_confound": {
+  "within_arch_pairs": {
+   "gridiron+hoops": 51.3,
+   "gridiron+pitch": 23.4,
+   "hoops+pitch": 25.3
+  },
+  "between_arch_pairs": {
+   "gridiron+hoops": 55.3,
+   "gridiron+pitch": 14.5,
+   "hoops+pitch": 30.2
+  },
+  "n_within": 2291,
+  "n_between": 497,
+  "max_composition_gap_pct_points": 8.9,
+  "note": "If the two samples draw different sport-pair mixes, part of G3's separation is a sport-pair effect rather than an archetype effect. This does not say how much — it says whether the confound is present and how large the imbalance is."
+ },
+ "g2_baseline_correction": {
+  "reported_chance_in_eval_unified": 0.3333,
+  "majority_class_share": 0.6258,
+  "class_counts": {
+   "hoops": 12966,
+   "gridiron": 5323,
+   "pitch": 2430
+  },
+  "real_sport_acc": 0.6798,
+  "lift_over_uniform": 0.3465,
+  "lift_over_majority": 0.054,
+  "global_shuffle_acc": 0.6257,
+  "verdict": "eval_unified.py's `chance` is WRONG for this problem. A 3-class accuracy is only comparable to 1/3 when the classes are balanced, and these are 62.6 / 25.7 / 11.7. global_shuffle scoring the majority share exactly is the confirmation. Sport leakage should be quoted against 0.6258."
+ },
+ "g4_baseline": {
+  "random_cross_sport_arch_match": 0.1712,
+  "real_hit_rate": 0.9814,
+  "lift_over_random": 0.8102,
+  "stated_bar": 0.6,
+  "note": "G4's 0.60 bar was stated without a baseline. The honest null is the chance that a random other-sport row shares the archetype, which is 0.1712 given the 0.249/0.235/0.192/0.148/0.113/0.063 archetype mix — so 0.60 is a real bar here, unlike G2's 1/3."
+ },
+ "g3_separation_calibrated": {
+  "perm_reps": 50,
+  "null_separation_p95": 0.0389,
+  "null_separation_max": 0.0446,
+  "real_separation": 0.9355,
+  "passes_calibrated_threshold": true,
+  "note": "Replaces `within > between` with `within - between > 95th percentile of the within-sport-shuffle null`. The real value clears it by orders of magnitude, so the FINDING was never in doubt — only the test was."
+ },
+ "vacuous_gates": [],
+ "decision_rule": "A gate that PASSES on within_sport_shuffle is not measuring what it claims and its historical PASS must be withdrawn until it is redefined. Fixed before the first run.",
+ "note_rank": "G2's effective_rank is NOT testable by these nulls and its green must not be read as earned. Rank is a function of the singular values and a row permutation leaves the Gram spectrum untouched — global_shuffle and within_sport_shuffle both score 12.4, exactly the real value. Only random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not evidence of quality either. rank_nondeg_pass detects collapse, nothing more.",
+ "note_G2": "G2 has no pass/fail here on purpose — it is a leakage measure, not a quality gate, and a null SHOULD drive sport accuracy toward the FLOOR. Its value under each null is a sanity check on the nulls themselves: if global_shuffle does not collapse sport accuracy toward the majority share (0.6258), the null is not doing its job.",
+ "g2_null_lands_at_floor": {
+  "majority_share": 0.6258,
+  "global_shuffle": 0.6257,
+  "abs_gap": 0.0001,
+  "tolerance": 0.02,
+  "pass": true,
+  "why": "A null that does NOT land at the majority share means the shuffle left sport signal behind, which would invalidate every other null in this file. Chance for this problem is the class prior, not 1/K."
+ },
+ "seed": 7,
+ "z_source": "drifted live encoders + Stage 2 trunk (matches the shipped export)",
+ "CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields": {
+  "prose_says": "both score 12.4, exactly the real value",
+  "fields_say": {
+   "real": 12.1,
+   "global_shuffle": 12.1,
+   "within_sport_shuffle": 12.1
+  },
+  "reading": "The three fields agree with EACH OTHER at 12.1, which is the substantive claim -- the nulls score exactly what the real model scores, so rank_nondeg_pass detects collapse and nothing more. Only the number quoted in the prose is stale. The conclusion is unaffected; a reader comparing 12.4 against unified_report.json's effective_rank of 12.0 would be comparing two numbers neither of which is in this file.",
+  "found_by": "reading the artifact's fields instead of its summary, while auditing promotion gates (audit_promotion_gates.py de8275e)."
+ }
+}
