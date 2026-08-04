@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T16:52:11",
+ "built": "2026-08-04T16:59:15",
  "question": "How many player-seasons does the venue->sponsor edge actually reach?",
  "answers_the_open_question_from": "pipeline/acquire_venue_sponsors.py — '14 venues is the edge, not the coverage.'",
  "gridiron": {
@@ -18,7 +18,108 @@
   "naming_years_are_hand_verified": true,
   "naming_year_scalable_source": "each venue's Wikipedia infobox former_names; one fetch per matched venue. Required before this edge list grows past the hand-checked 5."
  },
- "hoops_join_blocked_by": "No team column exists for the hoops corpus. unified_matrix.npz carries sport_id/era_id/arch_id/pos_id/player_idx and gridiron_season_emb.npz carries team, but nothing maps a hoops player-season to a franchise. The NBA venue->team table is parsed and written below so this is a lookup away, not a rebuild.",
+ "hoops": {
+  "corpus_player_seasons": 12966,
+  "roster_covered_player_seasons": 3385,
+  "roster_seasons": "2015-16..2025-26",
+  "name_season_keys_colliding_on_player_id": 0,
+  "nba_table_rows_parsed": 30,
+  "nba_rows_without_a_mapped_team": [],
+  "n_edges": 7,
+  "n_distinct_tickers": 7,
+  "all_season_edges_player_seasons": 796,
+  "named_window_edges_player_seasons": 464,
+  "denominator_note": "Percentages here are over the 3,385 roster-covered player-seasons, NOT the 12,966-row corpus. Quoting them against the corpus would overstate coverage 3.8x.",
+  "named_window_pct_of_roster_covered": 13.71,
+  "edges": [
+   {
+    "venue": "Target Center",
+    "team_wiki": "Minnesota Timberwolves",
+    "team_code": "MIN",
+    "ticker": "TGT",
+    "company": "Target Corporation",
+    "location": "Minneapolis, Minnesota",
+    "sponsor_name_from": 1990,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 104,
+    "player_seasons_while_named": 104
+   },
+   {
+    "venue": "Capital One Arena",
+    "team_wiki": "Washington Wizards",
+    "team_code": "WAS",
+    "ticker": "COF",
+    "company": "Capital One",
+    "location": "Washington, D.C.",
+    "sponsor_name_from": 2017,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 106,
+    "player_seasons_while_named": 88
+   },
+   {
+    "venue": "Chase Center",
+    "team_wiki": "Golden State Warriors",
+    "team_code": "GSW",
+    "ticker": "JPM",
+    "company": "JPMorgan Chase",
+    "location": "San Francisco, California",
+    "sponsor_name_from": 2019,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 131,
+    "player_seasons_while_named": 82
+   },
+   {
+    "venue": "Fiserv Forum",
+    "team_wiki": "Milwaukee Bucks",
+    "team_code": "MIL",
+    "ticker": "FISV",
+    "company": "Fiserv",
+    "location": "Milwaukee, Wisconsin",
+    "sponsor_name_from": 2018,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 111,
+    "player_seasons_while_named": 78
+   },
+   {
+    "venue": "Ball Arena",
+    "team_wiki": "Denver Nuggets",
+    "team_code": "DEN",
+    "ticker": "BALL",
+    "company": "Ball Corporation",
+    "location": "Denver, Colorado",
+    "sponsor_name_from": 2020,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 110,
+    "player_seasons_while_named": 58
+   },
+   {
+    "venue": "Delta Center",
+    "team_wiki": "Utah Jazz",
+    "team_code": "UTA",
+    "ticker": "DAL",
+    "company": "Delta Air Lines",
+    "location": "Salt Lake City, Utah",
+    "sponsor_name_from": 2023,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 117,
+    "player_seasons_while_named": 33
+   },
+   {
+    "venue": "Intuit Dome",
+    "team_wiki": "Los Angeles Clippers",
+    "team_code": "LAC",
+    "ticker": "INTU",
+    "company": "Intuit",
+    "location": "Inglewood, California",
+    "sponsor_name_from": 2024,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 117,
+    "player_seasons_while_named": 21
+   }
+  ],
+  "all_season_pct_of_roster_covered": 23.52
+ },
+ "CORRECTION_hoops_was_not_actually_blocked": "8ea1d98 reported the hoops join as impossible because unified_matrix.npz has no team column, and claimed the NBA venue->team table was 'parsed and written out'. Both were wrong. vector-hoops/assets/player_meta.json carries roster: Name|Season -> team, and parse_table() had silently returned ZERO rows for the NBA page because that page uses a different table shape. The commit shipped an empty list under a claim that it was populated.",
  "dropped_adjudicated_false_positives": {
   "Boston Garden": "named for the city; Boston Scientific is not the sponsor",
   "Cincinnati Gardens": "named for the city; Cincinnati Financial is not the sponsor"
@@ -102,6 +203,5 @@
    "player_seasons_all": 159,
    "player_seasons_while_named": 159
   }
- ],
- "nba_venue_teams": []
+ ]
 }
