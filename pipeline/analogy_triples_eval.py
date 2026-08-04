@@ -130,6 +130,25 @@ def main():
         a_pool = sport != r["_a_sport"]
         same = int(((arch == r["a_arch"]) & a_pool).sum())
         arch_base += (same / max(int(a_pool.sum()), 1)) / len(scored)
+    # READ THE NUMBER, DO NOT TYPE IT INTO THE SENTENCE. This note used to say the
+    # all-players G4 was "0.9401 vs a 0.1712 random baseline". 0.9401 was Stage 1's value;
+    # the shipped Stage 2.1 model scores 0.9828, and the literal sat here unchanged through
+    # every regeneration because prose is not recomputed. It reached the live dumbmodel.com
+    # unified card, where the extraction agent noticed the artifact contradicting itself and
+    # flagged it on the page. A number embedded in generated prose is a number nothing
+    # updates — the same defect as a stale report, one layer down.
+    _ar = ROOT / "data" / "analogy_report.json"
+    if _ar.exists():
+        _g = (json.loads(_ar.read_text(encoding="utf-8"))
+              .get("G4_cross_sport_nn_role_coherence") or {})
+        _h, _b = _g.get("hit_rate"), _g.get("random_baseline")
+        _g4_all = (f"{_h} vs a {_b} random baseline" if _h is not None
+                   else "not present in analogy_report.json")
+    else:
+        # NOT a fallback literal. Quoting a remembered number when the source is missing is
+        # how the stale one survived in the first place.
+        _g4_all = "unavailable — data/analogy_report.json not found"
+
     report = {
         "n_triples": len(T["triples"]), "n_scored": len(scored),
         "metric_note": (
@@ -142,7 +161,7 @@ def main():
             "reframed — the curated-pair retrieval carries no signal, and that is the "
             "honest reading. What still stands is arch-agreement, which is reported here "
             "against its own computed baseline, and the automated all-players G4 "
-            "(0.9401 vs a 0.1712 random baseline, see check_gate_nonvacuity.py)."),
+            f"({_g4_all}, see analogy_report.json)."),
         "G4_curated_arch_agreement": round(arch_rate, 4), "target": 0.60, "pass": bool(arch_rate >= 0.60),
         "arch_agreement_random_baseline": round(arch_base, 4),
         "arch_agreement_lift": round(arch_rate - arch_base, 4),
