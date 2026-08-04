@@ -59,6 +59,7 @@ OUT = ROOT / "data" / "tennis_mtnn_report.json"
 EMB = ROOT / "pipeline" / "data" / "tennis_mtnn_embedding.npz"
 
 BAR = 0.0584          # learned-linear mean from probe_tennis_metric.py --enriched
+BAR_NO_CALENDAR = 0.0783   # this model WITHOUT the calendar tower, for the --no-calendar arm
 RAW_COSINE = 0.0447   # raw cosine over the same 28 features
 K = 10
 CUT = 2022
@@ -88,7 +89,57 @@ def recall_at_k(E, pairs, tours, k=K):
     return hits / len(pairs) if pairs else float("nan")
 
 
-def build_inputs():
+def tournament_block(meta):
+    """Which of the 287 distinct tournaments did this player-year enter? Binary, 287 wide.
+
+    N_TOURNAMENTS and N_LOCATIONS compress a calendar to a COUNT. probe_tennis_feature_
+    identity.py established that identity needs stable AND RARE, and a count is neither —
+    two players with 18 events each look identical. WHICH events is the actual fingerprint:
+    a player returns to the same tournaments, and the rare ones are near-unique.
+
+    Verified: 287 distinct Tournament names across pipeline/cache/tennis/*.xlsx, none
+    appearing in only one match, top-4 are the Slams at ~3,300-3,556 matches each.
+
+    WHAT THIS IS AND IS NOT. Matching a player across years partly by "played Rosmalen and
+    Eastbourne both years" is a REAL behavioural signature, not label leakage — the target
+    is next year's row and nothing about it is being read. But it is a narrower claim than
+    "the model learned playing style": a rare-tournament overlap is an easy match. Reported
+    as what it is.
+    """
+    import collections
+    from acquire_tennis import path_for, read_sheet
+
+    entered = collections.defaultdict(set)
+    allnames: set[str] = set()
+    for women in (False, True):
+        tour = "wta" if women else "atp"
+        for y in range(2013, 2027):
+            p = path_for(y, women)
+            if not p.exists():
+                continue
+            hdr, body = read_sheet(p)
+            i = {c: k for k, c in enumerate(hdr)}
+            if "Tournament" not in i or "Winner" not in i or "Loser" not in i:
+                continue
+            for r in body:
+                t = str(r[i["Tournament"]]).strip()
+                if not t:
+                    continue
+                allnames.add(t)
+                for who in ("Winner", "Loser"):
+                    nm = str(r[i[who]]).strip()
+                    if nm:
+                        entered[(nm, y, tour)].add(t)
+    order = sorted(allnames)
+    col = {t: j for j, t in enumerate(order)}
+    B = np.zeros((len(meta), len(order)), dtype=np.float32)
+    for row, m in enumerate(meta):
+        for t in entered.get((m["player"], m["year"], m["tour"]), ()):
+            B[row, col[t]] = 1.0
+    return B, order
+
+
+def build_inputs(with_calendar=False):
     from probe_tennis_candidate_features import CANDIDATES, build as build_cand
     a = np.load(MATRIX, allow_pickle=True)
     X, M = a["X"].astype(np.float32), a["M"].astype(np.float32)
@@ -117,6 +168,11 @@ def build_inputs():
         if obs.sum() > 1:
             mu, sd = X[obs, j].mean(), X[obs, j].std()
             X[obs, j] = (X[obs, j] - mu) / (sd if sd > 0 else 1.0)
+    if with_calendar:
+        B, order = tournament_block(meta)
+        X = np.hstack([X, B])
+        M = np.hstack([M, np.ones_like(B)])   # entered/not-entered is always observed
+        names = names + [f"TRN_{t}" for t in order]
     return X, M, names, meta
 
 
@@ -129,6 +185,15 @@ def main() -> int:
     ap.add_argument("--lr", type=float, default=3e-3)
     ap.add_argument("--temp", type=float, default=0.1)
     ap.add_argument("--dropout", type=float, default=0.1)
+    # DEFAULT ON. Measured +0.0385 (0.0783 -> 0.1168), 3.6x the 0.0107 floor, 5/5 seeds.
+    # Characterised before adopting: a player's tournament set NEVER repeats exactly year to
+    # year (0 of 2,926 pairs), Jaccard to their own next year is 0.3329 against 0.1782 for a
+    # random same-tour player, and 24.3% of calendars are duplicated exactly by someone else
+    # in the same tour-year. So it is a noisy partly-shared signature the model must
+    # generalise from, not an identity key it can memorise.
+    ap.add_argument("--no-calendar", dest="calendar", action="store_false",
+                    help="drop the 287-wide tournament block (the pre-4821c78 feature set)")
+    ap.set_defaults(calendar=True)
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -139,13 +204,21 @@ def main() -> int:
         print("torch not available")
         return 2
 
-    X, M, names, meta = build_inputs()
+    X, M, names, meta = build_inputs(with_calendar=args.calendar)
     idx_of = {n: i for i, n in enumerate(names)}
     missing = [f for fam in FAMILIES.values() for f in fam if f not in idx_of]
     if missing:
         print(f"features named in FAMILIES but absent from the matrix: {missing}")
         return 2
-    covered = {f for fam in FAMILIES.values() for f in fam}
+    fam_map = dict(FAMILIES)
+    if args.calendar:
+        fam_map["calendar"] = [n for n in names if n.startswith("TRN_")]
+    idx_of = {n: i for i, n in enumerate(names)}
+    missing = [f for fam in fam_map.values() for f in fam if f not in idx_of]
+    if missing:
+        print(f"features named in FAMILIES but absent: {missing[:5]}")
+        return 2
+    covered = {f for fam in fam_map.values() for f in fam}
     if len(covered) != len(names):
         print(f"family map covers {len(covered)} of {len(names)} features — refusing to "
               f"train on a partition that silently drops columns: "
@@ -161,7 +234,7 @@ def main() -> int:
     te = [(a, b) for a, b, y in allp if y > CUT]
 
     dev = "cuda" if torch.cuda.is_available() else "cpu"
-    blocks = {k: [idx_of[f] for f in v] for k, v in FAMILIES.items()}
+    blocks = {k: [idx_of[f] for f in v] for k, v in fam_map.items()}
     print(f"rows {X.shape[0]}  features {X.shape[1]}  towers {len(blocks)}  device {dev}")
     print(f"pairs {len(allp)}  train(target<= {CUT}) {len(tr)}  test {len(te)}")
     print(f"BAR {BAR} (learned linear) / raw cosine {RAW_COSINE}\n")
@@ -252,7 +325,8 @@ def main() -> int:
         "mtnn_sd": round(float(v.std(ddof=1)), 4),
         "seeds_over_bar": f"{beats}/5",
         "delta_vs_bar": round(float(v.mean() - BAR), 4),
-        "towers": {k: len(v_) for k, v_ in FAMILIES.items()},
+        "towers": {k: len(v_) for k, v_ in fam_map.items()},
+        "calendar_block": bool(args.calendar),
         "config": {"dim": args.dim, "tower_width": args.tower_width,
                    "epochs": args.epochs, "lr": args.lr, "temp": args.temp,
                    "dropout": args.dropout},
