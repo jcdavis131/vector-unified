@@ -29,7 +29,7 @@ import torch
 
 from load_encoders import SPORTS, ROOT, load_all
 from train_unified import load_matrix
-from eval_unified import load_model, encode_all, g4_random_baseline
+from eval_unified import load_and_encode, g4_random_baseline
 
 DATA = ROOT / "data"
 # index -> cross-sport archetype id, in the order build_unified_matrix assigned them
@@ -79,8 +79,9 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     M = load_matrix(device)
-    model, ck = load_model(device)
-    z = encode_all(model, M, device)
+    # Shared contract: a Stage 2 checkpoint gets its DRIFTED encoders, not the frozen
+    # cached ones. See eval_unified.load_and_encode.
+    model, ck, z, z_source, model_label = load_and_encode(device)
     sid = M["sport_id"].cpu().numpy()
     arch = M["arch_id"].cpu().numpy()
     pidx = M["player_idx"].cpu().numpy()
@@ -136,7 +137,8 @@ def main():
                     "arch": ARCH_NAMES[int(arch[j])], "cos": float(sims[j])} for j in top3]
 
     report = {
-        "model": "UnifiedTrunk Stage 1 (frozen encoders)",
+        "model": model_label,
+        "z_source": z_source,
         "n_rows": int(z.shape[0]), "d_emb": int(z.shape[1]),
         "G4_cross_sport_nn_role_coherence": {"hit_rate": round(g4, 4),
                                              "random_baseline": round(g4_baseline, 4),

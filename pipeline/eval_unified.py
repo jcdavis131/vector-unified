@@ -88,6 +88,44 @@ def encode_all(model, M, device):
     return z.cpu().numpy().astype(np.float32)
 
 
+def load_and_encode(device, ckpt_name="unified_stage2_best.pt"):
+    """Load a checkpoint and build z UNDER THE CONTRACT THAT CHECKPOINT WAS TRAINED FOR.
+
+    THE ONE PLACE THIS RULE LIVES. Seven modules call encode_all(), which uses the FROZEN
+    cached per-sport outputs in M["E"]. That is correct for Stage 1 and WRONG for Stage 2,
+    whose premise is that the encoders were unfrozen and drifted — export_unified_stage2.py
+    builds the shipped z with load_live() + full_z(). A Stage 2 trunk on Stage 1 frozen
+    encoders is a combination that was never trained and never exported, and it scores like
+    a real measurement: G3 0.8076, G4 0.8935, which reads as "Stage 2.1 is worse than
+    Stage 1" when it is measuring a chimera.
+
+    Asking every caller to remember which contract applies is the "two copies of one rule"
+    defect this repo keeps finding, at seven times the scale. Callers ask for a checkpoint
+    and get the right z.
+
+    Returns (model, ck, z, z_source, label). `label` is what a report should put in its
+    "model" field — hardcoding "UnifiedTrunk Stage 1 (frozen encoders)" is how
+    unified_report.json came to carry Stage 2.1 numbers under a Stage 1 name.
+    """
+    from train_unified import load_matrix  # local: avoids a circular import at module load
+    model, ck = load_model(device, ckpt_name)
+    M = load_matrix(device)
+    if "enc_states" in ck:
+        from load_live_encoders import load_live
+        from train_stage2 import full_z
+        live = load_live(device)
+        for sport in live:
+            live[sport].model.load_state_dict(ck["enc_states"][sport])
+        z = full_z(model, live, M, device)
+        z_source = "drifted live encoders + Stage 2 trunk (matches the shipped export)"
+        label = f"UnifiedTrunk Stage 2.1 (unfrozen encoders, best_epoch={ck.get('best_epoch')})"
+    else:
+        z = encode_all(model, M, device)
+        z_source = "frozen cached encoders + trunk (Stage 1 contract)"
+        label = "UnifiedTrunk Stage 1 (frozen encoders)"
+    return model, ck, z, z_source, label
+
+
 def knn5_acc(emb, labels, mask=None):
     """Stratified 80/20 kNN-5 accuracy. emb/labels already L2/filtered to one sport."""
     if mask is not None:
@@ -275,14 +313,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline-sport-acc", type=float, default=None,
                     help="no-GRL control sport-acc; G2-sport passes if (baseline - acc) >= 0.10")
-    ap.add_argument("--ckpt", default="unified_best.pt",
+    # DEFAULTS TO THE SHIPPED MODEL. analogy_report.json and unified_report.json both
+    # carry model="UnifiedTrunk Stage 1 (frozen encoders)" while assets/unified.json
+    # ships Stage 2.1 — so the dumbmodel.com model card was about to publish Stage 1's
+    # G4 of 0.9401 as the joint model's number.
+    ap.add_argument("--ckpt", default="unified_stage2_best.pt",
                     help="checkpoint filename under pipeline/data to evaluate")
     args = ap.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     from train_unified import load_matrix
     M = load_matrix(device)
-    model, ck = load_model(device, args.ckpt)
-    z = encode_all(model, M, device)
+    model, ck, z, z_source, model_label = load_and_encode(device, args.ckpt)
+    print(f"  z built from: {z_source}")
     assert not np.isnan(z).any() and np.allclose(np.linalg.norm(z, axis=1), 1.0, atol=1e-4)
 
     g1 = g1_per_sport(z, M)
@@ -309,7 +351,8 @@ def main():
     g2_pass = (sport_pass in (True,)) and collapse_pass
 
     report = {
-        "model": "UnifiedTrunk Stage 1 (frozen encoders)",
+        "model": model_label,
+        "z_source": z_source,
         "checkpoint_rank": ck.get("best_rank"),
         "n_rows": int(z.shape[0]), "d_emb": int(z.shape[1]),
         "G1_per_sport_noninferiority": g1, "G1_pass": g1_pass,
