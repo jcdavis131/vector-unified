@@ -127,7 +127,7 @@ def vor_series(seasons: list[str], eligible: set[tuple[str, str]]):
     return out, seen
 
 
-def merged_names(series: dict, draft: dict) -> set[str]:
+def merged_names(series: dict, draft: dict, acquit: bool = True) -> set[str]:
     """Names that provably belong to more than one person. See check_merged_careers.py.
 
     Operator report 2026-08-03: Jaren Jackson and Jaren Jackson Jr. are one key. The cause
@@ -151,23 +151,30 @@ def merged_names(series: dict, draft: dict) -> set[str]:
                           Wikidata: one qid, Q297750, born 1964
 
     ">1 draft entry" answers "does this name have more than one draft row", which is a
-    different question from "are there two people". `acquitted_names()` below is the
-    correction; callers that exclude should subtract it. The year gap is NOT a usable
+    different question from "are there two people". The year gap is NOT a usable
     discriminator — three of the five 1-year-span names are genuine collisions.
+
+    ACQUITTAL IS APPLIED HERE, NOT BY CALLERS. Every call site would otherwise have to
+    remember to subtract `acquitted_names()`, the same "two copies of one rule" shape as the
+    five private norm_name() copies. Pass acquit=False only for the raw arithmetic set;
+    probe_hoops_name_collisions.py is the sole legitimate caller, since it computes the
+    acquittal and would otherwise ratchet against its own previous output.
     """
     picks_by_norm: dict[str, list] = collections.defaultdict(list)
     for raw, picks in draft.items():
         picks_by_norm[norm_name(raw)].extend(picks)
     out: set[str] = set()
+    overturnable: set[str] = set()
     for name, rows in series.items():
         picks = picks_by_norm.get(name) or []
         if len(picks) > 1:
             out.add(name)
+            overturnable.add(name)
             continue
         yrs = [p["year"] for p in picks if p.get("year")]
         if yrs and any(y < min(yrs) for y, _ in rows):
             out.add(name)
-    return out
+    return out - (acquitted_names() & overturnable) if acquit else out
 
 
 COLLISIONS = Path(__file__).resolve().parent.parent / "data" / "hoops_name_collisions.json"
@@ -222,7 +229,7 @@ def main() -> int:
     # Minus the names Wikidata clears as one person. Dropping all 45 discarded 21 real
     # careers — Patrick Ewing, Glen Rice, Mike Dunleavy among them — on the strength of
     # their SONS' draft rows appearing under the same normalised key.
-    merged = merged_names(vor_of, draft) - acquitted_names()
+    merged = merged_names(vor_of, draft)
     max_draft_year = last_year - WINDOW_YEARS + 1
 
     totals: dict[str, list[float]] = collections.defaultdict(list)

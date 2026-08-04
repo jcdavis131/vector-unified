@@ -188,7 +188,23 @@ def bucket(pick) -> str | None:
     return "R4-7"
 
 
-def merged_names(seasons_of: dict, draft_csv) -> set[str]:
+COLLISIONS = Path(__file__).resolve().parent.parent / "data" / "gridiron_name_collisions.json"
+
+
+def acquitted_names() -> set[str]:
+    """Flagged names that Wikidata shows to be ONE person. See probe_gridiron_name_collisions.
+
+    RETURNS EMPTY WHEN THE ARTIFACT IS ABSENT. That is the conservative direction: this is
+    subtracted from an exclusion set, so an empty set excludes MORE, never less. A missing
+    probe must not be able to quietly re-admit a merged career.
+    """
+    if not COLLISIONS.exists():
+        return set()
+    doc = json.loads(COLLISIONS.read_text(encoding="utf-8"))
+    return set((doc.get("SUFFIX_SWEEP") or {}).get("acquitted") or {})
+
+
+def merged_names(seasons_of: dict, draft_csv, acquit: bool = True) -> set[str]:
     """Names that provably cover more than one player. Mirrors the hoops version.
 
     Operator report 2026-08-03 was about hoops (Jaren Jackson Sr./Jr.), but the same defect
@@ -201,11 +217,23 @@ def merged_names(seasons_of: dict, draft_csv) -> set[str]:
     Antonio Brown did not play in 2003. "First half 1.86 -> second half 8.79" was partly
     one player becoming another.
 
-    Two definitive tests, no thresholds:
-      * a season strictly BEFORE the name's earliest draft year
-      * more than one distinct draft year for the name
+    Two tests, no thresholds:
+      * a season strictly BEFORE the name's earliest draft year. ARITHMETIC, never
+        overturned — no re-draft explains playing before you were drafted.
+      * more than one distinct draft year for the name. NOT DEFINITIVE, and this docstring
+        used to say it was. It answers "does this name have more than one draft row", not
+        "are there two people"; a drafted player who does not sign can re-enter. Wikidata
+        acquits 33 of the 92 gridiron names flagged this way.
 
     A career gap is NOT used, here or in hoops: injury and overseas years produce them.
+
+    ACQUITTAL IS APPLIED HERE, NOT BY CALLERS, and that is deliberate. Six call sites would
+    each have had to remember to subtract `acquitted_names()`, which is the same
+    "two copies of one rule" shape as the five private norm_name() copies — a rule every
+    importer must remember is a rule that will eventually differ between importers. Pass
+    acquit=False only to obtain the raw arithmetic set; probe_gridiron_name_collisions.py
+    is the sole legitimate caller, because it is the thing that computes the acquittal and
+    would otherwise be circular.
     """
     # REFUSE IF THE NORMALISER WAS NEVER CONFIGURED. This is module state and module state
     # is forgettable: check_merged_careers.py called merged_names() without it, so inside
@@ -226,15 +254,19 @@ def merged_names(seasons_of: dict, draft_csv) -> set[str]:
             except (KeyError, TypeError, ValueError):
                 continue
     out: set[str] = set()
+    overturnable: set[str] = set()
     for name, rows in seasons_of.items():
         yrs = dy.get(name)
         if not yrs:
             continue
         if len(yrs) > 1:
             out.add(name)
+            overturnable.add(name)
         elif any(y < min(yrs) for y, _ in rows):
             out.add(name)
-    return out
+    # Acquittal touches only the overturnable half. A season before the draft year is
+    # arithmetic and stays flagged even if Wikidata finds exactly one person for the name.
+    return out - (acquitted_names() & overturnable) if acquit else out
 
 
 def main() -> int:

@@ -66,9 +66,19 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
                             ["build_hoops_vor_draft_value.py"]),
     "hoops_name_collisions.json": ("probe_hoops_name_collisions.py",
                                    ["build_hoops_vor_draft_value.py"]),
-    "trajectory_axis.json": ("build_trajectory_axis.py", []),
-    "trajectory_axis_gridiron.json": ("build_trajectory_axis.py", []),
-    "gridiron_pedigree.json": ("export_gridiron_pedigree.py", []),
+    "gridiron_name_collisions.json": ("probe_gridiron_name_collisions.py",
+                                      ["build_vor_draft_value.py"]),
+    # Both trajectory axes depend on the collision probes, not only on their own builder:
+    # merged_names() subtracts acquitted_names(), which reads those artifacts. Declaring the
+    # builder alone would let a re-run of a probe leave the axes silently stale.
+    "trajectory_axis.json": ("build_trajectory_axis.py",
+                             ["build_hoops_vor_draft_value.py",
+                              "probe_hoops_name_collisions.py"]),
+    "trajectory_axis_gridiron.json": ("build_trajectory_axis.py",
+                                      ["build_vor_draft_value.py",
+                                       "probe_gridiron_name_collisions.py",
+                                       "export_gridiron_pedigree.py"]),
+    "gridiron_pedigree.json": ("export_gridiron_pedigree.py", ["build_vor_draft_value.py"]),
     "pitch_expectation_sources.json": ("probe_pitch_expectation_sources.py", []),
     "tennis_coverage.json": ("acquire_tennis.py", []),
     "tennis_entities.json": ("build_tennis_entities.py", ["acquire_tennis.py"]),

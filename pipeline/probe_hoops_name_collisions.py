@@ -182,7 +182,9 @@ def main() -> int:
     seasons = sorted({str(p["season"]) for p in vec["players"]}, key=B.season_start)
     series, _ = B.vor_series(seasons, B.eligible_pairs(vec))
     draft = json.loads(B.DRAFT.read_text(encoding="utf-8"))["players"]
-    arith = B.merged_names(series, draft)
+    # acquit=False: this file COMPUTES the acquittal. Taking the acquitted set here
+    # would make the probe converge on its own previous output.
+    arith = B.merged_names(series, draft, acquit=False)
     both = sorted(set(colliding) & arith)
     dob_only = sorted(set(colliding) - arith)
     arith_only = sorted(arith - set(colliding))

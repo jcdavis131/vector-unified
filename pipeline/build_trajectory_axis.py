@@ -296,7 +296,7 @@ def main() -> int:
     hseasons = sorted({str(p["season"]) for p in vplayers}, key=H.season_start)
     hseries, _ = H.vor_series(hseasons, H.eligible_pairs({"players": vplayers}))
     hdraft = json.loads(H.DRAFT.read_text(encoding="utf-8"))["players"]
-    hmerged = H.merged_names(hseries, hdraft) - H.acquitted_names()
+    hmerged = H.merged_names(hseries, hdraft)
 
     rows = []
     dropped = {"no_pedigree": 0, "too_few_seasons": 0, "merged_career": 0}

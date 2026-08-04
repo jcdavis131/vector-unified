@@ -66,6 +66,10 @@ EXPECT = {
     # occupations, used to scope name-resolution queries (7.9, and the hoops DOB probe)
     "Q937857": "association football player",
     "Q3665646": "basketball player",
+    # P106 occupation filter for the gridiron DOB probe. NOT "American football" (Q41323) —
+    # that is the SPORT and would match nothing as an occupation, which would read as "this
+    # corpus has no name collisions" rather than as a wrong predicate.
+    "Q19204627": "American football player",
 }
 
 # QIDs that must NEVER appear as an operative literal, with the reason. A registry that
