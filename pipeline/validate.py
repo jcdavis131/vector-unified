@@ -52,6 +52,9 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # way: dumbmodel.com served "48-d" for weeks after mtnn_meta.json said 64. Needs
     # network for the live-vs-committed comparison.
     "hub_freshness": (["check_hub_freshness.py", "--check"], True),
+    # Every fabrication this project produced was a superlative, six for six, and a
+    # warning in the generator prompt demonstrably did not stop the sixth. Local only.
+    "superlatives": (["check_superlatives.py", "--check"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
