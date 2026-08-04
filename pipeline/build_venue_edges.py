@@ -117,6 +117,7 @@ NBA_NAMING_YEAR = {
     "Ball Arena": 2020,         # was Pepsi Center until Oct 2020
     "Capital One Arena": 2017,  # was Verizon Center until Aug 2017
     "Target Center": 1990,      # named from opening
+    "FedExForum": 2004,         # named from opening
 }
 
 NBA_ABBR = {

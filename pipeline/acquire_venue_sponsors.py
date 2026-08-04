@@ -169,7 +169,21 @@ def sponsor_phrase(venue: str) -> str:
     venue = re.sub(r"\s*\(.*?\)\s*", " ", venue)
     words = [w for w in re.split(r"[^A-Za-z0-9&.\-']+", venue)
              if w and w.lower() not in VENUE_WORDS]
-    return " ".join(words).lower().strip()
+    # A venue written as ONE word hides its building noun inside the token, so the
+    # sponsor never separates: 'FedExForum' -> ['fedexforum'], which matches no company
+    # under word-boundary comparison even though FedEx (FDX) is in the corpus. Strip a
+    # trailing building noun off a token when one is glued on. This is the same rule
+    # already applied to spaced names, not a special case for one venue -- it fires on
+    # any Xforum/Xdome/Xarena/Xcenter/Xfield spelling.
+    out = []
+    for w in words:
+        lw = w.lower()
+        for bn in ("forum", "dome", "arena", "center", "centre", "field", "coliseum"):
+            if lw.endswith(bn) and len(lw) > len(bn) + 2:
+                w = w[: -len(bn)]
+                break
+        out.append(w)
+    return " ".join(out).lower().strip()
 
 
 def _word_subseq(a: list[str], b: list[str]) -> bool:
@@ -265,13 +279,27 @@ def main() -> int:
             # TIER 1 (phrase): the sponsor string and the company name contain one
             # another. Only checked against the TRAINED corpus -- a phrase hit on a
             # company the model never saw is not an edge the model can use.
-            tier1 = []
+            tier1, exact = [], []
             pw = phrase.split()
             if pw:
                 for r in sp500:
                     nc = _norm_company(str(r.get("company", "")))
                     if nc and _word_subseq(pw, nc.split()):
                         tier1.append((r["ticker"], str(r["company"])))
+                        if nc == phrase:
+                            exact.append((r["ticker"], str(r["company"])))
+            # EXACT EQUALITY BREAKS A TIE, SUBSTRING DOES NOT.
+            # FedExForum yields ['fedex'], which is a contiguous run of both FDX 'FedEx'
+            # and FDXF 'FedEx Freight', so it was thrown out as ambiguous even though
+            # FedEx (FDX) is in the corpus and is obviously the sponsor. Exactly one
+            # candidate's normalised name EQUALS the phrase, so prefer it.
+            # This deliberately does NOT rescue United Center: 'united' equals none of
+            # 'united airlines holdings' / 'united parcel service' / 'united rentals',
+            # so it stays ambiguous. It is United Airlines, and a token cannot know
+            # that -- the rule resolves what the string determines and refuses what it
+            # does not, rather than guessing to raise the hit count.
+            if len(exact) == 1 and len(tier1) > 1:
+                tier1 = exact
             if m500 or mfull or tier1:
                 rows.append({
                     "venue": v,
@@ -328,10 +356,11 @@ def main() -> int:
                             "(ROG); 'viking' matches Viking Therapeutics and never the "
                             "correct answer. Rows carrying more than one candidate are "
                             "flagged `ambiguous` and are candidates, not edges.",
-        "adjudication_of_the_16_unique_phrase_matches": {
-            "correct": 14,
+        "adjudication_of_the_unique_phrase_matches": {
+            "emitted": 17,
+            "correct": 15,
             "wrong": 2,
-            "precision_pct": 87.5,
+            "precision_pct": 88.2,
             "wrong_rows": ["Boston Garden -> BSX Boston Scientific",
                            "Cincinnati Gardens -> CINF Cincinnati Financial"],
             "wrong_class": "GEOGRAPHY. Both venues are named for their city and both "
@@ -341,20 +370,60 @@ def main() -> int:
                            "for the same reason: an exclusion list written against these "
                            "two rows would be tuned against the cases it judges.",
             "known_false_negatives": [
-                "FedExForum -> FDX. Wikipedia writes the venue as one word, so word-"
-                "boundary matching cannot see 'fedex' inside 'fedexforum'. The substring "
-                "version caught this one and paid for it with eight wrong rows.",
+                "FIXED: FedExForum -> FDX. Wikipedia writes the venue as one word, "
+                "so word-boundary matching could not see 'fedex' inside 'fedexforum'. "
+                "Now split when a building noun is glued onto a token, then broken out "
+                "of the FDX / FDXF tie by exact equality. The substring version caught "
+                "this one too and paid for it with eight wrong rows.",
                 "Caesars Superdome -> CZR. The phrase is 'caesars superdome' and the "
                 "company is 'caesars entertainment'; neither is a contiguous run of the "
                 "other. A token-level fallback would catch it and would also resurrect "
                 "the geography class.",
             ],
-            "note": "Precision is over the 16 rows the phrase tier emits, not over all "
-                    "186 links. Recall is not measured and is certainly below 1.0 -- the "
-                    "two false negatives above are the ones found by reading, not by a "
-                    "systematic check.",
+            "note": "Precision is over the rows the phrase tier emits, not over all 186 "
+                    "links. See recall_audit_nba_arenas below for the other half.",
         },
-        "headline": "16 venues resolve to a unique S&P 500 company by phrase, 14 of them "
+        "recall_audit_nba_arenas": {
+            "why": "Precision alone flatters a matcher: refusing everything scores 100%. "
+                   "The 30 current NBA arenas are a closed, checkable set, so recall is "
+                   "measurable there even though it is not measurable over all 186 links.",
+            "denominator": "arenas whose sponsor IS in the trained 500-ticker corpus",
+            "in_corpus": 11,
+            "caught": 8,
+            "recall_pct": 72.7,
+            "caught_list": ["Ball->BALL", "Capital One->COF", "Chase->JPM",
+                            "Delta->DAL", "FedExForum->FDX", "Fiserv->FISV",
+                            "Intuit->INTU", "Target->TGT"],
+            "missed_and_why": {
+                "United Center -> UAL": "AMBIGUOUS BY CONSTRUCTION. 'united' equals "
+                    "none of United Airlines Holdings / United Parcel Service / United "
+                    "Rentals, so all three survive and the row is refused. It really is "
+                    "United Airlines. A string cannot know that, and guessing to raise "
+                    "the hit count is how the State Farm -> State Street row happened.",
+                "Xfinity Mobile Arena -> CMCSA": "BRAND != COMPANY. Xfinity is Comcast's "
+                    "consumer brand and shares no token with 'Comcast'. Needs an entity-"
+                    "resolution source, exactly as build_tennis_sponsors.py concluded "
+                    "for its own token matches.",
+                "Spectrum Center -> CHTR": "BRAND != COMPANY. Spectrum is Charter "
+                    "Communications' brand. Same class as Xfinity.",
+            },
+            "correctly_refused": "PAYC, RKT, AAL, TM, TD, BCS, KIA, CFR and the private "
+                                 "or mutual sponsors (Crypto.com, Gainbridge, Golden 1, "
+                                 "Kaseya, Little Caesars, Moda, Mortgage Matchup, "
+                                 "Smoothie King, State Farm, Madison Square Garden, "
+                                 "Scotiabank) are genuinely absent from the trained "
+                                 "corpus, so not matching them is correct, not a miss. "
+                                 "Paycom (PAYC) and American Airlines (AAL) are the "
+                                 "sharpest cases: both are real US listed venue "
+                                 "sponsors and neither is an S&P 500 constituent in "
+                                 "this file.",
+            "two_miss_classes": "One mechanical (tokenisation), one semantic (brand vs "
+                                "legal entity). The mechanical class was fixable and was "
+                                "fixed -- FedExForum needed a glued building-noun split "
+                                "and an exact-equality tiebreak. The semantic class is "
+                                "not fixable by string work at all.",
+        },
+        "headline": "17 venues resolve to a unique S&P 500 company by phrase, 15 of them "
                     "correctly. The tennis tournament-name edge resolved 6 sponsors and "
                     "0 of them were in the trained corpus. The difference is not method "
                     "quality, it is that US venue naming rights are bought by the same "

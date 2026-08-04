@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T16:59:15",
+ "built": "2026-08-04T17:02:42",
  "question": "How many player-seasons does the venue->sponsor edge actually reach?",
  "answers_the_open_question_from": "pipeline/acquire_venue_sponsors.py — '14 venues is the edge, not the coverage.'",
  "gridiron": {
@@ -25,13 +25,25 @@
   "name_season_keys_colliding_on_player_id": 0,
   "nba_table_rows_parsed": 30,
   "nba_rows_without_a_mapped_team": [],
-  "n_edges": 7,
-  "n_distinct_tickers": 7,
-  "all_season_edges_player_seasons": 796,
-  "named_window_edges_player_seasons": 464,
+  "n_edges": 8,
+  "n_distinct_tickers": 8,
+  "all_season_edges_player_seasons": 908,
+  "named_window_edges_player_seasons": 576,
   "denominator_note": "Percentages here are over the 3,385 roster-covered player-seasons, NOT the 12,966-row corpus. Quoting them against the corpus would overstate coverage 3.8x.",
-  "named_window_pct_of_roster_covered": 13.71,
+  "named_window_pct_of_roster_covered": 17.02,
   "edges": [
+   {
+    "venue": "FedExForum",
+    "team_wiki": "Memphis Grizzlies",
+    "team_code": "MEM",
+    "ticker": "FDX",
+    "company": "FedEx",
+    "location": "Memphis, Tennessee",
+    "sponsor_name_from": 2004,
+    "naming_year_source": "hand-verified",
+    "player_seasons_all": 112,
+    "player_seasons_while_named": 112
+   },
    {
     "venue": "Target Center",
     "team_wiki": "Minnesota Timberwolves",
@@ -117,7 +129,7 @@
     "player_seasons_while_named": 21
    }
   ],
-  "all_season_pct_of_roster_covered": 23.52
+  "all_season_pct_of_roster_covered": 26.82
  },
  "CORRECTION_hoops_was_not_actually_blocked": "8ea1d98 reported the hoops join as impossible because unified_matrix.npz has no team column, and claimed the NBA venue->team table was 'parsed and written out'. Both were wrong. vector-hoops/assets/player_meta.json carries roster: Name|Season -> team, and parse_table() had silently returned ZERO rows for the NBA page because that page uses a different table shape. The commit shipped an empty list under a claim that it was populated.",
  "dropped_adjudicated_false_positives": {
