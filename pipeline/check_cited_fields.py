@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A cited field must EXIST in the file it is cited from.
+"""A cited field must EXIST in the file it is cited from, and a cited VALUE must match it.
 
 Solo personal project, no connection to employer, built with public/free-tier only
 
@@ -50,9 +50,34 @@ Roughly 30% of field references are not simple dotted paths — `points[].skills
 They are NOT failures and they are NOT passes; they are the part of the corpus this check
 does not cover, printed every run so the number stays visible.
 
+THE SECOND ARM CHECKS PUBLISHED NUMBERS, and it is the first thing in this repo to do so.
+The citations do not only name fields, they assert values — `persistence_r=0.4514`,
+`n_excluded_merged_names=112` — which makes "does the artifact agree" mechanically
+answerable. 25 such assertions across the six pages; all 25 match. check_superlatives.py
+does arithmetic on a page's own internal values and check_hub_freshness compares hashes, so
+until now nothing compared a PUBLISHED NUMBER to the artifact it came from, which is the
+literal promise in the site's fine print.
+
+Values are found by RECURSIVE KEY SEARCH, not a path walk, so this arm is immune to the
+shorthand that defeated three versions of the field parser. Top level wins when the key is
+there: `n_test` occurs 6x in hoops_forward_report.json (top level 2290, plus one per
+cut_year_sweep entry), and requiring all occurrences to agree made a correct citation look
+ambiguous.
+
+COMPARISON IS PRECISION-AWARE — the artifact is rounded to the decimals the page chose to
+show, so a page quoting 0.451 against a stored 0.4514 is correct, not a discrepancy. Worth
+being honest about: NO citation in the current corpus actually needs this. Artifacts store
+values already rounded, so all 25 compare at equal precision and the branch is defensive
+rather than exercised. It is unit-tested directly instead of being assumed.
+
+BOTH ARMS GATE THE BUILD, which took a second mutation to discover. The first version
+returned 1 only for a missing field, so a planted WRONG VALUE printed "1 WRONG" and exited
+0 — reporting the defect and passing the build. The field arm's mutation passed throughout
+and would have covered for it indefinitely. A guard needs a mutation per ARM, not per file.
+
     python pipeline/check_cited_fields.py
-    python pipeline/check_cited_fields.py --check     # exit 1 if a cited field is MISSING
-    python pipeline/check_cited_fields.py --verbose   # list every unparseable reference
+    python pipeline/check_cited_fields.py --check     # exit 1 on a MISSING field or WRONG value
+    python pipeline/check_cited_fields.py --verbose   # list every uncovered reference
 """
 
 from __future__ import annotations
@@ -116,6 +141,47 @@ def field_exists(doc, dotted: str) -> bool:
     return True
 
 
+VALUE_PAIR = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(-?\d+(?:\.\d+)?)(?![\d.])")
+
+
+def find_key_values(obj, key: str) -> list:
+    """Every value stored under `key` anywhere in a nested structure.
+
+    A RECURSIVE SEARCH RATHER THAN A PATH WALK, and that is the whole trick. The citations
+    assert values inside the same shorthand that defeated three versions of the field
+    parser — `{..., persistence_r=0.4514, cut_year_sweep[5].{...}, ...}` — so any approach
+    needing the prefix structure inherits that problem. A value assertion does not need it:
+    `persistence_r=0.4514` is checkable by finding `persistence_r` anywhere in the artifact.
+    """
+    out = []
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == key:
+                out.append(v)
+            out += find_key_values(v, key)
+    elif isinstance(obj, list):
+        for v in obj:
+            out += find_key_values(v, key)
+    return out
+
+
+def value_matches(cited: str, actual) -> bool:
+    """Does the artifact's value agree with the cited one AT THE CITED PRECISION?
+
+    Pages quote rounded numbers; artifacts store full precision. `persistence_r=0.4514`
+    against a stored 0.45137 is a correct citation, not a discrepancy, so the comparison
+    rounds the ARTIFACT to the number of decimals the PAGE chose to show. Comparing raw
+    floats would report every rounded citation as a mismatch — the false-positive flood
+    this file already produced once, in a different form.
+    """
+    if isinstance(actual, bool) or not isinstance(actual, (int, float)):
+        return False
+    if "." in cited:
+        dp = len(cited.split(".")[1])
+        return round(float(actual), dp) == round(float(cited), dp)
+    return float(actual) == float(cited)
+
+
 def exists_either_reading(doc, field: str, implied_prefix: str) -> bool:
     """True if the field resolves at top level OR under an IMPLIED PREFIX.
 
@@ -145,9 +211,13 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     missing: list[str] = []
+    mismatched: list[str] = []
+    ambiguous: list[str] = []
+    unlocated: list[str] = []
     unresolved: list[str] = []
     unparseable: list[str] = []
     checked = 0
+    vals_checked = 0
     cache: dict[str, object] = {}
 
     for slug in SLUGS:
@@ -160,15 +230,28 @@ def main() -> int:
             by_base.setdefault(Path(sf).name, []).append(sf)
 
         s_ok = s_miss = s_unres = s_unparse = 0
+        s_valok = s_valbad = s_valskip = 0
         for key in ("insights", "headline_stats"):
             for i, item in enumerate(doc.get(key) or []):
                 src = item.get("source") or ""
                 where = f"{slug}:{key}[{i}]"
+                prev_base = ""
                 for seg in src.split(";"):
-                    if not SPLIT_ARROW.search(seg):
+                    if SPLIT_ARROW.search(seg):
+                        fpart, fields = SPLIT_ARROW.split(seg, 1)
+                        base = Path(fpart.strip().rstrip(":")).name
+                    elif prev_base and "=" in seg:
+                        # A `;` segment with no arrow CONTINUES the previous file:
+                        #   feature_audit.json -> dead_or_constant (33 entries); features = 118
+                        # Skipping these dropped an assertion silently, which is the
+                        # failure this file keeps finding in other checkers. Safe because a
+                        # wrong inheritance almost always yields "key not in that file",
+                        # which is REPORTED, not failed — only a key that IS present with a
+                        # different value can fail, and that is a real finding either way.
+                        base, fields = prev_base, seg
+                    else:
                         continue
-                    fpart, fields = SPLIT_ARROW.split(seg, 1)
-                    base = Path(fpart.strip().rstrip(":")).name
+                    prev_base = base
                     hits = by_base.get(base) or []
 
                     if len(hits) != 1:
@@ -196,6 +279,53 @@ def main() -> int:
                         s_unres += 1
                         unresolved.append(f"{where}: {cited} unreadable as JSON")
                         continue
+
+                    # ---- VALUE ASSERTIONS ---------------------------------------
+                    # Runs on the RAW segment, before any field-list parsing, because a
+                    # `key=value` pair is checkable without knowing the prefix structure
+                    # that defeated three parser versions. This is the first check in the
+                    # repo that compares a PUBLISHED NUMBER against its artifact — the
+                    # site's fine print promises exactly that and nothing tested it.
+                    for k, cited_v in VALUE_PAIR.findall(fields):
+                        found = find_key_values(target, k)
+                        if not found:
+                            # NOT a pass. The page asserts a value for a key its cited file
+                            # does not contain anywhere — reported, because a silently
+                            # skipped assertion is indistinguishable from a verified one in
+                            # the summary line, and that is how coverage rots unnoticed.
+                            s_valskip += 1
+                            unlocated.append(f"{where}: asserts {k}={cited_v} but '{k}' "
+                                             f"appears nowhere in {base}")
+                            continue
+                        # TOP LEVEL WINS when the key is there. `n_test` occurs 6x in
+                        # hoops_forward_report.json — once at top level (2290) and once per
+                        # cut_year_sweep entry (5466/4423/3345/2290/1160). Requiring every
+                        # occurrence to agree made a correct, unambiguous citation
+                        # "ambiguous"; a bare key most naturally means the top-level field,
+                        # which is also how the field check reads it.
+                        if isinstance(target, dict) and k in target:
+                            actual = target[k]
+                        else:
+                            uniq = {json.dumps(x, sort_keys=True) for x in found}
+                            if len(uniq) > 1:
+                                # Not at top level and the nested copies disagree. Which one
+                                # the page meant is genuinely undecidable, and guessing is
+                                # how this file produced 43 false positives already.
+                                s_valskip += 1
+                                ambiguous.append(f"{where}: {k} appears {len(found)}x in "
+                                                 f"{base} with differing values and none "
+                                                 f"at top level")
+                                continue
+                            actual = found[0]
+                        vals_checked += 1
+                        if value_matches(cited_v, actual):
+                            s_valok += 1
+                        else:
+                            s_valbad += 1
+                            mismatched.append(
+                                f"{where}: cites {base} -> {k}={cited_v}, but the file "
+                                f"says {found[0]!r} — the page publishes a number its own "
+                                f"source does not support")
 
                     parsed = expand_fields(fields)
                     if parsed is None:
@@ -229,30 +359,57 @@ def main() -> int:
                                 f"{where}: cites {base} -> {bare}, which is in that file "
                                 f"neither at top level nor under '{implied or '(none)'}' — "
                                 f"the page states a source that does not say it")
-        print(f"  {slug:9} {s_ok:3} verified   {s_miss:2} MISSING   "
-              f"{s_unres:2} unresolved   {s_unparse:2} unparseable")
+        print(f"  {slug:9} {s_ok:3} fields ok  {s_miss:2} MISSING   "
+              f"{s_valok:2} values ok  {s_valbad:2} WRONG   "
+              f"{s_unres:2} unresolved  {s_unparse:2} uncovered")
 
     print(f"\n  {checked} simple field reference(s) checked against their cited file")
+    print(f"  {vals_checked} published VALUE(s) compared against the artifact")
     if unparseable:
         print(f"  {len(unparseable)} reference(s) NOT COVERED (indexed/prose form) — "
               f"neither pass nor fail")
         if args.verbose:
             for u in unparseable:
                 print(f"      {u}")
+    if unlocated:
+        print(f"  {len(unlocated)} value assertion(s) whose KEY is not in the cited file:")
+        for u in unlocated:
+            print(f"      {u}")
+    if ambiguous:
+        print(f"  {len(ambiguous)} value assertion(s) ambiguous (key repeats with "
+              f"differing values):")
+        for u in ambiguous:
+            print(f"      {u}")
     if unresolved:
         print(f"  {len(unresolved)} citation(s) whose FILE could not be pinned down:")
         for u in unresolved[:8]:
             print(f"      {u}")
 
+    # BOTH failure kinds gate the build. The first version returned 1 only for `missing`,
+    # so a planted wrong value printed "1 WRONG" and exited 0 — the check reported the
+    # defect and passed the build anyway. That is a vacuous gate of the most deceptive
+    # kind, because its output looks like it is working. Found only by mutation-testing the
+    # value arm separately; the field arm's mutation had passed and would have covered for
+    # it indefinitely.
+    if mismatched:
+        print(f"\n{len(mismatched)} published value(s) disagree with their artifact:")
+        for m in mismatched:
+            print(f"  {m}")
+        print("\nThis is the site's own fine print failing: 'Every number is recomputable "
+              "from public sources'. A number whose cited source says something else is "
+              "not a rounding quibble — it is the page and the artifact disagreeing about "
+              "a fact, with the reader given no way to tell.")
     if missing:
         print(f"\n{len(missing)} cited field(s) do not exist:")
         for m in missing:
             print(f"  {m}")
         print("\nA citation naming a field its file does not contain is not a small error: "
               "it is the page asserting that a source supports a claim it never made.")
+    if missing or mismatched:
         return 1 if args.check else 0
 
-    print("\nEvery checkable cited field exists in the file it is cited from.")
+    print(f"\nEvery checkable cited field exists in the file it is cited from, and all "
+          f"{vals_checked} published values match it.")
     return 0
 
 

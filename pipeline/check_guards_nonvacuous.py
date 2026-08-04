@@ -156,6 +156,21 @@ def _phantom_cited_field(doc):
                             "totally_invented_field")
 
 
+def _wrong_cited_value(doc):
+    """Publish a number the cited artifact contradicts.
+
+    A SEPARATE MUTATION FROM _phantom_cited_field ON PURPOSE. check_cited_fields.py has two
+    arms — field existence and value agreement — and its first version returned exit 1 only
+    for a missing field. A wrong value printed "1 WRONG" and exited 0: the check reported
+    the defect and passed the build. The field mutation passed the whole time and would
+    have covered for it indefinitely. One mutation per ARM, not per file.
+    """
+    ins = doc.get("insights") or []
+    if ins and "persistence_r=0.4514" in (ins[0].get("source") or ""):
+        ins[0]["source"] = ins[0]["source"].replace("persistence_r=0.4514",
+                                                    "persistence_r=0.9999")
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -214,6 +229,11 @@ MUTATIONS = [
      ["check_cited_fields.py", "--check"],
      HUB / "equities.json", _phantom_cited_field,
      "a page cites a field its source file does not contain, under any reading"),
+    ("cited_fields/wrong_value",
+     ["check_cited_fields.py", "--check"],
+     HUB / "hoops.json", _wrong_cited_value,
+     "a published number the cited artifact contradicts — the site's fine print says every "
+     "number is recomputable, and this is the first check that tests it"),
     ("hub_freshness/unresolvable_root",
      ["check_hub_freshness.py", "--check", "--offline"],
      HUB / "tennis.json", _unknown_repo_root,
