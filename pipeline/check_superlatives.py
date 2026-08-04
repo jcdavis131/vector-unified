@@ -117,6 +117,41 @@ def check_page_scoped(rounds: list[dict], idx: int, text: str) -> tuple[str, str
     kind = next((k for pat, k in KIND if pat.search(text)), None)
     if kind is None:
         return "UNDECIDABLE", "page-scoped but no recognised quantity"
+
+    # IS THE CLAIM EVEN ABOUT THE AXIS? This check compares against the round VALUES, so it
+    # is only meaningful when the superlative ranks that quantity. Gridiron round 6 says
+    # "the highest projected RECEIVING YARDAGE of any player in the file at 70.9" — true,
+    # and verified exhaustively elsewhere — while the axis is projected PPR points (17.64 vs
+    # 16.15). Comparing 70.9 against the PPR column reported FALSE on a true sentence, which
+    # would have blocked a correct page.
+    #
+    # Rule: if NONE of the numbers in the sentence appear among the round values, the claim
+    # ranks something this page does not carry, and the honest answer is UNDECIDABLE rather
+    # than a verdict computed on the wrong column. Erring toward FALSE is not "safe" here —
+    # a checker that cries wolf on true statements gets ignored exactly like one that misses.
+    # UNION of values AND gaps, and bail only when the sentence matches NEITHER.
+    #
+    # Two wrong versions preceded this one, and the guard suite caught both:
+    #   v1 compared only against VALUES. A gap claim quotes a difference ("0.0016 apart")
+    #      which is never a value, so the legitimate equities check went UNDECIDABLE.
+    #   v2 compared against values OR gaps depending on the claim kind. Tighter, and it let
+    #      a PLANTED false claim through: the mutation appends "The closest call on this
+    #      board." to a reveal whose existing numbers are neither gaps nor values, so the
+    #      whole round bailed to UNDECIDABLE and the fabrication escaped.
+    #
+    # So: bail only when the numbers match NEITHER set. That still catches gridiron round 6
+    # ("70.9 receiving yards", matching nothing on a PPR-points page) without giving a real
+    # fabrication a way out. Erring toward CHECKING is right here — the cost of a spurious
+    # UNDECIDABLE is a manual read, the cost of a spurious escape is a lie on a live page.
+    _vals = {round(float(v["value"]), 4) for rr in rounds for v in (rr["a"], rr["b"])}
+    _gaps = {round(abs(float(rr["a"]["value"]) - float(rr["b"]["value"])), 4)
+             for rr in rounds}
+    said = {round(n, 4) for n in numbers(text)}
+    if said and not (said & (_vals | _gaps)):
+        return ("UNDECIDABLE",
+                f"numbers in the sentence {sorted(said)[:4]} match no round value or gap — "
+                f"the claim ranks a quantity this page does not carry")
+
     gaps = [(abs(float(r["a"]["value"]) - float(r["b"]["value"])), i)
             for i, r in enumerate(rounds)]
     vals = [(float(s["value"]), i, s["name"])

@@ -8,70 +8,6 @@
   },
   "entries": [
     {
-      "slug": "gridiron",
-      "loc": "insight[1].body",
-      "text_sha": "39d4b59c7d9cf524",
-      "claim": "QB also carries the worst points error (6.371 MAE vs 3.486 for TE) and the widest 80% conformal band",
-      "verdict": "TRUE",
-      "evidence": "projections.json -> model.report.per_pos_mae = {QB 6.371, RB 4.397, WR 4.109, TE 3.486}; QB is the max. conformal_q_by_pos = {QB 10.29, RB 6.808, WR 6.657, TE 5.412}; QB is the max."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "insight[2].body",
-      "text_sha": "6b3f1315b40fd49a",
-      "claim": "Week 18 is the worst of all 17 scored weeks and Week 17 the second worst; the peak was 0.744",
-      "verdict": "TRUE",
-      "evidence": "eval_backtest.json -> overall.per_week has 17 entries mapped to weeks 2-18. Sorted ascending: wk18=0.561 lowest, wk17=0.652 second lowest, max=0.744."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "insight[4].body",
-      "text_sha": "ca536accc67d894b",
-      "claim": "so the worst busts never appear at all",
-      "verdict": "OVER_FIRE",
-      "evidence": "Describes a selection effect (careers under 4 seasons are dropped), not a rank claim about a value in the data. Nothing to check."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[0].reveal",
-      "text_sha": "eade99914b8a5a14",
-      "claim": "it lists Jefferson as Robinson's third-closest comp at 0.986 similarity",
-      "verdict": "TRUE",
-      "evidence": "projections.json -> players[Wan'Dale Robinson].comps = [A.J. Brown 0.998, Rashee Rice 0.991, Justin Jefferson 0.986, ...]. Third position confirmed by the adversarial verifier on 2026-08-03."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[1].reveal",
-      "text_sha": "b2160596cdd2e39d",
-      "claim": "Jackson is Dart's closest comp at 0.986",
-      "verdict": "TRUE",
-      "evidence": "projections.json -> players[Jaxson Dart].comps[0] = Lamar Jackson 0.986. Confirmed by the adversarial verifier on 2026-08-03."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[7].reveal",
-      "text_sha": "b8d5458175c285b3",
-      "claim": "Chase carries the highest projected receiving yardage of any WR in the file at 70.9 a game",
-      "verdict": "TRUE",
-      "evidence": "projections.json -> Ja'Marr Chase line.rec_yds = 70.9 is the max among all WRs AND all players in the file; next is JSN at 70.3. Exhaustively checked by the adversarial verifier on 2026-08-03."
-    },
-    {
-      "slug": "gridiron",
-      "loc": "round[9].reveal",
-      "text_sha": "d1a5e5ed89016a61",
-      "claim": "McBride is the only tight end anywhere in the model's top 50 overall, at #16",
-      "verdict": "TRUE",
-      "evidence": "projections.json -> Trey McBride rank_overall = 16, and he is the only TE with rank_overall <= 50. Exhaustively checked by the adversarial verifier on 2026-08-03."
-    },
-    {
-      "slug": "hoops",
-      "loc": "caveat",
-      "text_sha": "b76604d7810337b3",
-      "claim": "The worst busts leave the league before they accumulate a career",
-      "verdict": "OVER_FIRE",
-      "evidence": "Same selection-effect statement as the gridiron one. Not a rank claim about a stored value."
-    },
-    {
       "slug": "pitch",
       "loc": "insight[0].body",
       "text_sha": "d2fb93f31ad06168",
@@ -118,6 +54,78 @@
       "claim": "Djokovic's 2018 at -2.5649 is his lowest-ranked season in the file's ATP rows for him",
       "verdict": "TRUE",
       "evidence": "Sorted all 14 mask-observed Djokovic ATP rows in tennis_matrix.npz by ENTERING_RANK_LOG: 2018 -2.5649 is the minimum; next are 2025 -1.9459 and 2026 -1.6094. Exhaustively checked, not sampled."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "insight[0].body",
+      "text_sha": "55d29af4f69d7b4a",
+      "claim": "Over 17 scored weeks of 2025 the model's ordering hit 0.6899 Spearman against 0.6539 for a last-4-game average",
+      "verdict": "OVER_FIRE",
+      "evidence": "'the last-4-game average' is a baseline's NAME. eval_backtest.json overall.spearman 0.6899, baseline_last4 0.6539, weeks 17 — all confirmed."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "insight[1].body",
+      "text_sha": "d922fc1d6458ea73",
+      "claim": "QB walk-forward Spearman is 0.4314 with a week-to-week standard deviation of 0.1524 — more than three times th",
+      "verdict": "TRUE",
+      "evidence": "QB spearman 0.4314 and spearman_sd 0.1524 vs overall spearman_sd 0.0402 => ratio 3.79, so 'more than three times' holds. eval_backtest.json positions.QB / overall."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "insight[3].body",
+      "text_sha": "72c8cda82cfb9b57",
+      "claim": "Across 1,156 charted careers the correlation between draft-capital expectation and career PPR-per-game deliver",
+      "verdict": "OVER_FIRE",
+      "evidence": "No rank claim; trajectory_axis_gridiron.json report.careers_scored 1156 and fit.corr_expectation_delivery 0.4175 both confirmed."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[1].reveal",
+      "text_sha": "30e45ac3a4dd8ba5",
+      "claim": "Dart's projected 20.3 rushing yards a game beats Jackson's 13.1, and the two are near-twins in embedding space",
+      "verdict": "TRUE",
+      "evidence": "projections.json: Jaxson Dart line.rush_yds 20.3 vs Lamar Jackson 13.1; Dart comps[0] = Lamar Jackson at 0.986. Confirmed."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[8].reveal",
+      "text_sha": "8ceb33f4cb6679dc",
+      "claim": "McBride is the only tight end in the model's top 50 overall, at #16, projected for 5.2 catches and 59.3 yards ",
+      "verdict": "TRUE",
+      "evidence": "Trey McBride rank_overall 16 and the only TE with rank_overall <= 50 — exhaustively checked over projections.json players[]."
+    },
+    {
+      "slug": "hoops",
+      "loc": "round[4].reveal",
+      "text_sha": "5990d9604cb24ea8",
+      "claim": "Curry was picked eight slots earlier and still wins: 89.625 delivery against a 53.3776 bar beats Giannis's 82.",
+      "verdict": "OVER_FIRE",
+      "evidence": "Not a rank claim. trajectory_axis.json: stephen curry delivery 89.625 predicted 53.3776 pick 7; giannis antetokounmpo delivery 82.923 predicted 49.3317 pick 15. Confirmed."
+    },
+    {
+      "slug": "hoops",
+      "loc": "round[8].reveal",
+      "text_sha": "453823d629635b6c",
+      "claim": "Hornacek's 51.1858 is the largest residual in the file — no career scores above it — off 96.250 delivery over ",
+      "verdict": "TRUE",
+      "evidence": "EXHAUSTIVE: sorted all 1,293 careers[] by residual. jeff hornacek 51.1858 IS the maximum; next are manu ginobili 49.1233 and nikola jokic 49.1176. 'no career scores above it' holds."
+    },
+    {
+      "slug": "hoops",
+      "loc": "caveat",
+      "text_sha": "e43386afea827b28",
+      "claim": "From the model's own artifact (trajectory_axis.json → caveat_survivorship): \"A high pick who never earned 4 ch",
+      "verdict": "OVER_FIRE",
+      "evidence": "A verbatim quotation from trajectory_axis.json -> caveat_survivorship, presented as a quote with attribution. Not a computed rank claim."
+    },
+    {
+      "slug": "gridiron",
+      "loc": "round[0].reveal",
+      "text_sha": "eade99914b8a5a14",
+      "claim": "Jefferson is Robinson's third-closest comp at 0.986 similarity",
+      "verdict": "TRUE",
+      "evidence": "projections.json: Wan'Dale Robinson line.rec 5.2 / rec_yds 62.6, prev_team NYG; Justin Jefferson 5.1 / 61.0. Robinson.comps = [A.J. Brown 0.998, Rashee Rice 0.991, Justin Jefferson 0.986, ...] so Jefferson IS third. Confirmed by the adversarial verifier on 2026-08-03 and re-read here."
     }
   ],
   "how_keyed": "text_sha = sha256 of the whole whitespace-normalised field. Any edit to that field voids the clearance and the claim returns to UNCHECKED."
