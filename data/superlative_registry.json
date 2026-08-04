@@ -88,22 +88,6 @@
       "evidence": "A quoted judgement from probe_pitch_expectation_sources.py, presented as a quotation with attribution. Not a computed rank claim."
     },
     {
-      "slug": "tennis",
-      "loc": "insight[0].body",
-      "text_sha": "168cbbceccfb1ed8",
-      "claim": "'viking' appears at both venues in 2021 and in no other year at either",
-      "verdict": "TRUE",
-      "evidence": "tennis_sponsors.json -> CONFIRMED_detail.viking = [Birmingham years_present [2021], Eastbourne years_present [2021]]. No other year at either venue."
-    },
-    {
-      "slug": "tennis",
-      "loc": "round[0].reveal",
-      "text_sha": "573b5cfed9673589",
-      "claim": "mean draw progress lands on 7.0 - the top of the observed scale",
-      "verdict": "TRUE",
-      "evidence": "pipeline/data/tennis_matrix.npz -> DRAW_PROGRESS_MEAN over mask-observed rows: min 1.0000, max 7.0000. Exactly one row sits at the max."
-    },
-    {
       "slug": "unified",
       "loc": "stat[3].label",
       "text_sha": "c989cabbc0706a6e",
@@ -118,6 +102,22 @@
       "claim": "0 of 40 curated pairs land in the top 10",
       "verdict": "OVER_FIRE",
       "evidence": "'top 10' is the metric's NAME (retrieval_top10_hit_rate_informational = 0.0), not a rank claim. All numbers confirmed: analogy_report.json G4 0.9828 vs random 0.1712; analogy_triples_report.json mean_b_rank 2114.18 vs random_expected_rank 2067.15, better_than_random_ratio 0.978, G4_curated_arch_agreement 0.65 vs arch_agreement_random_baseline 0.1621."
+    },
+    {
+      "slug": "tennis",
+      "loc": "insight[2].body",
+      "text_sha": "a4c01b91408660f1",
+      "claim": "the largest spread on the quality columns is 2.631 against 2.225 on the behavioural ones",
+      "verdict": "TRUE",
+      "evidence": "tennis_archetype_probe.json -> max_spread_quality_cols 2.631, max_spread_behavioural_cols 2.225, pc1_variance_share 0.3748, pc2_variance_share 0.1036, per_cluster['4'].n 487. All confirmed."
+    },
+    {
+      "slug": "tennis",
+      "loc": "round[9].reveal",
+      "text_sha": "fb4d56fa7afacb08",
+      "claim": "Djokovic's 2018 at -2.5649 is his lowest-ranked season in the file's ATP rows for him",
+      "verdict": "TRUE",
+      "evidence": "Sorted all 14 mask-observed Djokovic ATP rows in tennis_matrix.npz by ENTERING_RANK_LOG: 2018 -2.5649 is the minimum; next are 2025 -1.9459 and 2026 -1.6094. Exhaustively checked, not sampled."
     }
   ],
   "how_keyed": "text_sha = sha256 of the whole whitespace-normalised field. Any edit to that field voids the clearance and the claim returns to UNCHECKED."

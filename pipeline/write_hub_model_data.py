@@ -58,7 +58,8 @@ def normalise_slug(raw: str) -> str | None:
 def check(spec: dict, verdict: dict | None, allow_unverified: bool,
           drops: list[tuple[int, str]] | None = None,
           clear_flag: bool = False,
-          insight_drops: list[tuple[int, str]] | None = None) -> tuple[list[str], dict]:
+          insight_drops: list[tuple[int, str]] | None = None,
+          field_drops: list[tuple[str, str]] | None = None) -> tuple[list[str], dict]:
     """Returns (blocking problems, cleaned spec). Never mutates the input."""
     problems: list[str] = []
     spec = json.loads(json.dumps(spec))  # deep copy
@@ -92,7 +93,21 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
             else:
                 problems.append(f"--drop-round index {idx} out of range (0..{len(rs)-1})")
         spec.setdefault("_round_notes", []).extend(removed)
-    if clear_flag and not (drops or insight_drops):
+    for path, reason in (field_drops or []):
+        # OPTIONAL fields only. model.js substitutes "" for these; removing anything it
+        # actually renders would trade a false sentence for a blank section.
+        if path not in ("caveat", "game.explainer"):
+            problems.append(f"--drop-field {path!r} is not an optional field")
+            continue
+        if path == "caveat":
+            gone = spec.pop("caveat", None)
+        else:
+            gone = (spec.get("game") or {}).pop("explainer", None)
+        if gone is not None:
+            spec.setdefault("_field_notes", []).append(
+                f"{path} REMOVED: {reason}  (was: {str(gone)[:150]})")
+
+    if clear_flag and not (drops or insight_drops or field_drops):
         problems.append("--clear-fabrication-flag passed with no --drop-round or "
                         "--drop-insight for that slug: the fabrication is still in the "
                         "spec")
@@ -113,7 +128,7 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
                         "verifier is the only thing distinguishing a read number from an "
                         "invented one")
     elif v == "FABRICATED":
-        if clear_flag and (drops or insight_drops):
+        if clear_flag and (drops or insight_drops or field_drops):
             spec["_verification"] = (
                 "PARTIALLY VERIFIED — the adversarial verifier confirmed every other "
                 "figure and flagged specific round(s), which were REMOVED rather than "
@@ -188,6 +203,12 @@ def main() -> int:
                          "a sentence by hand turns a generated-and-verified artifact into a "
                          "partly-hand-written one, and the guarantee is only worth what its "
                          "weakest field is worth.")
+    ap.add_argument("--drop-field", action="append", default=[], metavar="SLUG:PATH:REASON",
+                    help="Remove one OPTIONAL field, e.g. gridiron:game.explainer:'claim "
+                         "about the rounds is false'. Same category as --drop-round and "
+                         "--drop-insight: a REMOVAL, which records what went and why and "
+                         "never writes a replacement sentence. Refuses to remove anything "
+                         "the renderer requires.")
     ap.add_argument("--clear-fabrication-flag", action="append", default=[], metavar="SLUG",
                     help="Only valid alongside --drop-round for the SAME slug: the flagged "
                          "round is gone, so the spec no longer contains the fabrication. "
@@ -212,6 +233,13 @@ def main() -> int:
             print(f"  bad --drop-insight {spec_str!r} — want SLUG:IDX:REASON")
             return 2
         idrops_by_slug.setdefault(parts[0], []).append((int(parts[1]), parts[2]))
+    fdrops_by_slug: dict[str, list[tuple[str, str]]] = {}
+    for spec_str in args.drop_field:
+        parts = spec_str.split(":", 2)
+        if len(parts) != 3:
+            print(f"  bad --drop-field {spec_str!r} — want SLUG:PATH:REASON")
+            return 2
+        fdrops_by_slug.setdefault(parts[0], []).append((parts[1], parts[2]))
     clear = set(args.clear_fabrication_flag)
 
     OUTDIR.mkdir(parents=True, exist_ok=True)
@@ -222,7 +250,7 @@ def main() -> int:
         s = normalise_slug(spec.get("slug", "")) or ""
         problems, cleaned = check(spec, verdict, args.allow_unverified,
                                   drops_by_slug.get(s), s in clear,
-                                  idrops_by_slug.get(s))
+                                  idrops_by_slug.get(s), fdrops_by_slug.get(s))
         label = cleaned.get("slug") or spec.get("slug") or "?"
         if problems:
             refused += 1
@@ -242,7 +270,8 @@ def main() -> int:
         out = OUTDIR / f"{cleaned['slug']}.json"
         out.write_text(json.dumps(cleaned, indent=1, ensure_ascii=False) + "\n",
                        encoding="utf-8")
-        notes = (cleaned.get("_round_notes") or []) + (cleaned.get("_insight_notes") or [])
+        notes = ((cleaned.get("_round_notes") or []) + (cleaned.get("_insight_notes") or [])
+                 + (cleaned.get("_field_notes") or []))
         print(f"  wrote   {cleaned['slug']:9} "
               f"{len(cleaned['insights'])} insights, "
               f"{len(cleaned['game']['rounds'])} rounds"
