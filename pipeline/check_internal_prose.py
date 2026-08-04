@@ -44,6 +44,18 @@ Everything else is counted, not reported:
 A STALE hit is a CANDIDATE, not a verdict. Two unrelated quantities can sit within 5% of
 each other by chance, and the script says so rather than asserting.
 
+MEASURED PRECISION IS 2 OF 23 ACROSS THE 173-ARTIFACT ESTATE, about 9%. That is reported
+rather than implied, and it is why this is REPORT-ONLY and not registered in validate.py:
+a gate at 9% precision trains its reader to ignore it. The 21 others are benign in ways
+worth knowing, because each one is a shape the check cannot distinguish from a defect:
+
+  contrasted quantities  "val (n=761) and test (n=790) are near-identical in size" --
+                         the sentence exists to say they DIFFER, and "near-identical"
+                         reads as an identity claim.
+  deliberate comparison  "0.8038 ... matches seed 31 uniquely (seed 7 gives 0.8354)"
+  prose rounding         "a CQS seed sd near 0.73" against a field of 0.7315
+  ranges                 "per-position 0.58-0.74"
+
     python pipeline/check_internal_prose.py            # report
     python pipeline/check_internal_prose.py --check    # exit 1 if any STALE candidate
 
@@ -60,7 +72,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "internal_prose_audit.json"
+ESTATE = ROOT.parent
+
+# The whole estate, not just this repo. The first version scanned vector-unified's 73
+# artifacts and said so as a caveat; the other four repos hold 105 more, including the
+# seed_floor.json files this session wrote. Sibling roots are derived from ROOT.parent
+# rather than hardcoded, matching portable_paths.py.
 SCAN_DIRS = [ROOT / "data", ROOT / "data" / "market_cultural"]
+for _sib in ("vector-hoops", "vector-gridiron", "vector-pitch", "vector-equities"):
+    SCAN_DIRS += [ESTATE / _sib / "pipeline" / "data", ESTATE / _sib / "pipeline"]
 
 # A number with a decimal point, or a 3+ digit integer. Bare small integers (0, 1, 5, 11)
 # are far too common in prose to be worth testing and produce nothing but noise.
@@ -131,13 +151,20 @@ def classify(n: float, fields: dict[str, float], text: str, span):
     """EXACT / STALE(candidates) / NEAR_NO_CLAIM / UNMATCHED for one prose number."""
     if any(abs(n - v) < 1e-9 for v in fields.values()):
         return "EXACT", []
+    # SIGN: prose writes magnitudes ("CQS dropped 0.0054") where the field is signed
+    # (-0.0054). The estate scan flagged exactly that as STALE against an unrelated
+    # 0.0047, because the correct field never compared equal. Match on magnitude, and
+    # treat an exact magnitude match as EXACT rather than as a near-miss.
+    if any(abs(abs(n) - abs(v)) < 1e-9 for v in fields.values()):
+        return "EXACT", []
     cands = []
     for p, v in fields.items():
         if v == 0:
             continue
-        if round(v, max(0, _dp(n) - 1)) == round(n, max(0, _dp(n) - 1)):
+        av = abs(v)
+        if round(av, max(0, _dp(n) - 1)) == round(abs(n), max(0, _dp(n) - 1)):
             cands.append({"field": p, "value": v, "why": "equal at one fewer decimal"})
-        elif abs(n - v) / abs(v) < 0.05:
+        elif abs(abs(n) - av) / av < 0.05:
             cands.append({"field": p, "value": v, "why": "within 5%"})
     if not cands:
         return "UNMATCHED", []
@@ -146,6 +173,16 @@ def classify(n: float, fields: dict[str, float], text: str, span):
     if not ASSERTION.search(text[lo:hi]):
         return "NEAR_NO_CLAIM", []
     return "STALE", cands[:4]
+
+
+def _repo_of(p: Path) -> str:
+    """Which repo a scanned artifact belongs to. File names collide across repos --
+    every one of the five has some form of report json -- so a finding that says only
+    'seed_floor.json' is ambiguous."""
+    try:
+        return p.resolve().relative_to(ESTATE).parts[0]
+    except ValueError:
+        return "?"
 
 
 def _dp(x: float) -> int:
@@ -171,7 +208,13 @@ def main() -> int:
     # anyone here wrote. "141 international victories" and "116 touchdown receptions"
     # are facts about athletes that happen to sit near an unrelated numeric field. There
     # is nothing to keep in sync, so flagging them is pure noise.
-    EXCLUDE = {OUT.name, "wikipedia_bios.json", "cultural_text.json"}
+    # EXCLUDE DATA TABLES. full_history_universe.json is 7,370 rows of ticker/company
+    # records; its "prose" is company NAMES. The estate scan flagged a company whose name
+    # contains 1000 as being near an unrelated field of 957. There is nothing in a data
+    # table to keep in sync with anything, so every hit is noise by construction.
+    EXCLUDE = {OUT.name, "wikipedia_bios.json", "cultural_text.json",
+               "full_history_universe.json", "universe.json", "officers.json",
+               "merged_careers.json", "tennis_entities.json"}
     files = []
     for d in SCAN_DIRS:
         if d.exists():
@@ -184,7 +227,8 @@ def main() -> int:
         try:
             doc = json.loads(f.read_text(encoding="utf-8"))
         except Exception as e:
-            skipped_files.append({"file": f.name, "error": f"{type(e).__name__}: {e}"})
+            skipped_files.append({"file": f.name, "repo": _repo_of(f),
+                                  "error": f"{type(e).__name__}: {e}"})
             continue
         fields = numeric_fields(doc)
         if not fields:
@@ -197,7 +241,9 @@ def main() -> int:
                 if verdict == "STALE":
                     i = max(0, m.start() - 60)
                     findings.append({
-                        "file": f.name, "prose_path": path, "number_in_prose": n,
+                        "file": f.name,
+                        "repo": _repo_of(f),
+                        "prose_path": path, "number_in_prose": n,
                         "context": text[i:m.end() + 60].replace("\n", " "),
                         "near_fields": cands,
                     })

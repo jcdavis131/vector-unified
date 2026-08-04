@@ -1,13 +1,13 @@
 {
  "question": "Does any artifact's prose quote a number that disagrees with that same artifact's own fields?",
  "found_by": "hand, while auditing promotion gates — gate_nonvacuity.json's note_rank says the shuffles 'both score 12.4, exactly the real value' while its own three fields say 12.1.",
- "files_scanned": 73,
+ "files_scanned": 173,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 964,
-  "STALE": 17,
-  "NEAR_NO_CLAIM": 85,
-  "UNMATCHED": 140
+  "EXACT": 1145,
+  "STALE": 23,
+  "NEAR_NO_CLAIM": 2700,
+  "UNMATCHED": 252
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
  "what_NEAR_NO_CLAIM_means": "near a field, but the surrounding clause makes no identity claim. Counted, NOT reported. The first version of this script had no such requirement and produced 134 hits over 75 artifacts, almost all ranges ('persistence is 0.85-0.92'), thresholds ('below the 0.01 bar') and counts ('a 200-draw simulation') — reproducing the exact false-positive failure this script's docstring cites check_cited_fields.py for.",
@@ -17,6 +17,7 @@
  "findings": [
   {
    "file": "g1_position_probe.json",
+   "repo": "vector-unified",
    "prose_path": ".what",
    "number_in_prose": 1.0,
    "context": "ng: pos_mask was used as an index, both arms scored exactly 1.0, so their difference was 0.0 by construction — on a shuffle",
@@ -45,10 +46,16 @@
   },
   {
    "file": "gate_nonvacuity.json",
+   "repo": "vector-unified",
    "prose_path": ".g4_baseline.note",
    "number_in_prose": 0.148,
    "context": " the archetype, which is 0.1712 given the 0.249/0.235/0.192/0.148/0.113/0.063 archetype mix — so 0.60 is a real bar here, unl",
    "near_fields": [
+    {
+     "field": ".real.G3_between_cos",
+     "value": -0.151,
+     "why": "equal at one fewer decimal"
+    },
     {
      "field": ".nulls.within_sport_shuffle.G1_native_knn5_z.hoops",
      "value": 0.1442,
@@ -68,6 +75,7 @@
   },
   {
    "file": "gate_nonvacuity.json",
+   "repo": "vector-unified",
    "prose_path": ".note_rank",
    "number_in_prose": 12.4,
    "context": "ouched — global_shuffle and within_sport_shuffle both score 12.4, exactly the real value. Only random_gaussian moves it, and",
@@ -96,6 +104,7 @@
   },
   {
    "file": "gate_nonvacuity.json",
+   "repo": "vector-unified",
    "prose_path": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.prose_says",
    "number_in_prose": 12.4,
    "context": "both score 12.4, exactly the real value",
@@ -124,6 +133,7 @@
   },
   {
    "file": "gate_nonvacuity.json",
+   "repo": "vector-unified",
    "prose_path": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.reading",
    "number_in_prose": 12.0,
    "context": "paring 12.4 against unified_report.json's effective_rank of 12.0 would be comparing two numbers neither of which is in this ",
@@ -152,6 +162,7 @@
   },
   {
    "file": "gridiron_forward_report.json",
+   "repo": "vector-unified",
    "prose_path": ".qb_note",
    "number_in_prose": 0.74,
    "context": " and QB persistence is itself the weakest at 0.4914 against 0.74-0.77 elsewhere. QB output is the least self-similar season ",
@@ -180,6 +191,7 @@
   },
   {
    "file": "gridiron_forward_report.json",
+   "repo": "vector-unified",
    "prose_path": ".qb_note",
    "number_in_prose": 0.77,
    "context": "QB persistence is itself the weakest at 0.4914 against 0.74-0.77 elsewhere. QB output is the least self-similar season to se",
@@ -208,6 +220,7 @@
   },
   {
    "file": "gridiron_forward_report.json",
+   "repo": "vector-unified",
    "prose_path": ".why_per_position_is_the_finding",
    "number_in_prose": 0.7642,
    "context": "uld be reported as forecasting skill. Pooled persistence is 0.7642 against per-position 0.58-0.74 for exactly that reason.",
@@ -236,6 +249,7 @@
   },
   {
    "file": "gridiron_forward_report.json",
+   "repo": "vector-unified",
    "prose_path": ".why_per_position_is_the_finding",
    "number_in_prose": 0.74,
    "context": "ill. Pooled persistence is 0.7642 against per-position 0.58-0.74 for exactly that reason.",
@@ -263,7 +277,22 @@
    ]
   },
   {
+   "file": "hoops_forward_report.json",
+   "repo": "vector-unified",
+   "prose_path": ".vs_tennis",
+   "number_in_prose": 0.0941,
+   "context": "nnis_forward.py asks the same question of tennis and finds +0.0941 over a 0.7486 persistence baseline. The two GAINS are not d",
+   "near_fields": [
+    {
+     "field": ".superseded_shuffled_target_null_r",
+     "value": -0.096,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
    "file": "hoops_name_collisions.json",
+   "repo": "vector-unified",
    "prose_path": ".method_note",
    "number_in_prose": 129.0,
    "context": "ow SPARQL returned first and reported an age range of 14 to 129, because Cristiano Ronaldo matches his own son. A name is C",
@@ -277,6 +306,7 @@
   },
   {
    "file": "tennis_forward_report.json",
+   "repo": "vector-unified",
    "prose_path": ".honest_note",
    "number_in_prose": 0.75,
    "context": "interesting number is the GAIN, not the raw r. A raw r near 0.75 here is earned by persistence, not by the model, and quotin",
@@ -304,20 +334,8 @@
    ]
   },
   {
-   "file": "tennis_hparam_sweep.json",
-   "prose_path": ".capacity_hurts",
-   "number_in_prose": 0.0105,
-   "context": "im 64, tower_width 32, 800 epochs) is the WORST at 0.0678, -0.0105 from base and the only variant at the floor boundary. On 4,",
-   "near_fields": [
-    {
-     "field": ".mde_5v5",
-     "value": 0.0107,
-     "why": "equal at one fewer decimal"
-    }
-   ]
-  },
-  {
    "file": "trajectory_sport_comparison.json",
+   "repo": "vector-unified",
    "prose_path": ".qb_verdict",
    "number_in_prose": 0.57,
    "context": "ionship with fantasy delivery at quarterback — while RB is +0.57 with a non-overlapping CI. RESTRICTED RANGE WAS THE OBVIOUS",
@@ -346,6 +364,7 @@
   },
   {
    "file": "trajectory_sport_comparison.json",
+   "repo": "vector-unified",
    "prose_path": ".SUPERSEDED",
    "number_in_prose": 0.395,
    "context": "ear window, identical log-expectation transform): gridiron +0.3950 CI [+0.3463, +0.4433], hoops +0.4534 CI [+0.3982, +0.5047],",
@@ -369,6 +388,7 @@
   },
   {
    "file": "venue_sponsors.json",
+   "repo": "vector-unified",
    "prose_path": ".equities_corpus.trained_corpus_note",
    "number_in_prose": 500.0,
    "context": "The MTNN trains on 4,831 rows / 500 unique tickers spanning 2015-2024, which is the S&P 500 fil",
@@ -382,6 +402,7 @@
   },
   {
    "file": "venue_sponsors.json",
+   "repo": "vector-unified",
    "prose_path": ".equities_corpus.trained_corpus_note",
    "number_in_prose": 500.0,
    "context": "s / 500 unique tickers spanning 2015-2024, which is the S&P 500 file. full_history_universe (7,370) is NOT the trained corp",
@@ -395,6 +416,7 @@
   },
   {
    "file": "venue_sponsors.json",
+   "repo": "vector-unified",
    "prose_path": ".adjudication_of_the_unique_phrase_matches.wrong_class",
    "number_in_prose": 500.0,
    "context": "ed for their city and both cities lend their name to an S&P 500 company. This is the same false-positive class build_tennis",
@@ -403,6 +425,155 @@
      "field": ".equities_corpus.sp500_rows",
      "value": 503.0,
      "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-hoops",
+   "prose_path": ".denser_checkpoint_selection_refuted.why_it_cannot_work",
+   "number_in_prose": 761.0,
+   "context": " variance, and at n=8 not distinguishable from zero. val (n=761) and test (n=790) are near-identical in size, so this is no",
+   "near_fields": [
+    {
+     "field": ".test_pairs",
+     "value": 790.0,
+     "why": "within 5%"
+    },
+    {
+     "field": ".partial_season_hypothesis_refuted.measured_8_seeds.blended.pairs",
+     "value": 790.0,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-hoops",
+   "prose_path": ".CORRECTION_paired_floor.consequence",
+   "number_in_prose": 0.5,
+   "context": "usable. cqs goes from 2.6122 to 0.2998, which is BELOW the +0.5 promote bar, so that rule becomes decidable rather than hop",
+   "near_fields": [
+    {
+     "field": ".binomial_sd_expected",
+     "value": 0.0152,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_metric.test_recall.sd",
+     "value": 0.0942,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_metric.test_recall.range",
+     "value": 0.226,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_metric.test_recall.mde_3v3",
+     "value": 0.2138,
+     "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-hoops",
+   "prose_path": ".CORRECTION_paired_floor.rejudged_both_experiments.one_near_miss_worth_naming",
+   "number_in_prose": 0.0,
+   "context": " is still not significant and --reliability-weight stays at 0.0, but it is the one thread a future run could pull.",
+   "near_fields": [
+    {
+     "field": ".binomial_sd_expected",
+     "value": 0.0152,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_metric.test_recall.sd",
+     "value": 0.0942,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_metric.test_recall.range",
+     "value": 0.226,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_metric.test_recall.mde_3v3",
+     "value": 0.2138,
+     "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-hoops",
+   "prose_path": ".REPO_STATE_WARNING.also_destroyed",
+   "number_in_prose": 0.8038,
+   "context": "nfirmed: its full-population recall@10 is exactly 635/790 = 0.8038, which matches seed 31 uniquely (seed 7 gives 0.8354, 13 gi",
+   "near_fields": [
+    {
+     "field": ".per_metric.val_recall.mean",
+     "value": 0.7843,
+     "why": "within 5%"
+    },
+    {
+     "field": ".per_metric.purity.mean",
+     "value": 0.7739,
+     "why": "within 5%"
+    },
+    {
+     "field": ".per_metric.purity.min",
+     "value": 0.7662,
+     "why": "within 5%"
+    },
+    {
+     "field": ".per_metric.purity.max",
+     "value": 0.7847,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-hoops",
+   "prose_path": ".REPO_STATE_WARNING.also_destroyed",
+   "number_in_prose": 0.8354,
+   "context": "/790 = 0.8038, which matches seed 31 uniquely (seed 7 gives 0.8354, 13 gives 0.8532). pipeline/data is gitignored [CORRECTED: ",
+   "near_fields": [
+    {
+     "field": ".per_metric.test_recall.max",
+     "value": 0.85,
+     "why": "within 5%"
+    },
+    {
+     "field": ".runs[0].test_recall",
+     "value": 0.848,
+     "why": "within 5%"
+    },
+    {
+     "field": ".runs[2].test_recall",
+     "value": 0.85,
+     "why": "within 5%"
+    },
+    {
+     "field": ".runs[2].val_recall",
+     "value": 0.802,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-gridiron",
+   "prose_path": ".FINDING_the_redeploy_baseline_is_one_lucky_seed.why_this_matters",
+   "number_in_prose": 0.73,
+   "context": "e model, it is the CQS of one draw. With a CQS seed sd near 0.73 and a gate of '>= baseline' where the baseline IS the high ",
+   "near_fields": [
+    {
+     "field": ".cqs.sd_n3",
+     "value": 0.7315,
+     "why": "equal at one fewer decimal"
     }
    ]
   }
