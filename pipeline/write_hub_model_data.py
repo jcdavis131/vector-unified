@@ -56,11 +56,26 @@ def normalise_slug(raw: str) -> str | None:
 
 def check(spec: dict, verdict: dict | None, allow_unverified: bool,
           drops: list[tuple[int, str]] | None = None,
-          clear_flag: bool = False) -> tuple[list[str], dict]:
+          clear_flag: bool = False,
+          insight_drops: list[tuple[int, str]] | None = None) -> tuple[list[str], dict]:
     """Returns (blocking problems, cleaned spec). Never mutates the input."""
     problems: list[str] = []
     spec = json.loads(json.dumps(spec))  # deep copy
     drops = drops or []
+    insight_drops = insight_drops or []
+
+    if insight_drops:
+        ins = spec.get("insights") or []
+        for idx, reason in sorted(insight_drops, key=lambda t: -t[0]):
+            if 0 <= idx < len(ins):
+                gone = ins.pop(idx)
+                spec.setdefault("_insight_notes", []).append(
+                    f"insight {idx} REMOVED ({gone.get('title')!r}): {reason}")
+            else:
+                problems.append(f"--drop-insight index {idx} out of range "
+                                f"(0..{len(ins)-1})")
+        if len(ins) < 3:
+            problems.append(f"only {len(ins)} insights left after removals (need >=3)")
 
     # Operator-directed removal of a specific flagged round. Applied BEFORE the fabrication
     # check so that clearing the flag is only possible once the offending round is actually
@@ -76,9 +91,10 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
             else:
                 problems.append(f"--drop-round index {idx} out of range (0..{len(rs)-1})")
         spec.setdefault("_round_notes", []).extend(removed)
-    if clear_flag and not drops:
-        problems.append("--clear-fabrication-flag passed with no --drop-round for that "
-                        "slug: the fabrication is still in the spec")
+    if clear_flag and not (drops or insight_drops):
+        problems.append("--clear-fabrication-flag passed with no --drop-round or "
+                        "--drop-insight for that slug: the fabrication is still in the "
+                        "spec")
 
     for k in REQUIRED:
         if k not in spec or spec[k] in (None, "", [], {}):
@@ -96,7 +112,7 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
                         "verifier is the only thing distinguishing a read number from an "
                         "invented one")
     elif v == "FABRICATED":
-        if clear_flag and drops:
+        if clear_flag and (drops or insight_drops):
             spec["_verification"] = (
                 "PARTIALLY VERIFIED — the adversarial verifier confirmed every other "
                 "figure and flagged specific round(s), which were REMOVED rather than "
@@ -138,7 +154,11 @@ def check(spec: dict, verdict: dict | None, allow_unverified: bool,
                         f"(need >=6)")
     spec.setdefault("game", {})["rounds"] = kept
     if dropped:
-        spec["_round_notes"] = dropped
+        # EXTEND, not assign. Assignment here silently discarded the --drop-round removal
+        # records written above, so an operator-directed removal would have vanished from
+        # the artifact — defeating the one property that makes the escape hatch acceptable,
+        # that it is never applied silently.
+        spec.setdefault("_round_notes", []).extend(dropped)
 
     # ---- every cited file must exist -------------------------------------------
     missing = [f for f in (spec.get("source_files") or []) if not Path(f).exists()]
@@ -161,6 +181,12 @@ def main() -> int:
                          "discarding ten confirmed rounds over one bad reveal string is its "
                          "own kind of dishonesty. The drop and its reason are written into "
                          "the artifact, never applied silently.")
+    ap.add_argument("--drop-insight", action="append", default=[], metavar="SLUG:IDX:REASON",
+                    help="Drop one insight the verifier flagged. Symmetric with "
+                         "--drop-round, and preferred over hand-editing the prose: patching "
+                         "a sentence by hand turns a generated-and-verified artifact into a "
+                         "partly-hand-written one, and the guarantee is only worth what its "
+                         "weakest field is worth.")
     ap.add_argument("--clear-fabrication-flag", action="append", default=[], metavar="SLUG",
                     help="Only valid alongside --drop-round for the SAME slug: the flagged "
                          "round is gone, so the spec no longer contains the fabrication. "
@@ -178,6 +204,13 @@ def main() -> int:
             print(f"  bad --drop-round {spec_str!r} — want SLUG:IDX:REASON")
             return 2
         drops_by_slug.setdefault(parts[0], []).append((int(parts[1]), parts[2]))
+    idrops_by_slug: dict[str, list[tuple[int, str]]] = {}
+    for spec_str in args.drop_insight:
+        parts = spec_str.split(":", 2)
+        if len(parts) != 3 or not parts[1].isdigit():
+            print(f"  bad --drop-insight {spec_str!r} — want SLUG:IDX:REASON")
+            return 2
+        idrops_by_slug.setdefault(parts[0], []).append((int(parts[1]), parts[2]))
     clear = set(args.clear_fabrication_flag)
 
     OUTDIR.mkdir(parents=True, exist_ok=True)
@@ -187,7 +220,8 @@ def main() -> int:
         verdict = item.get("verdict") if isinstance(item, dict) else None
         s = normalise_slug(spec.get("slug", "")) or ""
         problems, cleaned = check(spec, verdict, args.allow_unverified,
-                                  drops_by_slug.get(s), s in clear)
+                                  drops_by_slug.get(s), s in clear,
+                                  idrops_by_slug.get(s))
         label = cleaned.get("slug") or spec.get("slug") or "?"
         if problems:
             refused += 1
@@ -198,7 +232,7 @@ def main() -> int:
         out = OUTDIR / f"{cleaned['slug']}.json"
         out.write_text(json.dumps(cleaned, indent=1, ensure_ascii=False) + "\n",
                        encoding="utf-8")
-        notes = cleaned.get("_round_notes") or []
+        notes = (cleaned.get("_round_notes") or []) + (cleaned.get("_insight_notes") or [])
         print(f"  wrote   {cleaned['slug']:9} "
               f"{len(cleaned['insights'])} insights, "
               f"{len(cleaned['game']['rounds'])} rounds"
