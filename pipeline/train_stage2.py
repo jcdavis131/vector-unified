@@ -69,18 +69,24 @@ def g1_encoder(live, M, device, frozen_E):
     return out
 
 
-def g2_sport_acc(z_full, M):
+def g2_sport_acc(z_full, M, seed=SEED):
+    # NOTE: random_state here is the EVALUATION split, not the model. Threading the seed
+    # into it means the reported G2 sport_acc moves between seeds as well as the trunk
+    # that produced z_full. That is correct -- a seed sweep should move everything the
+    # reported number depends on -- but it means G2 is a comparison of two noisy
+    # quantities once this flag is used, exactly as pitch's pos_cluster_acc turned out to
+    # be (vector-pitch 413e3cd).
     sid = M["sport_id"].cpu().numpy()
     Xtr, Xte, ytr, yte = train_test_split(z_full, sid, test_size=0.2,
-                                          random_state=SEED, stratify=sid)
+                                          random_state=seed, stratify=sid)
     clf = LogisticRegression(max_iter=400, C=1.0)
     clf.fit(Xtr, ytr)
     return float(clf.score(Xte, yte))
 
 
-def g3_sil(z_full, M, sample=6000):
+def g3_sil(z_full, M, sample=6000, seed=SEED):
     arch = M["arch_id"].cpu().numpy()
-    rng = np.random.default_rng(SEED)
+    rng = np.random.default_rng(seed)
     sel = rng.choice(len(arch), min(len(arch), sample), replace=False)
     return float(silhouette_score(z_full[sel], arch[sel], metric="cosine"))
 
@@ -117,6 +123,15 @@ def gather_live_batch(live, M, global_idx, device):
 
 def main():
     ap = argparse.ArgumentParser()
+    # SEED WAS IMPORTED FROM train_unified AND NOT OVERRIDABLE, so the unified Stage 2
+    # trunk has never been run at a second seed. audit_promotion_gates.py de8275e records
+    # the consequence: G2 passes with effective_rank 12.0 against a hardcoded floor of
+    # 12 -- exactly zero margin -- and with one run there is no way to tell whether that
+    # floor was chosen before or after seeing 12.0. Default is 7, the imported value, so
+    # behaviour is unchanged unless the flag is passed.
+    ap.add_argument("--seed", type=int, default=SEED,
+                    help="random seed; vary it to measure the noise floor before "
+                         "believing any gate margin")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--batch-per-sport", type=int, default=86)
     ap.add_argument("--d-emb", type=int, default=64)
@@ -136,7 +151,7 @@ def main():
     if args.smoke:
         args.epochs = 2
 
-    torch.manual_seed(SEED); np.random.seed(SEED)
+    torch.manual_seed(args.seed); np.random.seed(args.seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     try:
@@ -202,7 +217,7 @@ def main():
     (DATA / "stage2_baselines.json").write_text(
         json.dumps(baselines, indent=2), encoding="utf-8")
 
-    rng = np.random.default_rng(SEED)
+    rng = np.random.default_rng(args.seed)
     q = args.batch_per_sport
 
     def one_batch():
@@ -260,9 +275,9 @@ def main():
         model.eval()
         g1 = g1_encoder(live, M, device, None)
         z_full = full_z(model, live, M, device)
-        g2 = g2_sport_acc(z_full, M)
+        g2 = g2_sport_acc(z_full, M, seed=args.seed)
         rank = float(effective_rank(torch.tensor(z_full)))
-        g3 = g3_sil(z_full, M)
+        g3 = g3_sil(z_full, M, seed=args.seed)
         # regression check
         regressed = []
         for sport in SPORTS:
