@@ -25,6 +25,38 @@
       "score_plus_embedding_r": 0.8516,
       "gain": 0.0043,
       "null_p": 0.0,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2019,
+          "n_test": 2462,
+          "score_only_r": 0.8724,
+          "score_plus_embedding_r": 0.8763,
+          "gain": 0.0039
+        },
+        {
+          "cut_year": 2020,
+          "n_test": 1977,
+          "score_only_r": 0.865,
+          "score_plus_embedding_r": 0.8678,
+          "gain": 0.0028
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 1490,
+          "score_only_r": 0.8473,
+          "score_plus_embedding_r": 0.8516,
+          "gain": 0.0043
+        },
+        {
+          "cut_year": 2022,
+          "n_test": 997,
+          "score_only_r": 0.8452,
+          "score_plus_embedding_r": 0.852,
+          "gain": 0.0068
+        }
+      ],
+      "gain_positive_at_every_cut": true,
+      "gain_mean_across_cuts": 0.0044,
       "earns_its_keep": false
     },
     {
@@ -35,6 +67,38 @@
       "score_plus_embedding_r": 0.9157,
       "gain": 0.0006,
       "null_p": 0.025,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2019,
+          "n_test": 2462,
+          "score_only_r": 0.9235,
+          "score_plus_embedding_r": 0.9243,
+          "gain": 0.0008
+        },
+        {
+          "cut_year": 2020,
+          "n_test": 1977,
+          "score_only_r": 0.9201,
+          "score_plus_embedding_r": 0.9209,
+          "gain": 0.0008
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 1490,
+          "score_only_r": 0.9151,
+          "score_plus_embedding_r": 0.9157,
+          "gain": 0.0006
+        },
+        {
+          "cut_year": 2022,
+          "n_test": 997,
+          "score_only_r": 0.9144,
+          "score_plus_embedding_r": 0.9161,
+          "gain": 0.0016
+        }
+      ],
+      "gain_positive_at_every_cut": true,
+      "gain_mean_across_cuts": 0.001,
       "earns_its_keep": false
     },
     {
@@ -45,8 +109,41 @@
       "score_plus_embedding_r": 0.8506,
       "gain": 0.0029,
       "null_p": 0.0,
+      "cut_year_sweep": [
+        {
+          "cut_year": 2019,
+          "n_test": 2462,
+          "score_only_r": 0.8669,
+          "score_plus_embedding_r": 0.8693,
+          "gain": 0.0025
+        },
+        {
+          "cut_year": 2020,
+          "n_test": 1977,
+          "score_only_r": 0.8583,
+          "score_plus_embedding_r": 0.8626,
+          "gain": 0.0043
+        },
+        {
+          "cut_year": 2021,
+          "n_test": 1490,
+          "score_only_r": 0.8477,
+          "score_plus_embedding_r": 0.8506,
+          "gain": 0.0029
+        },
+        {
+          "cut_year": 2022,
+          "n_test": 997,
+          "score_only_r": 0.8487,
+          "score_plus_embedding_r": 0.8503,
+          "gain": 0.0016
+        }
+      ],
+      "gain_positive_at_every_cut": true,
+      "gain_mean_across_cuts": 0.0028,
       "earns_its_keep": false
     }
   ],
-  "vs_other_sports": "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities ~0 over 0.85-0.92. The GAINS are not directly comparable \u2014 different targets, different baselines, different domains \u2014 but the pattern that headroom tracks baseline is worth noticing rather than reading as a ranking of the models."
+  "sweep_added_late": "Tennis and hoops required gain_positive_at_every_cut from the start; this file did not. Nothing false shipped, because every equities gain sits below the 0.01 bar regardless \u2014 but the verdict was one number away from resting on a split nobody had varied. build_gridiron_forward.py's first run made that concrete: TE reported as an earner at +0.0105 on one cut, -0.0022 when the boundary moved. All three equities gains ARE positive at every cut, so the finding is unchanged and now says more: real, consistent, and too small to matter.",
+  "vs_other_sports": "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities ~0 over 0.85-0.92, gridiron 0 of 4 positions over 0.49-0.77. The GAINS are not directly comparable \u2014 different targets, different baselines, different domains \u2014 but the pattern that headroom tracks baseline is worth noticing rather than reading as a ranking of the models."
 }

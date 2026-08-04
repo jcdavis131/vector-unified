@@ -58,7 +58,7 @@ data/*
 # does not meet that claim.
 #
 # Safe to track because they are byte-DETERMINISTIC — fixed seeds, no timestamps; all four
-# re-ran identical (2,872 / 3,024 / 3,543 / 8,768 bytes) before their lines were written. A
+# re-ran identical (2,872 / 3,024 / 7,265 / 8,768 bytes) before their lines were written. A
 # generated file that churns each run belongs ignored, so the check is the precondition, not
 # a formality — gridiron was re-run and compared before being added here, not after. If a
 # future probe writes a timestamp, it does NOT get a line here.

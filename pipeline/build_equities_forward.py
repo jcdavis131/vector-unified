@@ -3,7 +3,7 @@
 
 Solo personal project, no connection to employer, built with public/free-tier only
 
-The third and last of the forward probes, and the only one whose answer is NO. Tennis found
+The third of four forward probes — gridiron came later and also answered no. Tennis found
 style adds +0.0941 over rank persistence; hoops found the skill profile adds +0.0625 over
 impact persistence. Asked of equities, the same question returns essentially nothing, and
 that is the result rather than a failure of the run.
@@ -12,10 +12,26 @@ that is the result rather than a failure of the run.
     Balance_Health    persistence 0.9151   +64-d embedding 0.9157   gain +0.0006
     Market_Momentum   persistence 0.8477   +64-d embedding 0.8506   gain +0.0029
 
-THE GAINS ARE REAL AND TOO SMALL TO MATTER, which is a third distinct finding. Every one
-beats the shuffled-extras null (p = 0.000 / 0.025 / 0.000) — so this is not noise — and
-every one sits below the 0.01 bar fixed before the run. Quoting only the p-values here would
-turn a null result into a headline; quoting only "no gain" would overstate it the other way.
+THE GAINS ARE REAL, CONSISTENT, AND TOO SMALL TO MATTER — three separate claims, and the
+middle one was only established after this file had already shipped twice. Every gain beats
+the shuffled-extras null (p = 0.000 / 0.025 / 0.000), so this is not noise; every gain is
+positive at all four cut years, so it is not an artefact of where the split fell; and every
+gain sits below the 0.01 bar fixed before the run.
+
+    Profitability    2019:+0.0039  2020:+0.0028  2021:+0.0043  2022:+0.0068
+    Balance_Health   2019:+0.0008  2020:+0.0008  2021:+0.0006  2022:+0.0016
+    Market_Momentum  2019:+0.0025  2020:+0.0043  2021:+0.0029  2022:+0.0016
+
+Quoting only the p-values would turn a null result into a headline; quoting only "no gain"
+would overstate it the other way.
+
+THE SWEEP WAS MISSING HERE UNTIL GRIDIRON EXPOSED WHY IT MATTERS. Tennis and hoops required
+gain_positive_at_every_cut from the start. This file did not, and nothing false shipped only
+because every gain sits below the bar regardless — the verdict was one number away from
+resting on a split nobody had varied. build_gridiron_forward.py's first run made that
+concrete: it reported TE as an earner at +0.0105 on a single cut, a gain that turns -0.0022
+when the boundary moves to 2021. Three of four probes demanding cross-cut stability while
+the fourth did not was a fact about my process, not about equities.
 
 THE EMBEDDING IS NOT UNINFORMATIVE — IT IS REDUNDANT, and the difference matters. Scored on
 its own, with the company's current score withheld entirely, the 64-d vector recovers next
@@ -148,14 +164,43 @@ def main() -> int:
         gain = rb - r1
         ndist = null_extras_gain(F, 0, yp, yn, tr, te, reps=40)
         p_val = float((ndist >= gain).mean())
-        earns = gain > EARNS and p_val < 0.05
+
+        # CUT-YEAR SWEEP, ADDED LAST — this file was the only one of the four forward
+        # probes without one. Tennis and hoops required gain_positive_at_every_cut from the
+        # start; gridiron omitted it and its first run reported TE as an earner at +0.0105
+        # on a single split, a gain that turns -0.0022 when the boundary moves to 2021.
+        # Nothing false shipped here because every equities gain sits below the 0.01 bar
+        # anyway — but the verdict was one number away from depending on a split nobody had
+        # varied, and three of four probes demanding cross-cut stability while the fourth
+        # did not is a fact about my process, not about equities.
+        sweep = []
+        for cut in (2019, 2020, 2021, 2022):
+            a_tr, a_te = ty <= cut, ty > cut
+            if a_te.sum() < 200 or a_tr.sum() < 200:
+                continue
+            g1 = r(ridge(yp[a_tr, None], yn[a_tr], yp[a_te, None]), yn[a_te])
+            gb = r(ridge(F[a_tr], yn[a_tr], F[a_te]), yn[a_te])
+            sweep.append({"cut_year": cut, "n_test": int(a_te.sum()),
+                          "score_only_r": round(g1, 4), "score_plus_embedding_r": round(gb, 4),
+                          "gain": round(gb - g1, 4)})
+        cg = [s_["gain"] for s_ in sweep]
+        all_pos = bool(cg) and all(g > 0 for g in cg)
+
+        earns = gain > EARNS and p_val < 0.05 and all_pos
         any_earns = any_earns or earns
         rows.append({"skill": tgt, "persistence_r": round(persist, 4),
                      "embedding_only_r": round(only, 4), "score_only_r": round(r1, 4),
                      "score_plus_embedding_r": round(rb, 4), "gain": round(gain, 4),
-                     "null_p": p_val, "earns_its_keep": bool(earns)})
+                     "null_p": p_val, "cut_year_sweep": sweep,
+                     "gain_positive_at_every_cut": all_pos,
+                     "gain_mean_across_cuts": round(float(np.mean(cg)), 4) if cg else None,
+                     "earns_its_keep": bool(earns)})
         print(f"  {tgt:22} {persist:>8.4f} {only:>9.4f} {rb:>10.4f} {gain:>+8.4f}"
               f"   p={p_val:.3f} {'EARNS' if earns else 'no'}")
+        if sweep:
+            print(f"  {'':22} cuts: " + "  ".join(
+                f"{c['cut_year']}:{c['gain']:+.4f}" for c in sweep)
+                + ("  all positive" if all_pos else "  NOT positive at every cut"))
 
     print(f"\n  verdict: {'some targets earn it' if any_earns else 'NO on MAGNITUDE, not on significance — every gain beats the null but all sit below the 0.01 bar'}")
 
@@ -206,11 +251,20 @@ def main() -> int:
         "n_pairs": len(prs), "n_train": int(tr.sum()), "n_test": int(te.sum()),
         "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
         "per_target": rows,
+        "sweep_added_late": (
+            "Tennis and hoops required gain_positive_at_every_cut from the start; this file "
+            "did not. Nothing false shipped, because every equities gain sits below the 0.01 "
+            "bar regardless — but the verdict was one number away from resting on a split "
+            "nobody had varied. build_gridiron_forward.py's first run made that concrete: TE "
+            "reported as an earner at +0.0105 on one cut, -0.0022 when the boundary moved. "
+            "All three equities gains ARE positive at every cut, so the finding is unchanged "
+            "and now says more: real, consistent, and too small to matter."),
         "vs_other_sports": (
-            "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities "
-            "~0 over 0.85-0.92. The GAINS are not directly comparable — different targets, "
-            "different baselines, different domains — but the pattern that headroom tracks "
-            "baseline is worth noticing rather than reading as a ranking of the models."),
+            "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities ~0 "
+            "over 0.85-0.92, gridiron 0 of 4 positions over 0.49-0.77. The GAINS are not "
+            "directly comparable — different targets, different baselines, different domains "
+            "— but the pattern that headroom tracks baseline is worth noticing rather than "
+            "reading as a ranking of the models."),
     }, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {OUT}")
 
