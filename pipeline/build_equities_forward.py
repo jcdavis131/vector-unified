@@ -35,25 +35,46 @@ high is exactly what a stale-data bug looks like:
     median |delta| ~0.05 against a value sd of ~0.21
 The numbers genuinely move. These composites are simply slow.
 
-WHAT IS AND IS NOT BEING TESTED, corrected after I got it wrong once. An earlier version of
-this file said dumbmodel.com's claim that the net predicts "next-year profile" COULD NOT BE
-CONFIRMED, because pipeline/data/mtnn_report.json records only recall@10, archetype purity
-and sector accuracy. That was true of the report and unfair as an insinuation: the head is
-right there in the source.
+WHAT IS AND IS NOT BEING TESTED, corrected twice, because the first correction repeated the
+false premise it was correcting. The original version of this file said dumbmodel.com's
+"next-year profile" claim COULD NOT BE CONFIRMED, on the grounds that mtnn_report.json
+records only recall@10, archetype purity and sector accuracy. The first correction kept
+that sentence and called it "true of the report, unfair as an insinuation".
+
+IT WAS NOT TRUE OF THE REPORT. mtnn_report.json has a top-level next_profile block:
+
+    next_profile.val   rows 990  r2 0.262   mae_z 0.2516  rmse 0.525
+    next_profile.test  rows 500  r2 0.1965  mae_z 0.3596  rmse 0.6511
+
+and the head that produces it is in the source:
 
     model.py:274        self.next_profile_head = head(n_game)
     train_mtnn.py:42    "next_profile": 0.10                       # loss weight
     train_mtnn.py:456   smooth_l1_loss(out_a["next_profile"][valid_t], game_z[nxt_t])
 
-So the model IS trained to predict the next timestep's profile. Absence from a report is not
-absence from the model, and I should have read the code before casting doubt on the copy.
+I NEVER OPENED THE FILE. Both the claim and its first correction were written from a
+remembered summary of what the report contained, treated as a verified fact because it was
+my own earlier sentence. That is this repo's defect class turned on itself: a real value —
+the summary — answering a different question than the one it appeared to answer.
 
-That makes the scope of this probe sharper, and narrower than it first sounded. It tests the
-SHIPPED EMBEDDING — the trunk output in assets/real_data.json, which is what dumbmodel.com
-serves and what any downstream consumer gets — under a linear read. IT DOES NOT TEST THE
-next_profile HEAD, whose weights are not in the shipped asset. A head trained directly on
-that target may well beat persistence where a ridge on the embedding does not, and this file
-makes no claim either way about it.
+The evidence was already in my own published work. dumbmodel.com's equities page has
+carried insights[4], "Next-year prediction is weak, and the model's own report says so",
+citing `pipeline/data/mtnn_report.json -> next_profile.val, next_profile.test` since the
+page was built and adversarially verified. I contradicted a live, checked page of my own
+while auditing that same site.
+
+SCOPE, stated correctly. This probe tests the SHIPPED EMBEDDING — the trunk output in
+assets/real_data.json, what dumbmodel.com serves and what any downstream consumer gets —
+under a linear read. IT DOES NOT TEST THE next_profile HEAD, whose weights are not in the
+shipped asset.
+
+AND THE TWO NUMBERS ARE NOT COMPARABLE, which is worth stating because the temptation to
+line them up is obvious. The head reports r2 0.1965 on 500 test rows; persistence here
+reaches r 0.85-0.92, and r2 ~0.72 would look like a rout. They are not measured on the same
+quantity: the head is scored on the full z-scored next-year profile vector across all skill
+dimensions, this file is scored per-skill on three named composites, over different rows
+and a different split. Putting them side by side would be exactly the cross-metric
+apples-to-oranges this repo keeps refusing to make.
 
     python pipeline/build_equities_forward.py
     python pipeline/build_equities_forward.py --check   # exit 1 only if the run is broken
@@ -166,15 +187,22 @@ def main() -> int:
                     "before any conclusion was drawn from it. The values genuinely move."),
         },
         "scope_corrected": (
-            "An earlier version said the landing copy's 'next-year profile' claim could not "
-            "be confirmed. It can: model.py:274 defines self.next_profile_head, and "
-            "train_mtnn.py:456 trains it with smooth_l1_loss against game_z[nxt_t] at loss "
-            "weight 0.10. Absence from mtnn_report.json is not absence from the model. What "
-            "this probe tests is the SHIPPED EMBEDDING (the trunk output in real_data.json, "
-            "which is what the site serves) under a linear read. It does NOT test the "
-            "next_profile head, whose weights are not in the shipped asset — that head may "
-            "beat persistence where a ridge on the embedding does not, and no claim is made "
-            "either way."),
+            "Corrected TWICE; the first correction repeated the false premise. This file "
+            "claimed mtnn_report.json records no next-year head. It has a top-level "
+            "next_profile block (val r2 0.262 over 990 rows, test r2 0.1965 over 500), and "
+            "model.py:274 / train_mtnn.py:456 define and train the head at loss weight "
+            "0.10. I never opened the report — both the claim and its first correction came "
+            "from a remembered summary treated as verified because it was my own earlier "
+            "sentence. dumbmodel.com's equities insights[4] has cited those exact fields "
+            "since the page was built, so I contradicted my own live verified page."),
+        "scope_of_this_probe": (
+            "Tests the SHIPPED EMBEDDING — the trunk output in real_data.json, what the "
+            "site serves — under a linear read. Does NOT test the next_profile head, whose "
+            "weights are not in the shipped asset. The head's r2 0.1965 and this file's "
+            "persistence r 0.85-0.92 are NOT comparable: the head is scored on the full "
+            "z-scored profile vector across all skill dims, this is scored per-skill on "
+            "three named composites, over different rows and a different split. Lining "
+            "them up would be the cross-metric apples-to-oranges this repo keeps refusing."),
         "n_pairs": len(prs), "n_train": int(tr.sum()), "n_test": int(te.sum()),
         "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
         "per_target": rows,
