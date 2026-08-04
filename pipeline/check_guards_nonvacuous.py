@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -171,6 +172,46 @@ def _wrong_cited_value(doc):
                                                     "persistence_r=0.9999")
 
 
+def _carry_forward(doc):
+    """Make every company-year a copy of its own prior year.
+
+    THE ARM THIS TESTS DID NOT EXIST UNTIL IT WAS PLANTED FOR. build_equities_forward.py
+    accepted --check, never read it, and was registered in validate.py as the
+    `equities_forward` gate — a check that could not fail under any input, reporting PASS
+    for three commits. Its docstring promised "exit 1 only if the run is broken".
+
+    Carry-forward is what "broken" means for that file specifically. Persistence of
+    0.85-0.92 is exactly what stale data looks like, so if the composites ever start
+    duplicating year to year, every number in the report becomes an artifact of duplication
+    while the verdict still reads as a finding about the model.
+    """
+    by_ticker: dict[str, list] = {}
+    for p in doc.get("points") or []:
+        by_ticker.setdefault(p["ticker"], []).append(p)
+    for rows in by_ticker.values():
+        rows.sort(key=lambda r: int(r["year"]))
+        for prev, nxt in zip(rows, rows[1:]):
+            nxt["skills"] = list(prev["skills"])
+
+
+def _skills_carry_no_signal(doc):
+    """Replace every non-target skill grade with the row's own target grade.
+
+    build_hoops_forward.py's --check fails when the gain is indistinguishable from
+    shuffling the extras (p >= 0.05). That arm had never been seen to fail. Copying the
+    impact column across the other eleven leaves the extras perfectly redundant with the
+    baseline, so they can add nothing and the null becomes the same distribution.
+    """
+    keys = [s.get("key") if isinstance(s, dict) else s for s in doc.get("skills") or []]
+    if "impact" not in keys:
+        return
+    j = keys.index("impact")
+    for row in doc.get("grades") or []:
+        v = row[j]
+        for i in range(len(row)):
+            row[i] = v
+
+
 def _bad_qid(doc):
     # Q41323 is American football (the SPORT). Q19204627 is the OCCUPATION the probe filters
     # on. Swapping the label is the exact confusion the registry exists to catch.
@@ -234,6 +275,16 @@ MUTATIONS = [
      HUB / "hoops.json", _wrong_cited_value,
      "a published number the cited artifact contradicts — the site's fine print says every "
      "number is recomputable, and this is the first check that tests it"),
+    ("equities_forward/carry_forward",
+     ["build_equities_forward.py", "--check"],
+     Path("C:/Users/jcdav/vector-equities/assets/real_data.json"), _carry_forward,
+     "every company-year duplicated from its prior year — the gate that could not fail "
+     "under any input, registered as a check for three commits"),
+    ("hoops_forward/extras_carry_nothing",
+     ["build_hoops_forward.py", "--check"],
+     Path("C:/Users/jcdav/vector-hoops/assets/skills.json"), _skills_carry_no_signal,
+     "every skill column made a copy of the target — the extras can add nothing, so the "
+     "p >= 0.05 arm must fire"),
     ("hub_freshness/unresolvable_root",
      ["check_hub_freshness.py", "--check", "--offline"],
      HUB / "tennis.json", _unknown_repo_root,
@@ -313,6 +364,33 @@ def main() -> int:
     print("This proves each guard rejects THE DEFECT IT WAS SHOWN. It does not prove it "
           "catches every defect of that class — the planted ones are the failures that "
           "actually happened in this repo, which is evidence, not coverage.")
+
+    # ---- WHICH REGISTERED CHECKS HAVE NO MUTATION AT ALL -----------------------
+    # The sentence above has been true and unquantified since this file was written, and
+    # "not complete coverage" is easy to read past. This prints the actual gap.
+    #
+    # It exists because the gap was hiding a real defect: build_equities_forward.py accepted
+    # --check, never read it, and ran as the `equities_forward` gate for three commits — a
+    # check that could not fail under any input. Nothing pointed at it, because nothing
+    # listed which registered checks had never been shown a defect. An unmutated arm is a
+    # claim; an unmutated CHECK is a claim that has never once been tested.
+    #
+    # Case-insensitive on purpose: an earlier version of this audit used [a-z0-9_]+ and
+    # silently missed draft_value_invariants/I4_count_drift, reporting a covered checker as
+    # uncovered. A coverage report with its own blind spot is the joke this file is about.
+    try:
+        reg = (PIPE / "validate.py").read_text(encoding="utf-8")
+        registered = dict(re.findall(r'"([A-Za-z0-9_]+)":\s*\(\["([A-Za-z0-9_]+\.py)"', reg))
+        mutated = {Path(argv[0]).name for _, argv, *_ in MUTATIONS}
+        gaps = sorted(f"{k} ({v})" for k, v in registered.items() if v not in mutated)
+        print(f"\ncoverage: {len(registered) - len(gaps)}/{len(registered)} registered "
+              f"checks have at least one planted defect.")
+        if gaps:
+            print(f"  {len(gaps)} with NO mutation — never once seen to fail:")
+            for g in gaps:
+                print(f"      {g}")
+    except OSError as e:
+        print(f"\ncoverage: could not read validate.py ({e}) — gap unknown, not zero")
     if vacuous:
         print(f"\n{len(vacuous)} problem(s):")
         for v in vacuous:

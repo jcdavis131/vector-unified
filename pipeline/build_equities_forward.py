@@ -213,6 +213,41 @@ def main() -> int:
             "baseline is worth noticing rather than reading as a ranking of the models."),
     }, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {OUT}")
+
+    # ---- --check HAD NO BODY, AND THIS FILE WAS REGISTERED AS A GATE ------------
+    # validate.py ran `build_equities_forward.py --check` as the `equities_forward` check
+    # while main() never read args.check. It could not fail under any input. The docstring
+    # promised "exit 1 only if the run is broken" — a documented promise the code did not
+    # keep — and it sat in the gate reporting PASS for three commits, including the one
+    # that derived "one mutation per arm, not per file" from a different vacuous arm.
+    #
+    # WHAT "BROKEN" MEANS HERE is not "the answer is negative". The negative result IS the
+    # finding, so gating on p >= 0.05 (as tennis and hoops do) would be asserting the
+    # opposite of what this file concluded. It means the measurement cannot be trusted:
+    #
+    #   CARRY-FORWARD   persistence of 0.85-0.92 is exactly what stale data looks like. The
+    #                   run already computes identical_rows and then only PRINTS it. If the
+    #                   composites ever start carrying forward, every number here becomes an
+    #                   artifact of duplication and the file would still exit 0 and publish.
+    #   DEGENERATE NULL a null with no spread makes every p-value meaningless. This repo
+    #                   already shipped one degenerate null (permuted-target, sd 0.1487) and
+    #                   the lesson was to measure the null's spread, not assume it.
+    fails = []
+    frac_identical = identical_rows / max(1, len(prs))
+    if frac_identical > 0.01:
+        fails.append(f"CARRY-FORWARD: {identical_rows}/{len(prs)} pairs ({100*frac_identical:.1f}%) "
+                     f"are identical to their prior year — persistence of "
+                     f"{rows[0]['persistence_r']} would be measuring duplication, not skill")
+    null_sd = float(ndist.std())
+    if null_sd < 1e-6:
+        fails.append(f"DEGENERATE NULL: shuffled-extras sd is {null_sd:.2e}; every p-value "
+                     f"in this report is uninterpretable")
+
+    if args.check and fails:
+        print()
+        for f_ in fails:
+            print(f"FAIL {f_}")
+        return 1
     return 0
 
 
