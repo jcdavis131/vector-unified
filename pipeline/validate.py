@@ -61,6 +61,10 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # deliberately refuses to guess at, and it prints that count every run rather than
     # implying full coverage.
     "cited_fields": (["check_cited_fields.py", "--check"], False),
+    # The tennis MTNN must keep beating the learned LINEAR map it was justified against
+    # (0.0584). If a future change drops it below that, a projection matrix is the better
+    # model and this registers the regression instead of leaving it in a report nobody reads.
+    "tennis_mtnn": (["train_tennis_mtnn.py", "--check"], False),
     # The fourth and last forward probe. Fails only if the RUN is broken — PPR carrying
     # forward (which would make persistence an artefact of duplication) or a null with no
     # spread. Not on a negative answer: 0 of 4 positions earning their keep IS the finding.
