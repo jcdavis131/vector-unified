@@ -38,6 +38,11 @@ data/*
 # SILENTLY, which is how archetype_map.json was reported as shipped in three commits it
 # never entered; caught here only because git printed the hint.
 !data/superlative_registry.json
+# 40 hand-written cross-sport analogy pairs (Brady <-> Curry, Gobert <-> van Dijk). NO
+# script writes this file — grep credited analogy_triples_eval.py, but that writes
+# analogy_triples_REPORT.json. It is irreplaceable human work and was ignored until now,
+# while two evaluators read it as a required input.
+!data/analogy_triples.json
 pipeline/data/
 
 # Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).

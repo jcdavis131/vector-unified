@@ -105,14 +105,29 @@ SHIPPED = {
 
 # Artifacts that are INPUTS or hand-authored anchors, not generated reports. Listed so the
 # unregistered check stays meaningful instead of being switched off.
+# FIVE OF THESE USED TO SIT IN NOT_GENERATED AND ARE GENERATED. Resolved by mapping each
+# module-level constant to the file it names and asking which constant is passed to
+# .write_text — not by grepping filenames, which credited analogy_triples_eval.py with
+# writing analogy_triples.json when it writes analogy_triples_REPORT.json. Declaring a
+# generated artifact as an input exempts it from the staleness check entirely, which is the
+# one thing this file exists to do.
+PRODUCED_BY.update({
+    "native_clusters.json": ("archetype_map.py", []),
+    "unified_meta.json": ("build_unified_matrix.py", []),
+    "stage2_baselines.json": ("train_stage2.py", []),
+    "stage2_history.json": ("train_stage2.py", []),
+    "trajectory_sport_comparison.json": ("compare_trajectory_sports.py", []),
+})
+
 NOT_GENERATED = {
     # HAND-CURATED, not generated. Each entry records a superlative on a live page that was
     # checked against its artifact, with the evidence. It is written by a human decision,
     # so an mtime check would only ever say "the checker is newer than your judgement".
     "superlative_registry.json",
-    "archetype_map.json", "sector_map.json", "analogy_triples.json",
-    "native_clusters.json", "unified_meta.json", "stage2_history.json",
-    "stage2_baselines.json", "trajectory_sport_comparison.json",
+    # 40 hand-written cross-sport pairs (Brady <-> Curry). NO script writes this file; it is
+    # irreplaceable if lost, and it was gitignored until now.
+    "analogy_triples.json",
+    "archetype_map.json", "sector_map.json",
 }
 
 
