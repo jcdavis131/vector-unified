@@ -1,0 +1,107 @@
+{
+ "built": "2026-08-04T16:52:11",
+ "question": "How many player-seasons does the venue->sponsor edge actually reach?",
+ "answers_the_open_question_from": "pipeline/acquire_venue_sponsors.py — '14 venues is the edge, not the coverage.'",
+ "gridiron": {
+  "corpus_player_seasons": 5323,
+  "corpus_seasons": [
+   2016,
+   2025
+  ],
+  "n_edges": 6,
+  "n_distinct_tickers": 5,
+  "all_season_edges_player_seasons": 1033,
+  "all_season_coverage_pct": 19.41,
+  "named_window_edges_player_seasons": 1033,
+  "named_window_coverage_pct": 19.41,
+  "which_number_to_quote": "named_window. The Wikipedia tables list CURRENT stadium names and the corpus starts in 2016, so the naive count credits a season to a sponsor whose name may have gone up later. The two numbers are equal here ONLY because all five sponsor names predate 2016 -- AT&T Stadium was Cowboys Stadium until 2013, three years outside the corpus. Equality is a property of this edge list, not evidence the filter works.",
+  "naming_years_are_hand_verified": true,
+  "naming_year_scalable_source": "each venue's Wikipedia infobox former_names; one fetch per matched venue. Required before this edge list grows past the hand-checked 5."
+ },
+ "hoops_join_blocked_by": "No team column exists for the hoops corpus. unified_matrix.npz carries sport_id/era_id/arch_id/pos_id/player_idx and gridiron_season_emb.npz carries team, but nothing maps a hoops player-season to a franchise. The NBA venue->team table is parsed and written below so this is a lookup away, not a rebuild.",
+ "dropped_adjudicated_false_positives": {
+  "Boston Garden": "named for the city; Boston Scientific is not the sponsor",
+  "Cincinnati Gardens": "named for the city; Cincinnati Financial is not the sponsor"
+ },
+ "edges": [
+  {
+   "venue": "MetLife Stadium",
+   "team_wiki": "New York Jets",
+   "team_code": "NYJ",
+   "ticker": "MET",
+   "company": "MetLife",
+   "location": "East Rutherford, New Jersey",
+   "building_opened": 2010,
+   "sponsor_name_from": 2011,
+   "naming_year_source": "hand-verified",
+   "player_seasons_all": 182,
+   "player_seasons_while_named": 182
+  },
+  {
+   "venue": "MetLife Stadium",
+   "team_wiki": "New York Giants",
+   "team_code": "NYG",
+   "ticker": "MET",
+   "company": "MetLife",
+   "location": "East Rutherford, New Jersey",
+   "building_opened": 2010,
+   "sponsor_name_from": 2011,
+   "naming_year_source": "hand-verified",
+   "player_seasons_all": 178,
+   "player_seasons_while_named": 178
+  },
+  {
+   "venue": "M&T Bank Stadium",
+   "team_wiki": "Baltimore Ravens",
+   "team_code": "BAL",
+   "ticker": "MTB",
+   "company": "M&T Bank",
+   "location": "Baltimore, Maryland",
+   "building_opened": 1998,
+   "sponsor_name_from": 2003,
+   "naming_year_source": "hand-verified",
+   "player_seasons_all": 172,
+   "player_seasons_while_named": 172
+  },
+  {
+   "venue": "Raymond James Stadium",
+   "team_wiki": "Tampa Bay Buccaneers",
+   "team_code": "TB",
+   "ticker": "RJF",
+   "company": "Raymond James Financial",
+   "location": "Tampa, Florida",
+   "building_opened": 1998,
+   "sponsor_name_from": 1998,
+   "naming_year_source": "hand-verified",
+   "player_seasons_all": 172,
+   "player_seasons_while_named": 172
+  },
+  {
+   "venue": "Ford Field",
+   "team_wiki": "Detroit Lions",
+   "team_code": "DET",
+   "ticker": "F",
+   "company": "Ford Motor Company",
+   "location": "Detroit, Michigan",
+   "building_opened": 2002,
+   "sponsor_name_from": 2002,
+   "naming_year_source": "hand-verified",
+   "player_seasons_all": 170,
+   "player_seasons_while_named": 170
+  },
+  {
+   "venue": "AT&T Stadium",
+   "team_wiki": "Dallas Cowboys",
+   "team_code": "DAL",
+   "ticker": "T",
+   "company": "AT&T",
+   "location": "Arlington, Texas",
+   "building_opened": 2009,
+   "sponsor_name_from": 2013,
+   "naming_year_source": "hand-verified",
+   "player_seasons_all": 159,
+   "player_seasons_while_named": 159
+  }
+ ],
+ "nba_venue_teams": []
+}
