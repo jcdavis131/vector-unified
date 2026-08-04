@@ -200,6 +200,13 @@ def _series(sport: str) -> dict[str, list[tuple[int, float]]]:
         return series
 
     vec = json.loads(mod.GRID_VEC.read_text(encoding="utf-8"))["players"]
+    # Configure the per-source suffix policy before ANY name is normalised here. The
+    # RuntimeError in merged_names() caught this caller; without it the axis would have
+    # normalised under a different rule than its own value table.
+    import csv as _csv
+    with mod.DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as _fh:
+        _dn = [(r.get("pfr_player_name") or "").strip() for r in _csv.DictReader(_fh)]
+    mod.configure_norm([p["name"] for p in vec], [n for n in _dn if n])
     pool: dict[tuple, list[float]] = collections.defaultdict(list)
     for p in vec:
         ppr = (p.get("ppg") or {}).get("ppr")

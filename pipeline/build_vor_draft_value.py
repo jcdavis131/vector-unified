@@ -79,12 +79,104 @@ BUCKETS = [(1, 32, "R1"), (33, 64, "R2"), (65, 105, "R3"), (106, 262, "R4-7")]
 POSITIONS = ("QB", "RB", "WR", "TE")
 
 
-def norm_name(name: str) -> str:
+_SUFFIX_RE = re.compile(r"\s+(jr|sr|ii|iii|iv|v)$")
+
+# Names whose suffix must NOT be stripped, because stripping would collide them with a
+# DIFFERENT name that also exists in the sources. Populated by configure_norm().
+_NO_STRIP: set[str] = set()
+_CONFIGURED = False
+
+
+def _base(name: str) -> str:
     s = unicodedata.normalize("NFD", name or "")
     s = "".join(c for c in s if not unicodedata.combining(c))
     s = re.sub(r"[.'\u2019-]", "", s.lower())
-    s = re.sub(r"\s+(jr|sr|ii|iii|iv|v)$", "", s.strip())
-    return re.sub(r"\s+", " ", s)
+    return re.sub(r"\s+", " ", s.strip())
+
+
+def configure_norm(*sources) -> int:
+    """Decide per name whether dropping the suffix is safe. Call before norm_name().
+
+    Takes one iterable of names PER SOURCE, not a pooled set — see the comment below.
+
+    STRIPPING IS RIGHT SOMETIMES AND WRONG OTHERS, which is why neither blanket policy
+    works. Measured on the gridiron sources:
+
+        strip always   vec 2,704  draft 12,527  joined 1,900   but merges 3 real pairs
+        keep always    vec 2,707  draft 12,552  joined 1,879   merges nothing, loses 21
+
+    The 3 merges are father/son: `marvin harrison` + `marvin harrison jr` \u2014 the Hall of
+    Famer and the Cardinals receiver \u2014 plus `oronde gadsden` + `oronde gadsden ii` and
+    `cedrick wilson` + `cedrick wilson jr`. The 21 losses are ONE person spelled two ways
+    across files: `chris godwin jr` in the vector set against `chris godwin` in the draft
+    CSV, where stripping is exactly the repair.
+
+    The discriminator is whether the STRIPPED form already exists as its own name in the
+    sources. If both `marvin harrison` and `marvin harrison jr` appear, the source itself
+    distinguished two people and stripping destroys that. If only `chris godwin jr`
+    appears, stripping collides with nothing and closes a real join.
+
+    Operator-reported 2026-08-03. This repairs the reported cause; merged_names() handles
+    the residue the sources never distinguished in the first place.
+    """
+    global _CONFIGURED
+    _NO_STRIP.clear()
+    _CONFIGURED = True
+    # WITHIN each source, never across their union. This is the whole subtlety and the
+    # first version got it wrong: pooling the vector set and the draft CSV made
+    # `chris godwin` (draft) collide with `chris godwin jr` (vectors) and protected both,
+    # which is precisely backwards — that pair is ONE person spelled two ways, and the
+    # protection cost the join it was supposed to save (1,880 against 1,900).
+    #
+    # A collision only means "two people" when ONE source lists both forms, because that
+    # source had the chance to conflate them and chose not to. `marvin harrison` and
+    # `marvin harrison jr` both appear in vectors.json; `chris godwin` never appears there
+    # alongside `chris godwin jr`.
+    for group in sources:
+        bare = {_base(n) for n in group}
+        for n in group:
+            b = _base(n)
+            stripped = _SUFFIX_RE.sub("", b).strip()
+            if stripped != b and stripped in bare:
+                _NO_STRIP.add(b)
+                _NO_STRIP.add(stripped)
+    return len(_NO_STRIP)
+
+
+def _ensure_configured() -> None:
+    """Configure from the canonical sources, once, on first use.
+
+    SELF-CONFIGURING BECAUSE CALLERS CANNOT BE TRUSTED TO AGREE, and that is not a slight —
+    it is what happened. Four files import norm_name(): this builder, the survivorship
+    probe, the direction axis and the merged-career checker. Each had to call
+    configure_norm() with the same two sources in the same order, and they did not: the
+    probe built one dict before configuring, so `michael pittman jr` was protected in one
+    file and stripped in another, and I4 caught the two artifacts disagreeing by exactly
+    one WR.
+
+    A shared policy that every importer must remember to install is a policy that will
+    eventually differ between importers. Reading the canonical sources here makes that
+    impossible — the explicit configure_norm() remains for tests and for callers with a
+    different source pair.
+    """
+    if _CONFIGURED:
+        return
+    names_vec: list[str] = []
+    if GRID_VEC.exists():
+        names_vec = [p["name"] for p in
+                     json.loads(GRID_VEC.read_text(encoding="utf-8"))["players"]]
+    names_draft: list[str] = []
+    if DRAFT_CSV.exists():
+        with DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as fh:
+            names_draft = [(r.get("pfr_player_name") or "").strip()
+                           for r in csv.DictReader(fh)]
+    configure_norm(names_vec, [n for n in names_draft if n])
+
+
+def norm_name(name: str) -> str:
+    _ensure_configured()
+    b = _base(name)
+    return b if b in _NO_STRIP else _SUFFIX_RE.sub("", b).strip()
 
 
 def bucket(pick) -> str | None:
@@ -115,6 +207,14 @@ def merged_names(seasons_of: dict, draft_csv) -> set[str]:
 
     A career gap is NOT used, here or in hoops: injury and overseas years produce them.
     """
+    # REFUSE IF THE NORMALISER WAS NEVER CONFIGURED. This is module state and module state
+    # is forgettable: check_merged_careers.py called merged_names() without it, so inside
+    # the checker `_NO_STRIP` was empty, `cedrick wilson` and `cedrick wilson jr` collapsed
+    # to one name with two draft years, and the guard reported contamination the builder
+    # had correctly already handled. A disagreement between a checker and the thing it
+    # checks is worse than either being wrong alone.
+    _ensure_configured()
+
     dy: dict[str, set[int]] = collections.defaultdict(set)
     with draft_csv.open(encoding="utf-8", errors="replace", newline="") as fh:
         for row in csv.DictReader(fh):
@@ -148,6 +248,14 @@ def main() -> int:
             return 2
 
     vec = json.loads(GRID_VEC.read_text(encoding="utf-8"))["players"]
+
+    # Configure the normaliser BEFORE any name is normalised. Per source, never pooled.
+    with DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as _fh:
+        _draft_names = [(r.get("pfr_player_name") or "").strip()
+                        for r in csv.DictReader(_fh)]
+    n_protected = configure_norm([p["name"] for p in vec],
+                                 [n for n in _draft_names if n])
+
     surv = json.loads(SURV.read_text(encoding="utf-8"))
     lo_year, hi_year = surv["report"]["draft_year_window"]
 
@@ -197,7 +305,17 @@ def main() -> int:
     # survivor bias this rewrite exists to remove, and the symptom was `never played` at
     # 0.0% in almost every cell when a quarter of late-round picks never play at all.
     # draft_picks.csv is the denominator. Read it directly.
-    merged = merged_names(seasons_of, DRAFT_CSV)
+    # From the FULL vector set, not from `seasons_of`. `seasons_of` only holds seasons that
+    # had a replacement baseline for their (season, pos), so a pre-draft season outside
+    # that filter is invisible here and visible to check_merged_careers.py — the detector
+    # and the exclusion have to see the same data. Same mismatch already fixed in
+    # build_direction_axis.py; `darrell jackson` and `cedrick wilson` sat in this one.
+    _full: dict[str, list] = collections.defaultdict(list)
+    for _p in vec:
+        _v = (_p.get("ppg") or {}).get("ppr")
+        if _v is not None:
+            _full[norm_name(_p["name"])].append((int(_p["season"]), float(_v)))
+    merged = merged_names(_full, DRAFT_CSV)
 
     totals: dict[tuple, list[float]] = collections.defaultdict(list)
     player_rows: list[dict] = []
@@ -290,6 +408,12 @@ def main() -> int:
                     "no multiplication by survival — survival is priced in by including "
                     "the players who never played."),
         "draft_year_window": [lo_year, hi_year],
+        "suffix_protected_names": n_protected,
+        "suffix_note": ("Conflict-aware suffix stripping: a suffix is dropped unless the "
+                        "stripped form already exists as its own name WITHIN THE SAME "
+                        "source. Keeps Marvin Harrison and Marvin Harrison Jr. apart while "
+                        "still joining Chris Godwin Jr. to Chris Godwin across files. "
+                        "1,903 joins against 1,900 strip-always and 1,879 keep-always."),
         "corr_expectation_vor": round(
             statistics.correlation([r["expect_log"] for r in player_rows],
                                    [r["vor_total"] for r in player_rows]), 4)

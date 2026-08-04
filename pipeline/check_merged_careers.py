@@ -55,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import csv
 import json
 import sys
 from pathlib import Path
@@ -73,7 +74,11 @@ AXES = {
     "direction_axis_hoops.json": ("careers", "hoops"),
     "hoops_vor_draft_value.json": ("players", "hoops"),
     "direction_axis_gridiron.json": ("careers", "gridiron"),
-    "vor_draft_value.json": ("player_rows", "gridiron"),
+    # `players`, not `player_rows`. The key was wrong from the moment this table was added
+    # to AXES, so `doc.get(key) or ... or []` returned an empty list and the gridiron VOR
+    # artifact was passing this check VACUOUSLY — a checker that reads nothing reports
+    # clean. Caught by printing the row count instead of trusting the green line.
+    "vor_draft_value.json": ("players", "gridiron"),
 }
 OUT = ROOT / "data" / "merged_careers.json"
 GAP_YEARS = 3
@@ -126,6 +131,11 @@ def main() -> int:
     # `antonio brown` was this estate's number-one gridiron D0 example at +6.93 while
     # holding seasons from 2003 and 2005 against a 2010 draft.
     gvec = json.loads(G.GRID_VEC.read_text(encoding="utf-8"))["players"]
+    # Configure the gridiron normaliser exactly as its builder does, per source. Skipping
+    # this is what made the checker and the builder disagree about `cedrick wilson`.
+    with G.DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as fh:
+        _dn = [(r.get("pfr_player_name") or "").strip() for r in csv.DictReader(fh)]
+    G.configure_norm([p["name"] for p in gvec], [n for n in _dn if n])
     gseries: dict[str, list] = collections.defaultdict(list)
     for p in gvec:
         ppr = (p.get("ppg") or {}).get("ppr")

@@ -42,9 +42,7 @@ import argparse
 import collections
 import csv
 import json
-import re
 import statistics
-import unicodedata
 from math import log1p
 from pathlib import Path
 
@@ -60,12 +58,13 @@ MAX_PICK = 262.0
 BUCKETS = [(1, 32, "R1"), (33, 64, "R2"), (65, 105, "R3"), (106, 262, "R4-7")]
 
 
-def norm_name(name: str) -> str:
-    s = unicodedata.normalize("NFD", name or "")
-    s = "".join(c for c in s if not unicodedata.combining(c))
-    s = re.sub(r"[.'\u2019-]", "", s.lower())
-    s = re.sub(r"\s+(jr|sr|ii|iii|iv|v)$", "", s.strip())
-    return re.sub(r"\s+", " ", s)
+# norm_name is IMPORTED, not redefined. This file carried its own copy, so the
+# conflict-aware suffix policy in build_vor_draft_value.py did not reach it: the value
+# table protected `michael pittman jr` while this probe stripped it, and I4 caught the two
+# artifacts disagreeing by exactly one WR in two cells. Five files in this pipeline each
+# had a private norm_name(); that is the same "two copies of one rule" defect as the VOR
+# series in 7.8a, at five times the scale.
+from build_vor_draft_value import norm_name  # noqa: E402
 
 
 def bucket(pick: int) -> str:
