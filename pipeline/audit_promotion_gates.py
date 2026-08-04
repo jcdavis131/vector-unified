@@ -1,15 +1,22 @@
-"""Every promotion gate in the estate is a threshold on a noisy scalar. Three of four fail.
+"""Most promotion gates in the estate are a threshold on a noisy scalar. Most of them fail.
 
 Each repo has a gate that decides whether a trained model ships. Each was written before
 its trainer had a --seed flag, so each threshold was calibrated against exactly one draw
-of a quantity that turns out to move a lot between draws. This audits all four against
-the seed evidence that now exists.
+of a quantity that turns out to move between draws. This audits them against the seed
+evidence that now exists.
 
-    repo       gate                          calibrated from   verdict
-    hoops      test recall within 0.02        one run           FAILS
-    gridiron   CQS >= BASELINE 63.16          one run (the MAX) FAILS
-    equities   CQS >= 0.60                    a round number    MARGINAL
-    pitch      beats_pca3_count == 4          nothing            HOLDS
+    repo                      gate                       calibrated from    verdict
+    hoops                     test recall within 0.02    one run            FAILS
+    gridiron                  CQS >= BASELINE 63.16      one run (the MAX)  FAILS
+    equities                  CQS >= 0.60                a round number     MARGINAL
+    pitch                     beats_pca3_count == 4      nothing            HOLDS
+    unified (Stage 2 trunk)   G1 / G2 / G3               one run            UNTESTABLE
+    unified (tennis MTNN)     recall@10 > BAR 0.0584     a 5-SEED MEAN      HOLDS
+
+THE FIRST VERSION OF THIS FILE SAID "every promotion gate in the estate" AND AUDITED
+FOUR. It skipped vector-unified's own G1/G2/G3 gates and the tennis MTNN's bar -- the two
+that live in the repo the audit was written in. Claiming completeness over a set I had
+not enumerated is the same defect as the rest of this thread, one level up.
 
 HOOPS. Already recorded in vector-hoops/pipeline/seed_floor.json: the gate requires test
 recall@10 to stay within 0.02 of baseline, and the measured seed range is 0.226 -- 11x
@@ -37,9 +44,26 @@ line, because each comparison has to flip sign rather than drift. This is the de
 other three should copy, and it was not chosen for that reason -- it just happens to be
 robust.
 
+UNIFIED STAGE 2 IS THE ONE THAT CANNOT BE CHECKED AT ALL. train_stage2.py has no --seed
+flag AND no SEED constant to override -- SEED is used at three sites and there is no way
+to vary it -- so the unified model has never been run at a second seed. Its G2 gate then
+passes by exactly zero: effective_rank 12.0 against rank_nondeg_floor 12, a hardcoded
+literal at eval_unified.py:242. Whether that floor was chosen before or after seeing 12.0
+is not recorded, and with one run there is no way to tell. The LITERAL target of 32
+(= d_emb/2) fails, and G2 overall is DEFERRED pending a no-GRL baseline never run. G3
+passes at 14.7x and 18.8x its 0.05 floors, which is so loose it carries little
+information.
+
+TENNIS IS THE ONE THAT WAS BUILT RIGHT, and by accident of design rather than intent.
+train_tennis_mtnn.py hardcodes SEEDS = (7, 11, 13, 17, 19) and runs all five every
+invocation, so it never needed a flag and was never a one-draw experiment. Its bar is the
+FIVE-SEED MEAN of the learned linear map (0.0584, sd 0.005), and the MTNN cleared it 5/5
+at mean 0.1168 (sd 0.0152). Both sides of the comparison are seed-means. That is the
+shape every other gate should have.
+
 WHAT THIS SCRIPT IS. A reader over artifacts that already exist. It re-runs no model and
 changes no gate; retuning a gate is an operator decision and doing it from this evidence
-would be tuning thresholds against the three seeds that happened to run.
+would be tuning thresholds against the three or five seeds that happened to run.
 
     python pipeline/audit_promotion_gates.py
 
@@ -60,6 +84,8 @@ HOOPS_FLOOR = Path(r"C:\Users\jcdav\vector-hoops\pipeline\seed_floor.json")
 GRID_FLOOR = Path(r"C:\Users\jcdav\vector-gridiron\pipeline\seed_floor.json")
 PITCH_FLOOR = Path(r"C:\Users\jcdav\vector-pitch\pipeline\seed_floor.json")
 EQ_AB = Path(r"C:\Users\jcdav\vector-equities\pipeline\data\ab_sector_labels.json")
+UNIFIED_REPORT = ROOT / "data" / "unified_report.json"
+TENNIS_PROBE = ROOT / "data" / "tennis_metric_probe_enriched.json"
 
 
 def main() -> int:
@@ -138,14 +164,82 @@ def main() -> int:
         },
     ]
 
+    # --- the two gates the first version of this audit MISSED --------------
+    uni = json.loads(UNIFIED_REPORT.read_text(encoding="utf-8"))         if UNIFIED_REPORT.exists() else {}
+    ten = json.loads(TENNIS_PROBE.read_text(encoding="utf-8"))         if TENNIS_PROBE.exists() else {}
+    g2 = uni.get("G2_sport_invariance", {})
+    g3 = uni.get("G3_cross_sport_archetype", {})
+    rows.append({
+        "repo": "vector-unified (Stage 2 trunk)",
+        "gate": "G1 non-inferiority / G2 sport-invariance / G3 archetype",
+        "calibrated_from": "one run - train_stage2.py has NO --seed flag and no SEED "
+                           "constant to override; the unified model has never been run "
+                           "at a second seed",
+        "n_seeds_of_evidence": 1, "verdict": "UNTESTABLE",
+        "G1": uni.get("verdict", {}).get("G1"),
+        "G2": uni.get("verdict", {}).get("G2"),
+        "G3": uni.get("verdict", {}).get("G3"),
+        "G2_rank_detail": {
+            "effective_rank": g2.get("effective_rank"),
+            "rank_nondeg_floor": g2.get("rank_nondeg_floor"),
+            "margin": (None if g2.get("effective_rank") is None
+                       else round(g2["effective_rank"] - g2["rank_nondeg_floor"], 4)),
+            "rank_target_literal": g2.get("rank_target_literal"),
+            "rank_literal_pass": g2.get("rank_literal_pass"),
+            "problem": "effective_rank is 12.0 and rank_nondeg_floor is 12 - the gate "
+                       "passes by EXACTLY ZERO. The floor is a hardcoded literal at "
+                       "eval_unified.py:242, commented 'non-degenerate floor: below this "
+                       "with role/folding loss = collapse'. Whether it was chosen before "
+                       "or after seeing 12.0 is not recorded, and with one run there is "
+                       "no way to tell. A gate clearing by 0.0 on a model that cannot be "
+                       "re-seeded is not evidence either way. The LITERAL target of 32 "
+                       "(= d_emb/2) FAILS, and G2 overall is DEFERRED pending a no-GRL "
+                       "baseline that was never run.",
+        },
+        "G3_floor_detail": {
+            "silhouette": g3.get("silhouette"),
+            "silhouette_floor": g3.get("silhouette_floor"),
+            "separation": g3.get("separation"),
+            "separation_floor": g3.get("separation_floor"),
+            "multiples_over_floor": [
+                None if not g3 else round(g3["silhouette"] / g3["silhouette_floor"], 1),
+                None if not g3 else round(g3["separation"] / g3["separation_floor"], 1)],
+            "problem": "Both floors are 0.05 against observed 0.7339 and 0.9385 - 14.7x "
+                       "and 18.8x. A floor that loose passes almost anything, so G3 "
+                       "PASSING carries little information. Not wrong; barely "
+                       "discriminating.",
+        },
+    })
+    lps = ten.get("learned_per_seed") or []
+    rows.append({
+        "repo": "vector-unified (tennis MTNN)",
+        "gate": "MTNN recall@10 > BAR 0.0584", "threshold": ten.get("learned_mean"),
+        "calibrated_from": "a FIVE-SEED MEAN - the only correctly-built bar in the estate",
+        "n_seeds_of_evidence": len(lps), "verdict": "HOLDS",
+        "bar_per_seed": lps, "bar_sd": ten.get("learned_sd"),
+        "detail": "train_tennis_mtnn.py hardcodes SEEDS = (7, 11, 13, 17, 19) and runs "
+                  "all five every invocation, so it never needed a --seed flag and was "
+                  "never a one-draw experiment. The bar is the 5-seed mean of the learned "
+                  "linear map (sd 0.005), not one run, and the MTNN cleared it 5/5 at "
+                  "mean 0.1168 (sd 0.0152). BOTH SIDES of the comparison are seed-means. "
+                  "This is what the other gates should have been.",
+    })
+
     out = {
         "built": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "CORRECTION_first_version_was_incomplete": "The first version said 'every "
+            "promotion gate in the estate' and covered four trainers. It skipped "
+            "vector-unified's own G1/G2/G3 gates and the tennis MTNN's 0.0584 bar - the "
+            "two that live in the repo the audit was written in. Claiming completeness "
+            "over a set I had not enumerated is the same defect as the rest of this "
+            "thread, one level up.",
         "question": "Do the estate's promotion gates measure the model, or the seed?",
         "why_now": "Every gate was written before its trainer had a --seed flag, so each "
                    "threshold was calibrated against exactly one draw of a quantity that "
                    "turns out to move between draws. All four trainers now have seed "
                    "evidence, so the question is finally answerable.",
         "summary": {r["repo"]: r["verdict"] for r in rows},
+        "n_gates_audited": len(rows),
         "the_pattern": "Three of four gates are a threshold on a noisy scalar, set "
                        "without knowing the noise. The fourth is a COUNT of comparisons "
                        "and is the only one that holds. A gate should ask 'did this beat "

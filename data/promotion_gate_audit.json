@@ -1,13 +1,17 @@
 {
- "built": "2026-08-04T17:42:57",
+ "built": "2026-08-04T17:52:33",
+ "CORRECTION_first_version_was_incomplete": "The first version said 'every promotion gate in the estate' and covered four trainers. It skipped vector-unified's own G1/G2/G3 gates and the tennis MTNN's 0.0584 bar - the two that live in the repo the audit was written in. Claiming completeness over a set I had not enumerated is the same defect as the rest of this thread, one level up.",
  "question": "Do the estate's promotion gates measure the model, or the seed?",
  "why_now": "Every gate was written before its trainer had a --seed flag, so each threshold was calibrated against exactly one draw of a quantity that turns out to move between draws. All four trainers now have seed evidence, so the question is finally answerable.",
  "summary": {
   "vector-hoops": "FAILS",
   "vector-gridiron": "FAILS",
   "vector-equities": "MARGINAL",
-  "vector-pitch": "HOLDS"
+  "vector-pitch": "HOLDS",
+  "vector-unified (Stage 2 trunk)": "UNTESTABLE",
+  "vector-unified (tennis MTNN)": "HOLDS"
  },
+ "n_gates_audited": 6,
  "the_pattern": "Three of four gates are a threshold on a noisy scalar, set without knowing the noise. The fourth is a COUNT of comparisons and is the only one that holds. A gate should ask 'did this beat the alternatives' rather than 'did this number clear a line', because a count requires a sign flip where a threshold only requires drift.",
  "what_this_does_not_do": "Retune anything. Picking new thresholds from the three or five seeds that happened to run would be tuning against the cases being judged -- the failure mode this whole phase has been correcting. The gates stay as they are; this records what they currently mean.",
  "gates": [
@@ -80,6 +84,52 @@
     4
    ],
    "detail": "4 of 4 on all five seeds. A count of per-metric comparisons is far more stable than a threshold on a scalar, because each comparison has to flip SIGN rather than drift across a line. Every pitch margin clears its paired floor by 3.9x to 11.5x. This is the design the other three should copy -- and it was not chosen for that reason, it just happens to be robust."
+  },
+  {
+   "repo": "vector-unified (Stage 2 trunk)",
+   "gate": "G1 non-inferiority / G2 sport-invariance / G3 archetype",
+   "calibrated_from": "one run - train_stage2.py has NO --seed flag and no SEED constant to override; the unified model has never been run at a second seed",
+   "n_seeds_of_evidence": 1,
+   "verdict": "UNTESTABLE",
+   "G1": "PASS",
+   "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+   "G3": "PASS",
+   "G2_rank_detail": {
+    "effective_rank": 12.0,
+    "rank_nondeg_floor": 12,
+    "margin": 0.0,
+    "rank_target_literal": 32,
+    "rank_literal_pass": false,
+    "problem": "effective_rank is 12.0 and rank_nondeg_floor is 12 - the gate passes by EXACTLY ZERO. The floor is a hardcoded literal at eval_unified.py:242, commented 'non-degenerate floor: below this with role/folding loss = collapse'. Whether it was chosen before or after seeing 12.0 is not recorded, and with one run there is no way to tell. A gate clearing by 0.0 on a model that cannot be re-seeded is not evidence either way. The LITERAL target of 32 (= d_emb/2) FAILS, and G2 overall is DEFERRED pending a no-GRL baseline that was never run."
+   },
+   "G3_floor_detail": {
+    "silhouette": 0.7339,
+    "silhouette_floor": 0.05,
+    "separation": 0.9385,
+    "separation_floor": 0.05,
+    "multiples_over_floor": [
+     14.7,
+     18.8
+    ],
+    "problem": "Both floors are 0.05 against observed 0.7339 and 0.9385 - 14.7x and 18.8x. A floor that loose passes almost anything, so G3 PASSING carries little information. Not wrong; barely discriminating."
+   }
+  },
+  {
+   "repo": "vector-unified (tennis MTNN)",
+   "gate": "MTNN recall@10 > BAR 0.0584",
+   "threshold": 0.0584,
+   "calibrated_from": "a FIVE-SEED MEAN - the only correctly-built bar in the estate",
+   "n_seeds_of_evidence": 5,
+   "verdict": "HOLDS",
+   "bar_per_seed": [
+    0.0582,
+    0.0638,
+    0.0593,
+    0.0604,
+    0.0503
+   ],
+   "bar_sd": 0.005,
+   "detail": "train_tennis_mtnn.py hardcodes SEEDS = (7, 11, 13, 17, 19) and runs all five every invocation, so it never needed a --seed flag and was never a one-draw experiment. The bar is the 5-seed mean of the learned linear map (sd 0.005), not one run, and the MTNN cleared it 5/5 at mean 0.1168 (sd 0.0152). BOTH SIDES of the comparison are seed-means. This is what the other gates should have been."
   }
  ]
 }
