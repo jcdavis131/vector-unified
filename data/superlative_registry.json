@@ -114,10 +114,10 @@
     {
       "slug": "unified",
       "loc": "insight[3].body",
-      "text_sha": "abdd3cca9180a950",
-      "claim": "The top-10 hit rate is 0.000 across all forty",
+      "text_sha": "4bc4b544b8876dab",
+      "claim": "None landed in the top 10",
       "verdict": "OVER_FIRE",
-      "evidence": "'top-10 hit rate' is the metric's name. The 0.000 and n=40 are read directly from analogy_triples_report.json and were verified."
+      "evidence": "'top 10' is the METRIC'S NAME (retrieval_top10_hit_rate_informational), not a rank claim the page is asserting. Every number in the insight verified against data/analogy_triples_report.json: hit rate 0.0, mean_b_rank 2114.18, random_expected_rank 2067.15, better_than_random_ratio 0.978, curated arch_agreement 0.65 vs random 0.1621; and analogy_report.json G4 0.9828 vs random 0.1712."
     }
   ],
   "how_keyed": "text_sha = sha256 of the whole whitespace-normalised field. Any edit to that field voids the clearance and the claim returns to UNCHECKED."
