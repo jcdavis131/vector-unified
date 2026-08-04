@@ -145,6 +145,18 @@ def main() -> int:
                 seen_s |= {k for k in fields["side"] if k not in side}
         miss += [f"round.{k}" for k in sorted(seen_r - OPTIONAL)]
         miss += [f"side.{k}" for k in sorted(seen_s - OPTIONAL)]
+        # INSIGHT AND STAT SUB-FIELDS. The regex above only sees `d.`/`g.`/`r.`/`side.`
+        # dereferences, so it never noticed that renderInsights reads i.title/i.body/i.source
+        # and renderStats reads s.value/s.label/s.source. check_guards_nonvacuous.py planted
+        # a deleted insights[0].body and this check returned 0 — the exact blank-section
+        # failure it exists to prevent, invisible to it. Found only because the guard suite
+        # asked whether the guard could fail at all.
+        for j, ins in enumerate(doc.get("insights") or []):
+            miss += [f"insights[{j}].{k}" for k in ("title", "body", "source")
+                     if not ins.get(k)]
+        for j, st in enumerate(doc.get("headline_stats") or []):
+            miss += [f"headline_stats[{j}].{k}" for k in ("value", "label", "source")
+                     if not st.get(k)]
         if miss:
             row.append(f"CONTRACT {miss}")
             problems.append(f"{slug}: model.js reads {miss} and the data lacks it — that "
