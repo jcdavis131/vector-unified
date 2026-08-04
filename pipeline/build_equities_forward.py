@@ -35,12 +35,25 @@ high is exactly what a stale-data bug looks like:
     median |delta| ~0.05 against a value sd of ~0.21
 The numbers genuinely move. These composites are simply slow.
 
-WHAT THIS DOES NOT SHOW. dumbmodel.com's landing copy says the equities net predicts
-"next-year profile" among its tasks. That claim CANNOT BE CONFIRMED from the artifacts:
-pipeline/data/mtnn_report.json records held-out recall@10, cross-cycle archetype purity and
-sector top-1 accuracy, and no next-year head at all. So this file does not claim to have
-tested a stated training objective — it tests whether the SHIPPED embedding beats
-persistence on a one-year-ahead task, and reports that it does not.
+WHAT IS AND IS NOT BEING TESTED, corrected after I got it wrong once. An earlier version of
+this file said dumbmodel.com's claim that the net predicts "next-year profile" COULD NOT BE
+CONFIRMED, because pipeline/data/mtnn_report.json records only recall@10, archetype purity
+and sector accuracy. That was true of the report and unfair as an insinuation: the head is
+right there in the source.
+
+    model.py:274        self.next_profile_head = head(n_game)
+    train_mtnn.py:42    "next_profile": 0.10                       # loss weight
+    train_mtnn.py:456   smooth_l1_loss(out_a["next_profile"][valid_t], game_z[nxt_t])
+
+So the model IS trained to predict the next timestep's profile. Absence from a report is not
+absence from the model, and I should have read the code before casting doubt on the copy.
+
+That makes the scope of this probe sharper, and narrower than it first sounded. It tests the
+SHIPPED EMBEDDING — the trunk output in assets/real_data.json, which is what dumbmodel.com
+serves and what any downstream consumer gets — under a linear read. IT DOES NOT TEST THE
+next_profile HEAD, whose weights are not in the shipped asset. A head trained directly on
+that target may well beat persistence where a ridge on the embedding does not, and this file
+makes no claim either way about it.
 
     python pipeline/build_equities_forward.py
     python pipeline/build_equities_forward.py --check   # exit 1 only if the run is broken
@@ -152,12 +165,16 @@ def main() -> int:
             "why": ("Persistence of 0.9 is what a stale-data bug looks like, so this ran "
                     "before any conclusion was drawn from it. The values genuinely move."),
         },
-        "what_this_does_not_show": (
-            "dumbmodel.com's landing copy says this net predicts 'next-year profile' among "
-            "its tasks. That CANNOT be confirmed from the artifacts — mtnn_report.json "
-            "records held-out recall@10, cross-cycle archetype purity and sector top-1 "
-            "accuracy, and no next-year head. So this does not claim to have tested a stated "
-            "training objective; it tests the SHIPPED embedding on a one-year-ahead task."),
+        "scope_corrected": (
+            "An earlier version said the landing copy's 'next-year profile' claim could not "
+            "be confirmed. It can: model.py:274 defines self.next_profile_head, and "
+            "train_mtnn.py:456 trains it with smooth_l1_loss against game_z[nxt_t] at loss "
+            "weight 0.10. Absence from mtnn_report.json is not absence from the model. What "
+            "this probe tests is the SHIPPED EMBEDDING (the trunk output in real_data.json, "
+            "which is what the site serves) under a linear read. It does NOT test the "
+            "next_profile head, whose weights are not in the shipped asset — that head may "
+            "beat persistence where a ridge on the embedding does not, and no claim is made "
+            "either way."),
         "n_pairs": len(prs), "n_train": int(tr.sum()), "n_test": int(te.sum()),
         "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
         "per_target": rows,
