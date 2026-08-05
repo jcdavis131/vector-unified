@@ -8,6 +8,10 @@
 | Scout-lane2 | dottie + scout-cli v0.8 polish | 22:43 CDT | Night shift lane 2 verify triple-write + nano smoke deterministic + 1k spec + scaffold | scout/dottie-cli-night2 | done 03:45 CT — triple verified 7-field, 15-dirs scrub 0 left, gitignored pipeline/runs, manifest v0.8.0 fs true net false, 1K spec written |
 | Claude-Local | vector-pitch / verify + push (free lane) | 16:4x CDT | DONE — 13/13 green, json.tool clean, rebased + pushed to pitch master a36b48d. Handoff's 0904a39 / vectors_mtnn.json do not exist here; the seed work shipped instead. | master (ff) | done |
 
+## Gotchas
+
+`GOTCHAS.md` at the root of vector-unified. Twelve things that cost real time on the local GPU box, each with the command or constant that caused it. It lives there and not here because the earlier copy of these lessons was written into THIS file and the active-tasks mirror overwrote it — header and all. Several of them were then hit a second time. A lesson recorded in a file that gets overwritten is not recorded.
+
 ## How to use
 1. Add your row before editing
 2. Keep main green - work on your own branch, PR or fast-forward only when tests pass
