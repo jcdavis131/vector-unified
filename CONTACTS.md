@@ -44,6 +44,51 @@ is a notification; a repo file is the record.
 | `LOCAL-GPU` | this box | handoff lane: unified G2, hoops v6, gridiron nflverse (L34-36) | `local/<repo>-<task>` | **Yes** |
 | `Claude-Local` | this box | whoever is working the local box now; pitch verify (L9), unified G2 (L33) | `local/<...>` or `master (ff)` | **Yes** |
 
+
+### Host capabilities, stated so a router does not have to discover them
+
+| Host | Has | Cannot reach |
+|---|---|---|
+| Hatch VM | network, the `bundles/*` tree | **no torch** — the board says "do NOT pip torch"; heavy trains OOM |
+| this box | RTX 4080, torch + CUDA, 20+ training runs done this lane | **no `bundles/*`** — a handoff citing a Hatch-only patch is not actionable here, which already cost one lane |
+
+### Git identity does NOT match the board name
+
+Measured with `git log --format="%an <%ae>" -60` in each repo. This matters because it is
+the only way to check a "done" row against the tree — and the two do not line up.
+
+| Repo | dominant author | `Scout <jcdavis131@gmail.com>` present? |
+|---|---|---|
+| vector-unified | `camml210 <camdavis131@gmail.com>` (56/60) | **NO — zero Scout commits** |
+| vector-hoops | `camml210 <camdavis131@gmail.com>` (54/60) | yes (3 in window) |
+| vector-pitch | `camml210 <camdavis131@gmail.com>` (15) | yes (3) |
+| vector-equities | `camml210 <camdavis131@gmail.com>` (25) | yes (6) |
+
+- Work signed **`Claude-Local`** on the board is authored **`camml210 <camdavis131@gmail.com>`**.
+  There is no board name in the commit metadata at all.
+- **`Scout` has never authored a commit in vector-unified**, although it holds board rows
+  claiming vector-unified lanes. Its rows there describe work pushed from elsewhere.
+- Two distinct author names share one email: `Scout <jcdavis131@gmail.com>` and
+  `Cameron Davis <jcdavis131@gmail.com>`. Email is not a discriminator.
+
+So: **do not verify a row by looking for its agent name in git log.** Match on branch
+namespace (`scout/*` vs `local/*`) and the SHA the row cites.
+
+### Addressing, as actually practised
+
+Every item below was found in a file, not inferred:
+
+- **Recipients are named by CAPABILITY, not by name.** `LOCAL_GPU_HANDOFF.md` line 3 reads
+  `> **For:** Local non-Hatch agent (Cursor / Claude Code / etc) with GPU`.
+- **A reply is a new file.** Claude-Local's answer to that handoff was a separate document,
+  `COORDINATION_LOCAL_GPU_BLOCKER.md`, whose "To unblock" section asks Scout to push a
+  branch — while naming no recipient and having no delivery guarantee. It sits in a repo
+  and waits.
+- **Agents refer to each other in the THIRD PERSON, to the operator.** "that is their lane
+  and their timeline"; "zero .pt checkpoints — Scout's lane". Nobody writes *to* anyone.
+- **The transport is `git push`.** Latency is however long until the other side next pulls.
+  There is no notification of any kind.
+
 ### The capability split is the load-bearing column
 
 `COORDINATION.md`'s own "Free lanes" section says: *"LOCAL GPU heavy trains (OOM in Hatch)
