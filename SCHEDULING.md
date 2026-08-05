@@ -115,6 +115,30 @@ them exists: the gate tile needs `data/gate_inputs_tracked_audit.json`, which
 
 It reads only. It runs no checker, no builder and no trainer.
 
+### If an agent is launching it: DETACH, or it dies every few minutes
+
+An agent starting `python server.py` as a background command puts the server inside the
+harness's process tree, and the harness reaps that tree. It was killed and hand-restarted
+SEVEN times in one session before anyone tried anything different.
+
+`Start-Process` detaches it instead — no scheduled task, no machine change, survives the
+harness:
+
+    $pyw = "C:\Users\jcdav\vector-hoops\pipeline\.venv\Scripts\pythonw.exe"
+    $srv = "C:\Users\jcdav\vector-unified\tools\dashboard\server.py"
+    Start-Process -FilePath $pyw -ArgumentList $srv `
+      -WorkingDirectory "C:\Users\jcdav\vector-unified\tools\dashboard" `
+      -WindowStyle Hidden -PassThru
+
+`pythonw.exe` so there is no console window. Check before starting, every time — a detached
+server does NOT die with the session, so the duplicate-instance trap below is now easier to
+hit, not harder:
+
+    curl -s -o NUL -w "%{http_code}" http://localhost:8000/
+
+Stop it by PID: `Stop-Process -Id <pid>`. This is the interim answer; the logon task below
+is still the durable one, because a detached process does not survive a reboot.
+
 ### Keeping the dashboard up across reboots
 
 The sweep above is a task that runs and exits. The dashboard is a server that must stay
