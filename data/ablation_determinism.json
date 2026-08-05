@@ -50,5 +50,43 @@
  },
  "implication_for_the_shared_seeds": "Seeds 8 and 9 are BIT-IDENTICAL for `full` across three artifacts. With nondeterminism this large, three independent runs agreeing to four decimals is not plausible, so those entries were carried over rather than re-run. The `full` columns in the two 10-seed files are therefore NOT independent evidence and must not be pooled as if they were.",
  "what_this_does_NOT_invalidate": "The ablation conclusions. Re-analysed unpaired (Welch) because seed is not a valid blocking factor here: full vs no_grl +0.0447 p<0.0001 SIG both ways; full vs no_coral +0.0008 p=0.9124 ns both ways; full vs no_vicreg -0.0115 p=0.1039 ns both ways. Same verdicts as the paired analysis.",
- "n_is_3": "Three in-session runs. Enough to prove irreproducibility (3 distinct values is sufficient) but a coarse estimate of its MAGNITUDE. The sd 0.0062 should not be quoted as a precise noise floor."
+ "n_is_3": "Three in-session runs. Enough to prove irreproducibility (3 distinct values is sufficient) but a coarse estimate of its MAGNITUDE. The sd 0.0062 should not be quoted as a precise noise floor.",
+ "ATTEMPTED_FIX_DID_NOT_WORK": {
+  "what_was_tried": "Added torch.backends.cudnn.deterministic=True, cudnn.benchmark=False and torch.use_deterministic_algorithms(True, warn_only=True) to ablation.py::train_config, mirroring train_stage2.py:166-171.",
+  "hypothesis": "ablation.py differs from the reproducible trainer only by these lines.",
+  "result_full_at_seed7_with_fix": [
+   0.6827,
+   0.6993
+  ],
+  "spread_with_fix": 0.0166,
+  "spread_without_fix_n3": 0.0113,
+  "verdict": "FALSIFIED. Two consecutive runs with the controls in place gave 0.6827 and 0.6993 — still different, and a wider gap than without them. The fix is NOT claimed; the lines are kept only because they are correct practice and match the sibling trainer.",
+  "also_ruled_out": {
+   "warn_only_letting_a_flagged_op_through": "No determinism warning is emitted at all.",
+   "CUBLAS_WORKSPACE_CONFIG": "Unset for train_stage2.py as well, so it does not distinguish the reproducible trainer from this one."
+  },
+  "where_the_nondeterminism_IS": "Inside training, not a downstream probe. The ablation EMBEDDING moves (G3_sil 0.6776 vs 0.6758, G4_hit 0.960 vs 0.963), whereas train_stage2.py's embedding is bit-identical across reruns and only its G2 probe moves. Root cause UNKNOWN and not chased further — out of this lane's scope."
+ },
+ "stage2_IS_reproducible": {
+  "test": "train_stage2.py --seed 7 with the control flags, rerun, compared field by field against the original ctrl7 report.",
+  "numeric_fields_compared": 37,
+  "bit_identical": 34,
+  "differ": 3,
+  "the_three": {
+   "G2_sport_invariance.sport_acc": [
+    0.6614,
+    0.6612
+   ],
+   "G2_sport_invariance.delta_vs_chance": [
+    0.3281,
+    0.3279
+   ],
+   "G2_sport_invariance.delta_vs_majority": [
+    0.0356,
+    0.0354
+   ]
+  },
+  "reading": "All three are the same quantity — the two deltas are sport_acc minus a constant — so exactly ONE thing varies, by 0.0002, and it is the G2 probe rather than the model. The embedding is bit-reproducible.",
+  "why_this_matters_for_the_G2_result": "The measured effects are 0.0851 (total) and 0.0289 (coral) against 0.0002 of rerun noise — 425x and 145x. The 5-seed stage-2 experiment does NOT inherit the ablation's irreproducibility."
+ }
 }

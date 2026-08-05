@@ -54,6 +54,38 @@ def train_config(M, cfg, epochs=30, warmup=5, seed=SEED):
     pools = per_sport_pools(M)
     q = 86
     torch.manual_seed(seed)
+    # THE SEED ALONE DID NOT PIN THE RESULT, and that was measured, not suspected.
+    # `ablation.py --seeds 1 --configs full` run three times back to back on one box with
+    # no code change produced G2_sport_acc = 0.6940, 0.6926, 0.6827 -- three distinct
+    # values from one seed. That is why full@seed7 has three different records across
+    # data/ablation_report.json, ablation_grl_seeds.json and ablation_coral_vicreg_seeds.json.
+    #
+    # THESE LINES ARE NOT SUFFICIENT, AND THAT WAS TESTED RATHER THAN ASSUMED. They mirror
+    # train_stage2.py:166-171, which IS reproducible: 34 of 37 numeric report fields come
+    # back BIT-IDENTICAL across reruns, and the 3 that move are all one quantity (G2's
+    # probe) by 0.0002. So the obvious hypothesis was that ablation.py differed only by
+    # these lines. It does not. With them added, full@seed7 still gives 0.6827 and 0.6993
+    # on two consecutive runs — a WIDER spread than the 0.0113 measured without them.
+    #
+    # Also ruled out: no determinism warning is emitted (so warn_only is not silently
+    # letting a flagged op through), and CUBLAS_WORKSPACE_CONFIG is unset for
+    # train_stage2.py too, so that is not the discriminator either.
+    #
+    # THE ROOT CAUSE IS UNKNOWN and is NOT claimed to be fixed here. Unlike stage 2, the
+    # ablation EMBEDDING itself moves (G3_sil 0.6776 vs 0.6758, G4_hit 0.960 vs 0.963), not
+    # just a downstream probe, so the nondeterminism is inside training. The lines are kept
+    # because they are correct practice and match the sibling trainer, NOT because they
+    # solve the problem.
+    #
+    # THIS DOES NOT REPAIR THE EXISTING ARTIFACTS EITHER. Runs recorded before this cannot
+    # be regenerated to match — they came from a process that does not repeat. See
+    # data/ablation_determinism.json and check_ablation_consistency.py.
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    try:
+        torch.use_deterministic_algorithms(True, warn_only=True)
+    except Exception:
+        pass
     rng = np.random.default_rng(seed)
 
     def sport_clf_loss(z, sport_ids, lam):
