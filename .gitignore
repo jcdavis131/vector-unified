@@ -71,6 +71,9 @@ data/*
 # The sweep log. A row is evidence a sweep happened, including when it found nothing;
 # an ABSENT row is not "clean", it means nobody looked. That history is the artifact.
 !data/validation_sweep_log.md
+# Drift-watch history. A row is evidence the check ran, including when nothing moved;
+# an absent row is not "no drift", it means nobody looked.
+!data/drift_watch_log.md
 # The open finding that dumbmodel.com cites two artifacts git does not carry. It is
 # the record of WHY cited_fields is red; losing it on a clone leaves a failing gate
 # with no explanation, which is how a real finding gets dismissed as noise.
