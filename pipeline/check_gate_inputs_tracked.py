@@ -109,7 +109,33 @@ def main() -> int:
             return 2
         subprocess.run(["git", "checkout", "-q", head], cwd=clone, capture_output=True)
 
+        # RESTORE WHAT THE WORKING-TREE RUN MUTATES. verdicts(ROOT) runs validate.py HERE,
+        # and validate.py registers tennis_mtnn as `train_tennis_mtnn.py --check`, an arm
+        # that RETRAINS. So every audit moved data/tennis_forward_report.json off the value
+        # dumbmodel.com cites — ridge16_all_features_r 0.8427 -> 0.8332, observed three
+        # times, twice after the sweep prompt was "fixed" by removing its direct validate.py
+        # call. The rule was evaded transitively: the thing the sweep still ran called it.
+        #
+        # The comparison genuinely needs the working tree (a clone lacks the untracked
+        # artifacts, which is the whole point), so the fix is not to stop running it but to
+        # put back what it moves. Only TRACKED files are restored, and only to their
+        # committed state — nothing untracked is touched, so a legitimately regenerated
+        # audit still shows up in git status.
+        def dirty() -> set[str]:
+            r = subprocess.run(["git", "diff", "--name-only"], cwd=str(ROOT),
+                               capture_output=True, text=True, encoding="utf-8",
+                               errors="replace")
+            return {ln.strip() for ln in (r.stdout or "").splitlines() if ln.strip()}
+
+        tracked_before = dirty()
         here = verdicts(ROOT)
+        tracked_after = dirty()
+        moved = sorted(tracked_after - tracked_before)
+        if moved:
+            subprocess.run(["git", "checkout", "--", *moved], cwd=ROOT,
+                           capture_output=True)
+            print(f"  restored {len(moved)} tracked artifact(s) this audit mutated: "
+                  f"{', '.join(moved[:4])}")
         there = verdicts(clone)
         n_here = len(list((ROOT / "data").glob("*")))
         n_there = len(list((clone / "data").glob("*")))
