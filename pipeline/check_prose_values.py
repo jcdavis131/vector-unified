@@ -57,6 +57,24 @@ SECOND ARM — INLINE VALUES. A source segment can assert the number itself
 (`eligible_careers=2415`). That is compared directly against the artifact, with no prose
 matching and no ambiguity. Currently 0 disagreements.
 
+EVERY FINDING CARRIES THE ARTIFACT'S VCS STATE, because without it the reader cannot tell
+which of three different problems they have:
+
+    UNCOMMITTED-LOCAL-CHANGE   gridiron:headline_stats[2]. The page says "21 of them
+                               rookies 646"; projections.json on disk holds 647/22. Reads
+                               as a stale page — but HEAD holds 646/21 built 2026-07-21 and
+                               the working tree holds 647/22 built 2026-08-04, ONE
+                               uncommitted rookie apart (Kaden Prather). THE PAGE MATCHES
+                               WHAT IS COMMITTED. Nothing is stale; a sibling repo has a
+                               regeneration nobody landed. Fix is commit-and-rebuild or
+                               discard, never edit the page.
+    untracked                  pitch:insights[2]. The artifact is gitignored, so git can
+                               say nothing and the disagreement stands on its own.
+    committed                  a genuine page/artifact divergence, the case worth chasing.
+
+Reporting all three as "page and artifact disagree" would send a reader to correct a page
+that is already right.
+
     python pipeline/check_prose_values.py
     python pipeline/check_prose_values.py --verbose   # every field, matched or not
     python pipeline/check_prose_values.py --check     # exit 1 on a zero-overlap insight
@@ -69,6 +87,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -159,6 +178,38 @@ def parse_fields(fields: str) -> list[tuple[str, str | None]]:
     return out
 
 
+def vcs_state(p: Path) -> str:
+    """Is this artifact committed, locally modified, or not tracked at all?
+
+    A DISAGREEMENT MEANS DIFFERENT THINGS DEPENDING ON THIS, and without it a reader cannot
+    act on the finding. The gridiron case: the page says "21 of them rookies 646" and
+    projections.json on disk holds 647/22 — which reads as a stale page until you check
+    git, where HEAD holds 646/21 built 2026-07-21 and the working tree holds 647/22 built
+    2026-08-04, one uncommitted rookie apart (Kaden Prather). The PAGE MATCHES WHAT IS
+    COMMITTED. Nothing is stale; a sibling repo has an uncommitted regeneration nobody
+    landed, and the fix is to commit-and-rebuild or discard, not to edit the page.
+
+    An untracked artifact is a third case again: git cannot say anything about it, so the
+    disagreement stands on its own.
+    """
+    try:
+        repo = p.parent
+        while repo != repo.parent and not (repo / ".git").exists():
+            repo = repo.parent
+        if not (repo / ".git").exists():
+            return "no-repo"
+        rel = str(p.relative_to(repo)).replace("\\", "/")
+        tracked = subprocess.run(["git", "ls-files", "--error-unmatch", rel], cwd=str(repo),
+                                 capture_output=True).returncode == 0
+        if not tracked:
+            return "untracked"
+        dirty = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=str(repo),
+                               capture_output=True).returncode != 0
+        return "UNCOMMITTED-LOCAL-CHANGE" if dirty else "committed"
+    except Exception:
+        return "unknown"
+
+
 def lookup(doc, dotted: str):
     cur = doc
     for part in dotted.split("."):
@@ -190,14 +241,17 @@ def check_block(text: str, source: str, by_base: dict, cache: dict) -> dict | No
         if len(hits) != 1:
             continue
         key = hits[0]
+        # CACHE THE PATH AND ITS VCS STATE ALONGSIDE THE DOC. Reading `q` below worked only
+        # on a cache MISS; on a hit it was undefined or, worse, still bound to whichever
+        # file was resolved last — a stale value that looks like a real one.
         if key not in cache:
             q = resolve(key)
             try:
-                cache[key] = json.loads(q.read_text(encoding="utf-8")) if q and q.is_file() \
-                    else None
+                doc = json.loads(q.read_text(encoding="utf-8")) if q and q.is_file() else None
             except Exception:
-                cache[key] = None
-        doc = cache[key]
+                doc = None
+            cache[key] = (doc, q, vcs_state(q) if q and q.is_file() else "absent")
+        doc, qpath, state = cache[key]
         if doc is None:
             continue
 
@@ -205,7 +259,8 @@ def check_block(text: str, source: str, by_base: dict, cache: dict) -> dict | No
             v = lookup(doc, name)
             if not isinstance(v, (int, float)) or isinstance(v, bool):
                 continue
-            cited[f"{base}:{name}"] = {"value": v, "file": base}
+            cited[f"{base}:{name}"] = {"value": v, "file": base,
+                                       "artifact": str(qpath), "vcs": state}
             # INLINE ARM: the source itself asserts a value. No ambiguity to resolve.
             if stated is not None:
                 try:
@@ -222,7 +277,8 @@ def check_block(text: str, source: str, by_base: dict, cache: dict) -> dict | No
     for key, meta in cited.items():
         hit = any(re.search(rf"(?<![\d.,]){re.escape(s)}(?![\d.,])", text)
                   for s in variants(meta["value"]))
-        (present if hit else absent).append({"field": key, "value": meta["value"]})
+        (present if hit else absent).append({"field": key, "value": meta["value"],
+                                             "vcs": meta["vcs"]})
 
     nontrivial = [a for a in (present + absent) if abs(float(a["value"])) >= TRIVIAL]
     nt_present = [a for a in present if abs(float(a["value"])) >= TRIVIAL]
@@ -278,6 +334,7 @@ def main() -> int:
                 findings.append({
                     "page": slug, "where": f"{kind}[{idx}]", "title": title[:90],
                     "cited_values_none_of_which_appear": r["absent_from_prose"],
+                    "artifact_vcs_state": sorted({a["vcs"] for a in r["absent_from_prose"]}),
                     "why": "the prose states numbers and NOT ONE of the numeric fields it "
                            "cites has its value in that text — page and artifact disagree. "
                            "Which one is correct is NOT determined here; every instance "
@@ -312,6 +369,7 @@ def main() -> int:
         vals = ", ".join(f"{a['field']}={a['value']}"
                          for a in f["cited_values_none_of_which_appear"][:4])
         print(f"    {f['page']}:{f['where']}  {vals}")
+        print(f"        artifact state: {', '.join(f['artifact_vcs_state'])}")
     print(f"\nwrote {OUT}")
     if args.check and (findings or wrong):
         print(f"CHECK FAILED: {len(findings)} block(s) where no cited value appears in the "

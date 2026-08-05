@@ -9,17 +9,43 @@
  "findings": [
   {
    "page": "gridiron",
+   "where": "insights[4]",
+   "title": "The same-name defect was measured for football, not borrowed from basketball",
+   "cited_values_none_of_which_appear": [
+    {
+     "field": "gridiron_name_collisions.json:names_probed",
+     "value": 300,
+     "vcs": "untracked"
+    },
+    {
+     "field": "gridiron_name_collisions.json:colliding_names",
+     "value": 15,
+     "vcs": "untracked"
+    }
+   ],
+   "artifact_vcs_state": [
+    "untracked"
+   ],
+   "why": "the prose states numbers and NOT ONE of the numeric fields it cites has its value in that text — page and artifact disagree. Which one is correct is NOT determined here; every instance found so far had a current page and a stale artifact."
+  },
+  {
+   "page": "gridiron",
    "where": "headline_stats[2]",
    "title": "Players projected for the 2026 season, 21 of them rookies",
    "cited_values_none_of_which_appear": [
     {
      "field": "projections.json:count",
-     "value": 647
+     "value": 647,
+     "vcs": "UNCOMMITTED-LOCAL-CHANGE"
     },
     {
      "field": "projections.json:rookie_count",
-     "value": 22
+     "value": 22,
+     "vcs": "UNCOMMITTED-LOCAL-CHANGE"
     }
+   ],
+   "artifact_vcs_state": [
+    "UNCOMMITTED-LOCAL-CHANGE"
    ],
    "why": "the prose states numbers and NOT ONE of the numeric fields it cites has its value in that text — page and artifact disagree. Which one is correct is NOT determined here; every instance found so far had a current page and a stale artifact."
   },
@@ -30,8 +56,12 @@
    "cited_values_none_of_which_appear": [
     {
      "field": "pitch_age_axis.json:report.rows_scorable",
-     "value": 1066
+     "value": 1066,
+     "vcs": "untracked"
     }
+   ],
+   "artifact_vcs_state": [
+    "untracked"
    ],
    "why": "the prose states numbers and NOT ONE of the numeric fields it cites has its value in that text — page and artifact disagree. Which one is correct is NOT determined here; every instance found so far had a current page and a stale artifact."
   }
@@ -49,14 +79,14 @@
    "where": "insights[4]",
    "field": "tennis_mtnn_report.json:mtnn_mean",
    "source_says": "0.1168",
-   "artifact_has": 0.1132
+   "artifact_has": 0.1157
   },
   {
    "page": "tennis",
    "where": "insights[4]",
    "field": "tennis_mtnn_report.json:mtnn_sd",
    "source_says": "0.0152",
-   "artifact_has": 0.0041
+   "artifact_has": 0.0132
   },
   {
    "page": "tennis",
@@ -84,7 +114,7 @@
    "where": "headline_stats[4]",
    "field": "tennis_mtnn_report.json:mtnn_mean",
    "source_says": "0.1168",
-   "artifact_has": 0.1132
+   "artifact_has": 0.1157
   }
  ]
 }
