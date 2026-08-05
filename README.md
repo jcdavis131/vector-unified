@@ -62,3 +62,21 @@ Do not push until `json.tool` passes — per task.
 - Sport invariance still weak — G2 0.685 is only 5.93pp above majority guess, but any embedding hits 0.6258 by guessing hoops
 - G3 8.9pp composition gap — within-arch vs between-arch sport-pair mix differs, some sep is sport-pair effect
 - G4 person-level retrieval fail — 0/40 curated top10, mean rank 2114≈random 2067
+
+## Open findings and operational records
+
+Six standalone files, none of them reachable from anywhere before this index existed. Each
+is the stated reason for something a reader would otherwise hit cold — a red gate, a
+number that will not reproduce, a bug nobody has decided to fix.
+
+| File | What it is |
+|---|---|
+| `LOCAL_GPU_G2_RESULT.md` | The G2 sport-blind measurement: 5 seeds x 3 arms. **MEASURED, NOT PROMOTED.** Under the full treatment sport is no longer decodable above the base rate (residual −0.0022, CI [−0.0060, +0.0016]); the control is (+0.0829, p=0.0304). The paired mean is the wrong summary — the treatment clamps to a floor, 343x variance ratio. |
+| `data/TENNIS_CITATION_GAP.md` | Why `cited_fields` is red. Six published tennis values cite artifacts git never carried, so a reader can neither check them nor reproduce them. Two ways out, both changing what a published claim means. |
+| `data/seed_order_audit.json` | Why three ablation artifacts disagree about `full@seed7`: `ablation.py` seeds at line 56, after building the model at line 50, so the seed never controlled the weights. One hit in 329 files across six repos. |
+| `CONTACTS.md` | Who the named agents are, what each can and cannot do (**only the local lanes can train**), and that the board is a lossy one-directional channel — a row here is a notification, a repo file is the record. |
+| `GOTCHAS.md` | Twelve things that cost real time, each with the command or constant that caused it. Written at root because the earlier copy lived in `COORDINATION.md` and the mirror ate it — after which several were hit a second time. |
+| `SCHEDULING.md` | How to make the validation sweep and the dashboard durable, and what the sweep deliberately refuses to run. |
+
+Live board: `python tools/dashboard/server.py` → `localhost:8000`. One screen, 10s refresh,
+reads git and the artifacts at request time. Run exactly one instance.
