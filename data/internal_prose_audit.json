@@ -5,8 +5,8 @@
  "files_unreadable": [],
  "prose_numbers_classified": {
   "EXACT": 1253,
-  "STALE": 28,
-  "NEAR_NO_CLAIM": 2769,
+  "STALE": 30,
+  "NEAR_NO_CLAIM": 2770,
   "UNMATCHED": 286
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
@@ -15,6 +15,64 @@
  "this_is_narrow_on_purpose": "Requiring an identity claim within 55 characters means a stale number written without an assertion is MISSED. Recall is not measured and is certainly below 1.0. The alternative was 134 candidates of which almost none were defects, which is worse than a known gap.",
  "a_STALE_hit_is_a_candidate_not_a_verdict": "Two unrelated quantities can sit within 5% of each other by chance. Each hit carries its context and the fields it is near so it can be judged rather than believed.",
  "findings": [
+  {
+   "file": "ablation_consistency_audit.json",
+   "repo": "vector-unified",
+   "prose_path": ".declared_known[0].declared_reason",
+   "number_in_prose": 0.6926,
+   "context": "on.py is irreproducible at a fixed seed (measured: 0.6940 / 0.6926 / 0.6827 on three consecutive runs of the same config, same",
+   "near_fields": [
+    {
+     "field": ".declared_known[0].differing_fields.G2_sport_acc.ablation_report.json",
+     "value": 0.6988,
+     "why": "within 5%"
+    },
+    {
+     "field": ".declared_known[0].differing_fields.G2_sport_acc.ablation_grl_seeds.json",
+     "value": 0.7022,
+     "why": "within 5%"
+    },
+    {
+     "field": ".declared_known[0].differing_fields.G2_sport_acc.ablation_coral_vicreg_seeds.json",
+     "value": 0.6754,
+     "why": "within 5%"
+    },
+    {
+     "field": ".declared_known[0].differing_fields.G3_sil.ablation_report.json",
+     "value": 0.6749,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "ablation_consistency_audit.json",
+   "repo": "vector-unified",
+   "prose_path": ".declared_known[0].declared_reason",
+   "number_in_prose": 0.6827,
+   "context": "irreproducible at a fixed seed (measured: 0.6940 / 0.6926 / 0.6827 on three consecutive runs of the same config, same code). T",
+   "near_fields": [
+    {
+     "field": ".declared_known[0].differing_fields.G2_sport_acc.ablation_report.json",
+     "value": 0.6988,
+     "why": "within 5%"
+    },
+    {
+     "field": ".declared_known[0].differing_fields.G2_sport_acc.ablation_grl_seeds.json",
+     "value": 0.7022,
+     "why": "within 5%"
+    },
+    {
+     "field": ".declared_known[0].differing_fields.G2_sport_acc.ablation_coral_vicreg_seeds.json",
+     "value": 0.6754,
+     "why": "within 5%"
+    },
+    {
+     "field": ".declared_known[0].differing_fields.G3_sil.ablation_report.json",
+     "value": 0.6749,
+     "why": "within 5%"
+    }
+   ]
+  },
   {
    "file": "ablation_determinism.json",
    "repo": "vector-unified",

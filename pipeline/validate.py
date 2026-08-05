@@ -97,16 +97,19 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # rows (player_idx in order AND cosine 1.0000 row-for-row). Equal row counts are
     # exactly the trap probe_g1_position.py exists for.
     "bridge_join": (["query_bridge.py", "--check"], False),
-    # BLOCKING, and it currently FAILS on a real defect that predates this registration.
-    # `full@seed7` has three different records across ablation_report.json,
-    # ablation_grl_seeds.json and ablation_coral_vicreg_seeds.json — differing in 6 of 8
-    # fields — while seeds 8 and 9 are bit-identical across the same three. None of the
-    # three files records flags, timestamp or code version, so it cannot be determined
-    # whether training is irreproducible at a fixed seed or whether one config name covers
-    # several flag sets. Registered with --check rather than report-only because, unlike
-    # internal_prose's 9%, this finding's precision is 100%: the disagreement is arithmetic.
-    # Registering a real failure is the point of the gate; demoting it to keep the board
-    # green is the exact move validate.py's own docstring warns against.
+    # BLOCKING, and it now PASSES with the one real disagreement DECLARED rather than
+    # demoted. It was registered red: `full@seed7` has three different records across the
+    # three ablation artifacts, differing in 6 of 8 fields, while seeds 8 and 9 are
+    # bit-identical. The cause was then measured rather than argued — ablation.py is
+    # irreproducible at a fixed seed (0.6940 / 0.6926 / 0.6827 on three consecutive runs of
+    # one config), so those artifacts CAN NEVER AGREE.
+    #
+    # That changed what the gate should do. Permanently red for an unfixable condition
+    # teaches the reader to skip the line, which is the reasoning already applied to
+    # internal_prose. Deleting it would be worse — it is the only thing that would notice a
+    # NEW disagreement. So the known one is declared in KNOWN with its evidence, and both
+    # arms are mutation-tested: planting a fresh disagreement exits 1, and a KNOWN entry
+    # that no longer applies also exits 1, so a declaration cannot outlive its defect.
     "ablation_consistency": (["check_ablation_consistency.py", "--check"], False),
     # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
     # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real

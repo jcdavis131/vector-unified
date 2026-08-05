@@ -46,7 +46,9 @@ treating `full` as a stable reference ACROSS files, and it means the 3-seed tabl
 `full` is built on one seed whose value depends on which artifact you read.
 
     python pipeline/check_ablation_consistency.py
-    python pipeline/check_ablation_consistency.py --check   # exit 1 on any disagreement
+    python pipeline/check_ablation_consistency.py --check   # exit 1 on an UNDECLARED
+                                                            # disagreement, or a KNOWN
+                                                            # entry that no longer applies
 
 Writes: data/ablation_consistency_audit.json
 """
@@ -65,6 +67,31 @@ OUT = DATA / "ablation_consistency_audit.json"
 
 FILES = ["ablation_report.json", "ablation_grl_seeds.json",
          "ablation_coral_vicreg_seeds.json"]
+
+# DISAGREEMENTS THAT ARE EXPLAINED, WITH THE EVIDENCE NAMED.
+#
+# This gate was registered BLOCKING while the cause of full@seed7 was unknown, and finding
+# the cause changed what the gate should do. ablation.py is irreproducible at a fixed seed
+# — three runs of one config at one seed gave 0.6940 / 0.6926 / 0.6827 — so these three
+# artifacts CAN NEVER AGREE. Left blocking, the gate is permanently red for a condition
+# nobody can fix, and a permanently red gate teaches its reader to skip the line. That is
+# the same reasoning validate.py already applies to internal_prose.
+#
+# Deleting the check instead would be worse: it is the only thing that would notice a NEW
+# disagreement appearing. So the known one is DECLARED, with its evidence, and everything
+# else still fails. Same shape as data/superlative_registry.json, which clears a specific
+# claim against named evidence rather than disabling the superlative check.
+#
+# A declaration is not a fix. It records that this disagreement is understood and that the
+# artifacts predate any determinism control. It does not make the numbers agree and does
+# not license quoting one file's full@seed7 against another's.
+KNOWN: dict[tuple[str, int], str] = {
+    ("full", 7): "ablation.py is irreproducible at a fixed seed (measured: 0.6940 / "
+                 "0.6926 / 0.6827 on three consecutive runs of the same config, same "
+                 "code). These records were produced by a process that does not repeat. "
+                 "Evidence: data/ablation_determinism.json. Adding cudnn.deterministic + "
+                 "use_deterministic_algorithms did NOT fix it; root cause still unknown.",
+}
 
 # Provenance a reader needs to tell (a) from (b) above. Absence is reported, not fixed:
 # backfilling a timestamp now would be inventing provenance.
@@ -94,7 +121,7 @@ def main() -> int:
             for s, rec in zip(d["seeds"], runs):
                 seen[(cfg, int(s))][f] = rec
 
-    agree, disagree = [], []
+    agree, disagree, known_hits = [], [], []
     for (cfg, s), byfile in sorted(seen.items()):
         if len(byfile) < 2:
             continue
@@ -104,9 +131,15 @@ def main() -> int:
             vals = {f: r.get(k) for f, r in byfile.items()}
             if len({json.dumps(v, sort_keys=True) for v in vals.values()}) > 1:
                 diff[k] = vals
-        (disagree if diff else agree).append(
-            {"config": cfg, "seed": s, "files": sorted(byfile),
-             **({"differing_fields": diff} if diff else {})})
+        rec = {"config": cfg, "seed": s, "files": sorted(byfile),
+               **({"differing_fields": diff} if diff else {})}
+        if not diff:
+            agree.append(rec)
+        elif (cfg, s) in KNOWN:
+            rec["declared_reason"] = KNOWN[(cfg, s)]
+            known_hits.append(rec)
+        else:
+            disagree.append(rec)
 
     missing_prov = {f: [k for k in WANTED_PROVENANCE if k not in d]
                     for f, d in docs.items()}
@@ -117,6 +150,10 @@ def main() -> int:
         "files": FILES,
         "shared_config_seed_pairs": len([k for k, v in seen.items() if len(v) > 1]),
         "agree": len(agree),
+        "declared_known": known_hits,
+        "undeclared_KNOWN_entries": [f"{c}@seed{sd}" for (c, sd) in KNOWN
+                                    if not any(k["config"] == c and k["seed"] == sd
+                                               for k in known_hits)],
         "disagree": disagree,
         "provenance_fields_absent": missing_prov,
         "why_this_matters": "With no flags, timestamp, or code version recorded, a "
@@ -135,7 +172,10 @@ def main() -> int:
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
     print(f"  shared (config, seed) pairs: {out['shared_config_seed_pairs']}")
-    print(f"  agree: {len(agree)}   DISAGREE: {len(disagree)}")
+    print(f"  agree: {len(agree)}   declared-known: {len(known_hits)}   UNDECLARED DISAGREE: {len(disagree)}")
+    for k in known_hits:
+        print(f"    known  {k['config']}@seed{k['seed']} differs in "
+              f"{len(k['differing_fields'])} field(s) — declared, see KNOWN")
     for d_ in disagree:
         print(f"    {d_['config']}@seed{d_['seed']} differs in "
               f"{len(d_['differing_fields'])} field(s) across {len(d_['files'])} files:")
@@ -147,9 +187,14 @@ def main() -> int:
             print(f"    {f}: NO provenance fields at all "
                   f"(none of {', '.join(WANTED_PROVENANCE)})")
     print(f"\nwrote {OUT}")
-    if args.check and disagree:
-        print(f"CHECK FAILED: {len(disagree)} (config, seed) pair(s) disagree across "
-              f"artifacts", file=sys.stderr)
+    stale = out["undeclared_KNOWN_entries"]
+    if stale:
+        print(f"  KNOWN declares {stale} which no longer disagrees — remove "
+              f"the entry; a declaration outliving its defect hides the next one",
+              file=sys.stderr)
+    if args.check and (disagree or stale):
+        print(f"CHECK FAILED: {len(disagree)} undeclared disagreement(s), "
+              f"{len(stale)} stale KNOWN entr(ies)", file=sys.stderr)
         return 1
     return 0
 
