@@ -267,6 +267,26 @@ def main() -> int:
             "sd, its own se, its own CI. Reusing the total's floor for a component would "
             "be a real number answering a different question.",
         "seeds_excluded": missing or "none",
+        "MULTIPLICITY_the_coral_term_does_not_survive_a_correction": {
+            "why_raised": "Two effects are tested on one dataset. The coral term's "
+                f"p={cor_e['p_two_sided']} clears a naive 0.05 and does NOT clear a "
+                "Bonferroni-corrected 0.025 for 2 comparisons. Reporting it as "
+                "SIGNIFICANT without saying that would be the same overstatement the "
+                "floor-constant correction above just fixed.",
+            "bonferroni_alpha_2_tests": 0.025,
+            "coral_p": cor_e["p_two_sided"],
+            "coral_survives_bonferroni": bool(cor_e["p_two_sided"] < 0.025),
+            "lambda_p": lam_e["p_two_sided"],
+            "lambda_survives_bonferroni": bool(lam_e["p_two_sided"] < 0.025),
+            "honest_reading": "The lambda schedule is the effect. It is 78% of the total, "
+                "significant at any correction applied here, and consistent across all 3 "
+                "seeds. The coral/centroid term contributes a real-looking but SMALL "
+                "residual (-0.0102) whose significance is not robust to a multiplicity "
+                "correction at n=3. Crediting the headline to the centroid loss -- which "
+                "is the term I wrote and would most like to be the cause -- is not "
+                "supported. The cheap fix is seeds, not argument: at n=5 the coral term "
+                "either clears a corrected threshold or it does not.",
+        },
     }
     d["CORRECTION_the_floor_constant_was_wrong"] = {
         "corrects_field": "VERDICT",

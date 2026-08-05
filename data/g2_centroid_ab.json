@@ -274,5 +274,136 @@
   "blast_radius": "8 stat blocks, not just the headline: G1_gridiron, G1_hoops, G1_pitch, G2_delta_vs_majority, G2_sport_acc, G3_separation, G3_silhouette, effective_rank.",
   "conclusions_that_flip": "NONE. All 8 blocks keep their verdict. The wrong constant inflated the MARGINS, it did not reverse a decision -- G2 still clears (2.12x, p=0.0118) and every cost field was already below its floor and sits further below now. The correction is to the reported effect size, not to the finding.",
   "found_by": "checking the constant against scipy before reusing it in the decomposition -- not by anything downstream catching it."
+ },
+ "DECOMPOSITION": {
+  "why": "WHAT_THIS_DOES_NOT_ISOLATE said the -0.0458 was the combined effect of three flags and that separating them needed a third arm that was not run. It has now been run. This is that separation.",
+  "arms": {
+   "CTRL": "lambda 0->0.3, no coral",
+   "LAM": "lambda 0.3->0.5, no coral (the arm that was missing)",
+   "FULL": "lambda 0.3->0.5, both coral terms"
+  },
+  "per_seed": [
+   {
+    "seed": 7,
+    "ctrl": 0.6614,
+    "lam": 0.6327,
+    "full": 0.625
+   },
+   {
+    "seed": 11,
+    "ctrl": 0.666,
+    "lam": 0.6279,
+    "full": 0.6187
+   },
+   {
+    "seed": 13,
+    "ctrl": 0.6762,
+    "lam": 0.6363,
+    "full": 0.6226
+   }
+  ],
+  "lambda_effect": {
+   "n": 3,
+   "df": 2,
+   "mean": -0.0356,
+   "sd_of_diff": 0.006,
+   "se": 0.00347,
+   "t_obs": -10.24,
+   "p_two_sided": 0.0094,
+   "ci95": [
+    -0.0505,
+    -0.0206
+   ],
+   "ci95_excludes_zero": true,
+   "significant_p05": true,
+   "t_crit_two_sided": 4.303,
+   "paired_MDE": 0.0149,
+   "x_floor": 2.38,
+   "consistent_sign": true,
+   "diffs": [
+    -0.0287,
+    -0.0381,
+    -0.0399
+   ]
+  },
+  "coral_effect": {
+   "n": 3,
+   "df": 2,
+   "mean": -0.0102,
+   "sd_of_diff": 0.0031,
+   "se": 0.0018,
+   "t_obs": -5.66,
+   "p_two_sided": 0.0298,
+   "ci95": [
+    -0.018,
+    -0.0024
+   ],
+   "ci95_excludes_zero": true,
+   "significant_p05": true,
+   "t_crit_two_sided": 4.303,
+   "paired_MDE": 0.0078,
+   "x_floor": 1.31,
+   "consistent_sign": true,
+   "diffs": [
+    -0.0077,
+    -0.0092,
+    -0.0137
+   ]
+  },
+  "total_effect": {
+   "n": 3,
+   "df": 2,
+   "mean": -0.0458,
+   "sd_of_diff": 0.0087,
+   "se": 0.00502,
+   "t_obs": -9.11,
+   "p_two_sided": 0.0118,
+   "ci95": [
+    -0.0674,
+    -0.0241
+   ],
+   "ci95_excludes_zero": true,
+   "significant_p05": true,
+   "t_crit_two_sided": 4.303,
+   "paired_MDE": 0.0216,
+   "x_floor": 2.12,
+   "consistent_sign": true,
+   "diffs": [
+    -0.0364,
+    -0.0473,
+    -0.0536
+   ]
+  },
+  "lambda_share_of_total": 0.777,
+  "additivity_residual": 0.0,
+  "floors_are_per_effect": "Each effect is tested on its OWN differences -- its own sd, its own se, its own CI. Reusing the total's floor for a component would be a real number answering a different question.",
+  "seeds_excluded": "none",
+  "MULTIPLICITY_the_coral_term_does_not_survive_a_correction": {
+   "why_raised": "Two effects are tested on one dataset. The coral term's p=0.0298 clears a naive 0.05 and does NOT clear a Bonferroni-corrected 0.025 for 2 comparisons. Reporting it as SIGNIFICANT without saying that would be the same overstatement the floor-constant correction above just fixed.",
+   "bonferroni_alpha_2_tests": 0.025,
+   "coral_p": 0.0298,
+   "coral_survives_bonferroni": false,
+   "lambda_p": 0.0094,
+   "lambda_survives_bonferroni": true,
+   "honest_reading": "The lambda schedule is the effect. It is 78% of the total, significant at any correction applied here, and consistent across all 3 seeds. The coral/centroid term contributes a real-looking but SMALL residual (-0.0102) whose significance is not robust to a multiplicity correction at n=3. Crediting the headline to the centroid loss -- which is the term I wrote and would most like to be the cause -- is not supported. The cheap fix is seeds, not argument: at n=5 the coral term either clears a corrected threshold or it does not."
+  }
+ },
+ "CORRECTION_the_floor_constant_was_wrong": {
+  "corrects_field": "VERDICT",
+  "what_was_published": "The -0.0458 was reported as clearing the paired MDE(n=3) 0.0116 by 3.9x, computed as 2.31 * sd_d / sqrt(3).",
+  "what_is_wrong": "2.31 is t(0.975, df=8) -- the n=9 constant, used at n=3. A paired test on 3 seeds has df=2, where the two-sided constant is t(0.975,2)=4.303.",
+  "corrected": {
+   "paired_MDE": 0.0216,
+   "x_floor": 2.12,
+   "t_obs": -9.11,
+   "df": 2,
+   "p_two_sided": 0.0118,
+   "ci95": [
+    -0.0674,
+    -0.0241
+   ]
+  },
+  "does_the_finding_survive": "YES. p=0.0118, CI [-0.0674, -0.0241] excludes 0, and the sign is consistent across all 3 seeds. What does NOT survive is the SIZE of the margin: 2.12x, not 3.9x.",
+  "found_by": "checking my own constant against scipy before reusing it in the decomposition, not by anything downstream catching it."
  }
 }
