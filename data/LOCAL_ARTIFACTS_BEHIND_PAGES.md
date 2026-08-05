@@ -27,6 +27,24 @@ already published, which is why adopting the rebuilds was safe:
 The residual hundredths (43.9 vs 43.8, 1,539 vs published 1,538) are honest input drift
 since publication, not error.
 
+### Correction: "regenerates to agree with the page" was measured on ONE field each
+
+Written above after checking the headline number per artifact. `check_prose_values.py`,
+built the next hour, checks every cited field and shows the claim does not hold field-wise
+for `pitch_age_axis.json`:
+
+    pct_scorable          stored 21.2    regen 43.9    page 43.8    agrees
+    report.rows_scorable  stored  516    regen 1066    page 1,040   DISAGREES with both
+    corr_age_delivery     stored -0.1593 regen -0.1698 page -0.1671 DISAGREES with both
+
+The page sits BETWEEN the stored and regenerated values, so it was produced from a third
+run at a third moment. Adopting the rebuild moved the headline number onto the page's value
+and moved these two off it. That is a real trade, not a clean win, and it stays visible in
+`prose_values` as `pitch:insights[2]` rather than being quietly absorbed here.
+
+The three-way spread is itself the finding: nothing pins an artifact to the page generated
+from it, so page, local artifact and current inputs drift apart independently.
+
 ## Why nothing caught it
 
 **`check_cited_fields` compares `value` fields. These numbers live in prose.**

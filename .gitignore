@@ -75,6 +75,10 @@ data/*
 # The stdout-encoding gap list. Tracked because it is a BACKLOG of 42 files, not a pass/fail
 # — the value is the list surviving between sessions so it can be worked down deliberately.
 !data/stdout_encoding_audit.json
+# Prose-value audit. Tracked because it carries blocks_examined alongside the finding
+# count — the first draft of that checker examined 6 of 60 blocks and reported 0, and
+# only the denominator makes that distinguishable from a clean estate.
+!data/prose_values_audit.json
 # The record of four artifacts found holding a smaller sample than their own live
 # page publishes. Indexed from README.md; losing it loses the finding.
 !data/LOCAL_ARTIFACTS_BEHIND_PAGES.md

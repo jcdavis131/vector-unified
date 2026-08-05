@@ -1,0 +1,90 @@
+{
+ "question": "Does a number stated in prose match the field the page says it came from?",
+ "why": "check_cited_fields compares `value` fields only. Four artifacts sat stale for months behind pages publishing different numbers — gridiron's artifact said names_probed 300 while its page said 'a Wikidata probe of 2,707 corpus names found 117' — and the gate reported 0 WRONG throughout.",
+ "rule": "CATEGORICAL, not per-value: flagged only when the prose states numbers and NOT ONE cited numeric field value appears in it. A single missing value proves nothing, since a page may cite a field for provenance without quoting it.",
+ "does_not_claim": "Which side is correct. Every instance found so far had a CURRENT page and a STALE artifact, so 'fix the page' is the wrong default.",
+ "trivial_threshold": 10,
+ "pages": 6,
+ "blocks_examined": 41,
+ "findings": [
+  {
+   "page": "gridiron",
+   "where": "headline_stats[2]",
+   "title": "Players projected for the 2026 season, 21 of them rookies",
+   "cited_values_none_of_which_appear": [
+    {
+     "field": "projections.json:count",
+     "value": 647
+    },
+    {
+     "field": "projections.json:rookie_count",
+     "value": 22
+    }
+   ],
+   "why": "the prose states numbers and NOT ONE of the numeric fields it cites has its value in that text — page and artifact disagree. Which one is correct is NOT determined here; every instance found so far had a current page and a stale artifact."
+  },
+  {
+   "page": "pitch",
+   "where": "insights[2]",
+   "title": "The age axis is largely a team-quality ranking",
+   "cited_values_none_of_which_appear": [
+    {
+     "field": "pitch_age_axis.json:report.rows_scorable",
+     "value": 1066
+    }
+   ],
+   "why": "the prose states numbers and NOT ONE of the numeric fields it cites has its value in that text — page and artifact disagree. Which one is correct is NOT determined here; every instance found so far had a current page and a stale artifact."
+  }
+ ],
+ "inline_value_disagreements": [
+  {
+   "page": "equities",
+   "where": "insights[5]",
+   "field": "mtnn_report.json:sector_top1_acc",
+   "source_says": "0.5454",
+   "artifact_has": 0.5454058398071256
+  },
+  {
+   "page": "tennis",
+   "where": "insights[4]",
+   "field": "tennis_mtnn_report.json:mtnn_mean",
+   "source_says": "0.1168",
+   "artifact_has": 0.1132
+  },
+  {
+   "page": "tennis",
+   "where": "insights[4]",
+   "field": "tennis_mtnn_report.json:mtnn_sd",
+   "source_says": "0.0152",
+   "artifact_has": 0.0041
+  },
+  {
+   "page": "tennis",
+   "where": "insights[5]",
+   "field": "tennis_forward_enriched.json:ridge16_gain",
+   "source_says": "0.0941",
+   "artifact_has": 0.0846
+  },
+  {
+   "page": "tennis",
+   "where": "insights[5]",
+   "field": "tennis_forward_enriched.json:ridge28_gain",
+   "source_says": "0.1012",
+   "artifact_has": 0.0896
+  },
+  {
+   "page": "tennis",
+   "where": "insights[5]",
+   "field": "tennis_forward_enriched.json:candidates_add_over_16",
+   "source_says": "0.0071",
+   "artifact_has": 0.0051
+  },
+  {
+   "page": "tennis",
+   "where": "headline_stats[4]",
+   "field": "tennis_mtnn_report.json:mtnn_mean",
+   "source_says": "0.1168",
+   "artifact_has": 0.1132
+  }
+ ]
+}

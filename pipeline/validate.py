@@ -183,6 +183,21 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # mechanical edit across all of them, and a bulk mechanical edit this session already
     # shipped a NameError that py_compile could not see. The list is the deliverable.
     "stdout_encoding": (["check_stdout_encoding.py"], False),
+    # REPORT-ONLY — no --check. It finds 2 REAL page/artifact disagreements right now
+    # (gridiron headline_stats[2] says "21 rookies 646" where projections.json holds
+    # count 647 / rookie_count 22; pitch insights[2] quotes 1,040 pairs against 1042), and
+    # both are genuine.
+    #
+    # Not blocking because the fix is a DECISION, not an edit: which side is right, the page
+    # or the artifact? Every instance found so far had a current page and a stale artifact,
+    # so "correct the page" is the wrong default. cited_fields already holds the board red
+    # for exactly this unresolved class on tennis, and a second red line for the same
+    # question adds no information to a reader — it just makes the first one easier to
+    # dismiss as noise.
+    #
+    # Non-vacuity is measured, not assumed: restoring the stale gridiron artifact
+    # (names_probed 300) makes it fire on gridiron:insights[4] at once.
+    "prose_values": (["check_prose_values.py"], False),
 }
 
 # Large artifacts a check CANNOT RUN WITHOUT, declared per check.
