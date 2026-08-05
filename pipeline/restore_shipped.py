@@ -27,6 +27,17 @@ So: no inference. Every entry states its destination or states that it has none.
 file absent from MANIFEST is a FAILURE, not a skip -- the same rule validate.py applies to
 unregistered checkers, for the same reason.
 
+WHICH DIR. This flag is required and nothing here ever said where the backup lives. It was
+C:/Users/jcdav/AppData/Local/Temp/claude/C--Users-jcdav/<session-id>/scratchpad/g2run/backup
+-- a CLAUDE SESSION temp directory, one cleanup away from taking the recovery path for
+sport_acc 0.6851 / ckpt b055641c03760624 with it. Copied out on 2026-08-05 and verified
+with --verify: all five destinations ok, before.json declared no-destination, no drift.
+
+    C:/Users/jcdav/experiment-rescue-2026-08-05/g2run/backup
+
+See data/EXPERIMENT_DATA_IN_TEMP.md. A required flag whose only valid argument lives in
+temp is a restore procedure that works until it does not.
+
     python pipeline/restore_shipped.py --backup DIR            # restore + verify
     python pipeline/restore_shipped.py --backup DIR --verify   # check only, exit 1 on drift
 """

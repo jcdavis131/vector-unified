@@ -83,6 +83,38 @@ Verified usable from the rescue copy, not merely copied:
     TOTAL  mean -0.0458  t  -9.11 df 2  p 0.0118  CI95 [-0.0674,-0.0241]  SIGNIFICANT
     lambda is 78% of the total. additivity residual 0.00e+00
 
+## The most consequential file in there was found by accident
+
+`g2run/backup/` is not a G2 artifact. It is the **restore set for the shipped model** —
+exactly the six files `restore_shipped.py --backup DIR` declares in its MANIFEST:
+
+    unified_stage2_best.pt        stage2_baselines.json    stage2_history.json
+    unified_report.json.pre_eval  gridiron_season_emb.npz  before.json
+
+`restore_shipped.py` exists because a restore-by-guess once invented paths and left
+`unified_report.json` at the wrong value while printing RESTORED. It takes `--backup DIR`
+and never says where DIR is, because the answer was a session temp directory.
+
+So the recovery path for `sport_acc 0.6851` / ckpt `b055641c03760624` — the state the
+whole G2 promote-or-discard decision is measured against — was one cleanup away from gone.
+It was rescued as a side effect of copying `g2run` wholesale, before anyone knew what it
+was.
+
+Verified against the rescue copy with the tool's own check, not by eye:
+
+    python pipeline/restore_shipped.py --backup C:/Users/jcdav/experiment-rescue-2026-08-05/g2run/backup --verify
+
+    ok       pipeline/data/unified_stage2_best.pt    b055641c03760624
+    ok       data/stage2_baselines.json              a7531f8b37271282
+    ok       data/stage2_history.json                e22629381c4db5c0
+    ok       data/unified_report.json                d2ee1ca2e45c6cbd
+    ok       pipeline/data/gridiron_season_emb.npz   7982eab5ff00a51c
+    snapshot before.json                             no destination, declared
+    no drift                                         exit 0
+
+**That is the `--backup DIR` to pass.** It was worth writing down, because the flag is
+required and the docstring never named a directory.
+
 ## Rescued, not fixed
 
 Everything was copied out of temp to `C:\Users\jcdav\experiment-rescue-2026-08-05\` —
