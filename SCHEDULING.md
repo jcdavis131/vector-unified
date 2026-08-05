@@ -114,3 +114,31 @@ them exists: the gate tile needs `data/gate_inputs_tracked_audit.json`, which
 `pipeline/check_gate_inputs_tracked.py` writes and which is not carried on master.
 
 It reads only. It runs no checker, no builder and no trainer.
+
+### Keeping the dashboard up across reboots
+
+The sweep above is a task that runs and exits. The dashboard is a server that must stay
+running, so it wants `ONLOGON`, not an interval. Run this yourself; it modifies the machine.
+
+    schtasks /Create /TN "vector-dashboard" /SC ONLOGON ^
+      /TR "C:\Users\jcdav\vector-hoops\pipeline\.venv\Scripts\pythonw.exe C:\Users\jcdav\vector-unified\tools\dashboard\server.py" ^
+      /RL LIMITED /F
+
+`pythonw.exe`, not `python.exe`, so it runs without a console window.
+
+    schtasks /Run    /TN "vector-dashboard"      # start now, without logging out
+    schtasks /Delete /TN "vector-dashboard" /F   # remove
+
+**The duplicate-instance trap applies here more than anywhere.** A logon task plus a
+manually started server means two processes: the first holds 8000, the second silently
+takes 8001, and the page you are looking at is served by whichever won. That produced a
+board during development that looked entirely current and was not. Check before starting
+one by hand:
+
+    curl -s -o NUL -w "%{http_code}" http://localhost:8000/
+
+`200` means one is already serving and you should not start another.
+
+**It does not survive a crash.** `ONLOGON` restarts it at the next logon, not when the
+process dies. If the board goes blank mid-session,
+`schtasks /Run /TN "vector-dashboard"` brings it back.
