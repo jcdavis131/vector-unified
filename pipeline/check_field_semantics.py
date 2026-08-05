@@ -31,8 +31,10 @@ FOUR ARMS, each decidable from the artifact alone:
               headline drifted away from its own per-seed values.
   COUNT       an `n_<thing>` beside a `<thing>s` collection must equal its length. This is
               the arm that catches "59 economies" over a 61-entry map.
-  UNDOCUMENTED a top-level numeric field with no prose in the artifact and no mention in
-              the producing script is reported, not failed. Coverage, not a verdict.
+  UNDOCUMENTED a snake_case field name that appears in NO pipeline docstring, comment or
+              prose string. This is the "clearly documented in comments" half. REPORT-ONLY:
+              it never sets the exit code. Measured 96.9% for vector-unified (18 of 589
+              distinct names) and 64.3% estate-wide (397 of 1113).
 
 IT WRITES NOTHING AND RUNS NOTHING. That restriction is not fastidiousness: the sibling
 checker check_documented_usage.py executed documented commands, and because build_*.py and
@@ -43,8 +45,9 @@ taking three green gates red. This file opens files for reading and nothing else
 WHAT IT CANNOT DECIDE, stated so a green line is not read as more than it is. It cannot
 tell that `vol_q_nom` is the sd of levels rather than of growth — that requires reading the
 code that produced it against the prose that describes it, which is a judgement. It checks
-the claims a NAME makes, not the claims a SENTENCE makes. The undocumented count is
-printed every run so the uncovered part stays visible.
+the claims a NAME makes, not the claims a SENTENCE makes; UNDOCUMENTED asks only whether
+anyone wrote the name down in a sentence, never whether the sentence is right. The
+uncovered count prints every run so that gap stays visible.
 
     python pipeline/check_field_semantics.py
     python pipeline/check_field_semantics.py --check    # exit 1 on a RANGE/AGGREGATE/COUNT violation
@@ -91,6 +94,11 @@ RANGE_RULES: list[tuple[re.Pattern, object, str]] = [
 # `n_economies` should match a collection named economy/economies. Suffix -> stems tried.
 COUNT_STEMS = {"ies": "y", "s": "", "": ""}
 
+# A schema field name, as opposed to a data key. snake_case, 3+ chars, no
+# spaces/capitals/hyphens. Deliberately conservative: a name this rejects is
+# simply not asked about, which understates coverage rather than inventing it.
+SCHEMA_NAME = re.compile(r"^[a-z][a-z0-9_]{2,}$")
+
 
 def walk(obj, path=""):
     if isinstance(obj, dict):
@@ -104,6 +112,65 @@ def walk(obj, path=""):
 
 def numeric(v) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def _prose_corpus() -> set[str]:
+    """Every word of prose this repo could plausibly use to explain a field.
+
+    Sources: the string VALUES inside artifacts (this estate embeds its explanations in
+    the artifact, e.g. `why`, `note`, `reading`, `what_this_does_NOT_isolate`), plus the
+    source of every pipeline script — docstrings and comments included, since that is where
+    "clearly documented in comments" actually lives.
+    """
+    corpus: list[str] = []
+    for p in (ROOT / "pipeline").glob("*.py"):
+        try:
+            corpus.append(p.read_text(encoding="utf-8", errors="replace"))
+        except OSError:
+            pass
+    return {w for w in re.findall(r"[A-Za-z_][A-Za-z0-9_]{2,}", " ".join(corpus))}
+
+
+def check_undocumented(doc: dict, label: str, corpus: set[str]) -> list[dict]:
+    """COVERAGE ARM — which field names are explained ANYWHERE, and which are not.
+
+    REPORT-ONLY, NEVER A FAILURE, and that is a calibration decision rather than
+    squeamishness. Documentation coverage starts low everywhere, and a blocking gate that
+    is red from birth is the failure mode this repo already documented for internal_prose
+    (9% precision, demoted to report-only because 21 false alarms per run teach a reader to
+    skip the line). This arm reports a percentage and a list; it never sets the exit code.
+
+    A field counts as documented if its name appears in this repo's pipeline source — a
+    docstring, a comment, or the code that writes it — or in a prose STRING inside the
+    artifact itself. That is a low bar on purpose: it answers "has anyone ever written this
+    name down in a sentence", not "is the explanation correct". The second question is the
+    one this whole file says it cannot decide.
+    """
+    own_prose = {w for _, v in walk(doc) if isinstance(v, str)
+                 for w in re.findall(r"[A-Za-z_][A-Za-z0-9_]{2,}", v)}
+    known = corpus | own_prose
+    out = []
+    for p, v in walk(doc):
+        if not numeric(v):
+            continue
+        leaf = p.rsplit(".", 1)[-1]
+        # SCHEMA NAMES ONLY, NOT ENTITY KEYS. A first estate-wide run reported 16,952 of
+        # 17,764 "undocumented field names" — 4.6% coverage — because walk() cannot tell a
+        # schema field from a dict key that happens to be data. `careers."nikola jokic"`,
+        # ticker symbols, economy codes and season labels were all counted as fields whose
+        # meaning nobody documented. That denominator measured how many ENTITIES the estate
+        # tracks, not how well its schema is explained: a real number answering a different
+        # question, produced by the checker written to catch exactly that.
+        #
+        # A schema field in this estate is snake_case. Entity keys are not: they carry
+        # spaces, capitals, hyphens or digits-as-identity.
+        if not SCHEMA_NAME.match(leaf):
+            continue
+        if leaf not in known:
+            out.append({"arm": "UNDOCUMENTED", "file": label, "field": p, "value": v,
+                        "why": "this field name appears in no pipeline docstring, comment "
+                               "or prose string — nothing says what it means"})
+    return out
 
 
 def check_doc(doc: dict, label: str, spans: list | None = None) -> list[dict]:
@@ -247,6 +314,11 @@ def main() -> int:
                     dirs.append(d)
 
     findings, n_files, unreadable, spans = [], 0, [], []
+    undoc: list[dict] = []
+    corpus = _prose_corpus()
+    n_numeric = 0
+    seen_names: set[str] = set()
+    undoc_names: set[str] = set()
     for d in dirs:
         if not d.is_dir():
             continue
@@ -259,7 +331,15 @@ def main() -> int:
             if not isinstance(doc, dict):
                 continue
             n_files += 1
-            findings += check_doc(doc, str(f.relative_to(ESTATE)).replace("\\", "/"), spans)
+            lbl = str(f.relative_to(ESTATE)).replace("\\", "/")
+            findings += check_doc(doc, lbl, spans)
+            u = check_undocumented(doc, lbl, corpus)
+            undoc += u
+            undoc_names |= {x['field'].rsplit('.', 1)[-1] for x in u}
+            seen_names |= {p.rsplit('.', 1)[-1] for p, v in walk(doc)
+                           if numeric(v)
+                           and SCHEMA_NAME.match(p.rsplit('.', 1)[-1])}
+            n_numeric += sum(1 for _, v in walk(doc) if numeric(v))
 
     by_arm: dict[str, int] = {}
     for x in findings:
@@ -288,6 +368,24 @@ def main() -> int:
         "files_scanned": n_files,
         "unreadable": unreadable,
         "counts_by_arm": by_arm,
+        "documentation_coverage": {
+            # DISTINCT NAMES IS THE HONEST DENOMINATOR. Counting every numeric leaf
+            # gave 37,692 "fields" and a 98.2% headline, but that denominator is dominated
+            # by DATA ROWS — one embedding artifact contributes thousands of instances of
+            # the same handful of names. A percentage over instances measures how big the
+            # data files are, not how well the schema is explained. Both are reported; the
+            # distinct figure is the one that answers the question.
+            "distinct_names_seen": len(seen_names),
+            "distinct_undocumented": len(undoc_names),
+            "pct_distinct_documented": round(
+                100.0 * (len(seen_names) - len(undoc_names)) / max(len(seen_names), 1), 1),
+            "instances_seen": n_numeric,
+            "instances_undocumented": len(undoc),
+            "undocumented_names": sorted(undoc_names),
+            "arm_is_report_only": "UNDOCUMENTED never sets the exit code. Coverage starts low everywhere and a gate red from birth teaches its reader to skip the line — the exact reason internal_prose is report-only here.",
+            "what_documented_means_here": "the field NAME appears in a pipeline docstring, comment, or a prose string in the artifact. A low bar, on purpose: it answers whether anyone wrote the name down in a sentence, not whether the sentence is right.",
+            "sample_undocumented": undoc[:40],
+        },
         "not_checkable_spans": spans,
         "blind_spot_note": "A 2-element ascending numeric list beside an n_ field reads as a SPAN (first, last), not an enumeration. merged_careers.json has seasons [1996, 2002] beside n_seasons 6 — both correct. Counted here, never reported as a violation.",
         "findings": findings,
@@ -297,6 +395,11 @@ def main() -> int:
 
     print(f"  scanned {n_files} artifact(s) across {len(dirs)} dir(s)")
     print(f"  findings by arm: {by_arm or 'none'}")
+    cov = out["documentation_coverage"]
+    print(f"  documentation coverage: {cov['pct_distinct_documented']}% "
+          f"({cov['distinct_undocumented']} of {cov['distinct_names_seen']} DISTINCT "
+          f"field names have no prose anywhere; "
+          f"{cov['instances_undocumented']}/{cov['instances_seen']} instances) — REPORT ONLY")
     for x in findings[:25]:
         print(f"    [{x['arm']:<9}] {x['file']}::{x['field']} = {x['value']}")
         print(f"                {x['why']}")
