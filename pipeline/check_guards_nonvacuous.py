@@ -67,6 +67,31 @@ UNCOVERED_REASON = {
         "~130s plus three 16 MB copies to every validate.py. Deferred on cost, not "
         "difficulty. Its artifact currently records vacuous_gates: [], so the arm has not "
         "fired on live data either — this is a real gap, not a formality."),
+    "check_corrections_landed.py": (
+        "CURRENTLY VACUOUS, AND THE MUTATION IS WHAT PROVED IT. A mutation was written "
+        "against vector-hoops/pipeline/seed_floor.json — strip the inline [CORRECTED: "
+        "...] marker and the wrong claim stands again — and the guard exited 0. The "
+        "checker only detects a correction block that quotes its target VERBATIM, and "
+        "seed_floor's block paraphrases ('...with NO BACKUP') rather than copying the "
+        "sentence. Sweeping the estate: 2 blocks have a quote field and BOTH quote the "
+        "correction's own narration, not the target text. The single block that ever "
+        "quoted verbatim was gate_nonvacuity.json's prose_says, and 2d602a2 regenerated "
+        "it away when the fix moved into the generator. So the guard is green over a "
+        "class with no members. Downgraded to report-only in validate.py rather than "
+        "left blocking; a gate that cannot fail is worse than no gate, because it reads "
+        "as coverage. The mutation is removed rather than left permanently red — it "
+        "would report the checker as broken when what is true is that its detectable "
+        "class is empty."),
+    "check_internal_prose.py": (
+        "CANNOT FAIL BY CONSTRUCTION, deliberately. It is registered in validate.py "
+        "WITHOUT --check, so it always exits 0 — its measured precision is 2 of 23 "
+        "(~9%) and a blocking gate at that rate trains its reader to ignore it. A "
+        "mutation test needs a red state to plant, and there is none. This is a design "
+        "choice with a cost: nothing verifies that the checker still detects anything, "
+        "so if its regex broke it would report 0 findings and look identical to a clean "
+        "estate. The honest mitigation is that its two real finds are recorded in "
+        "internal_prose_audit.json with their file and field, so a reader can confirm "
+        "they are still being found."),
     "check_guards_nonvacuous.py": (
         "CIRCULAR. This file IS the mutation harness; planting a defect in it means asking "
         "it to detect its own vacuity while running as the thing under test. Its own "
@@ -129,6 +154,29 @@ def _contaminate_axis(doc):
     rows = doc.get("careers") or doc.get("players") or []
     if rows:
         rows[0] = dict(rows[0], name="jaren jackson")
+
+
+def _strip_correction_marker(doc):
+    """RETAINED BUT NOT WIRED IN. This is the mutation that proved
+    check_corrections_landed.py vacuous — it plants exactly the defect that guard names,
+    and the guard exited 0. It is kept rather than deleted because it is the test to
+    re-enable the moment the checker can see a paraphrased correction; deleting it would
+    lose the one worked example of the class it cannot detect. See UNCOVERED_REASON
+    ["check_corrections_landed.py"] for the full finding.
+
+    Remove the inline [CORRECTED: ...] pointer, leaving the wrong claim standing.
+
+    This is the real defect, not an approximation of it. seed_floor.json's
+    REPO_STATE_WARNING.also_destroyed asserted "there is no backup" while
+    CORRECTION_embedding_v3_backups_exist in the same file said eight exist. The fix was
+    an inline marker at the point of the wrong claim; deleting that marker restores the
+    exact state the guard is here to reject.
+    """
+    w = doc["REPO_STATE_WARNING"]
+    t = w["also_destroyed"]
+    i, j = t.find(" [CORRECTED:"), t.find("]", t.find(" [CORRECTED:"))
+    assert i >= 0 and j > i, "marker not found — mutation would be a no-op"
+    w["also_destroyed"] = (t[:i] + " and there is no backup" + t[j + 1:])
 
 
 def _bump_mtime(path: Path) -> None:

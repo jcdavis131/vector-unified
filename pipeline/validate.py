@@ -81,13 +81,15 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     "tennis_forward": (["build_tennis_forward.py", "--check"], False),
     "hoops_forward": (["build_hoops_forward.py", "--check"], False),
     "equities_forward": (["build_equities_forward.py", "--check"], False),
-    # BLOCKING. Adding a CORRECTION_* key and stopping there leaves the wrong sentence
-    # fully readable as a standalone assertion, so the file looks audited while the
-    # audited claim still stands. I did it three times in one session and caught the
-    # third by accident. 0 false positives over 181 artifacts, and mutation-tested: put
-    # the un-annotated sentence back in gate_nonvacuity.json and it exits 1 naming the
-    # exact key.
-    "corrections_landed": (["check_corrections_landed.py", "--check"], False),
+    # REPORT-ONLY — note there is no --check. It WAS blocking, on the strength of a
+    # mutation test against gate_nonvacuity.json's prose_says, which quoted its target
+    # verbatim. 2d602a2 then moved that fix into the generator and regenerated the block
+    # away, and a second mutation (against vector-hoops seed_floor.json) exited 0: that
+    # block PARAPHRASES its target instead of quoting it, and the checker only matches
+    # verbatim. An estate sweep found no block left in the detectable class, so the gate
+    # is green over an empty set. Blocking on that reads as coverage and is not.
+    # See UNCOVERED_REASON in check_guards_nonvacuous.py.
+    "corrections_landed": (["check_corrections_landed.py"], False),
     # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
     # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real
     # finds were worth having, but a BLOCKING gate at 9% precision trains its reader to
