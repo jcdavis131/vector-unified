@@ -97,6 +97,17 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # rows (player_idx in order AND cosine 1.0000 row-for-row). Equal row counts are
     # exactly the trap probe_g1_position.py exists for.
     "bridge_join": (["query_bridge.py", "--check"], False),
+    # BLOCKING, and it currently FAILS on a real defect that predates this registration.
+    # `full@seed7` has three different records across ablation_report.json,
+    # ablation_grl_seeds.json and ablation_coral_vicreg_seeds.json — differing in 6 of 8
+    # fields — while seeds 8 and 9 are bit-identical across the same three. None of the
+    # three files records flags, timestamp or code version, so it cannot be determined
+    # whether training is irreproducible at a fixed seed or whether one config name covers
+    # several flag sets. Registered with --check rather than report-only because, unlike
+    # internal_prose's 9%, this finding's precision is 100%: the disagreement is arithmetic.
+    # Registering a real failure is the point of the gate; demoting it to keep the board
+    # green is the exact move validate.py's own docstring warns against.
+    "ablation_consistency": (["check_ablation_consistency.py", "--check"], False),
     # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
     # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real
     # finds were worth having, but a BLOCKING gate at 9% precision trains its reader to

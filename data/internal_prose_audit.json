@@ -1,13 +1,13 @@
 {
  "question": "Does any artifact's prose quote a number that disagrees with that same artifact's own fields?",
  "found_by": "hand, while auditing promotion gates — gate_nonvacuity.json's note_rank says the shuffles 'both score 12.4, exactly the real value' while its own three fields say 12.1.",
- "files_scanned": 184,
+ "files_scanned": 185,
  "files_unreadable": [],
  "prose_numbers_classified": {
   "EXACT": 1245,
   "STALE": 27,
   "NEAR_NO_CLAIM": 2764,
-  "UNMATCHED": 272
+  "UNMATCHED": 274
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
  "what_NEAR_NO_CLAIM_means": "near a field, but the surrounding clause makes no identity claim. Counted, NOT reported. The first version of this script had no such requirement and produced 134 hits over 75 artifacts, almost all ranges ('persistence is 0.85-0.92'), thresholds ('below the 0.01 bar') and counts ('a 200-draw simulation') — reproducing the exact false-positive failure this script's docstring cites check_cited_fields.py for.",

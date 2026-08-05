@@ -1,7 +1,7 @@
 {
  "question": "Does every CORRECTION key reach the text it corrects, or does the wrong claim still stand un-annotated in the same file?",
  "why": "Adding a correction key and stopping there leaves the wrong sentence fully readable as a standalone assertion. A reader who stops at the key whose NAME says to read it acts on the wrong fact, and the file looks audited while the audited claim still stands. I made this mistake three times in one session and caught the third by accident.",
- "files_scanned": 191,
+ "files_scanned": 192,
  "correction_blocks_found": 10,
  "blocks_with_a_DECLARED_target": 4,
  "blocks_that_neither_declare_nor_quote": 5,
