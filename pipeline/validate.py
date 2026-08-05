@@ -118,6 +118,38 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     "internal_prose": (["check_internal_prose.py"], False),
 }
 
+# Large artifacts a check CANNOT RUN WITHOUT, declared per check.
+#
+# A fresh clone of this repo fails 9 of 19 checks. Seven of those fail only on a clone,
+# and the cause is not a defect in the check — it is that .gitignore deliberately excludes
+# `pipeline/data/`, `assets/*.json` and most of `data/`, exactly as the rule at the top of
+# .gitignore says it should ("large GENERATED artifacts are not [tracked] ... would put
+# ~43 MB of JSON blobs into history"). Tracking these six would add ~24 MB and contradict
+# that rule.
+#
+# So the fix is not to track them and not to leave the check reporting FAIL. A check that
+# CANNOT RUN must report neither FAIL, which asserts a defect was found, nor PASS, which
+# asserts something was verified. It reports UNAVAILABLE, counted separately and printed
+# with the missing path, exactly as --offline already yields SKIP.
+#
+# THIS IS NOT A WAY TO QUIET A FAILING CHECK. On this box every prerequisite exists, so
+# every check runs and this map changes nothing. It only distinguishes "could not run"
+# from "ran and found a problem" for a reader who does not have the artifacts.
+#
+# Measured with pipeline/check_gate_inputs_tracked.py, which clones the repo and runs this
+# file inside the clone.
+PREREQS: dict[str, list[str]] = {
+    "draft_value_invariants": ["data/qb_survivorship_probe.json"],
+    "gate_nonvacuity": ["pipeline/data/unified_stage2_best.pt"],
+    "tennis_mtnn": ["pipeline/data/tennis_matrix.npz"],
+    "tennis_forward": ["pipeline/data/tennis_matrix.npz"],
+    "bridge_join": ["pipeline/data/unified_matrix.npz"],
+    "g1_position": ["assets/unified.json"],
+    # guards_nonvacuous plants defects in front of the other guards, so it inherits
+    # whatever they need. Listed with the union rather than left to fail opaquely.
+    "guards_nonvacuous": ["pipeline/data/tennis_matrix.npz", "assets/unified.json"],
+}
+
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
 # re-running them costs a live Wikidata pull, and claiming them as checked would be exactly
 # the kind of unearned green this file was written to prevent.
@@ -152,6 +184,11 @@ def main() -> int:
         if needs_net and args.offline:
             results.append((name, "SKIP", 0.0, "--offline"))
             continue
+        absent = [p for p in PREREQS.get(name, []) if not (ROOT / p).exists()]
+        if absent:
+            results.append((name, "N/A", 0.0,
+                            f"cannot run: {absent[0]} absent (deliberately untracked)"))
+            continue
         t0 = time.monotonic()
         proc = subprocess.run([sys.executable, str(PIPE / argv[0]), *argv[1:]],
                               capture_output=True, text=True, encoding="utf-8",
@@ -177,11 +214,23 @@ def main() -> int:
 
     failed = [n for n, s, _, _ in results if s == "FAIL"]
     skipped = [n for n, s, _, _ in results if s == "SKIP"]
+    unavail = [n for n, s, _, _ in results if s == "N/A"]
+    # UNAVAILABLE is never folded into the pass count. A reader without the artifacts must
+    # see that N checks did not run, not a green line implying they did.
+    if unavail:
+        print(f"\n{len(unavail)} check(s) COULD NOT RUN (prerequisite artifact absent, "
+              f"deliberately untracked — see PREREQS in this file): {', '.join(unavail)}")
     if failed or unregistered:
         print(f"\n{len(failed)} check(s) failed, {len(unregistered)} unregistered.")
         return 1
-    suffix = f" ({len(skipped)} skipped: {', '.join(skipped)})" if skipped else ""
-    print(f"\nall {len(results) - len(skipped)} check(s) pass{suffix}.")
+    ran = len(results) - len(skipped) - len(unavail)
+    bits = []
+    if skipped:
+        bits.append(f"{len(skipped)} skipped: {', '.join(skipped)}")
+    if unavail:
+        bits.append(f"{len(unavail)} could not run")
+    suffix = f" ({'; '.join(bits)})" if bits else ""
+    print(f"\nall {ran} check(s) that could run pass{suffix}.")
     return 0
 
 
