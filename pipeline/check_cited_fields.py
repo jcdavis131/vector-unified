@@ -240,6 +240,10 @@ def main() -> int:
     unparseable: list[str] = []
     checked = 0
     vals_checked = 0
+    # Pages that verified no VALUE at all. Kept per page because the refusal below is a
+    # global count, and a global count cannot see a page with zero coverage sitting behind
+    # one with plenty.
+    zero_value_pages: list[tuple[str, int, int]] = []
     cache: dict[str, object] = {}
 
     for slug in SLUGS:
@@ -384,6 +388,26 @@ def main() -> int:
         print(f"  {slug:9} {s_ok:3} fields ok  {s_miss:2} MISSING   "
               f"{s_valok:2} values ok  {s_valbad:2} WRONG   "
               f"{s_unres:2} unresolved  {s_unparse:2} uncovered")
+        # A PAGE THAT VERIFIES ZERO VALUES IS NOT A VERIFIED PAGE. The refusal further down
+        # counts vals_checked ACROSS ALL PAGES, so one page carrying 24 comparisons keeps
+        # the gate green while another has had none at all. pitch (0 of 5) and unified
+        # (0 of 10) sat exactly there, reported clean, while pitch's own artifact said
+        # distinct_names 374 and the live page said 1,833 — a 5x disagreement no arm looked
+        # at, because the page states that number inside a LABEL rather than in a value
+        # field, and only value fields are compared.
+        #
+        # Reported per page rather than folded into the total. Not made a failure here: the
+        # gate is already red on tennis, and turning a blind spot into a second red line
+        # would change what "cited_fields is failing" means to whoever reads the board.
+        if s_valok == 0 and (s_ok or s_unparse):
+            zero_value_pages.append((slug, s_ok, s_unparse))
+
+    if zero_value_pages:
+        print(f"\n  {len(zero_value_pages)} page(s) verified ZERO published values — a "
+              f"blind spot, not a clean bill:")
+        for _slug, _ok, _un in zero_value_pages:
+            print(f"    {_slug:9} {_ok} field(s) confirmed to EXIST, {_un} reference(s) "
+                  f"uncovered, 0 value(s) compared")
 
     print(f"\n  {checked} simple field reference(s) checked against their cited file")
     print(f"  {vals_checked} published VALUE(s) compared against the artifact")

@@ -1,24 +1,24 @@
 {
  "question": "Does every registered check still work on a fresh clone?",
  "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
- "commit": "094ec13d2f108534da0e416d499d8a6529eb51ba",
+ "commit": "6fdb0f9f90438e66f0653d9fd7dd79e513a6a4de",
  "data_files": {
-  "working_tree": 77,
+  "working_tree": 79,
   "clone": 34,
-  "exist_only_locally": 43
+  "exist_only_locally": 45
  },
  "summary": {
   "working_tree": {
    "PASS": 17,
-   "FAIL": 2,
+   "FAIL": 3,
    "SKIP": 2,
    "N/A": 0
   },
   "clone": {
-   "PASS": 9,
+   "PASS": 6,
    "FAIL": 1,
    "SKIP": 2,
-   "N/A": 9
+   "N/A": 13
   }
  },
  "pass_here_fail_on_clone": [],
@@ -40,7 +40,7 @@
   },
   "merged_careers": {
    "working_tree": "PASS",
-   "clone": "PASS"
+   "clone": "N/A"
   },
   "artifact_freshness": {
    "working_tree": "FAIL",
@@ -64,14 +64,14 @@
   },
   "gridiron_forward": {
    "working_tree": "PASS",
-   "clone": "PASS"
+   "clone": "N/A"
   },
   "g1_position": {
    "working_tree": "PASS",
    "clone": "N/A"
   },
   "guards_nonvacuous": {
-   "working_tree": "PASS",
+   "working_tree": "FAIL",
    "clone": "N/A"
   },
   "tennis_forward": {
@@ -80,11 +80,11 @@
   },
   "hoops_forward": {
    "working_tree": "PASS",
-   "clone": "PASS"
+   "clone": "N/A"
   },
   "equities_forward": {
    "working_tree": "PASS",
-   "clone": "PASS"
+   "clone": "N/A"
   },
   "corrections_landed": {
    "working_tree": "PASS",
@@ -109,9 +109,13 @@
   "internal_prose": {
    "working_tree": "PASS",
    "clone": "PASS"
+  },
+  "laptop_paths": {
+   "working_tree": "PASS",
+   "clone": "PASS"
   }
  },
  "FIXED_was_a_vacuous_pass": "check_cited_fields.py verified 64 published values in the working tree and 0 in the clone, and printed PASS both times. It now refuses to pass on zero coverage, so it appears in pass_here_fail_on_clone as a TRUE positive rather than being invisible.",
- "the_remaining_pass_here_fail_on_clone_is_NOT_the_same_class": "The seven entries this audit originally found were checks that work fine and lack a deliberately-untracked artifact; they are now N/A. cited_fields is a different defect and must not be silenced the same way: check_cited_fields.py:95 hardcodes HUB = Path('C:/Users/jcdav/vector-hub/assets/data'), an absolute path into a sibling repo. It is machine-specific, not clone-specific — on any box that is not the author's it verifies zero values. It stays FAIL until that path is resolved properly, which is an estate-wide convention decision (check_hub_freshness.py and check_superlatives.py reach into vector-hub too) and not one to settle from inside this lane.",
+ "RESOLVED_the_last_pass_here_fail_on_clone": "cited_fields was the one true positive here and it was FIXED AT THE SOURCE rather than silenced. check_cited_fields.py:95 hardcoded an absolute path into vector-hub, so it was machine-specific, not clone-specific, and verified zero published values on any box that is not the author's while printing green. It now resolves through portable_paths.ESTATE. Resolving it was the PRECONDITION for N/A being honest: while the absolute path remained, 'the sibling repo is missing' misstated the cause. The same defect proved estate-wide — 37 path literals across 20 files, 8 guarded by .exists() and therefore silent — and pipeline/check_laptop_paths.py now blocks on it.",
  "why_not_registered": "This script runs validate.py. Registering it inside validate.py is unbounded recursion. Excluded by name in validate.py's glob rather than silently forgotten."
 }

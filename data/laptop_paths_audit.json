@@ -3,7 +3,7 @@
  "why": "portable_paths.ESTATE existed and 17 constants across 14 files ignored it. Two crash loudly on another box; eight are guarded by .exists() and degrade SILENTLY — build_vor_draft_value.py emits VOR values built from no draft data, validation_sweep.py runs all five checks under a different interpreter. A convention with no checker is a preference.",
  "method": "AST string literals only. Comments are invisible to ast by construction; docstrings are excluded by node identity; the match is ANCHORED at the start of the string so prose ABOUT a path is not a path claim. A grep reports 29 hits here, 12 of them prose.",
  "files_scanned": 111,
- "string_literals_examined": 17825,
+ "string_literals_examined": 17832,
  "findings": [],
  "fix": "from portable_paths import ESTATE   ->   ESTATE / \"vector-<repo>/...\""
 }

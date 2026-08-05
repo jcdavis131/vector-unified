@@ -21,3 +21,4 @@ blank as a pass.
 | 2026-08-05 17:48Z | cron sweep | sweep 4/5 (cited_fields FAIL) · gate_inputs PASS | worktree 17P/2F/2S · clone 9P/1F/2S/9NA · 0 pass-here-fail-there | semantics 0 findings, 417 files, doc-cov 96.6% | tennis_forward_report drifted AGAIN — reverted. Cause: check_gate_inputs_tracked.py runs validate.py in the WORKING TREE, which retrains tennis. The cron's no-validate.py rule is evaded transitively. |
 | 2026-08-05 19:50Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 418} |
 | 2026-08-05 20:18Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 419} | pinned-venv |
+| 2026-08-05 20:52Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 419} | pinned-venv |
