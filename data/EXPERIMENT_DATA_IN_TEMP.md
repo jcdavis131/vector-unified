@@ -85,11 +85,14 @@ Verified usable from the rescue copy, not merely copied:
 
 ## Rescued, not fixed
 
-Everything was copied out of temp to
+Everything was copied out of temp to `C:\Users\jcdav\experiment-rescue-2026-08-05\` —
+**443 files**:
 
-    C:\Users\jcdav\experiment-rescue-2026-08-05\{hoops_ab,ab}
+    hoops_ab/  ab/                                    41 files, byte-size verified one by one
+    g2run/  stage2_seed/  grid_seed/                 402 files, verified by count, 402 of 402
+    pitch_seed/  eq_sector/
 
-verified byte-size identical file by file. **This is a copy, not a repair.** The seven
+**This is a copy, not a repair.** The seven
 scripts still point at the temp path and still break when the session closes.
 
 ## The real fix is per-repo and is the operator's
