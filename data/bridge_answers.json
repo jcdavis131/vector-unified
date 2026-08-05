@@ -1,7 +1,7 @@
 {
- "built": "2026-08-04T21:36:36",
+ "built": "2026-08-04T21:54:12",
  "archetype_join_verified": "player_idx in order and cosine 1.0000 over 500 rows",
- "hoops_archetype_join": "player_idx in order and `position` agrees 12966/12966 row-for-row (cosine is NOT usable: E_hoops was built from a different embedding_v3.npz than the one on disk)",
+ "hoops_archetype_join": "player_idx in order and cosine 1.0000 over 2000 rows — embedding_v3.npz matches what unified_matrix.npz was built from",
  "Q1_companies_reaching_the_athlete_corpus": [
   {
    "ticker": "MET",
@@ -393,7 +393,7 @@
  },
  "Q3b_archetype_mix_bridged_vs_not_HOOPS": {
   "available": true,
-  "why": "player_idx in order and `position` agrees 12966/12966 row-for-row (cosine is NOT usable: E_hoops was built from a different embedding_v3.npz than the one on disk)",
+  "why": "player_idx in order and cosine 1.0000 over 2000 rows — embedding_v3.npz matches what unified_matrix.npz was built from",
   "corpus_rows": 12966,
   "rows_covered_by_roster_map": 3385,
   "n_bridged": 576,
