@@ -1,7 +1,7 @@
 {
  "question": "Does any artifact's prose quote a number that disagrees with that same artifact's own fields?",
  "found_by": "hand, while auditing promotion gates — gate_nonvacuity.json's note_rank says the shuffles 'both score 12.4, exactly the real value' while its own three fields say 12.1.",
- "files_scanned": 186,
+ "files_scanned": 187,
  "files_unreadable": [],
  "prose_numbers_classified": {
   "EXACT": 1253,

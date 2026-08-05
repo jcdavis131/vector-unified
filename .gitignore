@@ -64,6 +64,10 @@ data/*
 !data/ablation_coral_vicreg_seeds.json
 !data/stage2_seed_floor.json
 !data/ablation_determinism.json
+# Clone-vs-working-tree gate audit. Cheap to regenerate, but it is the record that 7
+# checks pass here and fail on a clone, and check_cited_fields.py goes green over 0
+# values there. Losing it loses the finding, not just a report.
+!data/gate_inputs_tracked_audit.json
 # The four forward-probe reports. A DIFFERENT reason from the four above — these ARE
 # generated, and the rule at the top of this file says generated artifacts stay out. They
 # are the exception because dumbmodel.com CITES THEM BY PATH as the source of published

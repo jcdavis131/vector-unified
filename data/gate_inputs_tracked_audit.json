@@ -1,0 +1,115 @@
+{
+ "question": "Does every registered check still work on a fresh clone?",
+ "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
+ "commit": "4e4908cff998d58266c8024f32dca92445bf79f6",
+ "data_files": {
+  "working_tree": 71,
+  "clone": 28,
+  "exist_only_locally": 43
+ },
+ "summary": {
+  "working_tree": {
+   "PASS": 15,
+   "FAIL": 2,
+   "SKIP": 2
+  },
+  "clone": {
+   "PASS": 8,
+   "FAIL": 9,
+   "SKIP": 2
+  }
+ },
+ "pass_here_fail_on_clone": [
+  "bridge_join",
+  "draft_value_invariants",
+  "g1_position",
+  "gate_nonvacuity",
+  "guards_nonvacuous",
+  "tennis_forward",
+  "tennis_mtnn"
+ ],
+ "fail_in_both": [
+  "ablation_consistency",
+  "artifact_freshness"
+ ],
+ "per_check": {
+  "draft_value_invariants": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "wikidata_qids": {
+   "working_tree": "SKIP",
+   "clone": "SKIP"
+  },
+  "gate_nonvacuity": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "merged_careers": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "artifact_freshness": {
+   "working_tree": "FAIL",
+   "clone": "FAIL"
+  },
+  "hub_freshness": {
+   "working_tree": "SKIP",
+   "clone": "SKIP"
+  },
+  "superlatives": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "cited_fields": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "tennis_mtnn": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "gridiron_forward": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "g1_position": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "guards_nonvacuous": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "tennis_forward": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "hoops_forward": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "equities_forward": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "corrections_landed": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "bridge_join": {
+   "working_tree": "PASS",
+   "clone": "FAIL"
+  },
+  "ablation_consistency": {
+   "working_tree": "FAIL",
+   "clone": "FAIL"
+  },
+  "internal_prose": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  }
+ },
+ "KNOWN_VACUOUS_PASS": "check_cited_fields.py verifies 64 published values in the working tree and 0 in the clone, and prints PASS both times. It is NOT in pass_here_fail_on_clone because it does not fail — that is the problem. A gate that goes green over an empty set on every clone is misleading rather than merely weak. Counting it as a pass is how this audit would have missed it.",
+ "why_not_registered": "This script runs validate.py. Registering it inside validate.py is unbounded recursion. Excluded by name in validate.py's glob rather than silently forgotten."
+}

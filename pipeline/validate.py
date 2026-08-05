@@ -136,7 +136,14 @@ def main() -> int:
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    found = {p.name for p in PIPE.glob("check_*.py")}
+    # check_gate_inputs_tracked.py RUNS THIS FILE (it clones the repo and invokes
+    # validate.py --offline inside the clone to find checks that only work on this box).
+    # Registering it in CHECKS would be unbounded recursion. It is named here, explicitly,
+    # rather than left to trip the unregistered-checker FAILURE — an exclusion a reader
+    # can see and argue with is not the same as a checker quietly forgotten, which is the
+    # failure mode that rule exists to catch.
+    RUNS_VALIDATE = {"check_gate_inputs_tracked.py"}
+    found = {p.name for p in PIPE.glob("check_*.py")} - RUNS_VALIDATE
     registered = {argv[0] for argv, _ in CHECKS.values()}
     unregistered = sorted(found - registered)
 
