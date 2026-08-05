@@ -25,6 +25,12 @@ assets/**/*.pt.*
 
 # Acquired + intermediate data (27 MB; re-fetchable via pipeline/acquire_*.py)
 data/*
+# RECORDS OF OPEN FINDINGS, tracked so they survive a clone and so the operator dashboard
+# can see them. Both are the explanation for a currently-failing or currently-unfixed
+# condition; losing them leaves a red gate or a known bug with no stated reason, which is
+# how a real finding gets dismissed as noise.
+!data/TENNIS_CITATION_GAP.md
+!data/seed_order_audit.json
 # EXCEPT the hand-authored anchors. These are SOURCE, not generated output, and both
 # describe themselves as "version-controlled, changed only in a commit" — which was not
 # true: `data/` swallowed them, `git add -A` skips ignored paths silently, and three

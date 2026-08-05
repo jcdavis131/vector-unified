@@ -1,0 +1,20 @@
+{
+ "question": "Is any seeding call made AFTER something that initialises parameters?",
+ "why": "ablation.py gave 0.6940 / 0.6926 / 0.6827 for one config at one seed. Not a CUDA kernel — torch raised nothing under strict determinism. The seed was set after UnifiedTrunk and AdamW were constructed, so it controlled batch sampling and never the weights.",
+ "controls_that_do_it_right": [
+  "vector-realty/pipeline/train_mtnn.py — seeds, then builds; reruns bit-identical",
+  "vector-unified/pipeline/train_stage2.py — same order; 34 of 37 report fields bit-identical across reruns"
+ ],
+ "heuristic_and_its_limits": "Matches on SHAPE, not semantics. It cannot know which constructors draw random weights, so a function that seeds late but builds nothing random is a FALSE POSITIVE, and one initialising through an unrecognised helper is a MISS. Report-only for that reason.",
+ "files_scanned": 329,
+ "findings": [
+  {
+   "function": "train_config",
+   "first_init_line": 50,
+   "first_seed_line": 56,
+   "gap_lines": 6,
+   "why": "something that initialises parameters runs before the first seeding call, so the seed cannot control it",
+   "file": "vector-unified/pipeline/ablation.py"
+  }
+ ]
+}

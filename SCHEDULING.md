@@ -1,0 +1,94 @@
+# Scheduling the validation sweep so it survives this session
+
+## The problem with what is currently scheduled
+
+Three cron jobs exist right now — a validation sweep every 4h, a drift watch every 6h, and
+a candidate-only dataset expansion daily. **They are session-only.** They live in memory
+inside one Claude session, die when it exits, and auto-expire after 7 days regardless.
+
+"Always validating" cannot rest on that. This file is how to make the read-only half
+durable. It has NOT been installed — registering a scheduled task modifies the machine, and
+that is the operator's call.
+
+## What to schedule
+
+`scripts/validation_sweep.py`. It is a plain script: deterministic, no model in the loop,
+no tokens. It runs five read-only checks and appends one row to
+`data/validation_sweep_log.md`.
+
+    python scripts/validation_sweep.py --quiet --check
+
+Exit 0 = every check passed. Exit 1 = at least one failed, and the row records which.
+
+**Only the sweep is a script.** The dataset-expansion job genuinely needs judgement — which
+free source, what the new fields mean, whether the eval actually won — and stays an agent
+prompt. Do not try to cron that as a script.
+
+## Install (Windows Task Scheduler)
+
+Run these yourself; they modify the machine.
+
+    schtasks /Create /TN "vector-validation-sweep" /SC HOURLY /MO 4 /ST 00:13 ^
+      /TR "C:\Users\jcdav\vector-hoops\pipeline\.venv\Scripts\python.exe C:\Users\jcdav\vector-unified\scripts\validation_sweep.py --quiet" ^
+      /RL LIMITED /F
+
+Check it, run it once by hand, then read the log:
+
+    schtasks /Query /TN "vector-validation-sweep" /V /FO LIST
+    schtasks /Run   /TN "vector-validation-sweep"
+    type C:\Users\jcdav\vector-unified\data\validation_sweep_log.md
+
+Remove it:
+
+    schtasks /Delete /TN "vector-validation-sweep" /F
+
+`/RL LIMITED` on purpose — this needs no elevation, and a scheduled task that runs as
+admin to read JSON files is a larger blast radius than the job deserves.
+
+## What the sweep deliberately does NOT run, and why
+
+Each exclusion is a thing that went wrong once.
+
+| Excluded | Because |
+|---|---|
+| `build_*.py`, `probe_*.py`, `acquire_*.py` | They write artifacts with **no flag at all**. A checker that executed documented commands rewrote ten artifacts here AND stripped a `CORRECTED` marker from `vector-hoops/pipeline/seed_floor.json`, taking three green gates red. |
+| any trainer (`train_*.py`, `ablation.py`) | Overwrites the shipped checkpoint — `sport_acc 0.6851`, ckpt `b055641c03760624`. |
+| `validate.py` in full | It runs `train_tennis_mtnn.py --check`, which **retrains tennis** and moves `data/tennis_mtnn_report.json` off the value dumbmodel.com publishes. That is how the current 6-value `cited_fields` disagreement arose. |
+| `check_gate_inputs_tracked.py` | Clones the repo and runs `validate.py` twice inside the clone. Minutes per invocation. |
+
+Adding a check to `CHECKS` in the sweep means running it once and diffing `git status`
+**across every repo in the estate** first. "It looks read-only" is not the test; that
+assumption is exactly what caused the sibling damage.
+
+## Current state, so a first run is not mistaken for a regression
+
+As of 2026-08-05 the sweep reports **3/5 pass**. Both failures are known and neither is
+caused by the sweep:
+
+- `field_semantics` — was failing on a real defect it found in `stage2_seed_floor.json`
+  (stored `sd 0.0044` beside values whose own sd is `0.0043`). Fixed at source; now clean
+  across 416 artifacts estate-wide, with 37 acknowledged blind spots reported every run.
+- `cited_fields` — 6 published tennis values disagree with their artifact (page
+  `mtnn_mean=0.1168`, artifact `0.1157`). The finding is that the published number does not
+  survive a re-run. Not repairable by editing either side.
+
+## The cron that was wrong, and why it is worth writing down
+
+The first scheduled sweep instructed three commands, one of them
+`python pipeline/validate.py --offline`. That **contradicted its own hard rule** ("do NOT
+run any trainer"): `validate.py` registers `tennis_mtnn` as `train_tennis_mtnn.py --check`,
+and that arm retrains. Every sweep therefore moved `data/tennis_forward_report.json` —
+`gain_mean_across_cuts` 0.0949 -> 0.0863, observed on two separate runs — and every sweep
+had to revert it by hand.
+
+A schedule whose instructions violate its own safety rule is worse than no schedule: it
+runs unattended, and the damage is silent because the next run's diff looks like ordinary
+churn.
+
+Replaced with `scripts/validation_sweep.py --check` plus
+`pipeline/check_gate_inputs_tracked.py`. Verified after the change: a full sweep modifies
+`data/validation_sweep_log.md` and nothing else.
+
+**If you add a check to the sweep, run it once and diff `git status` across every repo in
+the estate before trusting it.** "It looks read-only" is exactly the assumption that caused
+both the sibling-repo damage and this one.
