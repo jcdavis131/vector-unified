@@ -1,12 +1,12 @@
 {
  "question": "Does any artifact's prose quote a number that disagrees with that same artifact's own fields?",
  "found_by": "hand, while auditing promotion gates — gate_nonvacuity.json's note_rank says the shuffles 'both score 12.4, exactly the real value' while its own three fields say 12.1.",
- "files_scanned": 183,
+ "files_scanned": 184,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 1240,
-  "STALE": 26,
-  "NEAR_NO_CLAIM": 2758,
+  "EXACT": 1245,
+  "STALE": 27,
+  "NEAR_NO_CLAIM": 2764,
   "UNMATCHED": 272
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
@@ -299,6 +299,35 @@
     {
      "field": ".results.hoops.DECISIVE_stay_vs_move.jaccard_moved",
      "value": 0.0075,
+     "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
+   "file": "stage2_seed_floor.json",
+   "repo": "vector-unified",
+   "prose_path": ".arms.ctrl",
+   "number_in_prose": 0.3,
+   "context": "lambda 0->0.3, no coral (NO INTERVENTION — this is the floor)",
+   "near_fields": [
+    {
+     "field": ".per_arm.ctrl.metrics.G2_sport_acc.sd",
+     "value": 0.0564,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_arm.ctrl.metrics.G2_sport_acc.unpaired_MDE_two_single_runs",
+     "value": 0.1841,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_arm.ctrl.metrics.G2_delta_vs_majority.values[0]",
+     "value": 0.0356,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".per_arm.ctrl.metrics.G2_delta_vs_majority.values[1]",
+     "value": 0.0402,
      "why": "equal at one fewer decimal"
     }
    ]
