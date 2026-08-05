@@ -249,16 +249,111 @@ def rebuild(runs: Path, seeds: list[int], write: bool) -> int:
               f"CI [{e['ci95'][0]:+.4f},{e['ci95'][1]:+.4f}]  "
               f"{'SIG' if now else 'ns'}")
 
+    # Stale prose is the failure mode this artifact has already hit once: the floor fix
+    # corrected 8 numeric blocks and left VERDICT asserting the old ones. A rebuild that
+    # updates blocks and leaves the summary standing would reintroduce it on every run,
+    # so VERDICT is REGENERATED from the blocks and superseded n_is_* keys are dropped
+    # rather than accumulating next to their replacement.
+    # SUPERSEDE, DO NOT DELETE. An earlier draft deleted the stale n_is_* keys outright,
+    # which destroyed the declared target of CORRECTION_the_paired_floor_constant_was_the
+    # _n9_one and made check_corrections_landed.py report "names a path that does not
+    # exist". Deleting the evidence that a correction was needed is not the same as
+    # landing it, and the gate was right to complain.
+    for k in [k for k in d if k.startswith("n_is_") and k != "n_is_%d" % n]:
+        d[k] = (f"SUPERSEDED by n_is_{n}. Kept because a CORRECTION_ block declares this "
+                f"field as its target, and removing a correction's target is not the same "
+                f"as landing the correction. Original meaning: the seed count and floor "
+                f"discussion for the {k.split('_')[-1]}-seed version of this artifact, "
+                f"whose floors were built with the wrong t constant.")
     d["n_is_%d" % n] = (
         f"{n} seeds, df={n-1}. Blocks regenerated from the per-seed reports rather than "
         f"edited in place. Verdicts that changed against the n=3 version: "
-        f"{flipped_vs_n3 or 'NONE'}.")
+        f"{flipped_vs_n3 or 'NONE'} (that count covers the {len(METRICS)} A/B blocks "
+        f"only, NOT the decomposition -- see N5_CONFIRMATION.SCOPE_of_that_NONE).")
+    from scipy import stats as _st
+
+    arms = {a: [dig(r[a], METRICS["G2_sport_acc"]) for _, r in have]
+            for a in ("ctrl", "lam", "seed")}
+    sds = {a: st.stdev(v) for a, v in arms.items()}
+    F = st.variance(arms["ctrl"]) / st.variance(arms["seed"])
+    pF = 2 * min(_st.f.cdf(F, n - 1, n - 1), 1 - _st.f.cdf(F, n - 1, n - 1))
+
+    g2b = d["G2_sport_acc"]
+    agree = sum(1 for v in g2b["per_seed"].values()
+                if (v < 0) == (g2b["mean_difference"] < 0))
+    # DECOMPOSITION is written by the --runs pass, which may not have run yet on a fresh
+    # rebuild. Stated as unavailable rather than defaulted to a number.
+    dec = d.get("DECOMPOSITION")
+    dec_txt = (f"The lambda schedule is {dec['lambda_share_of_total']:.0%} of it and is "
+               f"significant (p={dec['lambda_effect']['p_two_sided']}); the coral/centroid "
+               f"term is NOT (p={dec['coral_effect']['p_two_sided']})."
+               if dec else "Decomposition not yet computed for this seed set — run "
+                           "without --rebuild to produce it.")
+    d["VERDICT"] = (
+        f"G2 drops. Paired mean {g2b['mean_difference']:+.4f}, t={g2b['t_obs']}, "
+        f"df={g2b['df']}, p={g2b['p_two_sided']}, 95% CI "
+        f"[{g2b['ci95'][0]:+.4f}, {g2b['ci95'][1]:+.4f}]; {agree} of {n} seeds agree in "
+        f"sign. BUT THE MEAN IS THE WRONG SUMMARY: the treated arm is near-constant "
+        f"(sd {sds['seed']:.4f}) while the control spans "
+        f"{min(arms['ctrl']):.4f}-{max(arms['ctrl']):.4f} (sd {sds['ctrl']:.4f}), a "
+        f"{F:.0f}x variance ratio (F-test p={pF:.5f}). The treatment CLAMPS G2 to a "
+        f"floor; the headline difference is a fact about which controls were drawn. "
+        f"{dec_txt} Nothing promoted. The n=3 floors this file once published were "
+        f"CORRECTED — see CORRECTION_the_paired_floor_constant_was_the_n9_one; every "
+        f"constant here now comes from scipy.stats.t.ppf(0.975, df).")
+    d["VARIANCE_CLAMP_reframes_the_headline"] = {
+        "per_arm": {a: {"mean": round(st.mean(v), 4), "sd": round(sds[a], 4),
+                        "range": [round(min(v), 4), round(max(v), 4)],
+                        "values": [round(x, 4) for x in v]} for a, v in arms.items()},
+        "variance_ratio_ctrl_over_full": round(F, 1),
+        "F_test_p": round(pF, 5),
+        "finding": "The treated arm lands at %.4f +/- %.4f every seed. The control spans "
+                   "%.4f to %.4f. The treatment is not shifting G2 by a fixed amount -- "
+                   "it is CLAMPING it to a floor while the control wanders."
+                   % (st.mean(arms["seed"]), sds["seed"],
+                      min(arms["ctrl"]), max(arms["ctrl"])),
+        "why_the_mean_difference_is_the_wrong_summary":
+            "If the treated arm is near-constant, the paired difference is just "
+            "(constant - control), so the headline mean difference is a statement about "
+            "WHICH CONTROLS WERE DRAWN, not about the size of a treatment effect. The "
+            "controls here are bimodal (%s vs %s); a different split of those two basins "
+            "across 5 seeds moves the headline substantially."
+            % (sorted(round(x, 4) for x in arms["ctrl"] if x < 0.72),
+               sorted(round(x, 4) for x in arms["ctrl"] if x >= 0.72)),
+        "the_correlation_is_NOT_independent_evidence":
+            "corr(control baseline, paired difference) = -0.999. This is NOT a second "
+            "finding and must not be cited as corroboration. If the treated arm is a "
+            "constant c then diff = c - ctrl and the correlation is -1 by arithmetic. "
+            "Reporting it as support would be a real number answering a different "
+            "question than the one it appears to answer -- the defect this whole file "
+            "is about. The load-bearing measurement is the variance ratio, not the "
+            "correlation.",
+    }
     d["N5_CONFIRMATION"] = {
         "seeds": [s for s, _ in have],
         "seeds_incomplete": absent or "none",
         "verdict_changes_vs_n3": flipped_vs_n3 or "NONE",
+        "SCOPE_of_that_NONE": "It covers ONLY the %d control-vs-treatment blocks above. "
+            "It does NOT cover the DECOMPOSITION, where the headline change happened: the "
+            "coral term went from p=0.0298 (significant) at n=3 to p=0.0659 (NOT "
+            "significant) at n=5. Read alone, 'verdict_changes: NONE' would say nothing "
+            "changed, which is false." % len(METRICS),
         "why": "The n=3 result flagged the coral term as one seed-pair from flipping "
-               "(p=0.0298, failing a Bonferroni 0.025). This is the confirmation run.",
+               "(p=0.0298, failing a Bonferroni 0.025). This is the confirmation run, "
+               "and it flipped.",
+        "what_the_confirmation_found": {
+            "coral_term": "DID NOT CONFIRM. p 0.0298 -> 0.0659, CI now spans 0 "
+                          "[-0.0608,+0.0030]. The centroid loss I wrote is not "
+                          "separable from noise at n=5, before any multiplicity "
+                          "correction. At n=3 it looked real; it was not.",
+            "lambda_schedule": "CONFIRMED. p 0.0094 -> 0.0122, still significant, still "
+                               "the majority of the effect (78% at n=3, 66% at n=5).",
+            "headline_G2": "CONFIRMED IN SIGN, but the magnitude nearly doubled "
+                           "(-0.0458 -> -0.0851) purely because 2 of 5 controls landed "
+                           "in a high basin. See VARIANCE_CLAMP_reframes_the_headline: "
+                           "the treated arm is near-constant, so this mean is a fact "
+                           "about the control draw, not a stable effect size.",
+        },
     }
     if write:
         ART.write_text(json.dumps(d, indent=1, ensure_ascii=False), encoding="utf-8")

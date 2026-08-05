@@ -10,153 +10,177 @@
   "per_seed": {
    "7": -0.0364,
    "11": -0.0473,
-   "13": -0.0536
+   "13": -0.0536,
+   "17": -0.1522,
+   "19": -0.1359
   },
-  "mean_difference": -0.0458,
-  "sd_of_differences": 0.0087,
-  "paired_MDE_n3": 0.0216,
+  "mean_difference": -0.0851,
+  "sd_of_differences": 0.0545,
+  "df": 4,
+  "paired_MDE_n5": 0.0677,
+  "margin_over_floor": 1.26,
   "clears_floor": true,
-  "margin_over_floor": 2.12,
-  "paired_MDE_n3_WRONG": 0.0116,
-  "p_two_sided": 0.0118,
+  "t_obs": -3.49,
+  "p_two_sided": 0.0251,
   "ci95": [
-   -0.0674,
-   -0.0242
+   -0.1527,
+   -0.0174
   ],
-  "df": 2
+  "source_field": "G2_sport_invariance.sport_acc"
  },
  "G2_delta_vs_majority": {
   "per_seed": {
    "7": -0.0364,
    "11": -0.0473,
-   "13": -0.0536
+   "13": -0.0536,
+   "17": -0.1522,
+   "19": -0.1359
   },
-  "mean_difference": -0.0458,
-  "sd_of_differences": 0.0087,
-  "paired_MDE_n3": 0.0216,
+  "mean_difference": -0.0851,
+  "sd_of_differences": 0.0545,
+  "df": 4,
+  "paired_MDE_n5": 0.0677,
+  "margin_over_floor": 1.26,
   "clears_floor": true,
-  "margin_over_floor": 2.12,
-  "paired_MDE_n3_WRONG": 0.0116,
-  "p_two_sided": 0.0118,
+  "t_obs": -3.49,
+  "p_two_sided": 0.0251,
   "ci95": [
-   -0.0674,
-   -0.0242
+   -0.1527,
+   -0.0174
   ],
-  "df": 2
+  "source_field": "G2_sport_invariance.delta_vs_majority"
  },
  "effective_rank": {
   "per_seed": {
    "7": 0.0,
    "11": -0.1,
-   "13": 0.1
+   "13": 0.1,
+   "17": 0.0,
+   "19": 0.2
   },
-  "mean_difference": 0.0,
-  "sd_of_differences": 0.1,
-  "paired_MDE_n3": 0.2484,
+  "mean_difference": 0.04,
+  "sd_of_differences": 0.114,
+  "df": 4,
+  "paired_MDE_n5": 0.1416,
+  "margin_over_floor": 0.28,
   "clears_floor": false,
-  "margin_over_floor": 0.0,
-  "paired_MDE_n3_WRONG": 0.1334,
-  "p_two_sided": 1.0,
+  "t_obs": 0.78,
+  "p_two_sided": 0.4766,
   "ci95": [
-   -0.2484,
-   0.2484
+   -0.1016,
+   0.1816
   ],
-  "df": 2
+  "source_field": "G2_sport_invariance.effective_rank"
  },
  "G3_silhouette": {
   "per_seed": {
    "7": -0.0457,
    "11": 0.016,
-   "13": -0.0166
+   "13": -0.0166,
+   "17": 0.103,
+   "19": -0.008
   },
-  "mean_difference": -0.0154,
-  "sd_of_differences": 0.0309,
-  "paired_MDE_n3": 0.0768,
+  "mean_difference": 0.0097,
+  "sd_of_differences": 0.0566,
+  "df": 4,
+  "paired_MDE_n5": 0.0703,
+  "margin_over_floor": 0.14,
   "clears_floor": false,
-  "margin_over_floor": 0.2,
-  "paired_MDE_n3_WRONG": 0.0412,
-  "p_two_sided": 0.479,
+  "t_obs": 0.38,
+  "p_two_sided": 0.72,
   "ci95": [
-   -0.0922,
-   0.0614
+   -0.0606,
+   0.08
   ],
-  "df": 2
+  "source_field": "G3_cross_sport_archetype.silhouette"
  },
  "G3_separation": {
   "per_seed": {
    "7": -0.0575,
    "11": 0.0015,
-   "13": -0.0373
+   "13": -0.0373,
+   "17": 0.0842,
+   "19": -0.0307
   },
-  "mean_difference": -0.0311,
-  "sd_of_differences": 0.03,
-  "paired_MDE_n3": 0.0745,
+  "mean_difference": -0.008,
+  "sd_of_differences": 0.0557,
+  "df": 4,
+  "paired_MDE_n5": 0.0692,
+  "margin_over_floor": 0.12,
   "clears_floor": false,
-  "margin_over_floor": 0.42,
-  "paired_MDE_n3_WRONG": 0.04,
-  "p_two_sided": 0.2144,
+  "t_obs": -0.32,
+  "p_two_sided": 0.7653,
   "ci95": [
-   -0.1056,
-   0.0434
+   -0.0771,
+   0.0612
   ],
-  "df": 2
+  "source_field": "G3_cross_sport_archetype.separation"
  },
  "G1_hoops": {
   "per_seed": {
    "7": -0.0077,
    "11": 0.0085,
-   "13": 0.0012
+   "13": 0.0012,
+   "17": 0.0015,
+   "19": -0.0035
   },
-  "mean_difference": 0.0006,
-  "sd_of_differences": 0.0081,
-  "paired_MDE_n3": 0.0201,
+  "mean_difference": 0.0,
+  "sd_of_differences": 0.0061,
+  "df": 4,
+  "paired_MDE_n5": 0.0075,
+  "margin_over_floor": 0.0,
   "clears_floor": false,
-  "margin_over_floor": 0.03,
-  "paired_MDE_n3_WRONG": 0.0108,
-  "p_two_sided": 0.9096,
+  "t_obs": 0.0,
+  "p_two_sided": 1.0,
   "ci95": [
-   -0.0195,
-   0.0207
+   -0.0075,
+   0.0075
   ],
-  "df": 2
+  "source_field": "G1_per_sport_noninferiority.hoops.native_knn5_z"
  },
  "G1_gridiron": {
   "per_seed": {
    "7": 0.0,
    "11": 0.0009,
-   "13": 0.0038
+   "13": 0.0038,
+   "17": 0.0047,
+   "19": 0.0019
   },
-  "mean_difference": 0.0016,
-  "sd_of_differences": 0.002,
-  "paired_MDE_n3": 0.005,
+  "mean_difference": 0.0023,
+  "sd_of_differences": 0.0019,
+  "df": 4,
+  "paired_MDE_n5": 0.0024,
+  "margin_over_floor": 0.93,
   "clears_floor": false,
-  "margin_over_floor": 0.32,
-  "paired_MDE_n3_WRONG": 0.0026,
-  "p_two_sided": 0.3001,
+  "t_obs": 2.59,
+  "p_two_sided": 0.0608,
   "ci95": [
-   -0.0034,
-   0.0066
+   -0.0002,
+   0.0047
   ],
-  "df": 2
+  "source_field": "G1_per_sport_noninferiority.gridiron.native_knn5_z"
  },
  "G1_pitch": {
   "per_seed": {
    "7": -0.0062,
    "11": 0.0,
-   "13": 0.0
+   "13": 0.0,
+   "17": 0.0021,
+   "19": -0.0021
   },
-  "mean_difference": -0.0021,
-  "sd_of_differences": 0.0036,
-  "paired_MDE_n3": 0.0089,
+  "mean_difference": -0.0012,
+  "sd_of_differences": 0.0031,
+  "df": 4,
+  "paired_MDE_n5": 0.0039,
+  "margin_over_floor": 0.32,
   "clears_floor": false,
-  "margin_over_floor": 0.23,
-  "paired_MDE_n3_WRONG": 0.0048,
-  "p_two_sided": 0.4187,
+  "t_obs": -0.88,
+  "p_two_sided": 0.4263,
   "ci95": [
-   -0.011,
-   0.0068
+   -0.0051,
+   0.0026
   ],
-  "df": 2
+  "source_field": "G1_per_sport_noninferiority.pitch.native_knn5_z"
  },
  "raw": {
   "control": {
@@ -260,10 +284,10 @@
    }
   }
  },
- "VERDICT": "G2 REAL. Paired mean -0.0458, t=-9.12 df=2, p=0.0118, 95% CI [-0.0674, -0.0242] which excludes 0; 3 of 3 seeds agree in sign. That is 2.12x the corrected floor 0.0216, NOT the 3.9x originally published against a floor built with the n=9 constant. All gates PASS on all three treatment seeds (G1=PASS G3=PASS collapse_detector=PASS). Nothing promoted.",
+ "VERDICT": "G2 drops. Paired mean -0.0851, t=-3.49, df=4, p=0.0251, 95% CI [-0.1527, -0.0174]; 5 of 5 seeds agree in sign. BUT THE MEAN IS THE WRONG SUMMARY: the treated arm is near-constant (sd 0.0030) while the control spans 0.6614-0.7782 (sd 0.0564), a 343x variance ratio (F-test p=0.00005). The treatment CLAMPS G2 to a floor; the headline difference is a fact about which controls were drawn. The lambda schedule is 66% of it and is significant (p=0.0122); the coral/centroid term is NOT (p=0.0659). Nothing promoted. The n=3 floors this file once published were CORRECTED — see CORRECTION_the_paired_floor_constant_was_the_n9_one; every constant here now comes from scipy.stats.t.ppf(0.975, df).",
  "CORRECTION_the_costs_were_a_BASELINE_ARTIFACT": "Before the control ran I reported G3 silhouette -0.0610 and G1 hoops -0.0201 as the price of sport-blindness, measured against the shipped 0.6851 report. Both vanish under pairing: G3 silhouette -0.0154 with sd_of_differences 0.0309 (inside its own noise) and G1 hoops +0.0006 with sd 0.0081 (nil). The shipped baseline was ONE draw of a DIFFERENT config — it uses --grl-lambda 0.05, not 0.3 — so differences against it were never attributable to the flags under test. Three treatment seeds against one baseline run is the same asymmetry this repo keeps finding, and I published it before catching it.",
  "WHAT_THIS_DOES_NOT_ISOLATE": "The paired effect is the COMBINED effect of all three flags. The control ramps lambda 0 -> 0.3; the treatment ramps 0.3 -> 0.5 AND adds both coral terms. Separating the centroid term from the lambda schedule needs a third arm that was not run. The shipped 0.6851 (lambda 0.05) vs this control's 0.6679 mean suggests the lambda increase alone already moves G2, so attributing all -0.0458 to the centroid term would be wrong.",
- "n_is_3": "sd from three paired differences is itself uncertain (df=2). The margin is 2.12x the corrected floor, down from the 3.9x originally published against a floor built with the n=9 constant. p=0.0118, 95% CI [-0.0674, -0.0241]. A 5-seed confirmation is the cheap next step and was not run.",
+ "n_is_3": "SUPERSEDED by n_is_5. Kept because a CORRECTION_ block declares this field as its target, and removing a correction's target is not the same as landing the correction. Original meaning: the seed count and floor discussion for the 3-seed version of this artifact, whose floors were built with the wrong t constant.",
  "CORRECTION_the_paired_floor_constant_was_the_n9_one": {
   "corrects_field": [
    "VERDICT",
@@ -300,90 +324,108 @@
     "ctrl": 0.6762,
     "lam": 0.6363,
     "full": 0.6226
+   },
+   {
+    "seed": 17,
+    "ctrl": 0.7782,
+    "lam": 0.6846,
+    "full": 0.626
+   },
+   {
+    "seed": 19,
+    "ctrl": 0.7616,
+    "lam": 0.681,
+    "full": 0.6257
    }
   ],
   "lambda_effect": {
-   "n": 3,
-   "df": 2,
-   "mean": -0.0356,
-   "sd_of_diff": 0.006,
-   "se": 0.00347,
-   "t_obs": -10.24,
-   "p_two_sided": 0.0094,
+   "n": 5,
+   "df": 4,
+   "mean": -0.0562,
+   "sd_of_diff": 0.0289,
+   "se": 0.01293,
+   "t_obs": -4.34,
+   "p_two_sided": 0.0122,
    "ci95": [
-    -0.0505,
-    -0.0206
+    -0.0921,
+    -0.0203
    ],
    "ci95_excludes_zero": true,
    "significant_p05": true,
-   "t_crit_two_sided": 4.303,
-   "paired_MDE": 0.0149,
-   "x_floor": 2.38,
+   "t_crit_two_sided": 2.776,
+   "paired_MDE": 0.0359,
+   "x_floor": 1.56,
    "consistent_sign": true,
    "diffs": [
     -0.0287,
     -0.0381,
-    -0.0399
+    -0.0399,
+    -0.0936,
+    -0.0806
    ]
   },
   "coral_effect": {
-   "n": 3,
-   "df": 2,
-   "mean": -0.0102,
-   "sd_of_diff": 0.0031,
-   "se": 0.0018,
-   "t_obs": -5.66,
-   "p_two_sided": 0.0298,
+   "n": 5,
+   "df": 4,
+   "mean": -0.0289,
+   "sd_of_diff": 0.0257,
+   "se": 0.01151,
+   "t_obs": -2.51,
+   "p_two_sided": 0.0659,
    "ci95": [
-    -0.018,
-    -0.0024
+    -0.0608,
+    0.003
    ],
-   "ci95_excludes_zero": true,
-   "significant_p05": true,
-   "t_crit_two_sided": 4.303,
-   "paired_MDE": 0.0078,
-   "x_floor": 1.31,
+   "ci95_excludes_zero": false,
+   "significant_p05": false,
+   "t_crit_two_sided": 2.776,
+   "paired_MDE": 0.0319,
+   "x_floor": 0.9,
    "consistent_sign": true,
    "diffs": [
     -0.0077,
     -0.0092,
-    -0.0137
+    -0.0137,
+    -0.0586,
+    -0.0553
    ]
   },
   "total_effect": {
-   "n": 3,
-   "df": 2,
-   "mean": -0.0458,
-   "sd_of_diff": 0.0087,
-   "se": 0.00502,
-   "t_obs": -9.11,
-   "p_two_sided": 0.0118,
+   "n": 5,
+   "df": 4,
+   "mean": -0.0851,
+   "sd_of_diff": 0.0545,
+   "se": 0.02437,
+   "t_obs": -3.49,
+   "p_two_sided": 0.0251,
    "ci95": [
-    -0.0674,
-    -0.0241
+    -0.1527,
+    -0.0174
    ],
    "ci95_excludes_zero": true,
    "significant_p05": true,
-   "t_crit_two_sided": 4.303,
-   "paired_MDE": 0.0216,
-   "x_floor": 2.12,
+   "t_crit_two_sided": 2.776,
+   "paired_MDE": 0.0677,
+   "x_floor": 1.26,
    "consistent_sign": true,
    "diffs": [
     -0.0364,
     -0.0473,
-    -0.0536
+    -0.0536,
+    -0.1522,
+    -0.1359
    ]
   },
-  "lambda_share_of_total": 0.777,
+  "lambda_share_of_total": 0.66,
   "additivity_residual": 0.0,
   "floors_are_per_effect": "Each effect is tested on its OWN differences -- its own sd, its own se, its own CI. Reusing the total's floor for a component would be a real number answering a different question.",
   "seeds_excluded": "none",
   "MULTIPLICITY_the_coral_term_does_not_survive_a_correction": {
-   "why_raised": "Two effects are tested on one dataset. The coral term's p=0.0298 clears a naive 0.05 and does NOT clear a Bonferroni-corrected 0.025 for 2 comparisons. Reporting it as SIGNIFICANT without saying that would be the same overstatement the floor-constant correction above just fixed.",
+   "why_raised": "Two effects are tested on one dataset. The coral term's p=0.0659 clears a naive 0.05 and does NOT clear a Bonferroni-corrected 0.025 for 2 comparisons. Reporting it as SIGNIFICANT without saying that would be the same overstatement the floor-constant correction above just fixed.",
    "bonferroni_alpha_2_tests": 0.025,
-   "coral_p": 0.0298,
+   "coral_p": 0.0659,
    "coral_survives_bonferroni": false,
-   "lambda_p": 0.0094,
+   "lambda_p": 0.0122,
    "lambda_survives_bonferroni": true,
    "honest_reading": "The lambda schedule is the effect. It is 78% of the total, significant at any correction applied here, and consistent across all 3 seeds. The coral/centroid term contributes a real-looking but SMALL residual (-0.0102) whose significance is not robust to a multiplicity correction at n=3. Crediting the headline to the centroid loss -- which is the term I wrote and would most like to be the cause -- is not supported. The cheap fix is seeds, not argument: at n=5 the coral term either clears a corrected threshold or it does not."
   }
@@ -393,17 +435,90 @@
   "what_was_published": "The -0.0458 was reported as clearing the paired MDE(n=3) 0.0116 by 3.9x, computed as 2.31 * sd_d / sqrt(3).",
   "what_is_wrong": "2.31 is t(0.975, df=8) -- the n=9 constant, used at n=3. A paired test on 3 seeds has df=2, where the two-sided constant is t(0.975,2)=4.303.",
   "corrected": {
-   "paired_MDE": 0.0216,
-   "x_floor": 2.12,
-   "t_obs": -9.11,
-   "df": 2,
-   "p_two_sided": 0.0118,
+   "paired_MDE": 0.0677,
+   "x_floor": 1.26,
+   "t_obs": -3.49,
+   "df": 4,
+   "p_two_sided": 0.0251,
    "ci95": [
-    -0.0674,
-    -0.0241
+    -0.1527,
+    -0.0174
    ]
   },
-  "does_the_finding_survive": "YES. p=0.0118, CI [-0.0674, -0.0241] excludes 0, and the sign is consistent across all 3 seeds. What does NOT survive is the SIZE of the margin: 2.12x, not 3.9x.",
+  "does_the_finding_survive": "YES. p=0.0251, CI [-0.1527, -0.0174] excludes 0, and the sign is consistent across all 5 seeds. What does NOT survive is the SIZE of the margin: 2.12x, not 3.9x.",
   "found_by": "checking my own constant against scipy before reusing it in the decomposition, not by anything downstream catching it."
+ },
+ "n_is_5": "5 seeds, df=4. Blocks regenerated from the per-seed reports rather than edited in place. Verdicts that changed against the n=3 version: NONE (that count covers the 8 A/B blocks only, NOT the decomposition -- see N5_CONFIRMATION.SCOPE_of_that_NONE).",
+ "VARIANCE_CLAMP_reframes_the_headline": {
+  "per_arm": {
+   "ctrl": {
+    "mean": 0.7087,
+    "sd": 0.0564,
+    "range": [
+     0.6614,
+     0.7782
+    ],
+    "values": [
+     0.6614,
+     0.666,
+     0.6762,
+     0.7782,
+     0.7616
+    ]
+   },
+   "lam": {
+    "mean": 0.6525,
+    "sd": 0.0278,
+    "range": [
+     0.6279,
+     0.6846
+    ],
+    "values": [
+     0.6327,
+     0.6279,
+     0.6363,
+     0.6846,
+     0.681
+    ]
+   },
+   "seed": {
+    "mean": 0.6236,
+    "sd": 0.003,
+    "range": [
+     0.6187,
+     0.626
+    ],
+    "values": [
+     0.625,
+     0.6187,
+     0.6226,
+     0.626,
+     0.6257
+    ]
+   }
+  },
+  "variance_ratio_ctrl_over_full": 343.2,
+  "F_test_p": 5e-05,
+  "finding": "The treated arm lands at 0.6236 +/- 0.0030 every seed. The control spans 0.6614 to 0.7782. The treatment is not shifting G2 by a fixed amount -- it is CLAMPING it to a floor while the control wanders.",
+  "why_the_mean_difference_is_the_wrong_summary": "If the treated arm is near-constant, the paired difference is just (constant - control), so the headline mean difference is a statement about WHICH CONTROLS WERE DRAWN, not about the size of a treatment effect. The controls here are bimodal ([0.6614, 0.666, 0.6762] vs [0.7616, 0.7782]); a different split of those two basins across 5 seeds moves the headline substantially.",
+  "the_correlation_is_NOT_independent_evidence": "corr(control baseline, paired difference) = -0.999. This is NOT a second finding and must not be cited as corroboration. If the treated arm is a constant c then diff = c - ctrl and the correlation is -1 by arithmetic. Reporting it as support would be a real number answering a different question than the one it appears to answer -- the defect this whole file is about. The load-bearing measurement is the variance ratio, not the correlation."
+ },
+ "N5_CONFIRMATION": {
+  "seeds": [
+   7,
+   11,
+   13,
+   17,
+   19
+  ],
+  "seeds_incomplete": "none",
+  "verdict_changes_vs_n3": "NONE",
+  "SCOPE_of_that_NONE": "It covers ONLY the 8 control-vs-treatment blocks above. It does NOT cover the DECOMPOSITION, where the headline change happened: the coral term went from p=0.0298 (significant) at n=3 to p=0.0659 (NOT significant) at n=5. Read alone, 'verdict_changes: NONE' would say nothing changed, which is false.",
+  "why": "The n=3 result flagged the coral term as one seed-pair from flipping (p=0.0298, failing a Bonferroni 0.025). This is the confirmation run, and it flipped.",
+  "what_the_confirmation_found": {
+   "coral_term": "DID NOT CONFIRM. p 0.0298 -> 0.0659, CI now spans 0 [-0.0608,+0.0030]. The centroid loss I wrote is not separable from noise at n=5, before any multiplicity correction. At n=3 it looked real; it was not.",
+   "lambda_schedule": "CONFIRMED. p 0.0094 -> 0.0122, still significant, still the majority of the effect (78% at n=3, 66% at n=5).",
+   "headline_G2": "CONFIRMED IN SIGN, but the magnitude nearly doubled (-0.0458 -> -0.0851) purely because 2 of 5 controls landed in a high basin. See VARIANCE_CLAMP_reframes_the_headline: the treated arm is near-constant, so this mean is a fact about the control draw, not a stable effect size."
+  }
  }
 }

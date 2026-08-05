@@ -4,10 +4,10 @@
  "files_scanned": 183,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 1228,
-  "STALE": 24,
-  "NEAR_NO_CLAIM": 2744,
-  "UNMATCHED": 268
+  "EXACT": 1234,
+  "STALE": 26,
+  "NEAR_NO_CLAIM": 2756,
+  "UNMATCHED": 272
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
  "what_NEAR_NO_CLAIM_means": "near a field, but the surrounding clause makes no identity claim. Counted, NOT reported. The first version of this script had no such requirement and produced 134 hits over 75 artifacts, almost all ranges ('persistence is 0.85-0.92'), thresholds ('below the 0.01 bar') and counts ('a 200-draw simulation') — reproducing the exact false-positive failure this script's docstring cites check_cited_fields.py for.",
@@ -95,9 +95,67 @@
      "why": "equal at one fewer decimal"
     },
     {
-     "field": ".G2_sport_acc.mean_difference",
-     "value": -0.0458,
+     "field": ".G2_sport_acc.per_seed.17",
+     "value": -0.1522,
      "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
+   "file": "g2_centroid_ab.json",
+   "repo": "vector-unified",
+   "prose_path": ".DECOMPOSITION.why",
+   "number_in_prose": 0.0458,
+   "context": "WHAT_THIS_DOES_NOT_ISOLATE said the -0.0458 was the combined effect of three flags and that separating ",
+   "near_fields": [
+    {
+     "field": ".G2_sport_acc.per_seed.11",
+     "value": -0.0473,
+     "why": "within 5%"
+    },
+    {
+     "field": ".G2_delta_vs_majority.per_seed.11",
+     "value": -0.0473,
+     "why": "within 5%"
+    },
+    {
+     "field": ".G3_silhouette.per_seed.7",
+     "value": -0.0457,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".DECOMPOSITION.total_effect.diffs[1]",
+     "value": -0.0473,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "g2_centroid_ab.json",
+   "repo": "vector-unified",
+   "prose_path": ".N5_CONFIRMATION.why",
+   "number_in_prose": 0.0298,
+   "context": "lt flagged the coral term as one seed-pair from flipping (p=0.0298, failing a Bonferroni 0.025). This is the confirmation run,",
+   "near_fields": [
+    {
+     "field": ".G3_separation.per_seed.19",
+     "value": -0.0307,
+     "why": "within 5%"
+    },
+    {
+     "field": ".DECOMPOSITION.lambda_effect.sd_of_diff",
+     "value": 0.0289,
+     "why": "within 5%"
+    },
+    {
+     "field": ".DECOMPOSITION.lambda_effect.diffs[0]",
+     "value": -0.0287,
+     "why": "within 5%"
+    },
+    {
+     "field": ".DECOMPOSITION.coral_effect.mean",
+     "value": -0.0289,
+     "why": "within 5%"
     }
    ]
   },
