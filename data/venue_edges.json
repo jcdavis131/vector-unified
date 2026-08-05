@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T17:11:32",
+ "built": "2026-08-05T15:55:56",
  "question": "How many player-seasons does the venue->sponsor edge actually reach?",
  "answers_the_open_question_from": "pipeline/acquire_venue_sponsors.py — '14 venues is the edge, not the coverage.'",
  "gridiron": {

@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T17:52:33",
+ "built": "2026-08-05T15:55:56",
  "CORRECTION_first_version_was_incomplete": "The first version said 'every promotion gate in the estate' and covered four trainers. It skipped vector-unified's own G1/G2/G3 gates and the tennis MTNN's 0.0584 bar - the two that live in the repo the audit was written in. Claiming completeness over a set I had not enumerated is the same defect as the rest of this thread, one level up.",
  "question": "Do the estate's promotion gates measure the model, or the seed?",
  "why_now": "Every gate was written before its trainer had a --seed flag, so each threshold was calibrated against exactly one draw of a quantity that turns out to move between draws. All four trainers now have seed evidence, so the question is finally answerable.",

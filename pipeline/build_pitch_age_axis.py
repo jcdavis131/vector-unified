@@ -55,6 +55,17 @@ import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
 from portable_paths import ESTATE  # noqa: E402
 
+# THIS SCRIPT CRASHED ON A PLAYER'S NAME. Regenerating its artifact died with
+# UnicodeEncodeError: 'charmap' codec can't encode character 'ć' — the c-acute in a
+# footballer's name — because Windows hands a redirected stdout cp1252 and every print()
+# here carries names straight from the corpus. The artifact could not be rebuilt at all,
+# so it sat 8h stale with no way to refresh it.
+#
+# 65 scripts in pipeline/ already declare this; 43 do not, and this is the one that was
+# caught doing it. errors="replace" rather than "ignore" so a character that cannot be
+# encoded shows as a replacement mark instead of vanishing from a name silently.
+_sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).resolve().parent.parent
 PITCH = ESTATE / "vector-pitch"
 MATRIX = PITCH / "pipeline" / "data" / "tm_full.npz"

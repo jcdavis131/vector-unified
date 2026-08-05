@@ -1,0 +1,179 @@
+{
+ "question": "Does every script that prints corpus text declare its stdout encoding?",
+ "why": "build_pitch_age_axis.py died with UnicodeEncodeError on 'c-acute' in a footballer's name, so data/pitch_age_axis.json could not be rebuilt at all. It sat 8h STALE behind a producer that crashed on every run. Once fixed it went 411 -> 1042 rows and pct_scorable 21.2 -> 43.9, against a live page already publishing 43.8 — the crash had frozen a local artifact at under half its real coverage.",
+ "claim_limit": "A missing declaration is NOT a proven crash. These fail only when a non-ASCII character actually reaches a cp1252 stdout, which depends on the data and on redirection. 1 of these was OBSERVED crashing; the rest are the same shape, not the same evidence.",
+ "why_report_only": "Blocking would force a bulk mechanical edit across 42 files, and a bulk mechanical edit this session already shipped a NameError that py_compile could not see. The fix would be more dangerous than the defect. Fixing is deliberate and per-file.",
+ "files_scanned": 110,
+ "declared": 67,
+ "no_print_calls": 1,
+ "undeclared": [
+  {
+   "file": "pipeline/query_graph.py",
+   "print_calls": 150
+  },
+  {
+   "file": "pipeline/build_trajectory_axis.py",
+   "print_calls": 24
+  },
+  {
+   "file": "pipeline/build_company_entities.py",
+   "print_calls": 23
+  },
+  {
+   "file": "pipeline/build_org_entities.py",
+   "print_calls": 18
+  },
+  {
+   "file": "pipeline/probe_company_sectors.py",
+   "print_calls": 18
+  },
+  {
+   "file": "pipeline/acquire_sponsors.py",
+   "print_calls": 17
+  },
+  {
+   "file": "pipeline/compare_trajectory_sports.py",
+   "print_calls": 17
+  },
+  {
+   "file": "pipeline/build_company_sectors.py",
+   "print_calls": 16
+  },
+  {
+   "file": "pipeline/enrich_orgs_wikidata.py",
+   "print_calls": 16
+  },
+  {
+   "file": "pipeline/build_venue_edges.py",
+   "print_calls": 15
+  },
+  {
+   "file": "pipeline/query_bridge.py",
+   "print_calls": 15
+  },
+  {
+   "file": "pipeline/train_stage2.py",
+   "print_calls": 15
+  },
+  {
+   "file": "pipeline/apply_sector_map.py",
+   "print_calls": 14
+  },
+  {
+   "file": "pipeline/build_draft_value_curve.py",
+   "print_calls": 14
+  },
+  {
+   "file": "pipeline/probe_athlete_sector_signal.py",
+   "print_calls": 14
+  },
+  {
+   "file": "pipeline/probe_company_edges.py",
+   "print_calls": 14
+  },
+  {
+   "file": "pipeline/probe_market_layer_coverage.py",
+   "print_calls": 14
+  },
+  {
+   "file": "pipeline/build_direction_axis.py",
+   "print_calls": 12
+  },
+  {
+   "file": "pipeline/build_tennis_ranking_axis.py",
+   "print_calls": 12
+  },
+  {
+   "file": "pipeline/probe_company_edge_confound.py",
+   "print_calls": 12
+  },
+  {
+   "file": "pipeline/acquire_hoops_rosters.py",
+   "print_calls": 11
+  },
+  {
+   "file": "pipeline/check_draft_value_invariants.py",
+   "print_calls": 11
+  },
+  {
+   "file": "pipeline/probe_qb_survivorship.py",
+   "print_calls": 11
+  },
+  {
+   "file": "pipeline/build_vor_draft_value.py",
+   "print_calls": 10
+  },
+  {
+   "file": "pipeline/compare_matched_draft_value.py",
+   "print_calls": 10
+  },
+  {
+   "file": "pipeline/train_unified.py",
+   "print_calls": 10
+  },
+  {
+   "file": "pipeline/build_hoops_vor_draft_value.py",
+   "print_calls": 9
+  },
+  {
+   "file": "pipeline/_hoops_args.py",
+   "print_calls": 8
+  },
+  {
+   "file": "pipeline/check_corrections_landed.py",
+   "print_calls": 8
+  },
+  {
+   "file": "pipeline/check_internal_prose.py",
+   "print_calls": 8
+  },
+  {
+   "file": "pipeline/eval_unified.py",
+   "print_calls": 8
+  },
+  {
+   "file": "pipeline/export_gridiron_pedigree.py",
+   "print_calls": 8
+  },
+  {
+   "file": "pipeline/remap_pitch_n2c.py",
+   "print_calls": 8
+  },
+  {
+   "file": "pipeline/acquire_venue_sponsors.py",
+   "print_calls": 7
+  },
+  {
+   "file": "pipeline/acquire_wikipedia_pageviews.py",
+   "print_calls": 6
+  },
+  {
+   "file": "pipeline/build_bridge_index.py",
+   "print_calls": 6
+  },
+  {
+   "file": "pipeline/build_unified_matrix.py",
+   "print_calls": 5
+  },
+  {
+   "file": "pipeline/probe_roster_identity.py",
+   "print_calls": 5
+  },
+  {
+   "file": "pipeline/audit_promotion_gates.py",
+   "print_calls": 4
+  },
+  {
+   "file": "pipeline/archetype_map.py",
+   "print_calls": 3
+  },
+  {
+   "file": "pipeline/verify_encoders.py",
+   "print_calls": 2
+  },
+  {
+   "file": "pipeline/load_encoders.py",
+   "print_calls": 1
+  }
+ ]
+}

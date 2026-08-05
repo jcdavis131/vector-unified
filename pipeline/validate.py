@@ -171,6 +171,18 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # that commit's files and fails if it finds nothing, because this repo has already
     # shipped one static scanner that passed green while matching nothing.
     "laptop_paths": (["check_laptop_paths.py", "--check"], False),
+    # REPORT-ONLY — no --check, so it always exits 0. 42 scripts print corpus text without
+    # declaring a stdout encoding, and exactly ONE of them was observed crashing:
+    # build_pitch_age_axis.py died on the c-acute in a footballer's name, so its artifact
+    # could not be rebuilt AT ALL and sat 8h stale behind a producer that failed every run.
+    # Once fixed it went 411 -> 1042 rows, pct_scorable 21.2 -> 43.9, against a page already
+    # publishing 43.8.
+    #
+    # The other 41 are the same SHAPE, not the same evidence — they break only when a
+    # non-ASCII character actually reaches a cp1252 stdout. Blocking would force a bulk
+    # mechanical edit across all of them, and a bulk mechanical edit this session already
+    # shipped a NameError that py_compile could not see. The list is the deliverable.
+    "stdout_encoding": (["check_stdout_encoding.py"], False),
 }
 
 # Large artifacts a check CANNOT RUN WITHOUT, declared per check.
