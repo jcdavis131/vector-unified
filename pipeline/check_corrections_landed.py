@@ -124,6 +124,50 @@ def all_strings(obj, path="", skip_prefix=None):
     return out
 
 
+def declared_target(block):
+    """The document path a correction says it corrects, if it says.
+
+    THE VERBATIM-QUOTE ARM IS NOT ENOUGH, and a mutation proved it rather than an
+    argument. Planting the defect this file exists for -- stripping the inline
+    [CORRECTED: ...] marker out of vector-hoops seed_floor.json -- produced exit 0,
+    because that correction PARAPHRASES its target ("...was overwritten by a seed-31 A/B
+    with NO BACKUP") instead of copying the sentence. An estate sweep then found no block
+    left that quotes verbatim at all, so the check was green over an empty class.
+
+    Guessing the target from the key name (CORRECTION_note_rank_... -> note_rank) would
+    work for the ones I happened to name that way and silently miss the rest, which is
+    the failure mode this repo keeps hitting. So the correction DECLARES its target
+    instead:
+
+        "CORRECTION_...": {
+            "corrects_field": "REPO_STATE_WARNING.also_destroyed",
+            ...
+        }
+
+    Exact path, no inference. A block without the field is counted as undeclared and
+    reported as uncovered, never guessed at.
+    """
+    if isinstance(block, dict):
+        v = block.get("corrects_field")
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+    return None
+
+
+def resolve_path(doc, dotted: str):
+    """Fetch a declared target by its dotted path. Returns None if it does not exist —
+    a correction naming a field that is not there is itself worth reporting."""
+    cur = doc
+    for part in dotted.split("."):
+        if not part:
+            continue
+        if isinstance(cur, dict) and part in cur:
+            cur = cur[part]
+        else:
+            return None
+    return cur if isinstance(cur, str) else None
+
+
 def quoted_claims(block) -> list[str]:
     """Verbatim fragments of the wrong claim, from a correction block."""
     out = []
@@ -151,7 +195,7 @@ def main() -> int:
             files += sorted(p for p in d.glob("*.json")
                             if p.is_file() and p.name != OUT.name)
 
-    findings, n_blocks, n_no_quote, n_landed = [], 0, 0, 0
+    findings, n_blocks, n_no_quote, n_landed, n_declared = [], 0, 0, 0, 0
     for f in files:
         try:
             doc = json.loads(f.read_text(encoding="utf-8"))
@@ -166,6 +210,32 @@ def main() -> int:
                 continue
             n_blocks += 1
             block_path = f"{parent}.{key}"
+
+            # ARM 1 (exact): the block declares which field it corrects.
+            tgt = declared_target(val)
+            if tgt:
+                n_declared += 1
+                text = resolve_path(doc, tgt)
+                if text is None:
+                    findings.append({
+                        "repo": repo, "file": f.name, "correction_key": block_path,
+                        "unlanded": [{"claim_fragment": f"(declared target {tgt!r})",
+                                      "still_asserted_at": tgt,
+                                      "context": "corrects_field names a path that does "
+                                                 "not exist or is not a string"}]})
+                elif not MARKER.search(text):
+                    findings.append({
+                        "repo": repo, "file": f.name, "correction_key": block_path,
+                        "unlanded": [{"claim_fragment": f"(declared target {tgt!r})",
+                                      "still_asserted_at": tgt,
+                                      "context": text[:200]}]})
+                else:
+                    n_landed += 1
+                continue
+
+            # ARM 2 (verbatim): no declaration, so fall back to matching a quoted
+            # fragment outside the block. Narrow, and currently matches nothing in the
+            # estate -- see the docstring.
             claims = quoted_claims(val)
             if not claims:
                 n_no_quote += 1
@@ -199,7 +269,8 @@ def main() -> int:
                "times in one session and caught the third by accident.",
         "files_scanned": len(files),
         "correction_blocks_found": n_blocks,
-        "blocks_that_quote_no_claim": n_no_quote,
+        "blocks_with_a_DECLARED_target": n_declared,
+        "blocks_that_neither_declare_nor_quote": n_no_quote,
         "blocks_whose_correction_landed": n_landed,
         "blocks_that_did_NOT_land": len(findings),
         "what_counts_as_landed": "an inline marker (CORRECTED / SUPERSEDED / see "
@@ -215,8 +286,9 @@ def main() -> int:
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
     print(f"scanned {len(files)} artifacts")
-    print(f"  correction blocks {n_blocks}  landed {n_landed}  "
-          f"quote-nothing {n_no_quote}  DID NOT LAND {len(findings)}")
+    print(f"  correction blocks {n_blocks}  declared-target {n_declared}  "
+          f"landed {n_landed}  undeclared+unquoted {n_no_quote}  "
+          f"DID NOT LAND {len(findings)}")
     for x in findings:
         print(f"\n  {x['repo']}/{x['file']}  {x['correction_key']}")
         for u in x["unlanded"]:
