@@ -1,10 +1,10 @@
 {
  "question": "Does every registered check still work on a fresh clone?",
  "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
- "commit": "22e54860c365df86abac13ae2b373ef687a2d28f",
+ "commit": "334a8090c3dc14e71bb4b7591d659c74bf5e03cd",
  "data_files": {
-  "working_tree": 76,
-  "clone": 33,
+  "working_tree": 77,
+  "clone": 34,
   "exist_only_locally": 43
  },
  "summary": {
