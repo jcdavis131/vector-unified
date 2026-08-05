@@ -41,3 +41,25 @@
 | Orchestrator | vector-equities / forward IC polish | 23:05 CDT | 4831 FYs 500 tickers 154f 20 towers 64-d transformer purity 0.7057 lift6.32 baseline0.1117 cross0.4013 sil-0.0034 IC 1m0.0051 3m0.0064 6m0.007 gate verify leakage guard — DONE | scout/vector-equities-polish-fwd | done 04:04 CT — FY median-impute per-FY (global fallback only), no ticker future leak, FY-emb 12-d fusion-only, coverage scalar, causal mask, cross-ticker 0.4013 verified, forward IC>0 triple-barrier 0.2189, README sync 0.0051/0.0064/0.007 |
 | Orchestrator | vector-pitch / difficulty polish | 2026-08-05T04:33Z | follow-up tournament-z verify median clip, no torch | scout/vector-pitch-polish-cycle2 | in-progress |
 | Orchestrator | vector-equities / forward IC polish | 2026-08-05T05:03Z | forward 1m/3m/6m IC gate verify, leakage guard | scout/vector-equities-polish-cycle3 | in-progress |
+
+## Gotchas found the hard way (local GPU box, 2026-08-05)
+
+Recorded here rather than in a commit message, because a commit message is not where
+anyone looks before running a command.
+
+- **`eval_unified.py --ckpt` takes a NAME, not a path.** It is joined to UCACHE
+  (pipeline/data/). LOCAL_GPU_HANDOFF section 1 says
+  `--ckpt pipeline/data/unified_stage2_best.pt`, which double-prefixes and dies with
+  FileNotFoundError on a doubled pipeline/data segment.
+  Correct: `--ckpt unified_stage2_best.pt`
+- **`train_stage2.py` writes FOUR things and the fourth is not in that file.**
+  data/stage2_baselines.json, data/stage2_history.json,
+  pipeline/data/unified_stage2_best.pt, and pipeline/data/gridiron_season_emb.npz —
+  the last written two levels down by load_encoders, behind an mtime check. Back up
+  all four before any run.
+- **data/ is gitignored here.** unified_report.json is overwritten by every eval and
+  never shows in `git status`. Hash it if you care; the working tree will not tell you.
+- **The shipped sport_acc 0.6851 is ONE draw of a `--grl-lambda 0.05` config.**
+  Diffing a 0.3-lambda run against it measures the lambda, not whatever you changed.
+  I published a cost claim built on exactly that mistake before catching it — the fix
+  was running a real control at the same seeds.
