@@ -102,6 +102,23 @@ def verify_hoops_alignment(z, h):
         return False, f"row counts differ: {len(pidx)} vs {len(h['name'])}"
     if not np.array_equal(pidx, np.arange(len(pidx))):
         return False, "player_idx over the hoops block is not 0..n-1 in order"
+    # PREFER THE STRONG PROOF. Once embedding_v3.npz matches what the unified matrix was
+    # built from, cosine settles it exactly as it does for gridiron. The position arm
+    # below was written when it did NOT match, and is kept as the fallback: it proves row
+    # ORDER without depending on model weights, which is the only thing available when
+    # the two files hold different models.
+    Eh, Es = z["E_hoops"], h["E"]
+    if Eh.shape == Es.shape:
+        def unit(a):
+            return a / (np.linalg.norm(a, axis=1, keepdims=True) + 1e-9)
+
+        k = min(2000, len(pidx))
+        cos = (unit(Eh[:k]) * unit(Es[pidx[:k]])).sum(1)
+        if cos.min() > 0.9999:
+            return True, (f"player_idx in order and cosine 1.0000 over {k} rows — "
+                          f"embedding_v3.npz matches what unified_matrix.npz was built "
+                          f"from")
+
     pos_u = z["pos_id"][m]
     pos_h = np.array([str(x) for x in h["position"]])
     best = {}
