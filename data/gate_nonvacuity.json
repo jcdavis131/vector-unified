@@ -122,7 +122,7 @@
  },
  "vacuous_gates": [],
  "decision_rule": "A gate that PASSES on within_sport_shuffle is not measuring what it claims and its historical PASS must be withdrawn until it is redefined. Fixed before the first run.",
- "note_rank": "G2's effective_rank is NOT testable by these nulls and its green must not be read as earned. Rank is a function of the singular values and a row permutation leaves the Gram spectrum untouched — global_shuffle and within_sport_shuffle both score 12.4, exactly the real value. Only random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not evidence of quality either. rank_nondeg_pass detects collapse, nothing more.",
+ "note_rank": "G2's effective_rank is NOT testable by these nulls and its green must not be read as earned. Rank is a function of the singular values and a row permutation leaves the Gram spectrum untouched — global_shuffle and within_sport_shuffle both score 12.1 [CORRECTED: this sentence said 12.4; this file's own fields say 12.1 for the real model AND for both shuffles — see CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields], exactly the real value. Only random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not evidence of quality either. rank_nondeg_pass detects collapse, nothing more.",
  "note_G2": "G2 has no pass/fail here on purpose — it is a leakage measure, not a quality gate, and a null SHOULD drive sport accuracy toward the FLOOR. Its value under each null is a sanity check on the nulls themselves: if global_shuffle does not collapse sport accuracy toward the majority share (0.6258), the null is not doing its job.",
  "g2_null_lands_at_floor": {
   "majority_share": 0.6258,
