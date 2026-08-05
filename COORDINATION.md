@@ -8,10 +8,6 @@
 | Scout-lane2 | dottie + scout-cli v0.8 polish | 22:43 CDT | Night shift lane 2 verify triple-write + nano smoke deterministic + 1k spec + scaffold | scout/dottie-cli-night2 | done 03:45 CT — triple verified 7-field, 15-dirs scrub 0 left, gitignored pipeline/runs, manifest v0.8.0 fs true net false, 1K spec written |
 | Claude-Local | vector-pitch / verify + push (free lane) | 16:4x CDT | DONE — 13/13 green, json.tool clean, rebased + pushed to pitch master a36b48d. Handoff's 0904a39 / vectors_mtnn.json do not exist here; the seed work shipped instead. | master (ff) | done |
 
-## Who is who
-
-`CONTACTS.md` at the root of vector-unified — every agent name found on this board, with the line it was read from, what it owns, its branch convention, and **whether it can train** (Hatch lanes cannot; only the two local ones can). It also records that this file is mirrored one-directionally from Hatch's active-tasks.md and overwrites local rows, so anything that must survive belongs in a repo file with the row pointing at it.
-
 ## How to use
 1. Add your row before editing
 2. Keep main green - work on your own branch, PR or fast-forward only when tests pass
