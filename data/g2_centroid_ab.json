@@ -585,6 +585,20 @@
   "reading": "CTRL is decodable above the base rate (p=0.0304). FULL is not, and its interval is TIGHT: residual decodability is at most +0.0016. That is evidence of absence, not merely absence of evidence.",
   "LAM_and_FULL_are_not_the_same_null": "Both fail to reject at 0.05, and treating that as 'both reached the floor' would be wrong. LAM's upper bound is +0.0613; FULL's is +0.0016, about 38x tighter. LAM is UNDETERMINED -- it could still be substantially decodable and this n cannot tell. FULL is bounded.",
   "does_this_rescue_the_coral_term": "NO, and it must not be read that way. The paired coral effect is still p=0.0659, which does not clear 0.05. What this adds is that the ARM CONTAINING the coral terms is demonstrably at the floor while the lambda-only arm is not demonstrably anywhere. Those are different claims and only the first is established.",
-  "explains_the_variance_clamp": "The 343x variance ratio is a FLOOR EFFECT, not a mysterious basin: an arm sitting on the majority-class base rate cannot vary downward, so its spread collapses. The control has room to wander and does."
+  "explains_the_variance_clamp": "The 343x variance ratio is a FLOOR EFFECT, not a mysterious basin: an arm sitting on the majority-class base rate cannot vary downward, so its spread collapses. The control has room to wander and does.",
+  "SHIPPED_GATE_is_seed_dependent_on_the_control": {
+   "shipped_g2_target": 0.7258,
+   "definition": "majority_class_share + 0.10, from export_unified_stage2.py. Its own g2_note calls this 'a weak bar'.",
+   "breaches_by_arm": {
+    "ctrl": [
+     17,
+     19
+    ],
+    "lam": [],
+    "seed": []
+   },
+   "finding": "The CONTROL config breaches the shipped gate on 2 of 5 seeds ([17, 19]). LAM and FULL never breach it. So for the untreated config the gate's verdict is a function of the seed, and a single run reporting PASS is not evidence the config passes.",
+   "shipped_model_itself": "sport_acc 0.6851 -> delta_vs_majority +0.0593, under the 0.10 bar and therefore PASSING, while still decodable above the base rate by an amount 37.1x the FULL arm's 95% upper bound. Passing this gate is not the same as being sport-blind, which is what its own g2_note warns."
+  }
  }
 }

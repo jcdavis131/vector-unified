@@ -280,14 +280,20 @@ def rebuild(runs: Path, seeds: list[int], write: bool) -> int:
 
     # THE LEVEL QUESTION, which the paired difference cannot answer.
     #
-    # G2_delta_vs_majority was tracked as a paired DIFFERENCE, which asks "how much did
-    # the gap over the base rate change". Because majority_class_share is constant across
-    # arms, that difference is numerically identical to the sport_acc difference, so the
-    # block looked redundant and nobody read its LEVEL. But the level is the question the
-    # whole experiment is about: is sport still decodable above the base rate at all?
+    # G2_delta_vs_majority was tracked in the A/B artifact as a paired DIFFERENCE, which
+    # asks "how much did the gap over the base rate change". Because majority_class_share
+    # is constant across arms, that difference is numerically identical to the sport_acc
+    # difference, so the block was redundant and its LEVEL went untested. The level is the
+    # question the experiment is about: is sport decodable above the base rate at all?
     #
-    # A real value answering a different question than the one it appears to answer --
-    # this time by being correct, present, and read as a duplicate.
+    # CREDIT WHERE IT IS DUE, because an earlier draft of this comment claimed "nobody
+    # read the level" and that was false. eval_unified.py already carries
+    # baseline_note = "Quote delta_vs_majority. delta_vs_chance assumes balanced classes",
+    # and export_unified_stage2.py's g2_note already says the pass status "means 'within
+    # 10 points of the achievable floor', which is a weak bar -- quote
+    # g2_delta_vs_majority, not the status." The instrumentation was right and said so.
+    # The defect was in THIS artifact, which differenced a level.
+    maj = dig(have[0][1]["ctrl"], ("G2_sport_invariance", "majority_class_share"))
     floors = {}
     for a in ("ctrl", "lam", "seed"):
         v = [dig(r[a], ("G2_sport_invariance", "delta_vs_majority")) for _, r in have]
@@ -335,6 +341,36 @@ def rebuild(runs: Path, seeds: list[int], write: bool) -> int:
             "mysterious basin: an arm sitting on the majority-class base rate cannot vary "
             "downward, so its spread collapses. The control has room to wander and does."
             % F,
+        "SHIPPED_GATE_is_seed_dependent_on_the_control": {
+            "shipped_g2_target": round(maj + 0.10, 4),
+            "definition": "majority_class_share + 0.10, from export_unified_stage2.py. Its "
+                          "own g2_note calls this 'a weak bar'.",
+            "breaches_by_arm": {a: sorted(s for s, r in have
+                                          if dig(r[a], ("G2_sport_invariance", "sport_acc"))
+                                          > maj + 0.10)
+                                for a in ("ctrl", "lam", "seed")},
+            "finding": "The CONTROL config breaches the shipped gate on %d of %d seeds "
+                       "(%s). LAM and FULL never breach it. So for the untreated config "
+                       "the gate's verdict is a function of the seed, and a single run "
+                       "reporting PASS is not evidence the config passes."
+                       % (len([s for s, r in have
+                               if dig(r["ctrl"], ("G2_sport_invariance", "sport_acc"))
+                               > maj + 0.10]), n,
+                          sorted(s for s, r in have
+                                 if dig(r["ctrl"], ("G2_sport_invariance", "sport_acc"))
+                                 > maj + 0.10)),
+            "shipped_model_itself": "sport_acc 0.6851 -> delta_vs_majority %+.4f, under "
+                                    "the 0.10 bar and therefore PASSING, while still "
+                                    "decodable above the base rate by an amount %0.1fx "
+                                    "the FULL arm's 95%% upper bound. Passing this gate "
+                                    "is not the same as being sport-blind, which is what "
+                                    "its own g2_note warns."
+                                    % (0.6851 - maj,
+                                       (0.6851 - maj)
+                                       / max(floors["seed"]
+                                             ["upper_95_bound_on_residual_decodability"],
+                                             1e-9)),
+        },
     }
     g2b = d["G2_sport_acc"]
     agree = sum(1 for v in g2b["per_seed"].values()
