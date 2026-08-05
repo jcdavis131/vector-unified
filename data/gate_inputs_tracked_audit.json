@@ -1,7 +1,7 @@
 {
  "question": "Does every registered check still work on a fresh clone?",
  "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
- "commit": "bc54f75b479dec39f9396405ba553262e0822c9e",
+ "commit": "eac707a7ecdfaf0f7671374def1b4a499c1891b2",
  "data_files": {
   "working_tree": 71,
   "clone": 29,
@@ -15,15 +15,13 @@
    "N/A": 0
   },
   "clone": {
-   "PASS": 7,
-   "FAIL": 3,
+   "PASS": 6,
+   "FAIL": 2,
    "SKIP": 2,
-   "N/A": 7
+   "N/A": 9
   }
  },
- "pass_here_fail_on_clone": [
-  "cited_fields"
- ],
+ "pass_here_fail_on_clone": [],
  "fail_in_both": [
   "ablation_consistency",
   "artifact_freshness"
@@ -55,11 +53,11 @@
   },
   "superlatives": {
    "working_tree": "PASS",
-   "clone": "PASS"
+   "clone": "N/A"
   },
   "cited_fields": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "tennis_mtnn": {
    "working_tree": "PASS",
