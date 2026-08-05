@@ -91,6 +91,12 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # Coverage is 1 declared block of 20; the other 19 are counted and reported, not
     # guessed at.
     "corrections_landed": (["check_corrections_landed.py", "--check"], False),
+    # Not a check_*.py, so the glob does not demand it — registered because its
+    # --check arm is a real guard: it REFUSES the archetype join unless the gridiron
+    # block of unified_matrix.npz and gridiron_season_emb.npz are provably the same
+    # rows (player_idx in order AND cosine 1.0000 row-for-row). Equal row counts are
+    # exactly the trap probe_g1_position.py exists for.
+    "bridge_join": (["query_bridge.py", "--check"], False),
     # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
     # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real
     # finds were worth having, but a BLOCKING gate at 9% precision trains its reader to
