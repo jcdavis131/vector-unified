@@ -44,6 +44,25 @@
 
 ## Gotchas found the hard way (local GPU box, 2026-08-05)
 
+- **`git checkout` manufactures `artifact_freshness` FAILs.** Switching branches rewrites
+  mtimes, and a builder landing 9ms after its own output reads as STALE. Seen as
+  `bridge_index.json (0.0h behind)` — every data key byte-identical, only its `built`
+  timestamp differed. Do NOT "fix" these by rebuilding: mtime is file-granular, so each
+  rebuild cascades and pushes the NEXT artifact to 0.0h. A fresh `artifact_freshness` FAIL
+  with `0.0h behind` is checkout noise, not a regression. The real entries carry real
+  numbers (`stage2_history.json 114.3h`, `assets/unified.json 24.3h`).
+- **Never "refresh" `stage2_history.json` to green the gate.** It can only be regenerated
+  by re-running training, which overwrites `unified_stage2_best.pt`. That trades the
+  verified shipped model (sport_acc 0.6851, ckpt `b055641c03760624`) for a green line.
+- **Restore from an explicit manifest, never by inferring paths from backup filenames.**
+  Guessing sent two role-named backups (`before.json`, `unified_report.json.pre_eval`) to
+  invented paths, CREATED two junk files, printed "RESTORED" for all six, and left
+  `data/unified_report.json` holding a throwaway run's `sport_acc 0.6363`. The one file a
+  reader would quote was the one left wrong. Use `pipeline/restore_shipped.py --verify`.
+- **`t=2.31` is the n=9 paired constant.** At n=3 (df=2) the two-sided value is 4.303. I
+  published "3.9x the floor" off the wrong one across 8 stat blocks. Check the constant
+  against `scipy.stats.t.ppf(0.975, df)` — keyed on **df**, not n.
+
 Recorded here rather than in a commit message, because a commit message is not where
 anyone looks before running a command.
 
