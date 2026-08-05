@@ -111,6 +111,18 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # arms are mutation-tested: planting a fresh disagreement exits 1, and a KNOWN entry
     # that no longer applies also exits 1, so a declaration cannot outlive its defect.
     "ablation_consistency": (["check_ablation_consistency.py", "--check"], False),
+    # "It means what we think it means." Every past instance of this estate's core defect
+    # was found by a person reading a file; this decides the mechanical part — a name that
+    # asserts a range, an aggregate beside its own sample, a count beside its collection.
+    # READ-ONLY by construction, which is deliberate: check_documented_usage.py executed
+    # documented commands and one run mutated ten artifacts here plus a sibling repo's
+    # seed_floor.json. This one opens files and writes only its own report.
+    #
+    # It found a real defect on its first clean run, in an artifact written earlier the
+    # same day: stage2_seed_floor.json stored sd 0.0044 beside values whose own sd is
+    # 0.0043, because sd was computed at full precision and rounded independently of the
+    # values. Fixed at the source in build_seed_floor.py.
+    "field_semantics": (["check_field_semantics.py", "--check"], False),
     # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
     # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real
     # finds were worth having, but a BLOCKING gate at 9% precision trains its reader to

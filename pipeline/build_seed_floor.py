@@ -124,7 +124,13 @@ def main() -> int:
         n = len(ss)
         block = {"n": n, "seeds": ss, "metrics": {}}
         for name, path in METRICS.items():
-            v = [dig(got[s], path) for s in ss]
+            # ROUND FIRST, THEN AGGREGATE, so the published sd is the sd of the published
+            # values. Computing sd at full precision and rounding it separately made the
+            # artifact internally inconsistent: it stored sd 0.0044 beside values whose own
+            # sd is 0.0043, so a reader recomputing from the numbers on the page got a
+            # different answer than the page. Found by check_field_semantics.py's AGGREGATE
+            # arm, on this file, which is what that arm is for.
+            v = [round(dig(got[s], path), 4) for s in ss]
             sd = st.stdev(v)
             unp = float(stats.t.ppf(0.975, 2 * n - 2)) * sd * math.sqrt(2)
             block["metrics"][name] = {
