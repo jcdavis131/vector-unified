@@ -147,7 +147,18 @@ PREREQS: dict[str, list[str]] = {
     "g1_position": ["assets/unified.json"],
     # guards_nonvacuous plants defects in front of the other guards, so it inherits
     # whatever they need. Listed with the union rather than left to fail opaquely.
-    "guards_nonvacuous": ["pipeline/data/tennis_matrix.npz", "assets/unified.json"],
+    "guards_nonvacuous": ["pipeline/data/tennis_matrix.npz", "assets/unified.json",
+                          "../vector-hub/assets/data"],
+    # ESTATE-RELATIVE, and these only became visible once the laptop paths were fixed.
+    # Four gates read the published pages in the SIBLING repo vector-hub. While they
+    # hardcoded C:/Users/jcdav/vector-hub they resolved from anywhere — including from
+    # inside a temp clone, which is why the first clone audit looked better than the truth:
+    # the clone was reading my real vector-hub, not simulating a machine that lacks it.
+    # Now they derive from portable_paths.ESTATE, so a checkout without its siblings
+    # correctly cannot run them. That is N/A, not a defect.
+    "superlatives": ["../vector-hub/assets/data"],
+    "cited_fields": ["../vector-hub/assets/data"],
+    "hub_freshness": ["../vector-hub/assets/data"],
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
