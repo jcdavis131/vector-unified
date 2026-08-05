@@ -120,6 +120,33 @@ SHIPPED = {
 # generated artifact as an input exempts it from the staleness check entirely, which is the
 # one thing this file exists to do.
 PRODUCED_BY.update({
+    # --- the sponsor / bridge thread ------------------------------------------
+    # Producers determined by WHERE THE FILE IS WRITTEN, not by grepping the name:
+    # a name grep returns readers too, and it named build_bridge_index.py as the
+    # producer of venue_edges.json, which only reads it.
+    "venue_edges.json": ("build_venue_edges.py", ["acquire_venue_sponsors.py"]),
+    "bridge_index.json": ("build_bridge_index.py", ["build_venue_edges.py"]),
+    "promotion_gate_audit.json": ("audit_promotion_gates.py", []),
+    # --- checkers that write their own report ---------------------------------
+    "internal_prose_audit.json": ("check_internal_prose.py", []),
+    "corrections_landed_audit.json": ("check_corrections_landed.py", []),
+    # --- tennis probes --------------------------------------------------------
+    "tennis_calendar_identity.json": ("probe_tennis_calendar_identity.py", []),
+    "tennis_candidate_features.json": ("probe_tennis_candidate_features.py", []),
+    "tennis_feature_identity.json": ("probe_tennis_feature_identity.py", []),
+    "tennis_forward_enriched.json": ("probe_tennis_forward_enriched.py", []),
+    "tennis_metric_probe.json": ("probe_tennis_metric.py", []),
+    "tennis_metric_probe_enriched.json": ("probe_tennis_metric.py", []),
+    "tennis_retrieval_probe.json": ("probe_tennis_retrieval.py", []),
+    # train_tennis_mtnn.py, not sweep_tennis_hparams.py. The sweep only READS this
+    # path to collect each trial's result; the trainer is what writes it.
+    "tennis_mtnn_report.json": ("train_tennis_mtnn.py", []),
+    # --- pre-existing gaps, not from this session -----------------------------
+    "sponsor_synchrony.json": ("build_sponsor_synchrony.py", ["build_tennis_sponsors.py"]),
+    "gridiron_forward_report.json": ("build_gridiron_forward.py", []),
+})
+
+PRODUCED_BY.update({
     "native_clusters.json": ("archetype_map.py", []),
     "unified_meta.json": ("build_unified_matrix.py", []),
     # build_stage2_baselines.py, NOT train_stage2.py. Both write this file and both call
@@ -133,6 +160,18 @@ PRODUCED_BY.update({
 })
 
 NOT_GENERATED = {
+    # COPIED OUT OF A ONE-OFF HARNESS, which is a different thing from hand-curated
+    # and is called out separately rather than lumped in with the human-judgement
+    # entries below. No pipeline script writes either of these: the harness that
+    # produced them lives in a scratch directory and is not part of the repo, so an
+    # mtime check has no producer to compare against. Reproducing them means
+    # re-running that harness by hand.
+    #   tennis_hparam_sweep.json  -- sweep_tennis_hparams.py writes SC/"tennis_sweep.json"
+    #                                to scratch; this file was copied in.
+    #   stage2_seed_nonvacuity.json -- written by the in-place backup/restore harness
+    #                                that exercised train_stage2.py --seed.
+    "tennis_hparam_sweep.json",
+    "stage2_seed_nonvacuity.json",
     # HAND-CURATED, not generated. Each entry records a superlative on a live page that was
     # checked against its artifact, with the evidence. It is written by a human decision,
     # so an mtime check would only ever say "the checker is newer than your judgement".
