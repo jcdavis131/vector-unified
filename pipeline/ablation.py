@@ -207,6 +207,30 @@ def main():
                   f"G3_sil={g['G3_sil']} G4_hit={g['G4_hit']}", flush=True)
 
     def agg(name, key):
+        """(mean, sample sd) of `key` over this config's per-seed runs.
+
+        WHAT THE `_sd` FIELDS IN THE OUTPUT MEAN, because nothing said so and a checker
+        found them undocumented — `G2_sport_acc_sd`, `G2_rank_sd`, `G3_sil_sd` and
+        `G4_hit_sd` appear 9 times each across the three ablation artifacts and in no
+        docstring or comment anywhere in this repo.
+
+        They are the SAMPLE sd (ddof=1, via statistics.stdev) across the `--seeds` runs of
+        ONE config. Not across configs, not a standard error of the mean.
+
+        TWO TRAPS, both live:
+
+        1. `sd = 0.0` DOES NOT MEAN STABLE. With `--seeds 1` there is one observation and
+           the branch below returns 0.0 — "not measured", printed identically to "measured
+           and found to be zero". data/ablation_report.json was built with 3 seeds and the
+           two 10-seed files with 10, so their sds are real; but any future single-seed run
+           writes 0.0 into the same field name and a reader cannot tell which.
+
+        2. IT IS NOT A PURE SEED EFFECT. This file is irreproducible at a fixed seed —
+           three consecutive runs of `full` at seed 7, same code, gave G2_sport_acc
+           0.6940 / 0.6926 / 0.6827 (data/ablation_determinism.json). So the spread here
+           mixes seed-to-seed variation with run-to-run nondeterminism and cannot separate
+           them. Quoting it as "the seed spread" overstates what it measures.
+        """
         v = [r[key] for r in runs[name]]
         return statistics.mean(v), (statistics.stdev(v) if len(v) > 1 else 0.0)
 

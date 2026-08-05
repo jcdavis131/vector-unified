@@ -88,5 +88,21 @@
   },
   "reading": "All three are the same quantity — the two deltas are sport_acc minus a constant — so exactly ONE thing varies, by 0.0002, and it is the G2 probe rather than the model. The embedding is bit-reproducible.",
   "why_this_matters_for_the_G2_result": "The measured effects are 0.0851 (total) and 0.0289 (coral) against 0.0002 of rerun noise — 425x and 145x. The 5-seed stage-2 experiment does NOT inherit the ablation's irreproducibility."
+ },
+ "field_meanings": {
+  "_why_this_block_exists": "This artifact was written by an ad-hoc script during an investigation, so no committed file documents its schema and check_field_semantics.py correctly reported its field names as explained nowhere. Documenting them here is the only place that can carry it. Nothing measured was changed.",
+  "in_session_full_at_seed7.G2_sport_acc": "sport-probe accuracy for config `full` at seed 7, one value per consecutive run of `ablation.py --seeds 1 --configs full` on one box with no code change between runs. Three distinct values is the evidence that the seed does not pin the result.",
+  "in_session_full_at_seed7.sd": "sample sd (ddof=1) of those three runs. n=3 — enough to PROVE irreproducibility (three distinct values suffices) but a coarse estimate of its MAGNITUDE. Do not quote 0.0062 as a noise floor.",
+  "in_session_full_at_seed7.all_distinct": "true when no two runs produced the same value. This, not the sd, is the load-bearing observation.",
+  "historical_full_at_seed7.<filename>": "the G2_sport_acc recorded for full@seed7 in each of the three shipped ablation artifacts. They disagree; that disagreement is what prompted the investigation.",
+  "RETRACTED_inference.test.F / p_two_sided": "F-test comparing the historical spread against the in-session spread, df (2,2). p=0.3025 means the two CANNOT be distinguished, which is why the earlier claim that code drift contributed on top of nondeterminism was withdrawn.",
+  "ATTEMPTED_FIX_DID_NOT_WORK.result_full_at_seed7_with_fix": "two consecutive runs AFTER adding cudnn.deterministic, cudnn.benchmark=False and use_deterministic_algorithms(warn_only=True) to train_config.",
+  "ATTEMPTED_FIX_DID_NOT_WORK.spread_with_fix": "max minus min of those two runs. LARGER than spread_without_fix_n3, which is why the fix is recorded as falsified rather than shipped as a fix.",
+  "ATTEMPTED_FIX_DID_NOT_WORK.spread_without_fix_n3": "max minus min of the three pre-fix runs (0.0113). Compared against spread_with_fix. n=2 vs n=3, so this is a direction, not a measured ratio.",
+  "stage2_IS_reproducible.numeric_fields_compared": "numeric_fields_compared is the count of numeric fields in unified_report.json compared between the original ctrl seed-7 run and a rerun with identical flags. 37.",
+  "stage2_IS_reproducible.bit_identical": "bit_identical is how many of those 37 came back EXACTLY equal. 34. The 3 that moved are all the same quantity (sport_acc and its two deltas), by 0.0002, and are the G2 probe rather than the model — so the embedding itself is bit-reproducible.",
+  "stage2_IS_reproducible.differ": "37 minus bit_identical. Not an independent number; stated because a reader should not have to subtract.",
+  "_naming_note": "These entries name each field in the PROSE, not only in the key. An earlier version put the name only in the key and check_field_semantics.py still reported numeric_fields_compared and fields_that_differ as undocumented — correctly, because it scans string VALUES. A name that appears only as a key is a label, not an explanation.",
+  "fields_that_differ": "fields_that_differ lists which numeric fields moved between the two runs, by dotted path. Present so a reader does not have to trust the bit_identical count alone."
  }
 }
