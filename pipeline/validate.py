@@ -123,6 +123,18 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # 0.0043, because sd was computed at full precision and rounded independently of the
     # values. Fixed at the source in build_seed_floor.py.
     "field_semantics": (["check_field_semantics.py", "--check"], False),
+    # A seed set AFTER model construction controls nothing. REPORT-ONLY (no --check),
+    # for two reasons. It is a SHAPE heuristic — it cannot know which constructors draw
+    # random weights — so a false positive is possible by construction. And its one current
+    # finding, ablation.py::train_config, is real but deliberately unfixed: correcting the
+    # order changes what every historical ablation number means, and the three shipped
+    # artifacts were produced under it. Blocking would leave the gate permanently red for a
+    # condition nobody has decided to resolve.
+    #
+    # Precision on real data is 1 finding / 329 files across 6 repos, and it discriminates:
+    # it flags ablation.py and NOT train_stage2.py or vector-realty's train_mtnn.py, both of
+    # which seed first and both of which were measured reproducing bit-identically.
+    "seed_before_init": (["check_seed_before_init.py", "--estate"], False),
     # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
     # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real
     # finds were worth having, but a BLOCKING gate at 9% precision trains its reader to

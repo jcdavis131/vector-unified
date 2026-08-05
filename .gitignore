@@ -75,6 +75,10 @@ data/*
 # the record of WHY cited_fields is red; losing it on a clone leaves a failing gate
 # with no explanation, which is how a real finding gets dismissed as noise.
 !data/TENNIS_CITATION_GAP.md
+# The late-seed scan. Cheap to regenerate, but it is the record that ONE function in
+# 329 across six repos seeds after building its model — the root cause of three
+# disagreeing ablation artifacts. Losing it loses the finding.
+!data/seed_order_audit.json
 # The four forward-probe reports. A DIFFERENT reason from the four above — these ARE
 # generated, and the rule at the top of this file says generated artifacts stay out. They
 # are the exception because dumbmodel.com CITES THEM BY PATH as the source of published
