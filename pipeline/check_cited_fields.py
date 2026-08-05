@@ -90,9 +90,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portable_paths import resolve  # noqa: E402
+from portable_paths import ESTATE as _ESTATE, resolve  # noqa: E402
 
-HUB = Path("C:/Users/jcdav/vector-hub/assets/data")
+# WAS Path("C:/Users/jcdav/vector-hub/assets/data") — an absolute path on one laptop.
+# Not merely clone-fragile: on any other box HUB did not exist, every loop below iterated
+# over nothing, and this gate printed "all 0 published values match it" above a green
+# line. It has verified zero published values for every reader who is not me.
+#
+# The convention was ALREADY DECIDED and I nearly re-litigated it. portable_paths.py
+# defines ESTATE = <repo>.parent for exactly this, and migrate_hub_portable_paths.py has
+# already applied the same idea to the published citations, for the same stated reason:
+# "a real value answering a different question than the one it appears to answer. The
+# path is real. It resolves — for me."
+HUB = _ESTATE / "vector-hub" / "assets" / "data"
 SLUGS = ("hoops", "gridiron", "pitch", "equities", "tennis", "unified")
 
 SPLIT_ARROW = re.compile(r"->|\u2192")

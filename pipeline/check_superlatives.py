@@ -51,7 +51,15 @@ import re
 import sys
 from pathlib import Path
 
-HUB = Path("C:/Users/jcdav/vector-hub")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE as _ESTATE  # noqa: E402
+
+# WAS an absolute path on one laptop. portable_paths.py defines ESTATE = <repo>.parent
+# for exactly this, and migrate_hub_portable_paths.py already applied it to the published
+# citations. check_cited_fields.py had the same line and, because HUB did not exist off
+# this box, printed "all 0 published values match it" above a green line for every other
+# reader. Same line, same class, fixed together rather than one at a time.
+HUB = _ESTATE / "vector-hub"
 DATA = HUB / "assets" / "data"
 REGISTRY = Path(__file__).resolve().parent.parent / "data" / "superlative_registry.json"
 
