@@ -188,7 +188,12 @@ def main() -> int:
     # rather than left to trip the unregistered-checker FAILURE — an exclusion a reader
     # can see and argue with is not the same as a checker quietly forgotten, which is the
     # failure mode that rule exists to catch.
-    RUNS_VALIDATE = {"check_gate_inputs_tracked.py"}
+    # check_documented_usage.py is excluded for a DIFFERENT reason than recursion: it
+    # executes 108 documented commands and takes minutes, so registering it would multiply
+    # the gate cost for a meta-check best run deliberately. Named here rather than left to
+    # trip the unregistered-checker FAILURE, so the exclusion is arguable rather than
+    # forgotten.
+    RUNS_VALIDATE = {"check_gate_inputs_tracked.py", "check_documented_usage.py"}
     found = {p.name for p in PIPE.glob("check_*.py")} - RUNS_VALIDATE
     registered = {argv[0] for argv, _ in CHECKS.values()}
     unregistered = sorted(found - registered)
