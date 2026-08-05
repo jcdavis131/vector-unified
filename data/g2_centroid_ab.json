@@ -1,0 +1,211 @@
+{
+ "built": "2026-08-05T00:15:08",
+ "question": "Do coral_centroid_loss + --w-coral + the grl-lambda-target schedule lower G2 sport-decodability, and at what cost to G1/G3/rank?",
+ "design": "PAIRED. Same three seeds (7/11/13), same 60 epochs, same --w-task 2.0 --w-sport 0.5 --grl-lambda 0.3 --grl-ramp 10. The ONLY difference is the three flags under test. Both arms select the checkpoint the same way, so the min-over-epochs selection bias is symmetric.",
+ "arms": {
+  "control": "flags off",
+  "treatment": "--w-coral 0.5 --w-coral-centroid 0.5 --grl-lambda-target 0.5"
+ },
+ "G2_sport_acc": {
+  "per_seed": {
+   "7": -0.0364,
+   "11": -0.0473,
+   "13": -0.0536
+  },
+  "mean_difference": -0.0458,
+  "sd_of_differences": 0.0087,
+  "paired_MDE_n3": 0.0116,
+  "clears_floor": true,
+  "margin_over_floor": 3.9
+ },
+ "G2_delta_vs_majority": {
+  "per_seed": {
+   "7": -0.0364,
+   "11": -0.0473,
+   "13": -0.0536
+  },
+  "mean_difference": -0.0458,
+  "sd_of_differences": 0.0087,
+  "paired_MDE_n3": 0.0116,
+  "clears_floor": true,
+  "margin_over_floor": 3.9
+ },
+ "effective_rank": {
+  "per_seed": {
+   "7": 0.0,
+   "11": -0.1,
+   "13": 0.1
+  },
+  "mean_difference": 0.0,
+  "sd_of_differences": 0.1,
+  "paired_MDE_n3": 0.1334,
+  "clears_floor": false,
+  "margin_over_floor": 0.0
+ },
+ "G3_silhouette": {
+  "per_seed": {
+   "7": -0.0457,
+   "11": 0.016,
+   "13": -0.0166
+  },
+  "mean_difference": -0.0154,
+  "sd_of_differences": 0.0309,
+  "paired_MDE_n3": 0.0412,
+  "clears_floor": false,
+  "margin_over_floor": 0.4
+ },
+ "G3_separation": {
+  "per_seed": {
+   "7": -0.0575,
+   "11": 0.0015,
+   "13": -0.0373
+  },
+  "mean_difference": -0.0311,
+  "sd_of_differences": 0.03,
+  "paired_MDE_n3": 0.04,
+  "clears_floor": false,
+  "margin_over_floor": 0.8
+ },
+ "G1_hoops": {
+  "per_seed": {
+   "7": -0.0077,
+   "11": 0.0085,
+   "13": 0.0012
+  },
+  "mean_difference": 0.0006,
+  "sd_of_differences": 0.0081,
+  "paired_MDE_n3": 0.0108,
+  "clears_floor": false,
+  "margin_over_floor": 0.1
+ },
+ "G1_gridiron": {
+  "per_seed": {
+   "7": 0.0,
+   "11": 0.0009,
+   "13": 0.0038
+  },
+  "mean_difference": 0.0016,
+  "sd_of_differences": 0.002,
+  "paired_MDE_n3": 0.0026,
+  "clears_floor": false,
+  "margin_over_floor": 0.6
+ },
+ "G1_pitch": {
+  "per_seed": {
+   "7": -0.0062,
+   "11": 0.0,
+   "13": 0.0
+  },
+  "mean_difference": -0.0021,
+  "sd_of_differences": 0.0036,
+  "paired_MDE_n3": 0.0048,
+  "clears_floor": false,
+  "margin_over_floor": 0.4
+ },
+ "raw": {
+  "control": {
+   "7": {
+    "g2": 0.6614,
+    "dmaj": 0.0356,
+    "rank": 12.0,
+    "sil": 0.706,
+    "sep": 0.9119,
+    "g1h": 0.9672320740169622,
+    "g1g": 0.9859154929577465,
+    "g1p": 0.9938271604938271,
+    "verdict": {
+     "G1": "PASS",
+     "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+     "G3": "PASS",
+     "collapse_detector": "PASS"
+    }
+   },
+   "11": {
+    "g2": 0.666,
+    "dmaj": 0.0402,
+    "rank": 12.1,
+    "sil": 0.6775,
+    "sep": 0.8904,
+    "g1h": 0.9629915188897455,
+    "g1g": 0.9868544600938968,
+    "g1p": 0.9897119341563786,
+    "verdict": {
+     "G1": "PASS",
+     "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+     "G3": "PASS",
+     "collapse_detector": "PASS"
+    }
+   },
+   "13": {
+    "g2": 0.6762,
+    "dmaj": 0.0504,
+    "rank": 12.0,
+    "sil": 0.6815,
+    "sep": 0.8928,
+    "g1h": 0.9602929838087895,
+    "g1g": 0.984037558685446,
+    "g1p": 0.9917695473251029,
+    "verdict": {
+     "G1": "PASS",
+     "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+     "G3": "PASS",
+     "collapse_detector": "PASS"
+    }
+   }
+  },
+  "treatment": {
+   "7": {
+    "g2": 0.625,
+    "dmaj": -0.0008,
+    "rank": 12.0,
+    "sil": 0.6603,
+    "sep": 0.8544,
+    "g1h": 0.9595219737856592,
+    "g1g": 0.9859154929577465,
+    "g1p": 0.9876543209876543,
+    "verdict": {
+     "G1": "PASS",
+     "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+     "G3": "PASS",
+     "collapse_detector": "PASS"
+    }
+   },
+   "11": {
+    "g2": 0.6187,
+    "dmaj": -0.0071,
+    "rank": 12.0,
+    "sil": 0.6935,
+    "sep": 0.8919,
+    "g1h": 0.9714726291441789,
+    "g1g": 0.9877934272300469,
+    "g1p": 0.9897119341563786,
+    "verdict": {
+     "G1": "PASS",
+     "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+     "G3": "PASS",
+     "collapse_detector": "PASS"
+    }
+   },
+   "13": {
+    "g2": 0.6226,
+    "dmaj": -0.0032,
+    "rank": 12.1,
+    "sil": 0.6649,
+    "sep": 0.8555,
+    "g1h": 0.961449498843485,
+    "g1g": 0.9877934272300469,
+    "g1p": 0.9917695473251029,
+    "verdict": {
+     "G1": "PASS",
+     "G2": "DEFERRED(collapse_pass=True, need no-GRL baseline)",
+     "G3": "PASS",
+     "collapse_detector": "PASS"
+    }
+   }
+  }
+ },
+ "VERDICT": "G2 REAL. Paired mean -0.0458 against a paired MDE of 0.0116 — 3.9x the floor, 3 of 3 seeds. All gates PASS on all three treatment seeds (G1=PASS G3=PASS collapse_detector=PASS).",
+ "CORRECTION_the_costs_were_a_BASELINE_ARTIFACT": "Before the control ran I reported G3 silhouette -0.0610 and G1 hoops -0.0201 as the price of sport-blindness, measured against the shipped 0.6851 report. Both vanish under pairing: G3 silhouette -0.0154 with sd_of_differences 0.0309 (inside its own noise) and G1 hoops +0.0006 with sd 0.0081 (nil). The shipped baseline was ONE draw of a DIFFERENT config — it uses --grl-lambda 0.05, not 0.3 — so differences against it were never attributable to the flags under test. Three treatment seeds against one baseline run is the same asymmetry this repo keeps finding, and I published it before catching it.",
+ "WHAT_THIS_DOES_NOT_ISOLATE": "The paired effect is the COMBINED effect of all three flags. The control ramps lambda 0 -> 0.3; the treatment ramps 0.3 -> 0.5 AND adds both coral terms. Separating the centroid term from the lambda schedule needs a third arm that was not run. The shipped 0.6851 (lambda 0.05) vs this control's 0.6679 mean suggests the lambda increase alone already moves G2, so attributing all -0.0458 to the centroid term would be wrong.",
+ "n_is_3": "sd from three paired differences is itself uncertain. The margin is 3.9x the floor, which is wide enough that n=3 is not the binding limitation, but a 5-seed confirmation is the cheap next step and was not run."
+}
