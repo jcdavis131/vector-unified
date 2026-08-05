@@ -377,7 +377,7 @@ MUTATIONS = [
     # the rebuild.
     ("corrections_landed/marker_removed",
      ["check_corrections_landed.py", "--check"],
-     Path("C:/Users/jcdav/vector-hoops/pipeline/seed_floor.json"),
+     _ESTATE / "vector-hoops" / "pipeline" / "seed_floor.json",
      _strip_correction_marker,
      "a CORRECTION key whose declared target lost its inline marker — the file looks "
      "audited while the audited claim still stands"),
@@ -438,12 +438,12 @@ MUTATIONS = [
      "number is recomputable, and this is the first check that tests it"),
     ("equities_forward/carry_forward",
      ["build_equities_forward.py", "--check"],
-     Path("C:/Users/jcdav/vector-equities/assets/real_data.json"), _carry_forward,
+     _ESTATE / "vector-equities" / "assets" / "real_data.json", _carry_forward,
      "every company-year duplicated from its prior year — the gate that could not fail "
      "under any input, registered as a check for three commits"),
     ("hoops_forward/extras_carry_nothing",
      ["build_hoops_forward.py", "--check"],
-     Path("C:/Users/jcdav/vector-hoops/assets/skills.json"), _skills_carry_no_signal,
+     _ESTATE / "vector-hoops" / "assets" / "skills.json", _skills_carry_no_signal,
      "every skill column made a copy of the target — the extras can add nothing, so the "
      "p >= 0.05 arm must fire"),
     ("tennis_forward/extras_carry_nothing",
@@ -453,7 +453,7 @@ MUTATIONS = [
      "this closes the coverage gap the suite published about itself"),
     ("gridiron_forward/carry_forward",
      ["build_gridiron_forward.py", "--check"],
-     Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json"),
+     _ESTATE / "vector-gridiron" / "assets" / "vectors.json",
      _gridiron_ppr_carries_forward,
      "every player-season's PPR copied onto his next — persistence of 0.77-0.80 would be "
      "measuring duplication and would still print as a finding about football"),
