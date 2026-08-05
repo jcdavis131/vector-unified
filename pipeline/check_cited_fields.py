@@ -105,6 +105,18 @@ SIMPLE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 FLAT_LIST = re.compile(r"[A-Za-z0-9_.,=\s'\-]+$")
 
 
+# A field name that marks its value as retired. The convention across the estate is a
+# SUPERSEDED/superseded prefix on the key itself.
+SUPERSEDED_KEY = re.compile(r"^(SUPERSEDED|superseded)")
+
+# The insight must SAY the number is history. These are the words the four currently
+# correct citations use; a page that quotes a retired value with none of them is
+# presenting it as current.
+HISTORY_CUE = re.compile(
+    r"\b(supersed\w*|earlier|retired|no longer|formerly|previously|used to|history|"
+    r"withdrawn|replaced|was\s+wrong)\b", re.I)
+
+
 def expand_fields(fields: str) -> list[str] | None:
     """Split a FLAT comma-separated field list, or return None if it is not flat.
 
@@ -405,11 +417,56 @@ def main() -> int:
             print(f"  {m}")
         print("\nA citation naming a field its file does not contain is not a small error: "
               "it is the page asserting that a source supports a claim it never made.")
-    if missing or mismatched:
+    # ---- THIRD ARM: a superseded field cited as though it were live ------------
+    # The two arms above ask "does the cited field EXIST" and "does its value MATCH". A
+    # superseded value passes both — it is still in the file, and still equal to what the
+    # page prints. Nothing asked whether it is still TRUE.
+    #
+    # Four superseded values are quoted on live pages right now: hoops -0.096, tennis
+    # 0.0124, unified 3.287 and 0.4333. All four are framed correctly as history —
+    # "survives in the file as history and is explicitly not used", "the file itself
+    # marks that superseded", "An earlier version of this file quoted 3.287x as a
+    # salvage", "The retired 0.4333 target". That is a property of how they happen to be
+    # written, not of anything enforced, and an edit that dropped the framing would leave
+    # both existing arms green.
+    stale_cites = []
+    for slug in SLUGS:
+        p = HUB / f"{slug}.json"
+        if not p.exists():
+            continue
+        doc = json.loads(p.read_text(encoding="utf-8"))
+        page = f"{slug}.json"
+        for i, ins in enumerate(doc.get("insights", []) or []):
+            src = str(ins.get("source") or "")
+            body = str(ins.get("body") or "")
+            cited = {w.strip(" ,;{}()") for w in re.split(r"[\s,;{}()]+", src)}
+            for f in sorted(c for c in cited if SUPERSEDED_KEY.match(c)):
+                if not HISTORY_CUE.search(body):
+                    stale_cites.append(
+                        f"{page} insights[{i}] cites {f} and its body never says the "
+                        f"value is superseded — a retired number presented as current")
+    if stale_cites:
+        print(f"\n{len(stale_cites)} superseded field(s) cited without saying so:")
+        for m in stale_cites:
+            print(f"  {m}")
+        print("\nThe existing arms cannot catch this: a superseded value still EXISTS in "
+              "its file and still MATCHES what the page prints. Only the framing "
+              "distinguishes 'this was once believed' from 'this is the number'.")
+
+    if missing or mismatched or stale_cites:
         return 1 if args.check else 0
 
+    n_sup = sum(1 for slug in SLUGS
+                if (HUB / f"{slug}.json").exists()
+                for ins in (json.loads((HUB / f"{slug}.json").read_text(encoding="utf-8"))
+                            .get("insights", []) or [])
+                for w in re.split(r"[\s,;{}()]+", str(ins.get("source") or ""))
+                if SUPERSEDED_KEY.match(w.strip(" ,;{}()")))
     print(f"\nEvery checkable cited field exists in the file it is cited from, and all "
-          f"{vals_checked} published values match it.")
+          f"{vals_checked} published values match it. "
+          f"{n_sup} citation(s) of a SUPERSEDED field, each framed as history — "
+          f"a green third arm means the framing is present, not that no retired value "
+          f"is quoted.")
     return 0
 
 
