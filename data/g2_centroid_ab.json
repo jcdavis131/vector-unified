@@ -14,9 +14,16 @@
   },
   "mean_difference": -0.0458,
   "sd_of_differences": 0.0087,
-  "paired_MDE_n3": 0.0116,
+  "paired_MDE_n3": 0.0216,
   "clears_floor": true,
-  "margin_over_floor": 3.9
+  "margin_over_floor": 2.12,
+  "paired_MDE_n3_WRONG": 0.0116,
+  "p_two_sided": 0.0118,
+  "ci95": [
+   -0.0674,
+   -0.0242
+  ],
+  "df": 2
  },
  "G2_delta_vs_majority": {
   "per_seed": {
@@ -26,9 +33,16 @@
   },
   "mean_difference": -0.0458,
   "sd_of_differences": 0.0087,
-  "paired_MDE_n3": 0.0116,
+  "paired_MDE_n3": 0.0216,
   "clears_floor": true,
-  "margin_over_floor": 3.9
+  "margin_over_floor": 2.12,
+  "paired_MDE_n3_WRONG": 0.0116,
+  "p_two_sided": 0.0118,
+  "ci95": [
+   -0.0674,
+   -0.0242
+  ],
+  "df": 2
  },
  "effective_rank": {
   "per_seed": {
@@ -38,9 +52,16 @@
   },
   "mean_difference": 0.0,
   "sd_of_differences": 0.1,
-  "paired_MDE_n3": 0.1334,
+  "paired_MDE_n3": 0.2484,
   "clears_floor": false,
-  "margin_over_floor": 0.0
+  "margin_over_floor": 0.0,
+  "paired_MDE_n3_WRONG": 0.1334,
+  "p_two_sided": 1.0,
+  "ci95": [
+   -0.2484,
+   0.2484
+  ],
+  "df": 2
  },
  "G3_silhouette": {
   "per_seed": {
@@ -50,9 +71,16 @@
   },
   "mean_difference": -0.0154,
   "sd_of_differences": 0.0309,
-  "paired_MDE_n3": 0.0412,
+  "paired_MDE_n3": 0.0768,
   "clears_floor": false,
-  "margin_over_floor": 0.4
+  "margin_over_floor": 0.2,
+  "paired_MDE_n3_WRONG": 0.0412,
+  "p_two_sided": 0.479,
+  "ci95": [
+   -0.0922,
+   0.0614
+  ],
+  "df": 2
  },
  "G3_separation": {
   "per_seed": {
@@ -62,9 +90,16 @@
   },
   "mean_difference": -0.0311,
   "sd_of_differences": 0.03,
-  "paired_MDE_n3": 0.04,
+  "paired_MDE_n3": 0.0745,
   "clears_floor": false,
-  "margin_over_floor": 0.8
+  "margin_over_floor": 0.42,
+  "paired_MDE_n3_WRONG": 0.04,
+  "p_two_sided": 0.2144,
+  "ci95": [
+   -0.1056,
+   0.0434
+  ],
+  "df": 2
  },
  "G1_hoops": {
   "per_seed": {
@@ -74,9 +109,16 @@
   },
   "mean_difference": 0.0006,
   "sd_of_differences": 0.0081,
-  "paired_MDE_n3": 0.0108,
+  "paired_MDE_n3": 0.0201,
   "clears_floor": false,
-  "margin_over_floor": 0.1
+  "margin_over_floor": 0.03,
+  "paired_MDE_n3_WRONG": 0.0108,
+  "p_two_sided": 0.9096,
+  "ci95": [
+   -0.0195,
+   0.0207
+  ],
+  "df": 2
  },
  "G1_gridiron": {
   "per_seed": {
@@ -86,9 +128,16 @@
   },
   "mean_difference": 0.0016,
   "sd_of_differences": 0.002,
-  "paired_MDE_n3": 0.0026,
+  "paired_MDE_n3": 0.005,
   "clears_floor": false,
-  "margin_over_floor": 0.6
+  "margin_over_floor": 0.32,
+  "paired_MDE_n3_WRONG": 0.0026,
+  "p_two_sided": 0.3001,
+  "ci95": [
+   -0.0034,
+   0.0066
+  ],
+  "df": 2
  },
  "G1_pitch": {
   "per_seed": {
@@ -98,9 +147,16 @@
   },
   "mean_difference": -0.0021,
   "sd_of_differences": 0.0036,
-  "paired_MDE_n3": 0.0048,
+  "paired_MDE_n3": 0.0089,
   "clears_floor": false,
-  "margin_over_floor": 0.4
+  "margin_over_floor": 0.23,
+  "paired_MDE_n3_WRONG": 0.0048,
+  "p_two_sided": 0.4187,
+  "ci95": [
+   -0.011,
+   0.0068
+  ],
+  "df": 2
  },
  "raw": {
   "control": {
@@ -204,8 +260,19 @@
    }
   }
  },
- "VERDICT": "G2 REAL. Paired mean -0.0458 against a paired MDE of 0.0116 — 3.9x the floor, 3 of 3 seeds. All gates PASS on all three treatment seeds (G1=PASS G3=PASS collapse_detector=PASS).",
+ "VERDICT": "G2 REAL. Paired mean -0.0458, t=-9.12 df=2, p=0.0118, 95% CI [-0.0674, -0.0242] which excludes 0; 3 of 3 seeds agree in sign. That is 2.12x the corrected floor 0.0216, NOT the 3.9x originally published against a floor built with the n=9 constant. All gates PASS on all three treatment seeds (G1=PASS G3=PASS collapse_detector=PASS). Nothing promoted.",
  "CORRECTION_the_costs_were_a_BASELINE_ARTIFACT": "Before the control ran I reported G3 silhouette -0.0610 and G1 hoops -0.0201 as the price of sport-blindness, measured against the shipped 0.6851 report. Both vanish under pairing: G3 silhouette -0.0154 with sd_of_differences 0.0309 (inside its own noise) and G1 hoops +0.0006 with sd 0.0081 (nil). The shipped baseline was ONE draw of a DIFFERENT config — it uses --grl-lambda 0.05, not 0.3 — so differences against it were never attributable to the flags under test. Three treatment seeds against one baseline run is the same asymmetry this repo keeps finding, and I published it before catching it.",
  "WHAT_THIS_DOES_NOT_ISOLATE": "The paired effect is the COMBINED effect of all three flags. The control ramps lambda 0 -> 0.3; the treatment ramps 0.3 -> 0.5 AND adds both coral terms. Separating the centroid term from the lambda schedule needs a third arm that was not run. The shipped 0.6851 (lambda 0.05) vs this control's 0.6679 mean suggests the lambda increase alone already moves G2, so attributing all -0.0458 to the centroid term would be wrong.",
- "n_is_3": "sd from three paired differences is itself uncertain. The margin is 3.9x the floor, which is wide enough that n=3 is not the binding limitation, but a 5-seed confirmation is the cheap next step and was not run."
+ "n_is_3": "sd from three paired differences is itself uncertain (df=2). The margin is 2.12x the corrected floor, down from the 3.9x originally published against a floor built with the n=9 constant. p=0.0118, 95% CI [-0.0674, -0.0241]. A 5-seed confirmation is the cheap next step and was not run.",
+ "CORRECTION_the_paired_floor_constant_was_the_n9_one": {
+  "corrects_field": [
+   "VERDICT",
+   "n_is_3"
+  ],
+  "what_was_published": "Every paired floor in this file was 2.31 * sd_d / sqrt(3); the headline read '3.9x the paired MDE(n=3) 0.0116'.",
+  "what_is_wrong": "2.31 is t(0.975, df=8) -- the n=9 constant, used at n=3. A paired test on 3 seeds has df=2, where the two-sided constant is t(0.975,2)=4.303. Every floor here was too small by 1.863x.",
+  "blast_radius": "8 stat blocks, not just the headline: G1_gridiron, G1_hoops, G1_pitch, G2_delta_vs_majority, G2_sport_acc, G3_separation, G3_silhouette, effective_rank.",
+  "conclusions_that_flip": "NONE. All 8 blocks keep their verdict. The wrong constant inflated the MARGINS, it did not reverse a decision -- G2 still clears (2.12x, p=0.0118) and every cost field was already below its floor and sits further below now. The correction is to the reported effect size, not to the finding.",
+  "found_by": "checking the constant against scipy before reusing it in the decomposition -- not by anything downstream catching it."
+ }
 }
