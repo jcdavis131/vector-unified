@@ -1,5 +1,5 @@
 {
- "built": "2026-08-04T21:54:12",
+ "built": "2026-08-04T22:22:18",
  "archetype_join_verified": "player_idx in order and cosine 1.0000 over 500 rows",
  "hoops_archetype_join": "player_idx in order and cosine 1.0000 over 2000 rows — embedding_v3.npz matches what unified_matrix.npz was built from",
  "Q1_companies_reaching_the_athlete_corpus": [
