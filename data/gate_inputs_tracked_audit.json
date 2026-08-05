@@ -1,7 +1,7 @@
 {
  "question": "Does every registered check still work on a fresh clone?",
  "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
- "commit": "06ac4f91c615dc6629603f53b62d36f545081141",
+ "commit": "bc54f75b479dec39f9396405ba553262e0822c9e",
  "data_files": {
   "working_tree": 71,
   "clone": 29,
@@ -15,13 +15,15 @@
    "N/A": 0
   },
   "clone": {
-   "PASS": 8,
-   "FAIL": 2,
+   "PASS": 7,
+   "FAIL": 3,
    "SKIP": 2,
    "N/A": 7
   }
  },
- "pass_here_fail_on_clone": [],
+ "pass_here_fail_on_clone": [
+  "cited_fields"
+ ],
  "fail_in_both": [
   "ablation_consistency",
   "artifact_freshness"
@@ -57,7 +59,7 @@
   },
   "cited_fields": {
    "working_tree": "PASS",
-   "clone": "PASS"
+   "clone": "FAIL"
   },
   "tennis_mtnn": {
    "working_tree": "PASS",
@@ -104,6 +106,7 @@
    "clone": "PASS"
   }
  },
- "KNOWN_VACUOUS_PASS": "check_cited_fields.py verifies 64 published values in the working tree and 0 in the clone, and prints PASS both times. It is NOT in pass_here_fail_on_clone because it does not fail — that is the problem. A gate that goes green over an empty set on every clone is misleading rather than merely weak. Counting it as a pass is how this audit would have missed it.",
+ "FIXED_was_a_vacuous_pass": "check_cited_fields.py verified 64 published values in the working tree and 0 in the clone, and printed PASS both times. It now refuses to pass on zero coverage, so it appears in pass_here_fail_on_clone as a TRUE positive rather than being invisible.",
+ "the_remaining_pass_here_fail_on_clone_is_NOT_the_same_class": "The seven entries this audit originally found were checks that work fine and lack a deliberately-untracked artifact; they are now N/A. cited_fields is a different defect and must not be silenced the same way: check_cited_fields.py:95 hardcodes HUB = Path('C:/Users/jcdav/vector-hub/assets/data'), an absolute path into a sibling repo. It is machine-specific, not clone-specific — on any box that is not the author's it verifies zero values. It stays FAIL until that path is resolved properly, which is an estate-wide convention decision (check_hub_freshness.py and check_superlatives.py reach into vector-hub too) and not one to settle from inside this lane.",
  "why_not_registered": "This script runs validate.py. Registering it inside validate.py is unbounded recursion. Excluded by name in validate.py's glob rather than silently forgotten."
 }

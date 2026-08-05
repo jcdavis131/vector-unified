@@ -31,10 +31,19 @@ validate.py now declares those prerequisites and reports N/A instead of FAIL:
     pass-here-fail-on-clone: 0. The 2 remaining are the genuine pre-existing failures,
     the same two the working tree reports.
 
-STILL UNFIXED, and not hidden by the above: check_cited_fields.py verifies 64 published
-values here and 0 in the clone, and prints PASS both times. It has no declared prerequisite
-to trip, because its input is present — merely empty. A gate that goes green over an empty
-set on every clone is not a weaker gate, it is a misleading one.
+check_cited_fields.py verified 64 published values here and 0 in the clone and printed PASS
+both times. It now refuses to pass on zero coverage, so the current state is:
+
+    fresh clone     7 PASS   2 SKIP   3 FAIL   7 N/A
+    pass-here-fail-on-clone: 1, and it is a TRUE positive.
+
+THAT ONE MUST NOT BE SILENCED THE WAY THE SEVEN WERE. Those were sound checks missing a
+deliberately-untracked artifact. This is check_cited_fields.py:95 hardcoding
+HUB = Path("C:/Users/jcdav/vector-hub/assets/data") -- an absolute path into a sibling
+repo, so it is machine-specific rather than clone-specific and has verified zero values
+for every reader who is not the author. It stays FAIL until that path is resolved, which
+is an estate-wide convention call (check_hub_freshness.py and check_superlatives.py reach
+into vector-hub the same way).
 
 NOT REGISTERED IN validate.py, DELIBERATELY. This script runs validate.py; registering it
 inside validate.py is unbounded recursion. It is a standalone diagnostic, run by hand, and
@@ -132,12 +141,21 @@ def main() -> int:
             "fail_in_both": both,
             "per_check": {k: {"working_tree": here[k], "clone": there.get(k, "?")}
                           for k in here},
-            "KNOWN_VACUOUS_PASS": "check_cited_fields.py verifies 64 published values in "
-                "the working tree and 0 in the clone, and prints PASS both times. It is "
-                "NOT in pass_here_fail_on_clone because it does not fail — that is the "
-                "problem. A gate that goes green over an empty set on every clone is "
-                "misleading rather than merely weak. Counting it as a pass is how this "
-                "audit would have missed it.",
+            "FIXED_was_a_vacuous_pass": "check_cited_fields.py verified 64 published "
+                "values in the working tree and 0 in the clone, and printed PASS both "
+                "times. It now refuses to pass on zero coverage, so it appears in "
+                "pass_here_fail_on_clone as a TRUE positive rather than being invisible.",
+            "the_remaining_pass_here_fail_on_clone_is_NOT_the_same_class": "The seven "
+                "entries this audit originally found were checks that work fine and lack "
+                "a deliberately-untracked artifact; they are now N/A. cited_fields is a "
+                "different defect and must not be silenced the same way: "
+                "check_cited_fields.py:95 hardcodes "
+                "HUB = Path('C:/Users/jcdav/vector-hub/assets/data'), an absolute path "
+                "into a sibling repo. It is machine-specific, not clone-specific — on any "
+                "box that is not the author's it verifies zero values. It stays FAIL "
+                "until that path is resolved properly, which is an estate-wide convention "
+                "decision (check_hub_freshness.py and check_superlatives.py reach into "
+                "vector-hub too) and not one to settle from inside this lane.",
             "why_not_registered": "This script runs validate.py. Registering it inside "
                 "validate.py is unbounded recursion. Excluded by name in validate.py's "
                 "glob rather than silently forgotten.",
