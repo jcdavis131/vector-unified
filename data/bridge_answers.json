@@ -1,0 +1,398 @@
+{
+ "built": "2026-08-04T21:15:13",
+ "archetype_join_verified": "player_idx in order and cosine 1.0000 over 500 rows",
+ "Q1_companies_reaching_the_athlete_corpus": [
+  {
+   "ticker": "MET",
+   "company": "MetLife",
+   "sector": "Financials",
+   "venues": [
+    "MetLife Stadium"
+   ],
+   "cities": [
+    "East Rutherford, New Jersey"
+   ],
+   "teams": [
+    "gridiron:NYG",
+    "gridiron:NYJ"
+   ],
+   "player_seasons": 360,
+   "ceo": "Khalaf Michel",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "MTB",
+   "company": "M&T Bank",
+   "sector": "Financials",
+   "venues": [
+    "M&T Bank Stadium"
+   ],
+   "cities": [
+    "Baltimore, Maryland"
+   ],
+   "teams": [
+    "gridiron:BAL"
+   ],
+   "player_seasons": 172,
+   "ceo": "JONES RENE F",
+   "ceo_resolution": "sole_ceo_row"
+  },
+  {
+   "ticker": "RJF",
+   "company": "Raymond James Financial",
+   "sector": "Financials",
+   "venues": [
+    "Raymond James Stadium"
+   ],
+   "cities": [
+    "Tampa, Florida"
+   ],
+   "teams": [
+    "gridiron:TB"
+   ],
+   "player_seasons": 172,
+   "ceo": null,
+   "ceo_resolution": "transition_or_multiple"
+  },
+  {
+   "ticker": "F",
+   "company": "Ford Motor Company",
+   "sector": "Consumer Discretionary",
+   "venues": [
+    "Ford Field"
+   ],
+   "cities": [
+    "Detroit, Michigan"
+   ],
+   "teams": [
+    "gridiron:DET"
+   ],
+   "player_seasons": 170,
+   "ceo": "FARLEY JR JAMES D",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "T",
+   "company": "AT&T",
+   "sector": "Communication",
+   "venues": [
+    "AT&T Stadium"
+   ],
+   "cities": [
+    "Arlington, Texas"
+   ],
+   "teams": [
+    "gridiron:DAL"
+   ],
+   "player_seasons": 159,
+   "ceo": "STANKEY JOHN T",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "FDX",
+   "company": "FedEx",
+   "sector": "Industrials",
+   "venues": [
+    "FedExForum"
+   ],
+   "cities": [
+    "Memphis, Tennessee"
+   ],
+   "teams": [
+    "hoops:MEM"
+   ],
+   "player_seasons": 112,
+   "ceo": "Subramaniam Rajesh",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "TGT",
+   "company": "Target Corporation",
+   "sector": "Consumer Staples",
+   "venues": [
+    "Target Center"
+   ],
+   "cities": [
+    "Minneapolis, Minnesota"
+   ],
+   "teams": [
+    "hoops:MIN"
+   ],
+   "player_seasons": 104,
+   "ceo": null,
+   "ceo_resolution": "absent"
+  },
+  {
+   "ticker": "COF",
+   "company": "Capital One",
+   "sector": "Financials",
+   "venues": [
+    "Capital One Arena"
+   ],
+   "cities": [
+    "Washington, D.C."
+   ],
+   "teams": [
+    "hoops:WAS"
+   ],
+   "player_seasons": 88,
+   "ceo": "FAIRBANK RICHARD D",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "JPM",
+   "company": "JPMorgan Chase",
+   "sector": "Financials",
+   "venues": [
+    "Chase Center"
+   ],
+   "cities": [
+    "San Francisco, California"
+   ],
+   "teams": [
+    "hoops:GSW"
+   ],
+   "player_seasons": 82,
+   "ceo": "DIMON JAMES",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "FISV",
+   "company": "Fiserv",
+   "sector": "Financials",
+   "venues": [
+    "Fiserv Forum"
+   ],
+   "cities": [
+    "Milwaukee, Wisconsin"
+   ],
+   "teams": [
+    "hoops:MIL"
+   ],
+   "player_seasons": 78,
+   "ceo": null,
+   "ceo_resolution": "absent"
+  },
+  {
+   "ticker": "BALL",
+   "company": "Ball Corporation",
+   "sector": "Materials",
+   "venues": [
+    "Ball Arena"
+   ],
+   "cities": [
+    "Denver, Colorado"
+   ],
+   "teams": [
+    "hoops:DEN"
+   ],
+   "player_seasons": 58,
+   "ceo": "Lewis Ronald J.",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "DAL",
+   "company": "Delta Air Lines",
+   "sector": "Industrials",
+   "venues": [
+    "Delta Center"
+   ],
+   "cities": [
+    "Salt Lake City, Utah"
+   ],
+   "teams": [
+    "hoops:UTA"
+   ],
+   "player_seasons": 33,
+   "ceo": "Bastian Edward H",
+   "ceo_resolution": "exact"
+  },
+  {
+   "ticker": "INTU",
+   "company": "Intuit",
+   "sector": "Technology",
+   "venues": [
+    "Intuit Dome"
+   ],
+   "cities": [
+    "Inglewood, California"
+   ],
+   "teams": [
+    "hoops:LAC"
+   ],
+   "player_seasons": 21,
+   "ceo": "Goodarzi Sasan K",
+   "ceo_resolution": "exact"
+  }
+ ],
+ "Q2_cities": [
+  {
+   "city": "East Rutherford, New Jersey",
+   "companies": [
+    "MET"
+   ],
+   "teams": [
+    "gridiron:NYG",
+    "gridiron:NYJ"
+   ],
+   "player_seasons": 360
+  },
+  {
+   "city": "Baltimore, Maryland",
+   "companies": [
+    "MTB"
+   ],
+   "teams": [
+    "gridiron:BAL"
+   ],
+   "player_seasons": 172
+  },
+  {
+   "city": "Tampa, Florida",
+   "companies": [
+    "RJF"
+   ],
+   "teams": [
+    "gridiron:TB"
+   ],
+   "player_seasons": 172
+  },
+  {
+   "city": "Detroit, Michigan",
+   "companies": [
+    "F"
+   ],
+   "teams": [
+    "gridiron:DET"
+   ],
+   "player_seasons": 170
+  },
+  {
+   "city": "Arlington, Texas",
+   "companies": [
+    "T"
+   ],
+   "teams": [
+    "gridiron:DAL"
+   ],
+   "player_seasons": 159
+  },
+  {
+   "city": "Memphis, Tennessee",
+   "companies": [
+    "FDX"
+   ],
+   "teams": [
+    "hoops:MEM"
+   ],
+   "player_seasons": 112
+  },
+  {
+   "city": "Minneapolis, Minnesota",
+   "companies": [
+    "TGT"
+   ],
+   "teams": [
+    "hoops:MIN"
+   ],
+   "player_seasons": 104
+  },
+  {
+   "city": "Washington, D.C.",
+   "companies": [
+    "COF"
+   ],
+   "teams": [
+    "hoops:WAS"
+   ],
+   "player_seasons": 88
+  },
+  {
+   "city": "San Francisco, California",
+   "companies": [
+    "JPM"
+   ],
+   "teams": [
+    "hoops:GSW"
+   ],
+   "player_seasons": 82
+  },
+  {
+   "city": "Milwaukee, Wisconsin",
+   "companies": [
+    "FISV"
+   ],
+   "teams": [
+    "hoops:MIL"
+   ],
+   "player_seasons": 78
+  },
+  {
+   "city": "Denver, Colorado",
+   "companies": [
+    "BALL"
+   ],
+   "teams": [
+    "hoops:DEN"
+   ],
+   "player_seasons": 58
+  },
+  {
+   "city": "Salt Lake City, Utah",
+   "companies": [
+    "DAL"
+   ],
+   "teams": [
+    "hoops:UTA"
+   ],
+   "player_seasons": 33
+  },
+  {
+   "city": "Inglewood, California",
+   "companies": [
+    "INTU"
+   ],
+   "teams": [
+    "hoops:LAC"
+   ],
+   "player_seasons": 21
+  }
+ ],
+ "Q3_archetype_mix_bridged_vs_not": {
+  "question": "Do teams whose home venue carries an S&P 500 company's name have a different player-archetype mix from teams that do not?",
+  "expected_before_running": "NO. Naming rights are a commercial fact about a building and nothing connects them to roster composition. Stated before the number, not after.",
+  "n_bridged_player_seasons": 1033,
+  "n_unbridged_player_seasons": 4290,
+  "mix_bridged": {
+   "A0": 0.0891,
+   "A1": 0.3185,
+   "A2": 0.2924,
+   "A5": 0.1607,
+   "A11": 0.1394
+  },
+  "mix_unbridged": {
+   "A0": 0.0928,
+   "A1": 0.3168,
+   "A2": 0.2809,
+   "A5": 0.1597,
+   "A11": 0.1499
+  },
+  "total_variation_distance": 0.0142,
+  "permutation_null": {
+   "unit_of_permutation": "TEAM, not player-season. 5,323 rows are only 32 independent units; a row-level shuffle breaks the franchise clustering, manufactures variance the real comparison does not have, and inflates the null. The first version did exactly that and produced an observed TVD BELOW the null mean, which is the tell.",
+   "n_bridged_teams": 6,
+   "n_teams": 32,
+   "n_permutations": 2000,
+   "null_mean_tvd": 0.0241,
+   "null_p95_tvd": 0.0418,
+   "p_value": 0.8535
+  },
+  "verdict": "NO DIFFERENCE — TVD is within the permutation null",
+  "confound_named_in_advance": "Bridged teams are not a random sample. A venue carries an S&P 500 name because the franchise is in a large market with a buyer for the rights, so any difference is a market-size and franchise-age effect before it is anything about sponsorship. This test can detect a difference; it cannot attribute one."
+ },
+ "what_this_cannot_answer": {
+  "hoops_archetypes": "Hoops bridge rows come from a Name|Season roster map that gives team but no row index into the unified matrix, so archetypes cannot be joined without a name-keyed join into 12,966 rows — the Jaren Jackson hazard. Q3 is gridiron-only.",
+  "athlete_to_company": "Every row here ties a company to a FRANCHISE. Nothing here connects a company to an individual athlete, and no answer should be read that way.",
+  "executives": "The CEO column is the company's CEO in its latest filing year, not the CEO when the naming deal was signed."
+ }
+}
