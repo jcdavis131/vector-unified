@@ -456,6 +456,29 @@ def main() -> int:
     if missing or mismatched or stale_cites:
         return 1 if args.check else 0
 
+    # ZERO COVERAGE IS NOT A PASS, and this guard exists because it silently was one.
+    # On a fresh clone the pages this reads live under a path git does not carry, so every
+    # loop above iterated over nothing and the summary printed "all 0 published values
+    # match it" above a green line. 64 values are checked on the box that has them. A
+    # reader cloning this repo saw the same PASS having verified nothing — worse than a
+    # failure, because a failure prompts a look.
+    #
+    # Measured by pipeline/check_gate_inputs_tracked.py, which clones the repo and runs
+    # validate.py inside the clone. It is the ONLY check that passes vacuously there:
+    # superlatives (2/8/5), corrections_landed (27), internal_prose (26) and
+    # merged_careers (6) all keep real coverage on a clone.
+    #
+    # NOT a --check-only guard. Reporting an honest count matters most to the reader who
+    # runs this without --check, so the refusal prints in both modes and only the exit
+    # code differs.
+    if vals_checked == 0:
+        print(f"\nREFUSING TO PASS: 0 published values were checked. This gate verifies "
+              f"published numbers against the artifacts they cite; with nothing to "
+              f"verify it has established nothing, and a green line here would assert "
+              f"otherwise. Usually means the hub pages are absent — expected on a fresh "
+              f"clone, since they are deliberately untracked.", file=sys.stderr)
+        return 1 if args.check else 0
+
     n_sup = sum(1 for slug in SLUGS
                 if (HUB / f"{slug}.json").exists()
                 for ins in (json.loads((HUB / f"{slug}.json").read_text(encoding="utf-8"))
