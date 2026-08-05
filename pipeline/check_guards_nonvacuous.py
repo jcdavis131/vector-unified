@@ -405,6 +405,9 @@ def main() -> int:
         print(f"  {len(strays)} stray .guardbak file(s) from a killed run: {strays[:4]}")
 
     vacuous, ok = [], 0
+    # Guards whose clean baseline is already red, so the mutation proves nothing.
+    # Distinct from `vacuous` — see the comment at the verdict block below.
+    untestable: list[str] = []
     for entry in MUTATIONS:
         name, argv, target, mutate, what = entry[:5]
         expect = entry[5] if len(entry) > 5 else 1
@@ -445,25 +448,54 @@ def main() -> int:
             good = (expect not in clean_out) and (expect in dirty_out) and (expect not in restored_out)
         else:
             good = clean == 0 and dirty == expect and restored == 0
-        if good:
+        # A MUTATION TEST ON A RED BASELINE IS UNTESTABLE, NOT FAILED, and the difference
+        # matters. If the guard already exits non-zero with NOTHING planted, then
+        # planted=1 tells you nothing — the guard would have said 1 either way, and this
+        # harness cannot distinguish "noticed the defect" from "was already unhappy".
+        # Counting that as a mutation-test FAILURE reports the guard as vacuous when what
+        # is actually true is that the experiment could not run.
+        #
+        # This is not hypothetical: all four hub_freshness mutations sat at clean=1 and
+        # were reported as FAIL for weeks. The cause was that hub_freshness compares the
+        # published pages against the artifacts they cite, and regenerating ANY cited
+        # artifact turns it red until the page extractor is re-run — which is an operator
+        # action, because it replaces live site content. So the harness was reporting four
+        # guard failures that were really one un-run operator step.
+        #
+        # UNTESTABLE is surfaced with its own count and does NOT fail the check. The
+        # underlying red is not hidden: validate.py runs hub_freshness itself, as its own
+        # entry, and that is where a genuinely broken guard shows up.
+        untestable_here = (not isinstance(expect, str)) and clean != 0
+        if untestable_here:
+            untestable.append(
+                f"{name}: clean baseline already exits {clean}, so planted={dirty} is "
+                f"uninformative — the guard would report non-zero either way. Fix the "
+                f"baseline (see validate.py's own entry for this check), then re-run.")
+        elif good:
             ok += 1
         else:
             why = []
             if isinstance(expect, str):
                 why.append(f"planted target {expect!r} "
                            f"{'was already flagged clean' if expect in clean_out else 'never appeared'}")
-            elif clean != 0:
-                why.append(f"was already failing before the mutation (exit {clean})")
             if not isinstance(expect, str) and dirty != expect:
                 why.append(f"DID NOT NOTICE the planted defect "
                            f"(exit {dirty}, wanted {expect})")
             if not isinstance(expect, str) and restored != 0:
                 why.append(f"still failing after restore (exit {restored}) — tree may be dirty")
             vacuous.append(f"{name}: {'; '.join(why)}")
-        print(f"  {'ok  ' if good else 'FAIL'}  {name:34} clean={clean} planted={dirty} "
+        verdict = "SKIP" if untestable_here else ("ok  " if good else "FAIL")
+        print(f"  {verdict}  {name:34} clean={clean} planted={dirty} "
               f"restored={restored}   {what}")
 
-    print(f"\n{ok}/{len(MUTATIONS)} guards rejected the defect they were shown.")
+    # The denominator must not silently shrink. 12/16 with four SKIPs is a different
+    # statement from 12/12, and printing the latter would be the same unearned green
+    # this whole file exists to prevent.
+    print(f"\n{ok}/{len(MUTATIONS)} guards rejected the defect they were shown"
+          + (f"; {len(untestable)} UNTESTABLE — clean baseline already red, so the "
+             f"mutation proves nothing." if untestable else "."))
+    for u in untestable:
+        print(f"  SKIP {u}")
     print("This proves each guard rejects THE DEFECT IT WAS SHOWN. It does not prove it "
           "catches every defect of that class — the planted ones are the failures that "
           "actually happened in this repo, which is evidence, not coverage.")
