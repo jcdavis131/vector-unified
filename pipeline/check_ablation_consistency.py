@@ -19,18 +19,26 @@ differ in 6 of 8 fields:
     G1_hoops_z            0.953    0.955    0.953
     G4_hit                0.96     0.96     0.959
 
-WHICH OF TWO EXPLANATIONS IS TRUE CANNOT BE DETERMINED FROM THE ARTIFACTS, and that is
-the actual defect:
+RESOLVED BY RE-RUNNING IT. The artifacts could not say which of two explanations held --
+(a) training is irreproducible at a fixed seed, or (b) `full` names a different flag set
+in each file -- because they record `seeds`, `configs`, `runs` and NOTHING ELSE: no flags,
+no timestamp, no code version, no checkpoint hash. So the question was settled on the GPU
+instead of argued from the files. `ablation.py --seeds 1 --configs full` run three times
+back to back, same code, no change between runs:
 
-    (a) training is not reproducible at a fixed seed, and seeds 8-16 only look identical
-        because they were carried over rather than re-run; or
-    (b) `full` denotes a different flag set in each file, and three configs share one name.
+    G2_sport_acc   0.6940   0.6926   0.6827      three runs, three DISTINCT values
 
-The artifacts record `seeds`, `configs`, `runs` and NOTHING ELSE -- no flags, no
-timestamp, no code version, no checkpoint hash. So a reader cannot tell whether
-`full@seed7 = 0.6988` and `full@seed7 = 0.6754` are the same experiment disagreeing or
-two experiments sharing a label. Both readings change what the ablation table means, and
-the file is silent.
+(a) IS TRUE. `--seed` does not pin the outcome. Root cause is specific: ablation.py sets
+torch.manual_seed(seed) and np.random.default_rng(seed) -- the seed IS applied -- but sets
+no determinism controls, while train_stage2.py:167 sets cudnn.deterministic = True and
+:170 use_deterministic_algorithms(True, warn_only=True). ablation.py has neither.
+
+SEEDS 8 AND 9 WERE THEREFORE NOT RE-RUN. They are bit-identical for `full` across all
+three artifacts, and with nondeterminism this large three independent runs agreeing to
+four decimals is not plausible. Those entries were carried over. The `full` columns in the
+two 10-seed files are NOT independent evidence and must not be pooled.
+
+Full measurement, including a retracted n=2 inference, in data/ablation_determinism.json.
 
 This does NOT invalidate the within-file paired comparisons: those compare arms recorded
 in one run set, and `full vs no_grl` at n=10 (+0.0447, p=0.0005) stands. It invalidates

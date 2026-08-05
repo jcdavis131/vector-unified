@@ -47,6 +47,23 @@ data/*
 # it would silently RE-ADD three permanent false STALE entries and send the next reader
 # into 23 training runs they do not need.
 !data/symbol_dep_registry.json
+# THE ABLATION TABLES AND THE SEED FLOOR. These are not "regenerable output", and that is
+# now a measured fact rather than a judgement call: pipeline/ablation.py sets
+# torch.manual_seed but NO determinism controls (train_stage2.py:167/170 set
+# cudnn.deterministic and use_deterministic_algorithms; ablation.py sets neither), so the
+# same config at the same seed produces a different result every run. Measured three times
+# back to back on one box, same code: full@seed7 G2 = 0.6940, 0.6926, 0.6827. Evidence in
+# data/ablation_determinism.json.
+#
+# An artifact that regenerates to DIFFERENT numbers cannot be regenerated. Deleting these
+# destroys 23 + 15 + 3 GPU runs whose values can never be recovered, and
+# check_ablation_consistency.py — registered BLOCKING in validate.py — reads the three
+# ablation files and would exit 2 with "missing" on any fresh clone without them.
+!data/ablation_report.json
+!data/ablation_grl_seeds.json
+!data/ablation_coral_vicreg_seeds.json
+!data/stage2_seed_floor.json
+!data/ablation_determinism.json
 # The four forward-probe reports. A DIFFERENT reason from the four above — these ARE
 # generated, and the rule at the top of this file says generated artifacts stay out. They
 # are the exception because dumbmodel.com CITES THEM BY PATH as the source of published

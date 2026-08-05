@@ -1,0 +1,287 @@
+{
+  "seeds": [
+    7,
+    8,
+    9
+  ],
+  "configs": {
+    "full": {
+      "G2_sport_acc": 0.6974,
+      "G2_rank": 13.0667,
+      "G3_sil": 0.6735,
+      "G4_hit": 0.9617,
+      "G2_sport_acc_sd": 0.0251,
+      "G2_rank_sd": 0.0577,
+      "G3_sil_sd": 0.0012,
+      "G4_hit_sd": 0.0015,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0716,
+      "G4_baseline": 0.1712,
+      "n_seeds": 3
+    },
+    "no_supcon": {
+      "G2_sport_acc": 0.6509,
+      "G2_rank": 19.5333,
+      "G3_sil": 0.1397,
+      "G4_hit": 0.204,
+      "G2_sport_acc_sd": 0.0118,
+      "G2_rank_sd": 0.4726,
+      "G3_sil_sd": 0.0134,
+      "G4_hit_sd": 0.1112,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0251,
+      "G4_baseline": 0.1712,
+      "n_seeds": 3
+    },
+    "no_coral": {
+      "G2_sport_acc": 0.6911,
+      "G2_rank": 12.9667,
+      "G3_sil": 0.6759,
+      "G4_hit": 0.9597,
+      "G2_sport_acc_sd": 0.0149,
+      "G2_rank_sd": 0.1528,
+      "G3_sil_sd": 0.0027,
+      "G4_hit_sd": 0.0021,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0653,
+      "G4_baseline": 0.1712,
+      "n_seeds": 3
+    },
+    "no_grl": {
+      "G2_sport_acc": 0.7424,
+      "G2_rank": 13.0333,
+      "G3_sil": 0.6746,
+      "G4_hit": 0.9593,
+      "G2_sport_acc_sd": 0.023,
+      "G2_rank_sd": 0.1155,
+      "G3_sil_sd": 0.0036,
+      "G4_hit_sd": 0.0029,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.1166,
+      "G4_baseline": 0.1712,
+      "n_seeds": 3
+    },
+    "no_vicreg": {
+      "G2_sport_acc": 0.6753,
+      "G2_rank": 12.9333,
+      "G3_sil": 0.6764,
+      "G4_hit": 0.9593,
+      "G2_sport_acc_sd": 0.0076,
+      "G2_rank_sd": 0.1155,
+      "G3_sil_sd": 0.0037,
+      "G4_hit_sd": 0.0031,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0495,
+      "G4_baseline": 0.1712,
+      "n_seeds": 3
+    },
+    "task_only": {
+      "G2_sport_acc": 0.7601,
+      "G2_rank": 19.1333,
+      "G3_sil": 0.1358,
+      "G4_hit": 0.2003,
+      "G2_sport_acc_sd": 0.0091,
+      "G2_rank_sd": 0.4726,
+      "G3_sil_sd": 0.0145,
+      "G4_hit_sd": 0.1142,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.1343,
+      "G4_baseline": 0.1712,
+      "n_seeds": 3
+    }
+  },
+  "runs": {
+    "full": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.6988,
+        "G2_delta_vs_majority": 0.073,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6749,
+        "G4_hit": 0.96,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.7218,
+        "G2_delta_vs_majority": 0.096,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6728,
+        "G4_hit": 0.963,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.6716,
+        "G2_delta_vs_majority": 0.0458,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6727,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "no_supcon": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.95,
+        "G2_sport_acc": 0.6373,
+        "G2_delta_vs_majority": 0.0115,
+        "G2_rank": 19.7,
+        "G3_sil": 0.1291,
+        "G4_hit": 0.113,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.6569,
+        "G2_delta_vs_majority": 0.0311,
+        "G2_rank": 19.9,
+        "G3_sil": 0.1547,
+        "G4_hit": 0.171,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.95,
+        "G2_sport_acc": 0.6585,
+        "G2_delta_vs_majority": 0.0327,
+        "G2_rank": 19.0,
+        "G3_sil": 0.1353,
+        "G4_hit": 0.328,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "no_coral": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.957,
+        "G2_sport_acc": 0.7051,
+        "G2_delta_vs_majority": 0.0793,
+        "G2_rank": 13.1,
+        "G3_sil": 0.678,
+        "G4_hit": 0.959,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.956,
+        "G2_sport_acc": 0.6754,
+        "G2_delta_vs_majority": 0.0496,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6728,
+        "G4_hit": 0.958,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.952,
+        "G2_sport_acc": 0.6928,
+        "G2_delta_vs_majority": 0.067,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6769,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "no_grl": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.7502,
+        "G2_delta_vs_majority": 0.1244,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6763,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.956,
+        "G2_sport_acc": 0.7165,
+        "G2_delta_vs_majority": 0.0907,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6704,
+        "G4_hit": 0.956,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.7604,
+        "G2_delta_vs_majority": 0.1346,
+        "G2_rank": 12.9,
+        "G3_sil": 0.677,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "no_vicreg": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.6769,
+        "G2_delta_vs_majority": 0.0511,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6781,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.958,
+        "G2_sport_acc": 0.667,
+        "G2_delta_vs_majority": 0.0412,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6722,
+        "G4_hit": 0.956,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.6819,
+        "G2_delta_vs_majority": 0.0561,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6789,
+        "G4_hit": 0.96,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "task_only": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.949,
+        "G2_sport_acc": 0.7686,
+        "G2_delta_vs_majority": 0.1428,
+        "G2_rank": 19.3,
+        "G3_sil": 0.1249,
+        "G4_hit": 0.12,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.7611,
+        "G2_delta_vs_majority": 0.1353,
+        "G2_rank": 19.5,
+        "G3_sil": 0.1522,
+        "G4_hit": 0.15,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.947,
+        "G2_sport_acc": 0.7505,
+        "G2_delta_vs_majority": 0.1247,
+        "G2_rank": 18.6,
+        "G3_sil": 0.1303,
+        "G4_hit": 0.331,
+        "G4_baseline": 0.1712
+      }
+    ]
+  }
+}

@@ -1,0 +1,366 @@
+{
+  "seeds": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "configs": {
+    "full": {
+      "G2_sport_acc": 0.6956,
+      "G2_rank": 12.96,
+      "G3_sil": 0.6752,
+      "G4_hit": 0.9615,
+      "G2_sport_acc_sd": 0.017,
+      "G2_rank_sd": 0.1174,
+      "G3_sil_sd": 0.0026,
+      "G4_hit_sd": 0.0014,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0698,
+      "G4_baseline": 0.1712,
+      "n_seeds": 10
+    },
+    "no_coral": {
+      "G2_sport_acc": 0.6964,
+      "G2_rank": 12.93,
+      "G3_sil": 0.6773,
+      "G4_hit": 0.9604,
+      "G2_sport_acc_sd": 0.0141,
+      "G2_rank_sd": 0.1636,
+      "G3_sil_sd": 0.0026,
+      "G4_hit_sd": 0.0021,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0706,
+      "G4_baseline": 0.1712,
+      "n_seeds": 10
+    },
+    "no_vicreg": {
+      "G2_sport_acc": 0.6842,
+      "G2_rank": 12.89,
+      "G3_sil": 0.6771,
+      "G4_hit": 0.9609,
+      "G2_sport_acc_sd": 0.0125,
+      "G2_rank_sd": 0.1449,
+      "G3_sil_sd": 0.0034,
+      "G4_hit_sd": 0.0021,
+      "G1_pass": true,
+      "G2_delta_vs_majority": 0.0583,
+      "G4_baseline": 0.1712,
+      "n_seeds": 10
+    }
+  },
+  "runs": {
+    "full": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.6754,
+        "G2_delta_vs_majority": 0.0496,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6775,
+        "G4_hit": 0.959,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.7218,
+        "G2_delta_vs_majority": 0.096,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6728,
+        "G4_hit": 0.963,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.6716,
+        "G2_delta_vs_majority": 0.0458,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6727,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.954,
+        "G2_sport_acc": 0.6894,
+        "G2_delta_vs_majority": 0.0636,
+        "G2_rank": 12.8,
+        "G3_sil": 0.677,
+        "G4_hit": 0.963,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.956,
+        "G2_sport_acc": 0.6904,
+        "G2_delta_vs_majority": 0.0646,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6754,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.952,
+        "G2_sport_acc": 0.6943,
+        "G2_delta_vs_majority": 0.0685,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6782,
+        "G4_hit": 0.96,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.709,
+        "G2_delta_vs_majority": 0.0832,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6775,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.6829,
+        "G2_delta_vs_majority": 0.0571,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6734,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.954,
+        "G2_sport_acc": 0.7162,
+        "G2_delta_vs_majority": 0.0904,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6765,
+        "G4_hit": 0.963,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.957,
+        "G2_sport_acc": 0.7054,
+        "G2_delta_vs_majority": 0.0796,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6705,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "no_coral": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.957,
+        "G2_sport_acc": 0.7051,
+        "G2_delta_vs_majority": 0.0793,
+        "G2_rank": 13.1,
+        "G3_sil": 0.678,
+        "G4_hit": 0.959,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.956,
+        "G2_sport_acc": 0.6754,
+        "G2_delta_vs_majority": 0.0496,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6728,
+        "G4_hit": 0.958,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.952,
+        "G2_sport_acc": 0.6928,
+        "G2_delta_vs_majority": 0.067,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6769,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.6916,
+        "G2_delta_vs_majority": 0.0658,
+        "G2_rank": 13.1,
+        "G3_sil": 0.678,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.956,
+        "G2_sport_acc": 0.6861,
+        "G2_delta_vs_majority": 0.0602,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6771,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.7005,
+        "G2_delta_vs_majority": 0.0747,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6783,
+        "G4_hit": 0.956,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.954,
+        "G2_sport_acc": 0.6875,
+        "G2_delta_vs_majority": 0.0617,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6792,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.6899,
+        "G2_delta_vs_majority": 0.0641,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6785,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.7244,
+        "G2_delta_vs_majority": 0.0986,
+        "G2_rank": 12.6,
+        "G3_sil": 0.6812,
+        "G4_hit": 0.96,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.7109,
+        "G2_delta_vs_majority": 0.0851,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6733,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      }
+    ],
+    "no_vicreg": [
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.6769,
+        "G2_delta_vs_majority": 0.0511,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6781,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.958,
+        "G2_sport_acc": 0.667,
+        "G2_delta_vs_majority": 0.0412,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6722,
+        "G4_hit": 0.956,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.6819,
+        "G2_delta_vs_majority": 0.0561,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6789,
+        "G4_hit": 0.96,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.955,
+        "G2_sport_acc": 0.6926,
+        "G2_delta_vs_majority": 0.0668,
+        "G2_rank": 13.1,
+        "G3_sil": 0.6734,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.957,
+        "G2_sport_acc": 0.6636,
+        "G2_delta_vs_majority": 0.0378,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6768,
+        "G4_hit": 0.96,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.953,
+        "G2_sport_acc": 0.6822,
+        "G2_delta_vs_majority": 0.0564,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6763,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.956,
+        "G2_sport_acc": 0.6943,
+        "G2_delta_vs_majority": 0.0685,
+        "G2_rank": 12.8,
+        "G3_sil": 0.6797,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.954,
+        "G2_sport_acc": 0.7029,
+        "G2_delta_vs_majority": 0.0771,
+        "G2_rank": 12.9,
+        "G3_sil": 0.6813,
+        "G4_hit": 0.962,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.948,
+        "G2_sport_acc": 0.6856,
+        "G2_delta_vs_majority": 0.0598,
+        "G2_rank": 12.6,
+        "G3_sil": 0.6815,
+        "G4_hit": 0.961,
+        "G4_baseline": 0.1712
+      },
+      {
+        "G1_pass": true,
+        "G1_hoops_z": 0.951,
+        "G2_sport_acc": 0.6945,
+        "G2_delta_vs_majority": 0.0687,
+        "G2_rank": 13.0,
+        "G3_sil": 0.6727,
+        "G4_hit": 0.964,
+        "G4_baseline": 0.1712
+      }
+    ]
+  }
+}

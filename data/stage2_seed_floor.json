@@ -1,0 +1,477 @@
+{
+ "question": "What does each stage-2 gate metric do across seeds with nothing changed, and how big must a difference be to mean anything?",
+ "why": "vector-hoops has pipeline/seed_floor.json and states that individual seeds clear its S2 gate 'about half the time by chance'. vector-unified had no equivalent for full-training stage-2 metrics. data/stage2_seed_nonvacuity.json answers whether --seed changes anything at 2-epoch smoke, and disclaims itself with SMOKE_VALUES_ARE_NOT_THE_MODEL.",
+ "arms": {
+  "ctrl": "lambda 0->0.3, no coral (NO INTERVENTION — this is the floor)",
+  "lam": "lambda 0.3->0.5, no coral",
+  "seed": "lambda 0.3->0.5, both coral terms"
+ },
+ "which_arm_is_the_floor": "ctrl. Its spread is the pipeline's spread under no intervention. The treated arm's sd is NOT a floor: it sits on the majority-class base rate and cannot vary downward, so quoting it as the noise level would understate the floor by ~2 orders of magnitude.",
+ "seeds_requested": [
+  7,
+  11,
+  13,
+  17,
+  19
+ ],
+ "reports_missing": "none",
+ "per_arm": {
+  "ctrl": {
+   "n": 5,
+   "seeds": [
+    7,
+    11,
+    13,
+    17,
+    19
+   ],
+   "metrics": {
+    "G2_sport_acc": {
+     "values": [
+      0.6614,
+      0.666,
+      0.6762,
+      0.7782,
+      0.7616
+     ],
+     "mean": 0.7087,
+     "sd": 0.0564,
+     "range": [
+      0.6614,
+      0.7782
+     ],
+     "unpaired_MDE_two_single_runs": 0.1841,
+     "note_if_degenerate": null
+    },
+    "G2_delta_vs_majority": {
+     "values": [
+      0.0356,
+      0.0402,
+      0.0504,
+      0.1524,
+      0.1358
+     ],
+     "mean": 0.0829,
+     "sd": 0.0564,
+     "range": [
+      0.0356,
+      0.1524
+     ],
+     "unpaired_MDE_two_single_runs": 0.1841,
+     "note_if_degenerate": null
+    },
+    "effective_rank": {
+     "values": [
+      12.0,
+      12.1,
+      12.0,
+      12.0,
+      12.0
+     ],
+     "mean": 12.02,
+     "sd": 0.0447,
+     "range": [
+      12.0,
+      12.1
+     ],
+     "unpaired_MDE_two_single_runs": 0.1458,
+     "note_if_degenerate": null
+    },
+    "G3_silhouette": {
+     "values": [
+      0.706,
+      0.6775,
+      0.6815,
+      0.5132,
+      0.5786
+     ],
+     "mean": 0.6314,
+     "sd": 0.0821,
+     "range": [
+      0.5132,
+      0.706
+     ],
+     "unpaired_MDE_two_single_runs": 0.2677,
+     "note_if_degenerate": null
+    },
+    "G3_separation": {
+     "values": [
+      0.9119,
+      0.8904,
+      0.8928,
+      0.7367,
+      0.7829
+     ],
+     "mean": 0.8429,
+     "sd": 0.0781,
+     "range": [
+      0.7367,
+      0.9119
+     ],
+     "unpaired_MDE_two_single_runs": 0.2546,
+     "note_if_degenerate": null
+    },
+    "G1_hoops": {
+     "values": [
+      0.9672,
+      0.963,
+      0.9603,
+      0.9518,
+      0.9557
+     ],
+     "mean": 0.9596,
+     "sd": 0.006,
+     "range": [
+      0.9518,
+      0.9672
+     ],
+     "unpaired_MDE_two_single_runs": 0.0197,
+     "note_if_degenerate": null
+    },
+    "G1_gridiron": {
+     "values": [
+      0.9859,
+      0.9869,
+      0.984,
+      0.9784,
+      0.9784
+     ],
+     "mean": 0.9827,
+     "sd": 0.0041,
+     "range": [
+      0.9784,
+      0.9869
+     ],
+     "unpaired_MDE_two_single_runs": 0.0133,
+     "note_if_degenerate": null
+    },
+    "G1_pitch": {
+     "values": [
+      0.9938,
+      0.9897,
+      0.9918,
+      0.965,
+      0.9733
+     ],
+     "mean": 0.9827,
+     "sd": 0.0128,
+     "range": [
+      0.965,
+      0.9938
+     ],
+     "unpaired_MDE_two_single_runs": 0.0418,
+     "note_if_degenerate": null
+    }
+   }
+  },
+  "lam": {
+   "n": 5,
+   "seeds": [
+    7,
+    11,
+    13,
+    17,
+    19
+   ],
+   "metrics": {
+    "G2_sport_acc": {
+     "values": [
+      0.6327,
+      0.6279,
+      0.6363,
+      0.6846,
+      0.681
+     ],
+     "mean": 0.6525,
+     "sd": 0.0278,
+     "range": [
+      0.6279,
+      0.6846
+     ],
+     "unpaired_MDE_two_single_runs": 0.0908,
+     "note_if_degenerate": null
+    },
+    "G2_delta_vs_majority": {
+     "values": [
+      0.0069,
+      0.0021,
+      0.0105,
+      0.0588,
+      0.0552
+     ],
+     "mean": 0.0267,
+     "sd": 0.0278,
+     "range": [
+      0.0021,
+      0.0588
+     ],
+     "unpaired_MDE_two_single_runs": 0.0908,
+     "note_if_degenerate": null
+    },
+    "effective_rank": {
+     "values": [
+      12.1,
+      12.1,
+      12.1,
+      11.7,
+      12.0
+     ],
+     "mean": 12.0,
+     "sd": 0.1732,
+     "range": [
+      11.7,
+      12.1
+     ],
+     "unpaired_MDE_two_single_runs": 0.5649,
+     "note_if_degenerate": null
+    },
+    "G3_silhouette": {
+     "values": [
+      0.6829,
+      0.6761,
+      0.6705,
+      0.7092,
+      0.5776
+     ],
+     "mean": 0.6633,
+     "sd": 0.0501,
+     "range": [
+      0.5776,
+      0.7092
+     ],
+     "unpaired_MDE_two_single_runs": 0.1635,
+     "note_if_degenerate": null
+    },
+    "G3_separation": {
+     "values": [
+      0.8847,
+      0.8844,
+      0.8751,
+      0.9203,
+      0.7778
+     ],
+     "mean": 0.8685,
+     "sd": 0.0535,
+     "range": [
+      0.7778,
+      0.9203
+     ],
+     "unpaired_MDE_two_single_runs": 0.1746,
+     "note_if_degenerate": null
+    },
+    "G1_hoops": {
+     "values": [
+      0.9634,
+      0.963,
+      0.9607,
+      0.9676,
+      0.9557
+     ],
+     "mean": 0.9621,
+     "sd": 0.0044,
+     "range": [
+      0.9557,
+      0.9676
+     ],
+     "unpaired_MDE_two_single_runs": 0.0142,
+     "note_if_degenerate": "sd is ~0 because this arm sits on a floor; do NOT use this as the noise level"
+    },
+    "G1_gridiron": {
+     "values": [
+      0.984,
+      0.9869,
+      0.9869,
+      0.9878,
+      0.9784
+     ],
+     "mean": 0.9848,
+     "sd": 0.0038,
+     "range": [
+      0.9784,
+      0.9878
+     ],
+     "unpaired_MDE_two_single_runs": 0.0125,
+     "note_if_degenerate": "sd is ~0 because this arm sits on a floor; do NOT use this as the noise level"
+    },
+    "G1_pitch": {
+     "values": [
+      0.9918,
+      0.9918,
+      0.9897,
+      0.9918,
+      0.9733
+     ],
+     "mean": 0.9877,
+     "sd": 0.0081,
+     "range": [
+      0.9733,
+      0.9918
+     ],
+     "unpaired_MDE_two_single_runs": 0.0264,
+     "note_if_degenerate": null
+    }
+   }
+  },
+  "seed": {
+   "n": 5,
+   "seeds": [
+    7,
+    11,
+    13,
+    17,
+    19
+   ],
+   "metrics": {
+    "G2_sport_acc": {
+     "values": [
+      0.625,
+      0.6187,
+      0.6226,
+      0.626,
+      0.6257
+     ],
+     "mean": 0.6236,
+     "sd": 0.003,
+     "range": [
+      0.6187,
+      0.626
+     ],
+     "unpaired_MDE_two_single_runs": 0.0099,
+     "note_if_degenerate": "sd is ~0 because this arm sits on a floor; do NOT use this as the noise level"
+    },
+    "G2_delta_vs_majority": {
+     "values": [
+      -0.0008,
+      -0.0071,
+      -0.0032,
+      0.0002,
+      -0.0001
+     ],
+     "mean": -0.0022,
+     "sd": 0.003,
+     "range": [
+      -0.0071,
+      0.0002
+     ],
+     "unpaired_MDE_two_single_runs": 0.0099,
+     "note_if_degenerate": "sd is ~0 because this arm sits on a floor; do NOT use this as the noise level"
+    },
+    "effective_rank": {
+     "values": [
+      12.0,
+      12.0,
+      12.1,
+      12.0,
+      12.2
+     ],
+     "mean": 12.06,
+     "sd": 0.0894,
+     "range": [
+      12.0,
+      12.2
+     ],
+     "unpaired_MDE_two_single_runs": 0.2917,
+     "note_if_degenerate": null
+    },
+    "G3_silhouette": {
+     "values": [
+      0.6603,
+      0.6935,
+      0.6649,
+      0.6162,
+      0.5706
+     ],
+     "mean": 0.6411,
+     "sd": 0.0481,
+     "range": [
+      0.5706,
+      0.6935
+     ],
+     "unpaired_MDE_two_single_runs": 0.157,
+     "note_if_degenerate": null
+    },
+    "G3_separation": {
+     "values": [
+      0.8544,
+      0.8919,
+      0.8555,
+      0.8209,
+      0.7522
+     ],
+     "mean": 0.835,
+     "sd": 0.0527,
+     "range": [
+      0.7522,
+      0.8919
+     ],
+     "unpaired_MDE_two_single_runs": 0.1717,
+     "note_if_degenerate": null
+    },
+    "G1_hoops": {
+     "values": [
+      0.9595,
+      0.9715,
+      0.9614,
+      0.9534,
+      0.9522
+     ],
+     "mean": 0.9596,
+     "sd": 0.0077,
+     "range": [
+      0.9522,
+      0.9715
+     ],
+     "unpaired_MDE_two_single_runs": 0.0252,
+     "note_if_degenerate": null
+    },
+    "G1_gridiron": {
+     "values": [
+      0.9859,
+      0.9878,
+      0.9878,
+      0.9831,
+      0.9803
+     ],
+     "mean": 0.985,
+     "sd": 0.0033,
+     "range": [
+      0.9803,
+      0.9878
+     ],
+     "unpaired_MDE_two_single_runs": 0.0106,
+     "note_if_degenerate": "sd is ~0 because this arm sits on a floor; do NOT use this as the noise level"
+    },
+    "G1_pitch": {
+     "values": [
+      0.9877,
+      0.9897,
+      0.9918,
+      0.9671,
+      0.9712
+     ],
+     "mean": 0.9815,
+     "sd": 0.0115,
+     "range": [
+      0.9671,
+      0.9918
+     ],
+     "unpaired_MDE_two_single_runs": 0.0374,
+     "note_if_degenerate": null
+    }
+   }
+  }
+ },
+ "HEADLINE_single_run_G2_differences_below_this_are_noise": {
+  "control_sd_over_5_seeds": 0.0564,
+  "unpaired_MDE_two_single_runs": 0.1841,
+  "reading": "Two independent single runs of the untreated config must differ by more than 0.1841 on G2 sport_acc before the difference is distinguishable from a seed swap. The control's own range across 5 seeds is 0.6614 to 0.7782.",
+  "pairing_is_cheaper_but_MEASURE_how_much": {
+   "paired_MDE": 0.0677,
+   "unpaired_MDE": 0.1841,
+   "pairing_gain": "2.7x",
+   "sd_of_control": 0.0564,
+   "sd_of_differences": 0.0545,
+   "why_the_gain_is_small_here": "Pairing cancels variance the two arms SHARE. The treated arm is clamped to the majority-class floor, so it shares almost none of the control's spread: sd of differences 0.0545 vs sd of control 0.0564. In the limit of a perfect clamp, diff = constant - control and Var(diff) = Var(control), so pairing cancels nothing and only df changes. Pairing still wins; the multiplier is measured rather than carried over from another experiment."
+  }
+ }
+}
