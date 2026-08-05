@@ -100,13 +100,36 @@ def docstring_nodes(tree: ast.AST) -> set[int]:
     return out
 
 
+def allow_table_nodes(tree: ast.AST) -> set[int]:
+    """id() of every Constant inside the ALLOW assignment — the exemption table itself.
+
+    THE ALLOWLIST IS MADE OF THE THING IT EXEMPTS. Its keys are laptop-path strings written
+    in code, so this checker flags its own table. It did not show up until the file was
+    COMMITTED: scanning is driven by `git ls-files`, so while check_laptop_paths.py was
+    untracked it scanned 110 files and never once looked at itself. The count going 110 ->
+    111 is what exposed it.
+
+    Scoped to the ALLOW node rather than skipping this whole file, so an accidental laptop
+    path anywhere else in here still fails. A checker that exempts itself wholesale is the
+    one place a laptop path would never be found.
+    """
+    out: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and any(
+                isinstance(t, ast.Name) and t.id == "ALLOW" for t in node.targets):
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Constant):
+                    out.add(id(sub))
+    return out
+
+
 def scan_source(rel: str, src: str) -> tuple[list[dict], int]:
     """-> (findings, string literals examined). The second number makes a vacuous run visible."""
     try:
         tree = ast.parse(src)
     except SyntaxError:
         return [], 0
-    skip = docstring_nodes(tree)
+    skip = docstring_nodes(tree) | allow_table_nodes(tree)
     hits, examined = [], 0
     for node in ast.walk(tree):
         if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
@@ -161,8 +184,15 @@ def main() -> int:
             found += len(h)
         print(f"  SELFTEST at {args.selftest}: {seen} file(s) readable, {found} finding(s)")
         if found == 0:
-            print("SELFTEST FAILED: found nothing at a commit known to contain the defect. "
-                  "This checker is vacuous.", file=sys.stderr)
+            # SAY WHAT WAS MEASURED, NOT WHAT IT IMPLIES. This used to print "This checker
+            # is vacuous", which is only true if COMMIT actually predates the fix — and the
+            # first thing I did was point it at 4f29a8a, the commit AFTER, where 0 is the
+            # correct answer. A tool that reports a real measurement as the wrong conclusion
+            # is the defect this repo keeps finding, in the checker written to find it.
+            print(f"SELFTEST INCONCLUSIVE: 0 findings at {args.selftest}. Either this "
+                  f"checker is vacuous, or {args.selftest} is already clean — pass a commit "
+                  f"from BEFORE the laptop paths were removed (4f29a8a~1 has 36).",
+                  file=sys.stderr)
             return 1
         print("  -> the checker detects the defect it was written for")
         return 0

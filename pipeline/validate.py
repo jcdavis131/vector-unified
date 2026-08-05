@@ -143,10 +143,20 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # as a FAILURE, and silently deleting it to keep the board green would be the exact
     # kind of unearned green this file exists to prevent.
     "internal_prose": (["check_internal_prose.py"], False),
-    # BLOCKING, and it earns it. portable_paths.ESTATE existed for a while and 37 path
-    # literals across 20 files ignored it — the convention was written down, applied to the
-    # published citations by migrate_hub_portable_paths.py, and then never enforced on
-    # python source. A convention with no checker is a preference.
+    # BLOCKING VIA --check, and the second field is needs_network, which is False.
+    #
+    # I FIRST WROTE True HERE MEANING "blocking". The tuple is (argv, needs_network) — line
+    # 43 says so — and blocking-ness comes from passing --check, which makes the checker
+    # exit 1. So the checker was declared network-dependent, --offline skipped it, and it
+    # reported SKIP in both the working tree and the clone. A brand-new gate that never ran
+    # once, sitting on a board that looked green: the same defect class this whole file is
+    # about, a real value answering a different question than the one it appears to answer.
+    # Caught by check_gate_inputs_tracked.py, which is the only reason it surfaced at all.
+    #
+    # portable_paths.ESTATE existed for a while and 37 path literals across 20 files ignored
+    # it — the convention was written down, applied to the published citations by
+    # migrate_hub_portable_paths.py, and then never enforced on python source. A convention
+    # with no checker is a preference.
     #
     # Blocking rather than report-only because it is AST-based and the precision is not a
     # judgement call: comments are invisible to ast by construction, docstrings are excluded
@@ -160,7 +170,7 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # Non-vacuity is testable rather than asserted: `--selftest <commit>` re-runs it against
     # that commit's files and fails if it finds nothing, because this repo has already
     # shipped one static scanner that passed green while matching nothing.
-    "laptop_paths": (["check_laptop_paths.py", "--check"], True),
+    "laptop_paths": (["check_laptop_paths.py", "--check"], False),
 }
 
 # Large artifacts a check CANNOT RUN WITHOUT, declared per check.
@@ -204,6 +214,26 @@ PREREQS: dict[str, list[str]] = {
     "superlatives": ["../vector-hub/assets/data"],
     "cited_fields": ["../vector-hub/assets/data"],
     "hub_freshness": ["../vector-hub/assets/data"],
+    # THE SAME THING AGAIN, FOUR MORE GATES, and it took removing the laptop paths to see
+    # it. These read the sibling SPORT repos. While they hardcoded C:/Users/jcdav/vector-*
+    # they resolved from inside a temp clone too, so the clone audit reported them PASS —
+    # it was reading my real vector-hoops and vector-gridiron, not a machine without them.
+    # The audit went 0 -> 4 pass-here-fail-on-clone the moment the paths became honest.
+    #
+    # That jump is the fix working, not a regression: a check cannot verify hoops data on a
+    # checkout that has no hoops repo, and the previous PASS asserted it had. Declared as
+    # prerequisites so they read N/A — "could not run" — rather than FAIL, which would
+    # assert a defect was found.
+    #
+    # These are STRUCTURAL, not fixable: vector-unified is a joint embedding OVER the
+    # sibling repos, so needing them is what the project is. That is different in kind from
+    # cited_fields, whose absolute path was a bug and was fixed at the source rather than
+    # declared away.
+    "hoops_forward": ["../vector-hoops/assets"],
+    "gridiron_forward": ["../vector-gridiron/assets/vectors.json"],
+    "equities_forward": ["../vector-equities/assets/real_data.json"],
+    # imports build_hoops_vor_draft_value and build_vor_draft_value, then reads G.GRID_VEC
+    "merged_careers": ["../vector-hoops", "../vector-gridiron/assets/vectors.json"],
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:

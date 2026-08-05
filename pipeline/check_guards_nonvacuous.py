@@ -67,6 +67,17 @@ def run(argv: list[str]) -> tuple[int, str]:
 # eventually removed. tennis_forward sat on this list as "blocked on the harness" until the
 # harness grew a .npz path — the reason is what made it obviously fixable rather than fixed.
 UNCOVERED_REASON = {
+    "check_laptop_paths.py": (
+        "CARRIES ITS OWN NON-VACUITY TEST, which is the same evidence a planted mutation "
+        "would produce. `--selftest <commit>` re-runs the checker against that commit's "
+        "version of every tracked .py and exits 1 if it finds nothing: at the commit before "
+        "the fix it finds 36 real laptop paths, and 0 now. That is a mutation test with "
+        "history as the mutation source, so it needs no synthetic defect and cannot drift "
+        "out of sync with one.\n"
+        "It earned the doubt honestly. Registered with needs_network=True by mistake — the "
+        "tuple is (argv, needs_network) and I read it as (argv, blocking) — so --offline "
+        "skipped it and the brand-new gate reported SKIP in both the working tree and the "
+        "clone without ever running. check_gate_inputs_tracked.py is what surfaced that."),
     "check_gate_nonvacuity.py": (
         "REACHABLE, NOT CHEAP. Its vacuity arm needs a gate that passes on BOTH real and "
         "shuffled data, which means rewriting arch_id inside the 16 MB assets/unified.json "
