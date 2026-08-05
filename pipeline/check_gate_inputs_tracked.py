@@ -133,6 +133,13 @@ def main() -> int:
         # Restoring to HEAD would clobber a legitimate local edit. Restoring to the PRE-RUN
         # bytes undoes exactly what this audit did and nothing else, whatever state the
         # tree was in when it started.
+        #
+        # THE data/ + assets/ SCOPE IS MEASURED, not assumed. Hashing all 163 tracked files
+        # in the repo before and after a full run leaves exactly ONE changed:
+        # data/gate_inputs_tracked_audit.json, this file's own report, written after the
+        # restore below. Nothing outside the snapshotted directories moves. That was an
+        # open question — "not known to touch anything else" is an absence of evidence —
+        # and it is now a measurement. Re-run it if the check list in validate.py grows.
         def snapshot() -> dict[str, bytes]:
             r = subprocess.run(["git", "ls-files", "data", "assets"], cwd=str(ROOT),
                                capture_output=True, text=True, encoding="utf-8",
