@@ -6,7 +6,7 @@
   "vector-unified/pipeline/train_stage2.py — same order; 34 of 37 report fields bit-identical across reruns"
  ],
  "heuristic_and_its_limits": "Matches on SHAPE, not semantics. It cannot know which constructors draw random weights, so a function that seeds late but builds nothing random is a FALSE POSITIVE, and one initialising through an unrecognised helper is a MISS. Report-only for that reason.",
- "files_scanned": 329,
+ "files_scanned": 330,
  "findings": [
   {
    "function": "train_config",

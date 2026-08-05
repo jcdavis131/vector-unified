@@ -32,8 +32,15 @@ helper this does not recognise is a MISS. Both are stated rather than implied, a
 check is report-only for that reason — a rule that fires on a name it does not understand
 is what teaches a reader to skip the report.
 
-    python pipeline/check_seed_before_init.py
-    python pipeline/check_seed_before_init.py --estate   # scan sibling repos too
+    python pipeline/check_seed_before_init.py --estate   # what validate.py runs
+    python pipeline/check_seed_before_init.py            # this repo only, 108 files
+
+RUN IT WITH --estate, or the artifact understates its own coverage. validate.py registers
+the --estate form (330 files across six repos). Running the bare form during a close-out
+check rewrote data/seed_order_audit.json with files_scanned 108, so the committed record
+claimed a third of the scope the gate actually has. Same finding either way — one hit,
+ablation.py::train_config — but a coverage number that silently shrank is exactly the
+defect this repo keeps cataloguing.
     python pipeline/check_seed_before_init.py --check    # exit 1 on any late seed
 
 Writes: data/seed_order_audit.json
