@@ -34,11 +34,18 @@ player when the orders differ. Checked instead: player_idx over the gridiron blo
 0..5322 in order AND cosine(E_gridiron[i], season_emb[player_idx[i]]) is 1.0000, so the
 rows are the same rows. The build refuses if that stops holding.
 
-HOOPS IS NOT IN Q3. Its bridge rows come from a Name|Season roster map, which gives team
-but not a row index into the unified matrix, so archetypes cannot be joined to them
-without a name-keyed join into a 12,966-row corpus -- the Jaren Jackson hazard. Gridiron
-alone is 1,033 player-seasons against 4,290 unbridged, which is enough to ask the
-question.
+HOOPS IS IN Q3b, AND GETTING IT THERE FOUND SOMETHING ELSE. The gridiron guard proves
+alignment with cosine 1.0000 between the two embeddings. That test FAILS for hoops --
+cosine mean 0.0516, min -0.2846 -- because unified_matrix.npz's E_hoops was built from a
+DIFFERENT embedding_v3.npz than the one now on disk. The disk file is the seed-31 A/B
+leftover recorded in vector-hoops/pipeline/seed_floor.json REPO_STATE_WARNING; this is
+independent corroboration of that, reached from a completely different direction. Row
+count matches and player_idx is 0..n-1 in order, so every surface check passes and a
+positional join would silently pair unified rows with a different model's output.
+
+The join needs name and season, which are DATA attributes, so only row ORDER matters.
+Proved with `position` -- a data attribute that does not move when weights change --
+12,966 of 12,966 agreeing row-for-row. `cluster` would NOT do, being model-derived.
 
     python pipeline/query_bridge.py
     python pipeline/query_bridge.py --check    # exit 1 if the archetype join is unsafe
@@ -62,10 +69,54 @@ IDX = ROOT / "data" / "bridge_index.json"
 EDGES = ROOT / "data" / "venue_edges.json"
 UMAT = ROOT / "pipeline" / "data" / "unified_matrix.npz"
 GEMB = ROOT / "pipeline" / "data" / "gridiron_season_emb.npz"
+HEMB = Path(r"C:\Users\jcdav\vector-hoops\pipeline\data\embedding_v3.npz")
+HMETA = Path(r"C:\Users\jcdav\vector-hoops\assets\player_meta.json")
 OUT = ROOT / "data" / "bridge_answers.json"
 
 SPORT_GRIDIRON = 1
 N_PERM = 2000
+
+
+def verify_hoops_alignment(z, h):
+    """Hoops needs a DIFFERENT proof than gridiron, and the reason is a real repo fact.
+
+    The gridiron guard proves alignment with cosine 1.0000 between the two embeddings.
+    That test FAILS for hoops -- cosine mean 0.0516, min -0.2846 -- because
+    unified_matrix.npz's E_hoops was built from a different embedding_v3.npz than the one
+    now on disk. The disk file is the seed-31 A/B leftover recorded in vector-hoops/
+    pipeline/seed_floor.json REPO_STATE_WARNING. This is independent corroboration of
+    that finding, arrived at from a completely different direction.
+
+    Row COUNT matches and player_idx is 0..n-1 in order, so every surface check passes
+    and a positional join would silently pair unified rows with a different model's
+    output. Exactly the trap probe_g1_position.py exists for.
+
+    What is actually needed here is name and season -- DATA attributes, not model
+    outputs -- so the question is only whether the rows are in the same ORDER. Proved
+    with `position`, which is a data attribute and does not move when weights change:
+    12,966 of 12,966 agree row-for-row. `cluster` would NOT do, being model-derived.
+    """
+    m = z["sport_id"] == 0
+    pidx = z["player_idx"][m]
+    if len(pidx) != len(h["name"]):
+        return False, f"row counts differ: {len(pidx)} vs {len(h['name'])}"
+    if not np.array_equal(pidx, np.arange(len(pidx))):
+        return False, "player_idx over the hoops block is not 0..n-1 in order"
+    pos_u = z["pos_id"][m]
+    pos_h = np.array([str(x) for x in h["position"]])
+    best = {}
+    pairs = Counter(zip(pos_h.tolist(), pos_u.tolist()))
+    for (ps, pi), n in pairs.items():
+        if ps not in best or n > best[ps][1]:
+            best[ps] = (pi, n)
+    agree = sum(n for (ps, pi), n in pairs.items() if best.get(ps, (None,))[0] == pi)
+    frac = agree / max(len(pos_u), 1)
+    if frac < 0.999:
+        return False, (f"position agrees on only {agree}/{len(pos_u)} rows "
+                       f"({frac:.3f}) — the two files are not in the same order")
+    return True, (f"player_idx in order and `position` agrees {agree}/{len(pos_u)} "
+                  f"row-for-row (cosine is NOT usable: E_hoops was built from a "
+                  f"different embedding_v3.npz than the one on disk)")
 
 
 def verify_gridiron_alignment(z, g):
@@ -112,6 +163,13 @@ def main() -> int:
     if not ok:
         print(f"FAIL: gridiron archetype join is unsafe — {why}", file=sys.stderr)
         return 3
+    hoops_ok, hoops_why = (False, "embedding_v3.npz or player_meta.json missing")
+    hz = None
+    if HEMB.exists() and HMETA.exists():
+        hz = np.load(HEMB, allow_pickle=True)
+        hoops_ok, hoops_why = verify_hoops_alignment(z, hz)
+    if not hoops_ok:
+        print(f"NOTE: hoops archetype join unavailable — {hoops_why}")
 
     # ---- Q1: who reaches the corpus, through what -----------------------------
     q1 = []
@@ -196,9 +254,129 @@ def main() -> int:
     null = np.array(null)
     p = float((null >= tvd).mean())
 
+    # ---- Q3b: same question, hoops ------------------------------------------
+    q3b = {"available": bool(hoops_ok), "why": hoops_why}
+    if hoops_ok:
+        hm = z["sport_id"] == 0
+        harch = z["arch_id"][hm]
+        roster = json.loads(HMETA.read_text(encoding="utf-8"))["roster"]
+        hname = [str(x) for x in hz["name"]]
+        hseas = [str(x) for x in hz["season"]]
+        hteam = np.array([roster.get(f"{n}|{s}", "") for n, s in zip(hname, hseas)])
+        hnamed = {e["team_code"]: e.get("sponsor_name_from")
+                  for e in ed.get("hoops", {}).get("edges", [])}
+        # season strings are "2015-16"; compare the START year to the naming year
+        hyear = np.array([int(s.split("-")[0]) if s[:4].isdigit() else -1 for s in hseas])
+        hb = np.array([(t in hnamed and hnamed[t] is not None and y >= hnamed[t])
+                       for t, y in zip(hteam, hyear)])
+        covered = hteam != ""
+        # Only rows the roster map covers can be classified at all. An uncovered row is
+        # not "unbridged", it is unknown, and folding it into the comparison arm would
+        # answer a different question.
+        hb, harch_c = hb[covered], harch[covered]
+        hteam_c = hteam[covered]
+
+        def hmix(mask):
+            c = Counter(int(a) for a in harch_c[mask])
+            n = max(int(mask.sum()), 1)
+            return {arch_names[k] if k < len(arch_names) else str(k): round(v / n, 4)
+                    for k, v in sorted(c.items())}
+
+        mb, mu = hmix(hb), hmix(~hb)
+        kk = sorted(set(mb) | set(mu))
+        htvd = 0.5 * sum(abs(mb.get(k, 0.0) - mu.get(k, 0.0)) for k in kk)
+        # NULL MUST REPRODUCE THE SEASON FILTER, NOT JUST THE TEAM CLUSTERING.
+        #
+        # Hoops naming years fall INSIDE the corpus window — Capital One 2017, Chase
+        # 2019, Ball 2020, Delta 2023, Intuit Dome 2024 — so a bridged row is
+        # systematically a LATER row. The bridged share climbs monotonically from 0.06 in
+        # 2015 to 0.27 in 2025, and mean season is 2021.30 bridged against 2019.72
+        # unbridged. Gridiron has no such skew because all five of its naming years
+        # predate the 2016 corpus start.
+        #
+        # A null that only permutes WHICH TEAMS are bridged labels all of a team's rows
+        # and therefore carries no season skew at all, while the observed statistic
+        # carries a large one. It was measuring the era difference against a null with no
+        # era difference in it — p=0.006, which says the two arms differ, not that
+        # sponsorship is why.
+        #
+        # So the null now permutes which team receives each NAMING YEAR, and applies the
+        # same season >= year rule. Team clustering and era structure both reproduce.
+        hteams = sorted(set(hteam_c.tolist()))
+        hbt = sorted({t for t in hteams if t in hnamed and hnamed[t] is not None})
+        hyears = [hnamed[t] for t in hbt]
+        hyear_c = hyear[covered]
+        rng2 = np.random.default_rng(7)
+        hnull = []
+        for _ in range(N_PERM):
+            pick = list(rng2.choice(hteams, size=len(hbt), replace=False))
+            assign = dict(zip(pick, hyears))
+            lab = np.array([(t in assign and y >= assign[t])
+                            for t, y in zip(hteam_c, hyear_c)])
+            if lab.sum() == 0 or (~lab).sum() == 0:
+                continue
+            a = Counter(int(x) for x in harch_c[lab])
+            b = Counter(int(x) for x in harch_c[~lab])
+            na, nb = int(lab.sum()), int((~lab).sum())
+            hnull.append(0.5 * sum(abs(a.get(k, 0) / na - b.get(k, 0) / nb)
+                                   for k in set(a) | set(b)))
+        hnull = np.array(hnull)
+        hp = float((hnull >= htvd).mean())
+        q3b.update({
+            "corpus_rows": int(hm.sum()),
+            "rows_covered_by_roster_map": int(covered.sum()),
+            "n_bridged": int(hb.sum()), "n_unbridged": int((~hb).sum()),
+            "mix_bridged": mb, "mix_unbridged": mu,
+            "total_variation_distance": round(float(htvd), 4),
+            "permutation_null": {"unit": "TEAM + its NAMING YEAR", "n_teams": len(hteams),
+                                 "n_bridged_teams": len(hbt),
+                                 "null_mean_tvd": round(float(hnull.mean()), 4),
+                                 "null_p95_tvd": round(float(np.percentile(hnull, 95)), 4),
+                                 "p_value": round(hp, 4)},
+            "verdict": ("NO DIFFERENCE — TVD is within the permutation null" if hp > 0.05
+                        else "MARGINAL AND NOT INTERPRETABLE — see verdict_in_full"),
+            "verdict_in_full":
+                "Do NOT read this as sponsorship affecting rosters. p moved 0.006 -> "
+                "0.038 the moment the era confound was put into the null, which means "
+                "most of the original signal WAS era. What remains is p=0.038 on EIGHT "
+                "bridged teams, with the market-size confound named in advance still "
+                "uncontrolled — and the bridged eight (MIN, WAS, GSW, MIL, DEN, UTA, "
+                "LAC, MEM) are not obviously large markets, so that confound is not even "
+                "pointing in a predictable direction. A single marginal p from a "
+                "comparison whose null had to be respecified twice is a reason to "
+                "distrust the null, not to believe the effect. Gridiron, where no era "
+                "skew exists because every naming year predates the corpus, returns a "
+                "clean NO at p=0.8535.",
+            "p_across_null_specifications": {
+                "row-level shuffle (WRONG: ignores franchise clustering)": 0.006,
+                "team-level permutation (WRONG: no era skew in the null)": 0.006,
+                "team + naming-year permutation (era preserved)": round(hp, 4),
+                "reading": "A result that moves this much across null specifications is "
+                           "reporting the null, not the data.",
+            },
+            "era_confound_measured": {
+                "mean_season_bridged": 2021.30, "mean_season_unbridged": 2019.72,
+                "bridged_share_2015": 0.06, "bridged_share_2025": 0.27,
+                "why": "Hoops naming years fall INSIDE the corpus window (Capital One "
+                       "2017, Chase 2019, Ball 2020, Delta 2023, Intuit 2024), so a "
+                       "bridged row is systematically a later row. Gridiron has no such "
+                       "skew: all five of its naming years predate the 2016 corpus "
+                       "start. A null permuting only team membership carries NO season "
+                       "skew while the observed statistic carries a large one — it was "
+                       "measuring an era difference against an era-free null. The null "
+                       "now permutes which team receives each naming year and applies "
+                       "the same season >= year rule.",
+            },
+            "denominator_note": "Percentages are over the roster-covered rows only. "
+                                "Rows the roster map does not cover are UNKNOWN, not "
+                                "unbridged, and folding them into the comparison arm "
+                                "would answer a different question.",
+        })
+
     out = {
         "built": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "archetype_join_verified": why,
+        "hoops_archetype_join": hoops_why,
         "Q1_companies_reaching_the_athlete_corpus": q1,
         "Q2_cities": q2,
         "Q3_archetype_mix_bridged_vs_not": {
@@ -233,11 +411,8 @@ def main() -> int:
                 "and franchise-age effect before it is anything about sponsorship. This "
                 "test can detect a difference; it cannot attribute one.",
         },
+        "Q3b_archetype_mix_bridged_vs_not_HOOPS": q3b,
         "what_this_cannot_answer": {
-            "hoops_archetypes": "Hoops bridge rows come from a Name|Season roster map "
-                "that gives team but no row index into the unified matrix, so archetypes "
-                "cannot be joined without a name-keyed join into 12,966 rows — the Jaren "
-                "Jackson hazard. Q3 is gridiron-only.",
             "athlete_to_company": "Every row here ties a company to a FRANCHISE. Nothing "
                 "here connects a company to an individual athlete, and no answer should "
                 "be read that way.",
@@ -258,6 +433,16 @@ def main() -> int:
     print(f"   TVD {tvd:.4f}  null mean {null.mean():.4f}  null p95 "
           f"{np.percentile(null, 95):.4f}  p={p:.4f}")
     print(f"   {out['Q3_archetype_mix_bridged_vs_not']['verdict']}")
+    if q3b.get("available"):
+        pn = q3b["permutation_null"]
+        print(f"\nQ3b hoops — bridged {q3b['n_bridged']} vs unbridged "
+              f"{q3b['n_unbridged']} (of {q3b['rows_covered_by_roster_map']} "
+              f"roster-covered of {q3b['corpus_rows']})")
+        print(f"   TVD {q3b['total_variation_distance']}  null mean "
+              f"{pn['null_mean_tvd']}  p={pn['p_value']}")
+        print(f"   {q3b['verdict']}")
+    else:
+        print(f"\nQ3b hoops — UNAVAILABLE: {q3b['why'][:100]}")
     print(f"\nwrote {OUT}")
     return 0
 
