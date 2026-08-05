@@ -52,6 +52,37 @@ If a run had been interrupted, these were the only copy.
     ab/ab_results.json          6 rows: arm, seed, test_recall, purity20, sector_acc,
                                 market_acc, next_r2_test
 
+## Then a wider sweep of the same directory found the G2 evidence
+
+The seven scripts pointed at two subdirectories. The session scratchpad holds 451 entries,
+and most are throwaway — but five more are experiment records, and one of them backs an
+**open operator decision**.
+
+    g2run/        48 files. The 5 seeds x 3 arms behind LOCAL_GPU_G2_RESULT.md:
+                  ctrl{7,11,13,17,19}/ lam{...}/ seed{...}/, each holding
+                  unified_report.json, plus the training and eval logs.
+    stage2_seed/  254 files
+    grid_seed/    81 files
+    pitch_seed/   13 files
+    eq_sector/    6 files
+
+`LOCAL_GPU_G2_RESULT.md` is tracked. **The runs behind it were not.**
+`decompose_g2_ab.py` says so in its own docstring — "Reads the per-seed eval reports from
+the run directory (--runs), NOT from the repo" — which is why the tool itself is portable
+and carries no laptop path, and also why the evidence had nothing holding it anywhere.
+
+Deleting that directory would not have lost a report. It would have made the G2
+promote-or-discard decision unreviewable without re-running 15 GPU trainings.
+
+Verified usable from the rescue copy, not merely copied:
+
+    python pipeline/decompose_g2_ab.py --runs C:/Users/jcdav/experiment-rescue-2026-08-05/g2run
+
+    lambda mean -0.0356  t -10.24 df 2  p 0.0094  CI95 [-0.0505,-0.0206]  SIGNIFICANT
+    coral  mean -0.0102  t  -5.66 df 2  p 0.0298  CI95 [-0.0180,-0.0024]  SIGNIFICANT
+    TOTAL  mean -0.0458  t  -9.11 df 2  p 0.0118  CI95 [-0.0674,-0.0241]  SIGNIFICANT
+    lambda is 78% of the total. additivity residual 0.00e+00
+
 ## Rescued, not fixed
 
 Everything was copied out of temp to
