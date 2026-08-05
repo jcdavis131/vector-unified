@@ -92,3 +92,25 @@ Replaced with `scripts/validation_sweep.py --check` plus
 **If you add a check to the sweep, run it once and diff `git status` across every repo in
 the estate before trusting it.** "It looks read-only" is exactly the assumption that caused
 both the sibling-repo damage and this one.
+
+## The operator dashboard
+
+`tools/dashboard/server.py` — one screen, no scrolling, 10s auto-refresh. Launch:
+
+    python tools/dashboard/server.py
+
+Binds `127.0.0.1:8000` and falls back to 8001-8019 if that is taken, printing which port it
+got. It coexists with Docker Desktop holding `0.0.0.0:8000`.
+
+**Run exactly one.** A second instance silently takes the next port while the first keeps
+serving the old code on 8000 — that happened during development and produced a stale page
+that looked current. If the board shows fewer items than you expect, check for a second
+server before believing it.
+
+Everything is read at request time from git and the artifacts, cached 8s. A source it cannot
+read makes its tile **disappear** rather than showing a last-good value, so a stale
+dashboard is not a failure mode. That also means tiles are absent until the artifact behind
+them exists: the gate tile needs `data/gate_inputs_tracked_audit.json`, which
+`pipeline/check_gate_inputs_tracked.py` writes and which is not carried on master.
+
+It reads only. It runs no checker, no builder and no trainer.
