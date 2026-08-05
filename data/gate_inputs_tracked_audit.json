@@ -1,21 +1,21 @@
 {
  "question": "Does every registered check still work on a fresh clone?",
  "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
- "commit": "6fdb0f9f90438e66f0653d9fd7dd79e513a6a4de",
+ "commit": "9a3651aa2d0cfdfc9aa846547b7d5717d1f4e5f4",
  "data_files": {
-  "working_tree": 79,
-  "clone": 34,
+  "working_tree": 82,
+  "clone": 37,
   "exist_only_locally": 45
  },
  "summary": {
   "working_tree": {
-   "PASS": 17,
-   "FAIL": 3,
+   "PASS": 20,
+   "FAIL": 2,
    "SKIP": 2,
    "N/A": 0
   },
   "clone": {
-   "PASS": 6,
+   "PASS": 8,
    "FAIL": 1,
    "SKIP": 2,
    "N/A": 13
@@ -71,7 +71,7 @@
    "clone": "N/A"
   },
   "guards_nonvacuous": {
-   "working_tree": "FAIL",
+   "working_tree": "PASS",
    "clone": "N/A"
   },
   "tennis_forward": {
@@ -111,6 +111,14 @@
    "clone": "PASS"
   },
   "laptop_paths": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "stdout_encoding": {
+   "working_tree": "PASS",
+   "clone": "PASS"
+  },
+  "prose_values": {
    "working_tree": "PASS",
    "clone": "PASS"
   }
