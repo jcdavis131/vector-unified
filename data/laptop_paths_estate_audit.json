@@ -1,0 +1,135 @@
+{
+ "question": "Does any path literal in tracked python name one particular computer?",
+ "why": "portable_paths.ESTATE existed and 17 constants across 14 files ignored it. Two crash loudly on another box; eight are guarded by .exists() and degrade SILENTLY — build_vor_draft_value.py emits VOR values built from no draft data, validation_sweep.py runs all five checks under a different interpreter. A convention with no checker is a preference.",
+ "method": "AST string literals only. Comments are invisible to ast by construction; docstrings are excluded by node identity; the match is ANCHORED at the start of the string so prose ABOUT a path is not a path claim. A grep reports 29 hits here, 12 of them prose.",
+ "scope": "estate",
+ "files_scanned": 358,
+ "string_literals_examined": 48400,
+ "per_repo": {
+  "vector-hoops": 16,
+  "vector-gridiron": 0,
+  "vector-pitch": 0,
+  "vector-equities": 3,
+  "vector-hub": 0,
+  "vector-realty": 0,
+  "vector-tennis": 0,
+  "vector-unified": 0
+ },
+ "findings": [
+  {
+   "file": "vector-hoops/pipeline/ab_honors_mask.py",
+   "line": 25,
+   "literal": "C:\\Users\\jcdav\\vector-hoops\\pipeline\\.venv\\Scripts\\python.exe",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/ab_honors_mask.py",
+   "line": 22,
+   "literal": "C:\\Users\\jcdav\\vector-hoops",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/ab_honors_mask.py",
+   "line": 23,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/measure_seed_floor.py",
+   "line": 18,
+   "literal": "C:\\Users\\jcdav\\vector-hoops\\pipeline\\.venv\\Scripts\\python.exe",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/measure_seed_floor.py",
+   "line": 15,
+   "literal": "C:\\Users\\jcdav\\vector-hoops",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/measure_seed_floor.py",
+   "line": 16,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_checkpoint_cadence.py",
+   "line": 25,
+   "literal": "C:\\Users\\jcdav\\vector-hoops\\pipeline\\.venv\\Scripts\\python.exe",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_checkpoint_cadence.py",
+   "line": 22,
+   "literal": "C:\\Users\\jcdav\\vector-hoops",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_checkpoint_cadence.py",
+   "line": 23,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_reliability_weight.py",
+   "line": 18,
+   "literal": "C:\\Users\\jcdav\\vector-hoops\\pipeline\\.venv\\Scripts\\python.exe",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_reliability_weight.py",
+   "line": 15,
+   "literal": "C:\\Users\\jcdav\\vector-hoops",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_reliability_weight.py",
+   "line": 16,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_test_by_season.py",
+   "line": 18,
+   "literal": "C:\\Users\\jcdav\\vector-hoops\\pipeline\\.venv\\Scripts\\python.exe",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_test_by_season.py",
+   "line": 15,
+   "literal": "C:\\Users\\jcdav\\vector-hoops",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/probe_test_by_season.py",
+   "line": 16,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-hoops/pipeline/rejudge_paired.py",
+   "line": 16,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-equities/pipeline/ab_feature_fill.py",
+   "line": 30,
+   "literal": "C:\\Users\\jcdav\\vector-hoops\\pipeline\\.venv\\Scripts\\python.exe",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-equities/pipeline/ab_feature_fill.py",
+   "line": 27,
+   "literal": "C:\\Users\\jcdav\\vector-equities",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  },
+  {
+   "file": "vector-equities/pipeline/ab_feature_fill.py",
+   "line": 28,
+   "literal": "C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\ab",
+   "why": "a path literal in code that names one computer; use portable_paths.ESTATE / \"vector-<repo>/...\" instead"
+  }
+ ],
+ "fix": "from portable_paths import ESTATE   ->   ESTATE / \"vector-<repo>/...\""
+}

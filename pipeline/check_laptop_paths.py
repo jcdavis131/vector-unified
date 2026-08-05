@@ -45,11 +45,33 @@ because 18 of its 19 patterns matched nothing. So `--selftest` re-runs this chec
 the versions of the same files at a given commit and requires it to FIND the ones already
 fixed. A checker that cannot find a known defect is not evidence of its absence.
 
+THE ESTATE IS NOT CLEAN, AND FIXING THIS REPO IS WHAT REVEALED IT. vector-unified is 0.
+`--estate` scans 358 tracked .py across 8 repos and finds 19 more:
+
+    vector-hoops      16
+    vector-equities    3
+    everything else    0
+
+SIX OF THOSE HARDCODE A SESSION SCRATCHPAD and are on a clock:
+
+    SC = Path(r"C:\\Users\\jcdav\\AppData\\Local\\Temp\\claude\\C--Users-jcdav"
+              r"\\be69d382-ce38-4d23-b6d1-d92c62546c02\\scratchpad\\hoops_ab")
+
+That id is the CURRENT session. The directory exists right now, which is exactly why
+nothing has failed and why nobody noticed — these scripts work today and break the moment
+the session ends. Same defect as sweep_tennis_hparams.py, which was fixed here with
+tempfile.mkdtemp() per run; it turns out the pattern had already propagated to two sibling
+repos, one of which is the live-site repo.
+
+NOT FIXED FROM HERE. Those are other repos' lanes, and vector-hoops master is a deploy.
+The fix is known and proven, and it is one commit in each repo — the operator's call.
+
     python pipeline/check_laptop_paths.py
     python pipeline/check_laptop_paths.py --check              # exit 1 on any finding
-    python pipeline/check_laptop_paths.py --selftest 6ea5f21   # must find >=1 at that commit
+    python pipeline/check_laptop_paths.py --estate             # all 8 repos
+    python pipeline/check_laptop_paths.py --selftest 4f29a8a~1 # must find >=1 at that commit
 
-Writes: data/laptop_paths_audit.json
+Writes: data/laptop_paths_audit.json (local) or data/laptop_paths_estate_audit.json
 """
 
 from __future__ import annotations
@@ -63,7 +85,13 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# TWO FILES, ONE PER SCOPE, and that is not tidiness. validate.py registers the LOCAL form
+# (111 files, 0 findings); --estate scans 358 files across 8 repos and finds 19. Writing
+# both to one path means the committed artifact says 111 or 358 depending on who ran last,
+# and a reader cannot tell which. data/seed_order_audit.json did exactly that earlier —
+# recorded 108 files when the gate scans 330, silently claiming a third of its own coverage.
 OUT = ROOT / "data" / "laptop_paths_audit.json"
+OUT_ESTATE = ROOT / "data" / "laptop_paths_estate_audit.json"
 
 # ANCHORED AT THE START. `C:/x` is a path; "HUB = Path('C:/x')" is a sentence about one.
 # Deliberately broad on the root itself — the rule is "no machine-local path in code", not
@@ -150,10 +178,51 @@ def scan_source(rel: str, src: str) -> tuple[list[dict], int]:
     return hits, examined
 
 
-def tracked_py() -> list[str]:
-    r = subprocess.run(["git", "ls-files", "*.py"], cwd=str(ROOT), capture_output=True,
-                       text=True, encoding="utf-8", errors="replace")
+ESTATE_REPOS = ("vector-hoops", "vector-gridiron", "vector-pitch", "vector-equities",
+                "vector-hub", "vector-realty", "vector-tennis", "vector-unified")
+
+
+def tracked_py(repo: Path | None = None) -> list[str]:
+    r = subprocess.run(["git", "ls-files", "*.py"], cwd=str(repo or ROOT),
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     return [ln.strip() for ln in r.stdout.splitlines() if ln.strip()]
+
+
+def estate_scan() -> tuple[list[dict], int, int, dict]:
+    """Scan every sibling repo. The defect this file fixed here also lives next door.
+
+    vector-unified is 0 after the 37-literal cleanup. The estate is NOT: 16 in vector-hoops
+    and 3 in vector-equities, and six of those are the SESSION-SCRATCHPAD form — the same
+    defect fixed in sweep_tennis_hparams.py, propagated across repos rather than confined
+    to one file.
+    """
+    findings, files_n, lits = [], 0, 0
+    per_repo: dict[str, int] = {}
+    for name in ESTATE_REPOS:
+        d = ROOT.parent / name
+        if not (d / ".git").exists():
+            continue
+        n = 0
+        for rel in tracked_py(d):
+            f = d / rel
+            if not f.is_file():
+                continue
+            files_n += 1
+            # SCAN WITH THE REPO-RELATIVE KEY, then prefix for reporting. ALLOW is keyed by
+            # repo-relative path, so passing "vector-unified/pipeline/..." would miss the
+            # deliberate fault-injection exemption and report it as a finding — a checker
+            # breaking its own calibration the moment its scope widened.
+            try:
+                h, ex = scan_source(rel, f.read_text(encoding="utf-8", errors="replace"))
+            except OSError:
+                continue
+            lits += ex
+            for x in h:
+                x["file"] = f"{name}/{rel}"
+            findings += h
+            n += len(h)
+        per_repo[name] = n
+    return findings, files_n, lits, per_repo
 
 
 def at_commit(rel: str, commit: str) -> str | None:
@@ -165,6 +234,8 @@ def at_commit(rel: str, commit: str) -> str | None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true", help="exit 1 on any finding")
+    ap.add_argument("--estate", action="store_true",
+                    help="scan every sibling repo, not just this one")
     ap.add_argument("--selftest", metavar="COMMIT",
                     help="scan the same files as of COMMIT; exit 1 if it finds nothing, "
                          "which would mean this checker cannot detect the defect it exists for")
@@ -197,11 +268,17 @@ def main() -> int:
         print("  -> the checker detects the defect it was written for")
         return 0
 
-    findings, examined = [], 0
-    for rel in files:
-        h, n = scan_source(rel, (ROOT / rel).read_text(encoding="utf-8", errors="replace"))
-        findings += h
-        examined += n
+    per_repo: dict = {}
+    if args.estate:
+        findings, n_files, examined, per_repo = estate_scan()
+        files = [""] * n_files
+    else:
+        findings, examined = [], 0
+        for rel in files:
+            h, n = scan_source(rel, (ROOT / rel).read_text(encoding="utf-8",
+                                                           errors="replace"))
+            findings += h
+            examined += n
 
     out = {
         "question": "Does any path literal in tracked python name one particular computer?",
@@ -214,15 +291,22 @@ def main() -> int:
                   "docstrings are excluded by node identity; the match is ANCHORED at the "
                   "start of the string so prose ABOUT a path is not a path claim. A grep "
                   "reports 29 hits here, 12 of them prose.",
+        "scope": "estate" if args.estate else "vector-unified only",
         "files_scanned": len(files),
         "string_literals_examined": examined,
+        "per_repo": per_repo,
         "findings": findings,
         "fix": "from portable_paths import ESTATE   ->   ESTATE / \"vector-<repo>/...\"",
     }
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
+    dest = OUT_ESTATE if args.estate else OUT
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
-    print(f"  {len(files)} tracked .py, {examined} string literal(s) examined")
+    print(f"  {len(files)} tracked .py, {examined} string literal(s) examined"
+          f"{'  [ESTATE]' if args.estate else ''}")
+    if per_repo:
+        for k, v in per_repo.items():
+            print(f"    {k:18} {v}")
     print(f"  FINDINGS: {len(findings)}")
     for f in findings:
         print(f"    {f['file']}:{f['line']}  {f['literal'][:70]}")
