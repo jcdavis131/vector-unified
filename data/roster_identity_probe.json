@@ -69,5 +69,35 @@
   "what_it_actually_is": "A 30/32-way team label with extra steps. A team one-hot carries the same information in 32 dimensions instead of thousands, trains faster, and does not create the impression that the model learned something about the player.",
   "cost_of_having_probed_first": "One script. The alternative was adding a thousands-wide block to two trainers, measuring a gain against a seed floor, and then having to explain a feature that is a team label — which is how vector-equities' three merged sectors survived as long as they did.",
   "next_candidate_and_its_predicted_failure": "The set that DOES follow a team-sport player is his APPEARANCE pattern — which weeks or games he actually played, a 17-wide (gridiron) or 82-wide (hoops) binary vector driven by injury, rest and benching rather than by the league. Predicted failure, stated before measuring: for a healthy starter the vector is all ones, so it may be near-constant across exactly the players the corpus is densest in. That is a different failure from this one and needs its own probe."
+ },
+ "CANDIDATE_2_appearance_pattern": {
+  "what": "Which REGULAR-SEASON WEEKS a player actually took a snap, as a binary vector. Built from vector-gridiron/pipeline/cache/snap_counts_*.csv, 10 seasons, keyed on pfr_player_id. A player-week counts as played if offense+defense+special-teams snaps > 0.",
+  "why_this_and_not_teammates": "The teammate set follows the FRANCHISE — movers retained 1.5%. Appearance is driven by injury, rest and benching, which are properties of the PLAYER and travel with him.",
+  "predicted_failure_stated_before_measuring": "For a healthy starter the vector is all ones, so it could be near-constant across exactly the players the corpus is densest in.",
+  "predicted_failure_PARTLY_CONFIRMED": {
+   "share_playing_17_plus_weeks": 13.6,
+   "share_playing_16_plus": 34.2,
+   "median_weeks_played": 13,
+   "reading": "Not 'mostly all ones' — only 13.6% play a full slate. But the RANDOM floor is 0.4893 because any two near-full-season players overlap heavily, and a high floor is the same problem by another route."
+  },
+  "n_player_seasons": 21247,
+  "n_consecutive_pairs": 14699,
+  "jaccard_own_next_year": 0.5548,
+  "jaccard_random_any": 0.4893,
+  "separation_vs_any": 0.0655,
+  "jaccard_random_SAME_POSITION": 0.497,
+  "separation_vs_same_position": 0.0578,
+  "DECISIVE_stay_vs_move": {
+   "jaccard_stayed": 0.5982,
+   "n_stayed": 10145,
+   "jaccard_moved": 0.458,
+   "n_moved": 4554,
+   "pct_of_stayer_overlap_retained_by_movers": 76.6,
+   "reading": "PASSES. 76.6% against the teammate block's 1.5%. The pattern travels with the player across a team change, which is what a tennis-calendar analogue has to do."
+  },
+  "position_control": "Matching the random draw on POSITION moves separation 0.0655 -> 0.0578, so only about 12% of it was a position effect. It is not a position label.",
+  "VERDICT": "WORTH BUILDING, WEAKLY. It clears both tests the teammate block failed — it follows the player and it is not a position label. But separation is 0.0578 against tennis's 0.1547, roughly a third, and against a much higher floor (0.4970 vs 0.1782). Tennis's 0.1547 separation bought +0.0385 retrieval; a crude scaling puts this near +0.014, which is NOT obviously above a measurement floor. Build it as an A/B against the seed floor, do not adopt it on this probe.",
+  "what_would_make_this_decidable": "gridiron's seed floor is n=3 (sd 0.73 on CQS, range 0.012 on next-game MAE). A +0.014-scale effect needs more seeds than that to call, and the relevant metric is retrieval, which gridiron does not currently report. Both are prerequisites, not blockers.",
+  "hoops_not_measured": "The hoops analogue is which of 82 games a player appeared in. vector-hoops/pipeline/data/availability.json carries GP_PCT, games missed and streak structure for 5,968 player-seasons from 2015-16, but not the per-game binary vector this needs. Stated as unmeasured rather than assumed similar."
  }
 }
