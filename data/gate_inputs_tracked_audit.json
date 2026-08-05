@@ -1,33 +1,27 @@
 {
  "question": "Does every registered check still work on a fresh clone?",
  "method": "git clone --local, checkout the same commit, run validate.py --offline there, diff per-check verdicts against the working tree. A previous static-parsing attempt was VACUOUS (18/19 checks matched no path literal) and is recorded here so it is not retried.",
- "commit": "4e4908cff998d58266c8024f32dca92445bf79f6",
+ "commit": "06ac4f91c615dc6629603f53b62d36f545081141",
  "data_files": {
   "working_tree": 71,
-  "clone": 28,
-  "exist_only_locally": 43
+  "clone": 29,
+  "exist_only_locally": 42
  },
  "summary": {
   "working_tree": {
    "PASS": 15,
    "FAIL": 2,
-   "SKIP": 2
+   "SKIP": 2,
+   "N/A": 0
   },
   "clone": {
    "PASS": 8,
-   "FAIL": 9,
-   "SKIP": 2
+   "FAIL": 2,
+   "SKIP": 2,
+   "N/A": 7
   }
  },
- "pass_here_fail_on_clone": [
-  "bridge_join",
-  "draft_value_invariants",
-  "g1_position",
-  "gate_nonvacuity",
-  "guards_nonvacuous",
-  "tennis_forward",
-  "tennis_mtnn"
- ],
+ "pass_here_fail_on_clone": [],
  "fail_in_both": [
   "ablation_consistency",
   "artifact_freshness"
@@ -35,7 +29,7 @@
  "per_check": {
   "draft_value_invariants": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "wikidata_qids": {
    "working_tree": "SKIP",
@@ -43,7 +37,7 @@
   },
   "gate_nonvacuity": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "merged_careers": {
    "working_tree": "PASS",
@@ -67,7 +61,7 @@
   },
   "tennis_mtnn": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "gridiron_forward": {
    "working_tree": "PASS",
@@ -75,15 +69,15 @@
   },
   "g1_position": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "guards_nonvacuous": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "tennis_forward": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "hoops_forward": {
    "working_tree": "PASS",
@@ -99,7 +93,7 @@
   },
   "bridge_join": {
    "working_tree": "PASS",
-   "clone": "FAIL"
+   "clone": "N/A"
   },
   "ablation_consistency": {
    "working_tree": "FAIL",

@@ -18,15 +18,23 @@ SO THIS DOES THE REAL THING INSTEAD: `git clone --local` into a temp dir, check 
 same commit, run `validate.py --offline` there, and diff the per-check verdicts against
 the same run in the working tree. No parsing, no idiom assumptions, no false confidence.
 
-WHAT IT FOUND, and it is much larger than the bug that prompted it:
+WHAT IT FOUND, and it was much larger than the bug that prompted it:
 
-    working tree   15 PASS   2 SKIP   2 FAIL
-    fresh clone     8 PASS   2 SKIP   9 FAIL
+    working tree   15 PASS   2 SKIP   2 FAIL   0 N/A
+    fresh clone     8 PASS   2 SKIP   9 FAIL   0 N/A     <- before the fix
 
-Seven checks beyond mine fail only on a clone, nearly all FileNotFoundError. And one is
-worse than a failure: check_cited_fields.py verifies 64 published values here and 0 in the
-clone, and prints PASS both times. A gate that goes green over an empty set on every clone
-is not a weaker gate, it is a misleading one.
+Seven checks beyond mine failed only on a clone, nearly all FileNotFoundError, because
+.gitignore deliberately excludes the ~24 MB of matrices, checkpoints and assets they need.
+validate.py now declares those prerequisites and reports N/A instead of FAIL:
+
+    fresh clone     8 PASS   2 SKIP   2 FAIL   7 N/A     <- after
+    pass-here-fail-on-clone: 0. The 2 remaining are the genuine pre-existing failures,
+    the same two the working tree reports.
+
+STILL UNFIXED, and not hidden by the above: check_cited_fields.py verifies 64 published
+values here and 0 in the clone, and prints PASS both times. It has no declared prerequisite
+to trip, because its input is present — merely empty. A gate that goes green over an empty
+set on every clone is not a weaker gate, it is a misleading one.
 
 NOT REGISTERED IN validate.py, DELIBERATELY. This script runs validate.py; registering it
 inside validate.py is unbounded recursion. It is a standalone diagnostic, run by hand, and
@@ -52,7 +60,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "gate_inputs_tracked_audit.json"
-LINE = re.compile(r"^\s{2}(PASS|FAIL|SKIP)\s+(\S+)\s")
+# N/A MUST BE IN THIS PATTERN. It was not, and the omission made this audit understate
+# its own subject: after validate.py gained the N/A state, a clone reported 8 PASS / 2
+# FAIL / 2 SKIP = 12 of 19 checks, and the 7 that could not run simply vanished from the
+# summary rather than being counted. An audit whose totals silently shrink is the same
+# disappearing-coverage defect it was written to detect.
+LINE = re.compile(r"^\s{2}(PASS|FAIL|SKIP|N/A)\s+(\S+)\s")
 
 
 def verdicts(cwd: Path) -> dict[str, str]:
@@ -92,6 +105,11 @@ def main() -> int:
         n_here = len(list((ROOT / "data").glob("*")))
         n_there = len(list((clone / "data").glob("*")))
 
+        total_here, total_there = len(here), len(there)
+        if total_here != total_there:
+            print(f"  WARNING: {total_here} checks parsed here vs "
+                  f"{total_there} in clone — a verdict state is unparsed",
+                  file=sys.stderr)
         broke = sorted(k for k in here
                        if here[k] == "PASS" and there.get(k) == "FAIL")
         both = sorted(k for k in here if here[k] == "FAIL" and there.get(k) == "FAIL")
@@ -107,9 +125,9 @@ def main() -> int:
                            "exist_only_locally": n_here - n_there},
             "summary": {
                 "working_tree": {v: sum(1 for x in here.values() if x == v)
-                                 for v in ("PASS", "FAIL", "SKIP")},
+                                 for v in ("PASS", "FAIL", "SKIP", "N/A")},
                 "clone": {v: sum(1 for x in there.values() if x == v)
-                          for v in ("PASS", "FAIL", "SKIP")}},
+                          for v in ("PASS", "FAIL", "SKIP", "N/A")}},
             "pass_here_fail_on_clone": broke,
             "fail_in_both": both,
             "per_check": {k: {"working_tree": here[k], "clone": there.get(k, "?")}
