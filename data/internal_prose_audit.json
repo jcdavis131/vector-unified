@@ -1,12 +1,12 @@
 {
  "question": "Does any artifact's prose quote a number that disagrees with that same artifact's own fields?",
  "found_by": "hand, while auditing promotion gates — gate_nonvacuity.json's note_rank says the shuffles 'both score 12.4, exactly the real value' while its own three fields say 12.1.",
- "files_scanned": 173,
+ "files_scanned": 174,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 1145,
-  "STALE": 23,
-  "NEAR_NO_CLAIM": 2700,
+  "EXACT": 1150,
+  "STALE": 20,
+  "NEAR_NO_CLAIM": 2703,
   "UNMATCHED": 252
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
@@ -69,35 +69,6 @@
     {
      "field": ".nulls.random_gaussian.G1_native_knn5_z.hoops",
      "value": 0.1488,
-     "why": "equal at one fewer decimal"
-    }
-   ]
-  },
-  {
-   "file": "gate_nonvacuity.json",
-   "repo": "vector-unified",
-   "prose_path": ".note_rank",
-   "number_in_prose": 12.4,
-   "context": "ouched — global_shuffle and within_sport_shuffle both score 12.4, exactly the real value. Only random_gaussian moves it, and",
-   "near_fields": [
-    {
-     "field": ".real.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".nulls.global_shuffle.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".nulls.within_sport_shuffle.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.fields_say.real",
-     "value": 12.1,
      "why": "equal at one fewer decimal"
     }
    ]
@@ -214,64 +185,6 @@
     {
      "field": ".per_group[0].profile_only_r",
      "value": 0.8083,
-     "why": "equal at one fewer decimal"
-    }
-   ]
-  },
-  {
-   "file": "gridiron_forward_report.json",
-   "repo": "vector-unified",
-   "prose_path": ".why_per_position_is_the_finding",
-   "number_in_prose": 0.7642,
-   "context": "uld be reported as forecasting skill. Pooled persistence is 0.7642 against per-position 0.58-0.74 for exactly that reason.",
-   "near_fields": [
-    {
-     "field": ".headline_pooled_persistence_r",
-     "value": 0.8,
-     "why": "within 5%"
-    },
-    {
-     "field": ".per_group[0].persistence_r",
-     "value": 0.8,
-     "why": "within 5%"
-    },
-    {
-     "field": ".per_group[0].ridge1_ppr_only_r",
-     "value": 0.8,
-     "why": "within 5%"
-    },
-    {
-     "field": ".per_group[0].cut_year_sweep[0].ppr_only_r",
-     "value": 0.7824,
-     "why": "within 5%"
-    }
-   ]
-  },
-  {
-   "file": "gridiron_forward_report.json",
-   "repo": "vector-unified",
-   "prose_path": ".why_per_position_is_the_finding",
-   "number_in_prose": 0.74,
-   "context": "ill. Pooled persistence is 0.7642 against per-position 0.58-0.74 for exactly that reason.",
-   "near_fields": [
-    {
-     "field": ".per_group[2].persistence_r",
-     "value": 0.7405,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".per_group[2].ridge1_ppr_only_r",
-     "value": 0.7405,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".per_group[2].profile_only_r",
-     "value": 0.7432,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".per_group[2].ridge19_r",
-     "value": 0.7449,
      "why": "equal at one fewer decimal"
     }
    ]

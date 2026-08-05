@@ -81,6 +81,21 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     "tennis_forward": (["build_tennis_forward.py", "--check"], False),
     "hoops_forward": (["build_hoops_forward.py", "--check"], False),
     "equities_forward": (["build_equities_forward.py", "--check"], False),
+    # BLOCKING. Adding a CORRECTION_* key and stopping there leaves the wrong sentence
+    # fully readable as a standalone assertion, so the file looks audited while the
+    # audited claim still stands. I did it three times in one session and caught the
+    # third by accident. 0 false positives over 181 artifacts, and mutation-tested: put
+    # the un-annotated sentence back in gate_nonvacuity.json and it exits 1 naming the
+    # exact key.
+    "corrections_landed": (["check_corrections_landed.py", "--check"], False),
+    # REPORT-ONLY ON PURPOSE — note there is no --check, so it always exits 0.
+    # Measured precision is 2 of 23 over the 173-artifact estate, about 9%. The two real
+    # finds were worth having, but a BLOCKING gate at 9% precision trains its reader to
+    # ignore it, and 21 false alarms per run is a worse failure than the one it catches.
+    # Registered rather than omitted because validate.py treats an unregistered checker
+    # as a FAILURE, and silently deleting it to keep the board green would be the exact
+    # kind of unearned green this file exists to prevent.
+    "internal_prose": (["check_internal_prose.py"], False),
 }
 
 # Guards that live inside builders and only fire when that builder runs. Listed, not run:
