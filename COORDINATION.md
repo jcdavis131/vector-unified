@@ -1,4 +1,6 @@
-# Mirrored from bundles/coordination/active-tasks.md 2026-08-05T03:49Z
+# COORDINATION.md — mirrored from bundles/coordination/active-tasks.md
+# Mirrored 2026-08-05T04:02Z from active-tasks.md
+
 # Active Tasks - Who's touching what
 
 > One file, one truth. Write your claim BEFORE you edit, clear it when done.
@@ -19,7 +21,12 @@
 4. Log even if no change ("checked, no-op") so others know you looked
 5. Clear row when done
 
-| Scout-lane1 | vector-* all 4 / honesty pass | 22:43 CDT | equities 4831×500 0.7057 lift6.32 verified fixed d80a716, hoops v6 17 towers d128 4L 4H CLS→64-d leak-free test top1 0.438→0.55 target recall@10 0.977 verified, pitch 588/633 92.9% WC-only 633 2430×11ctx verified, gridiron 32-d native 16-d compat wrapper gate NO promote MAE 8.41 synthetic vs claimed 4.268, branch scout/vector-honesty-night1 4 repos, tests 8p+13p PASS, timeline.jsonl ok | scout/vector-honesty-night1 | done 03:46 CT |
+| Scout-lane1 | vector-* all 4 / honesty pass | 22:43 CDT | equities 4831×500 0.7057 lift6.32 verified fixed d80a716, hoops v6 17 towers d128 4L 4H CLS→64-d leak-free test top1 0.438→0.55 target recall@10 0.977 verified, pitch 588/633 92.9% WC-only 633 2430×11ctx verified, gridiron 32-d native 16-d compat wrapper gate NO promote MAE 8.41 synthetic vs claimed 4.268, branch scout/vector-honesty-night1 4 repos, tests 8p+13p PASS, timeline.jsonl ok | scout/vector-honesty-night1 | done 03:46 CT — pushed 03:49-03:50Z to origin: equities new branch, gridiron main 2bab470..55aacd7, hoops master fcc606e..0c4b039, pitch master a36b48d..cb77f22 (merged Claude-Local a36b48d+bdfa4a0) |
+
+| Scout-push | vector-* honesty branches → origin push | 03:50Z UTC 2026-08-05 | Lane 1 push: 4× scout/vector-honesty-night1 → origin, 3× main/master fast-forward (no force), honest README only, no candidate→vectors promotion per gate, timeline.jsonl private left in ~/workspace/bundles/ultra/runs/night1-honesty, log bundles/research/push-log-night2.md | scout/vector-honesty-night1 | done 03:50Z UTC |
+| Scout | dottie / distilled reasoning → nano GRPO | 23:01 CDT | Optimizer traces → nano reasoning prep, collect GRPO data pipeline, wire for 1k nano | scout/dottie-traces-grpo | in-progress |
+| Scout | vector-hub / chimera daily + provenance depth | 23:01 CDT | Daily LCG rotation polish, provenance hook 6-file verify, 6th model card tennis parity, Vercel propagate check | scout/hub-chimera-provenance | in-progress |
+| Scout | vector-unified / G3/G4 + chimera eval | 23:01 CDT | G3 sil 0.683 within>>between, G4 cross-NN 0.9828 lift audit, chimera difficulty band 92.9% verify | scout/unified-g3g4-chimera | in-progress |
 
 ## Free lanes right now
 - vector-hub / daily 5th puzzle (unified chimera) + provenance checksums
