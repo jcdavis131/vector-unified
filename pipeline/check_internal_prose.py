@@ -79,7 +79,24 @@ ESTATE = ROOT.parent
 # seed_floor.json files this session wrote. Sibling roots are derived from ROOT.parent
 # rather than hardcoded, matching portable_paths.py.
 SCAN_DIRS = [ROOT / "data", ROOT / "data" / "market_cultural"]
-for _sib in ("vector-hoops", "vector-gridiron", "vector-pitch", "vector-equities"):
+
+def _sibling_repos():
+    """DISCOVERED, NOT HARDCODED. This list used to be a literal four-tuple, and
+    vector-realty was built as a sixth domain without anything noticing it existed — the
+    subagent that built it had to report the omission by hand. A hardcoded estate list is
+    a thing that silently goes stale exactly when the estate grows, which is the only
+    time it matters.
+
+    A sibling qualifies if it is a vector-* directory with a pipeline/ inside. The
+    discovered list is PRINTED every run so a missing repo is visible rather than
+    inferred from an unchanged total."""
+    return sorted(p.name for p in ESTATE.iterdir()
+                  if p.is_dir() and p.name.startswith("vector-")
+                  and p.name != ROOT.name and (p / "pipeline").is_dir())
+
+
+SIBLINGS = _sibling_repos()
+for _sib in SIBLINGS:
     SCAN_DIRS += [ESTATE / _sib / "pipeline" / "data", ESTATE / _sib / "pipeline"]
 
 # A number with a decimal point, or a 3+ digit integer. Bare small integers (0, 1, 5, 11)
@@ -283,6 +300,8 @@ def main() -> int:
     }
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
+    print(f"estate: {len(SIBLINGS)} sibling repos discovered — "
+          f"{', '.join(SIBLINGS)}")
     print(f"scanned {len(files)} artifacts")
     print(f"  prose numbers: EXACT {tally['EXACT']}  STALE {tally['STALE']}  "
           f"NEAR_NO_CLAIM {tally['NEAR_NO_CLAIM']}  UNMATCHED {tally['UNMATCHED']}"

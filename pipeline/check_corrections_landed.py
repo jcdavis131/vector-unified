@@ -81,7 +81,17 @@ ESTATE = ROOT.parent
 OUT = ROOT / "data" / "corrections_landed_audit.json"
 
 SCAN_DIRS = [ROOT / "data", ROOT / "data" / "market_cultural"]
-for _sib in ("vector-hoops", "vector-gridiron", "vector-pitch", "vector-equities"):
+
+def _sibling_repos():
+    """DISCOVERED, NOT HARDCODED — see the identical note in check_internal_prose.py.
+    vector-realty was built as a sixth domain and no estate-wide check knew it existed."""
+    return sorted(p.name for p in ESTATE.iterdir()
+                  if p.is_dir() and p.name.startswith("vector-")
+                  and p.name != ROOT.name and (p / "pipeline").is_dir())
+
+
+SIBLINGS = _sibling_repos()
+for _sib in SIBLINGS:
     SCAN_DIRS += [ESTATE / _sib / "pipeline" / "data", ESTATE / _sib / "pipeline"]
 
 # UPPERCASE PREFIX, AND THE VALUE MUST BE PROSE. The first version matched any key
@@ -345,6 +355,8 @@ def main() -> int:
     }
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
+    print(f"estate: {len(SIBLINGS)} sibling repos discovered — "
+          f"{', '.join(SIBLINGS)}")
     print(f"scanned {len(files)} artifacts")
     print(f"  correction blocks {n_blocks}  declared-target {n_declared}  "
           f"landed {n_landed}  undeclared+unquoted {n_no_quote}  "
