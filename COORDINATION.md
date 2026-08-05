@@ -5,12 +5,8 @@
 
 | Agent | Repo / Area | Since | What / Why | Branch | Status |
 |-------|-------------|-------|------------|--------|--------|
-| Scout | vector-hoops / MTNN v6 fusion | 22:08 CDT | Port transformer fusion + SupCon/VICReg, lift composite 0.7937→0.85 | scout/hoops-v6-fusion | in-progress |
-| Scout | vector-gridiron / training pipeline | 22:08 CDT | Bring training in-repo, fix 16-d vs 32-d vs 64-d confusion | scout/gridiron-train-in-repo | in-progress |
-| Scout | vector-unified + vector-hub | 22:08 CDT | Push G2 sport-blind 0.685→0.64, verify ablation table | scout/unified-g2-blind | in-progress |
-| Scout | dottie / nano 1k + tech debt | 22:08 CDT | First real nano 1k steps, scrub cache, unify checkpoint paths | scout/dottie-nano-1k | in-progress |
 | Scout-lane2 | dottie + scout-cli v0.8 polish | 22:43 CDT | Night shift lane 2 verify triple-write + nano smoke deterministic + 1k spec + scaffold | scout/dottie-cli-night2 | done 03:45 CT — triple verified 7-field, 15-dirs scrub 0 left, gitignored pipeline/runs, manifest v0.8.0 fs true net false, 1K spec written |
-| Claude-Local | vector-unified / LOCAL-GPU G2 push | 05:0x CDT | MEASURED, NOT PROMOTED. Handoff patch existed nowhere, so I implemented coral_centroid_loss (1st moment on z — coral_loss matched 2nd moments only, leaving sport decodable from the MEAN) + --w-coral/--w-coral-centroid/--grl-lambda-target. PAIRED 3 seeds vs control, same seeds: G2 -0.0458, t=-9.11 df=2 p=0.0118, 95% CI [-0.0674,-0.0241] excludes 0, 3/3, all gates PASS. G3/G1/rank costs are NIL under pairing (my earlier cost claim was a baseline artifact). **THE RESULT IS A FLOOR RESULT, not a delta. Residual sport decodability (sport_acc - majority_class_share 0.6258): CTRL +0.0829 p=0.0304 DECODABLE; FULL -0.0022 CI [-0.0060,+0.0016] — bounded at +0.0016, i.e. sport is NOT decodable above the base rate under the full treatment. LAM +0.0267 upper bound +0.0613 is UNDETERMINED, not at the floor — do not read its ns as equivalence. N=5 CONFIRMATION RUN (seeds 7/11/13/17/19, all 3 arms): the coral/centroid term I wrote DID NOT CONFIRM — p 0.0298 -> 0.0659, CI [-0.0608,+0.0030] spans zero. Only the lambda schedule holds (-0.0562, p=0.0122, 66%). AND the mean difference is the wrong summary: FULL sd 0.0030 vs CTRL sd 0.0564, a 343x variance ratio (F p=0.00005) — the treatment CLAMPS G2 to ~0.6236 while the bimodal control wanders 0.661-0.778, so the headline (-0.0458 at n=3 -> -0.0851 at n=5) is a fact about which controls were drawn, not an effect size. TWO SELF-CORRECTIONS before that: (1) my floor constant 2.31 was t(0.975,df=8) — the n=9 value — used at n=3, where the correct constant is 4.303; the margin is 2.12x not 3.9x, across 8 stat blocks not just the headline. NO conclusion flips. (2) THIRD ARM RUN: the lambda schedule is 78% of the effect (-0.0356, p=0.0094), the coral/centroid term I wrote is 22% (-0.0102, p=0.0298) and FAILS Bonferroni at 2 tests. Do not credit this result to the centroid loss at n=3.** Shipped model restored byte-for-byte and hash-verified (sport_acc 0.6851, ckpt b055641c03760624) — promotion is yours. Branch local/unified-g2-gpu @252be5d. | local/unified-g2-gpu | done |
+| Claude-Local | vector-unified / LOCAL-GPU G2 push | 16:4x CDT | UNBLOCKED BY BUILDING IT. The Hatch patches were on no branch anywhere, so I implemented coral_centroid_loss (1st-moment centroid alignment on z — coral_loss only matched 2nd moments, leaving sport decodable from the MEAN, which is what G2's probe reads) + --w-coral/--w-coral-centroid/--grl-lambda-target in BOTH trainers. Stage 2 had no coral term at all. All defaults preserve old behaviour. 60ep run live. | local/unified-g2-gpu | in-progress |
 | Claude-Local | vector-pitch / verify + push (free lane) | 16:4x CDT | DONE — 13/13 green, json.tool clean, rebased + pushed to pitch master a36b48d. Handoff's 0904a39 / vectors_mtnn.json do not exist here; the seed work shipped instead. | master (ff) | done |
 
 ## How to use
@@ -27,6 +23,8 @@
 | Scout | vector-hub / chimera daily + provenance depth | 23:01 CDT | Daily LCG rotation polish YYYYMMDD UTC LCG wired hubDailySeed()+hubLcg()+unifiedChimeraDaily() exposed window.UNIFIED_CHIMERA_DAILY, provenance 7-file DM_PROVENANCE [prov] ok/total/bad logger, CSS mode-card--chimera verified, 5th game chimera index live, Vercel 200 six models five daily verified, branch scout/hub-chimera-provenance pushed 23:02 CDT d90788b fast-forward main 3529e7a..d90788b | scout/hub-chimera-provenance | done 23:02 CDT — Vercel propagated 200 sixmodels/fivedaily chimera tile present, hub.js provenance depth 7 files hashes 7/7/10/3/6/14/12 entities ok |
 | Scout | vector-unified / G3/G4 + chimera eval | 23:01 CDT | G3 sil 0.683 within>>between, G4 cross-NN 0.9828 lift audit, chimera difficulty band 92.9% verify | scout/unified-g3g4-chimera | done 04:08 CT — G3 0.683 within0.746>>-0.121 sep0.867 PASS, G4 0.9828 vs0.1712 lift0.8116 PASS, pitch 588/633 92.9% median0.4843 +202 PASS, README newly tracked provenance-honest, docs/G3G4_CHIMERA_AUDIT, no torch, pushed branch c2f00b5..6a56132 + master fb4adcb |
 
+| Heartbeat | vector-* / coordination sweep | 02:13 CDT 2026-08-05 | Heartbeat cleared 4 stale (>4h) Scout 22:08 in-progress, verified chimera+provenance 7/7, dottie triple, sync_log fresh, watchdog alive | heartbeat | ok |
+
 ## Free lanes right now
 - vector-hub / daily 5th puzzle (unified chimera) + provenance checksums
 - dottie / distilled reasoning optimizer traces→nano GRPO
@@ -41,44 +39,3 @@
 | Orchestrator | vector-equities / forward IC polish | 23:05 CDT | 4831 FYs 500 tickers 154f 20 towers 64-d transformer purity 0.7057 lift6.32 baseline0.1117 cross0.4013 sil-0.0034 IC 1m0.0051 3m0.0064 6m0.007 gate verify leakage guard — DONE | scout/vector-equities-polish-fwd | done 04:04 CT — FY median-impute per-FY (global fallback only), no ticker future leak, FY-emb 12-d fusion-only, coverage scalar, causal mask, cross-ticker 0.4013 verified, forward IC>0 triple-barrier 0.2189, README sync 0.0051/0.0064/0.007 |
 | Orchestrator | vector-pitch / difficulty polish | 2026-08-05T04:33Z | follow-up tournament-z verify median clip, no torch | scout/vector-pitch-polish-cycle2 | in-progress |
 | Orchestrator | vector-equities / forward IC polish | 2026-08-05T05:03Z | forward 1m/3m/6m IC gate verify, leakage guard | scout/vector-equities-polish-cycle3 | in-progress |
-
-## Gotchas found the hard way (local GPU box, 2026-08-05)
-
-- **`git checkout` manufactures `artifact_freshness` FAILs.** Switching branches rewrites
-  mtimes, and a builder landing 9ms after its own output reads as STALE. Seen as
-  `bridge_index.json (0.0h behind)` — every data key byte-identical, only its `built`
-  timestamp differed. Do NOT "fix" these by rebuilding: mtime is file-granular, so each
-  rebuild cascades and pushes the NEXT artifact to 0.0h. A fresh `artifact_freshness` FAIL
-  with `0.0h behind` is checkout noise, not a regression. The real entries carry real
-  numbers (`stage2_history.json 114.3h`, `assets/unified.json 24.3h`).
-- **Never "refresh" `stage2_history.json` to green the gate.** It can only be regenerated
-  by re-running training, which overwrites `unified_stage2_best.pt`. That trades the
-  verified shipped model (sport_acc 0.6851, ckpt `b055641c03760624`) for a green line.
-- **Restore from an explicit manifest, never by inferring paths from backup filenames.**
-  Guessing sent two role-named backups (`before.json`, `unified_report.json.pre_eval`) to
-  invented paths, CREATED two junk files, printed "RESTORED" for all six, and left
-  `data/unified_report.json` holding a throwaway run's `sport_acc 0.6363`. The one file a
-  reader would quote was the one left wrong. Use `pipeline/restore_shipped.py --verify`.
-- **`t=2.31` is the n=9 paired constant.** At n=3 (df=2) the two-sided value is 4.303. I
-  published "3.9x the floor" off the wrong one across 8 stat blocks. Check the constant
-  against `scipy.stats.t.ppf(0.975, df)` — keyed on **df**, not n.
-
-Recorded here rather than in a commit message, because a commit message is not where
-anyone looks before running a command.
-
-- **`eval_unified.py --ckpt` takes a NAME, not a path.** It is joined to UCACHE
-  (pipeline/data/). LOCAL_GPU_HANDOFF section 1 says
-  `--ckpt pipeline/data/unified_stage2_best.pt`, which double-prefixes and dies with
-  FileNotFoundError on a doubled pipeline/data segment.
-  Correct: `--ckpt unified_stage2_best.pt`
-- **`train_stage2.py` writes FOUR things and the fourth is not in that file.**
-  data/stage2_baselines.json, data/stage2_history.json,
-  pipeline/data/unified_stage2_best.pt, and pipeline/data/gridiron_season_emb.npz —
-  the last written two levels down by load_encoders, behind an mtime check. Back up
-  all four before any run.
-- **data/ is gitignored here.** unified_report.json is overwritten by every eval and
-  never shows in `git status`. Hash it if you care; the working tree will not tell you.
-- **The shipped sport_acc 0.6851 is ONE draw of a `--grl-lambda 0.05` config.**
-  Diffing a 0.3-lambda run against it measures the lambda, not whatever you changed.
-  I published a cost claim built on exactly that mistake before catching it — the fix
-  was running a real control at the same seeds.
