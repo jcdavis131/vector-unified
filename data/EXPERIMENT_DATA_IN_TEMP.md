@@ -120,9 +120,21 @@ required and the docstring never named a directory.
 Everything was copied out of temp to `C:\Users\jcdav\experiment-rescue-2026-08-05\` —
 **443 files**:
 
-    hoops_ab/  ab/                                    41 files, byte-size verified one by one
-    g2run/  stage2_seed/  grid_seed/                 402 files, verified by count, 402 of 402
-    pitch_seed/  eq_sector/
+    hoops_ab/  ab/  g2run/  stage2_seed/  grid_seed/  pitch_seed/  eq_sector/
+
+and the directory carries its own `README.md` naming what each part is, so it is not an
+unlabelled folder to whoever finds it later.
+
+**Every file hashed against its source, not counted.** The first pass verified `hoops_ab`
+and `ab` by byte size and the other 402 by file COUNT — and a count matches whether or not
+a copy truncated. Redone properly:
+
+    443 files hashed on both sides
+    443 IDENTICAL (sha256)
+      0 mismatch · 0 present only in source · 0 extra
+
+For data that backs an open decision and holds the shipped model's recovery path, "the
+right number of files arrived" was a weaker claim than the thing deserved.
 
 **This is a copy, not a repair.** The seven
 scripts still point at the temp path and still break when the session closes.
