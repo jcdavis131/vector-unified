@@ -3,8 +3,8 @@
  "why": "build_pitch_age_axis.py died with UnicodeEncodeError on 'c-acute' in a footballer's name, so data/pitch_age_axis.json could not be rebuilt at all. It sat 8h STALE behind a producer that crashed on every run. Once fixed it went 411 -> 1042 rows and pct_scorable 21.2 -> 43.9, against a live page already publishing 43.8 — the crash had frozen a local artifact at under half its real coverage.",
  "claim_limit": "A missing declaration is NOT a proven crash. These fail only when a non-ASCII character actually reaches a cp1252 stdout, which depends on the data and on redirection. 1 of these was OBSERVED crashing; the rest are the same shape, not the same evidence.",
  "why_report_only": "Blocking would force a bulk mechanical edit across 42 files, and a bulk mechanical edit this session already shipped a NameError that py_compile could not see. The fix would be more dangerous than the defect. Fixing is deliberate and per-file.",
- "files_scanned": 110,
- "declared": 67,
+ "files_scanned": 111,
+ "declared": 68,
  "no_print_calls": 1,
  "undeclared": [
   {

@@ -75,6 +75,9 @@ data/*
 # The stdout-encoding gap list. Tracked because it is a BACKLOG of 42 files, not a pass/fail
 # — the value is the list surviving between sessions so it can be worked down deliberately.
 !data/stdout_encoding_audit.json
+# The record of four artifacts found holding a smaller sample than their own live
+# page publishes. Indexed from README.md; losing it loses the finding.
+!data/LOCAL_ARTIFACTS_BEHIND_PAGES.md
 # The sweep log. A row is evidence a sweep happened, including when it found nothing;
 # an ABSENT row is not "clean", it means nobody looked. That history is the artifact.
 !data/validation_sweep_log.md

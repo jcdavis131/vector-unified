@@ -67,6 +67,19 @@ def run(argv: list[str]) -> tuple[int, str]:
 # eventually removed. tennis_forward sat on this list as "blocked on the harness" until the
 # harness grew a .npz path — the reason is what made it obviously fixable rather than fixed.
 UNCOVERED_REASON = {
+    "check_stdout_encoding.py": (
+        "NOTHING TO PLANT — it is registered WITHOUT --check, so it always exits 0 and has "
+        "no red state a mutation could produce. Same shape as internal_prose, and for a "
+        "stated reason: 42 scripts print corpus text without declaring an encoding, exactly "
+        "ONE of which was observed crashing (build_pitch_age_axis.py, on the c-acute in a "
+        "footballer's name). The other 41 are the same shape, not the same evidence, and "
+        "blocking on them would force a bulk mechanical edit across 42 files — the kind "
+        "that already shipped a NameError py_compile could not see.\n"
+        "THE COST IS REAL AND WORTH NAMING: nothing verifies this checker still detects "
+        "anything. If its AST match broke it would report 0 undeclared and look identical "
+        "to a fully-declared pipeline. The mitigation is that its audit records "
+        "files_scanned and `declared` alongside the finding count, so a reader can see "
+        "67 + 42 + 1 = 110 and catch a scan that silently shrank."),
     "check_laptop_paths.py": (
         "CARRIES ITS OWN NON-VACUITY TEST, which is the same evidence a planted mutation "
         "would produce. `--selftest <commit>` re-runs the checker against that commit's "

@@ -77,6 +77,7 @@ number that will not reproduce, a bug nobody has decided to fix.
 | `CONTACTS.md` | Who the named agents are, what each can and cannot do (**only the local lanes can train**), and that the board is a lossy one-directional channel — a row here is a notification, a repo file is the record. |
 | `GOTCHAS.md` | Twelve things that cost real time, each with the command or constant that caused it. Written at root because the earlier copy lived in `COORDINATION.md` and the mirror ate it — after which several were hit a second time. |
 | `SCHEDULING.md` | How to make the validation sweep and the dashboard durable, and what the sweep deliberately refuses to run. |
+| `data/LOCAL_ARTIFACTS_BEHIND_PAGES.md` | Four artifacts found holding a far smaller sample than the number the live page publishes from them — `names_probed 300` against a published 2,707. Every one regenerated to AGREE with its page, so the page was right and the local copy was stale. Why neither gate saw it: `cited_fields` compares `value` fields and these numbers live in prose; `artifact_freshness` compares mtimes, and an mtime cannot see a sample size. |
 
 Live board: `python tools/dashboard/server.py` → `localhost:8000`. One screen, 10s refresh,
 reads git and the artifacts at request time. Run exactly one instance.

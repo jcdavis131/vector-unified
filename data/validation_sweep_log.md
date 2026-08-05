@@ -23,3 +23,4 @@ blank as a pass.
 | 2026-08-05 20:18Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 419} | pinned-venv |
 | 2026-08-05 20:52Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 419} | pinned-venv |
 | 2026-08-05 20:57Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 420} | pinned-venv |
+| 2026-08-05 21:25Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS superlatives=PASS | semantics {'files_scanned': 420} | pinned-venv |
