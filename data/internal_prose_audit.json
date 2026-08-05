@@ -1,13 +1,13 @@
 {
  "question": "Does any artifact's prose quote a number that disagrees with that same artifact's own fields?",
  "found_by": "hand, while auditing promotion gates — gate_nonvacuity.json's note_rank says the shuffles 'both score 12.4, exactly the real value' while its own three fields say 12.1.",
- "files_scanned": 174,
+ "files_scanned": 180,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 1150,
-  "STALE": 20,
-  "NEAR_NO_CLAIM": 2703,
-  "UNMATCHED": 252
+  "EXACT": 1191,
+  "STALE": 23,
+  "NEAR_NO_CLAIM": 2713,
+  "UNMATCHED": 266
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",
  "what_NEAR_NO_CLAIM_means": "near a field, but the surrounding clause makes no identity claim. Counted, NOT reported. The first version of this script had no such requirement and produced 134 hits over 75 artifacts, almost all ranges ('persistence is 0.85-0.92'), thresholds ('below the 0.01 bar') and counts ('a 200-draw simulation') — reproducing the exact false-positive failure this script's docstring cites check_cited_fields.py for.",
@@ -15,6 +15,34 @@
  "this_is_narrow_on_purpose": "Requiring an identity claim within 55 characters means a stale number written without an assertion is MISSED. Recall is not measured and is certainly below 1.0. The alternative was 134 candidates of which almost none were defects, which is worse than a known gap.",
  "a_STALE_hit_is_a_candidate_not_a_verdict": "Two unrelated quantities can sit within 5% of each other by chance. Each hit carries its context and the fields it is near so it can be judged rather than believed.",
  "findings": [
+  {
+   "file": "bridge_answers.json",
+   "repo": "vector-unified",
+   "prose_path": ".hoops_archetype_join",
+   "number_in_prose": 1.0,
+   "context": "player_idx in order and cosine 1.0000 over 2000 rows — embedding_v3.npz matches what unified_matr",
+   "near_fields": [
+    {
+     "field": ".Q3_archetype_mix_bridged_vs_not.permutation_null.p_value",
+     "value": 0.8535,
+     "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
+   "file": "bridge_answers.json",
+   "repo": "vector-unified",
+   "prose_path": ".Q3b_archetype_mix_bridged_vs_not_HOOPS.why",
+   "number_in_prose": 1.0,
+   "context": "player_idx in order and cosine 1.0000 over 2000 rows — embedding_v3.npz matches what unified_matr",
+   "near_fields": [
+    {
+     "field": ".Q3_archetype_mix_bridged_vs_not.permutation_null.p_value",
+     "value": 0.8535,
+     "why": "equal at one fewer decimal"
+    }
+   ]
+  },
   {
    "file": "g1_position_probe.json",
    "repo": "vector-unified",
@@ -69,64 +97,6 @@
     {
      "field": ".nulls.random_gaussian.G1_native_knn5_z.hoops",
      "value": 0.1488,
-     "why": "equal at one fewer decimal"
-    }
-   ]
-  },
-  {
-   "file": "gate_nonvacuity.json",
-   "repo": "vector-unified",
-   "prose_path": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.prose_says",
-   "number_in_prose": 12.4,
-   "context": "both score 12.4, exactly the real value",
-   "near_fields": [
-    {
-     "field": ".real.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".nulls.global_shuffle.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".nulls.within_sport_shuffle.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.fields_say.real",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    }
-   ]
-  },
-  {
-   "file": "gate_nonvacuity.json",
-   "repo": "vector-unified",
-   "prose_path": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.reading",
-   "number_in_prose": 12.0,
-   "context": "paring 12.4 against unified_report.json's effective_rank of 12.0 would be comparing two numbers neither of which is in this ",
-   "near_fields": [
-    {
-     "field": ".real.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".nulls.global_shuffle.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".nulls.within_sport_shuffle.G2_effective_rank",
-     "value": 12.1,
-     "why": "equal at one fewer decimal"
-    },
-    {
-     "field": ".CORRECTION_note_rank_prose_disagrees_with_this_files_own_fields.fields_say.real",
-     "value": 12.1,
      "why": "equal at one fewer decimal"
     }
    ]
@@ -218,6 +188,35 @@
    ]
   },
   {
+   "file": "roster_identity_probe.json",
+   "repo": "vector-unified",
+   "prose_path": ".CANDIDATE_2_appearance_pattern.VERDICT",
+   "number_in_prose": 0.014,
+   "context": "n bought +0.0385 retrieval; a crude scaling puts this near +0.014, which is NOT obviously above a measurement floor. Build it",
+   "near_fields": [
+    {
+     "field": ".results.gridiron.jaccard_random_same_season",
+     "value": 0.0138,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".results.gridiron.DECISIVE_stay_vs_move.jaccard_moved",
+     "value": 0.0056,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".results.hoops.jaccard_random_same_season",
+     "value": 0.0128,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".results.hoops.DECISIVE_stay_vs_move.jaccard_moved",
+     "value": 0.0075,
+     "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
    "file": "tennis_forward_report.json",
    "repo": "vector-unified",
    "prose_path": ".honest_note",
@@ -255,17 +254,17 @@
    "near_fields": [
     {
      "field": ".gridiron_by_position.RB.r",
-     "value": 0.5709,
+     "value": 0.566,
      "why": "equal at one fewer decimal"
     },
     {
      "field": ".gridiron_by_position.RB.ci95[1]",
-     "value": 0.6296,
+     "value": 0.6271,
      "why": "equal at one fewer decimal"
     },
     {
      "field": ".gridiron_by_position.TE.ci95[1]",
-     "value": 0.5606,
+     "value": 0.5618,
      "why": "equal at one fewer decimal"
     },
     {
@@ -283,18 +282,13 @@
    "context": "ear window, identical log-expectation transform): gridiron +0.3950 CI [+0.3463, +0.4433], hoops +0.4534 CI [+0.3982, +0.5047],",
    "near_fields": [
     {
-     "field": ".gridiron.lo",
-     "value": 0.3767,
-     "why": "within 5%"
-    },
-    {
      "field": ".gridiron_by_position.TE.ci95[0]",
-     "value": 0.3858,
+     "value": 0.3826,
      "why": "within 5%"
     },
     {
      "field": ".gridiron_by_position.WR.ci95[0]",
-     "value": 0.3978,
+     "value": 0.3956,
      "why": "equal at one fewer decimal"
     }
    ]
@@ -338,6 +332,20 @@
      "field": ".equities_corpus.sp500_rows",
      "value": 503.0,
      "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "seed_floor.json",
+   "repo": "vector-gridiron",
+   "prose_path": ".FINDING_the_redeploy_baseline_is_one_lucky_seed.why_this_matters",
+   "number_in_prose": 0.73,
+   "context": "e model, it is the CQS of one draw. With a CQS seed sd near 0.73 and a gate of '>= baseline' where the baseline IS the high ",
+   "near_fields": [
+    {
+     "field": ".cqs.sd_n3",
+     "value": 0.7315,
+     "why": "equal at one fewer decimal"
     }
    ]
   },
@@ -478,15 +486,44 @@
   },
   {
    "file": "seed_floor.json",
-   "repo": "vector-gridiron",
-   "prose_path": ".FINDING_the_redeploy_baseline_is_one_lucky_seed.why_this_matters",
-   "number_in_prose": 0.73,
-   "context": "e model, it is the CQS of one draw. With a CQS seed sd near 0.73 and a gate of '>= baseline' where the baseline IS the high ",
+   "repo": "vector-hoops",
+   "prose_path": ".CORRECTION_embedding_v3_backups_exist.RESOLVED_2026_08_04.result.the_live_file_before_restore",
+   "number_in_prose": 0.0246,
+   "context": "matched nothing (mean 0.0246), confirming it was the seed-31 A/B leftover",
    "near_fields": [
     {
-     "field": ".cqs.sd_n3",
-     "value": 0.7315,
-     "why": "equal at one fewer decimal"
+     "field": ".CORRECTION_paired_floor.measured_over_8_paired_seeds.test_recall.paired_sd_of_delta",
+     "value": 0.024,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "realty_mtnn_report.json",
+   "repo": "vector-realty",
+   "prose_path": ".READ_THIS_BEFORE_THE_NUMBERS",
+   "number_in_prose": 0.8342,
+   "context": "model is good. Adjacent-year cosine for the same economy is 0.8342 mean / 0.9118 median against 0.0236 for a random row — a co",
+   "near_fields": [
+    {
+     "field": ".per_seed[0]",
+     "value": 0.8346,
+     "why": "within 5%"
+    },
+    {
+     "field": ".per_seed[1]",
+     "value": 0.8487,
+     "why": "within 5%"
+    },
+    {
+     "field": ".per_seed[2]",
+     "value": 0.8222,
+     "why": "within 5%"
+    },
+    {
+     "field": ".per_seed[3]",
+     "value": 0.805,
+     "why": "within 5%"
     }
    ]
   }
