@@ -104,5 +104,27 @@
   "stage2_IS_reproducible.differ": "37 minus bit_identical. Not an independent number; stated because a reader should not have to subtract.",
   "_naming_note": "These entries name each field in the PROSE, not only in the key. An earlier version put the name only in the key and check_field_semantics.py still reported numeric_fields_compared and fields_that_differ as undocumented — correctly, because it scans string VALUES. A name that appears only as a key is a label, not an explanation.",
   "fields_that_differ": "fields_that_differ lists which numeric fields moved between the two runs, by dotted path. Present so a reader does not have to trust the bit_identical count alone."
+ },
+ "ROOT_CAUSE_FOUND": {
+  "what": "ablation.py::train_config calls torch.manual_seed(seed) AFTER constructing UnifiedTrunk and AdamW, not before. Weight initialisation therefore draws from whatever global RNG state exists at that moment. The seed controls only batch sampling; it never controls the initialisation.",
+  "evidence_order_in_ablation": [
+   "model = UnifiedTrunk(...)",
+   "opt = AdamW(...)",
+   "torch.manual_seed(seed)  <- too late",
+   "rng = np.random.default_rng(seed)"
+  ],
+  "evidence_order_in_a_repo_that_DOES_reproduce": [
+   "torch.manual_seed(s)",
+   "np.random.seed(s)",
+   "model = RealtyMTNN(...)",
+   "opt = AdamW(...)"
+  ],
+  "why_the_control_matters": "vector-realty reruns bit-identically on the same GPU with NO determinism controls at all (5 seeds, every value equal). It seeds before constructing the model. train_stage2.py, also reproducible here, does the same. That comparison is what located the bug.",
+  "hypotheses_falsified_on_the_way": {
+   "nn.Embedding atomicAdd backward": "UnifiedTrunk has two nn.Embedding layers and realty has none, so embedding backward looked like the difference. Running one epoch under use_deterministic_algorithms(True, warn_only=False) raised NO error — torch considers every op it ran deterministic. Falsified.",
+   "warn_only=True hiding a refusal, and unset CUBLAS_WORKSPACE_CONFIG": "Plausible, because the earlier attempted fix used warn_only=True with CUBLAS unset. Re-ran full@seed7 twice with warn_only=False AND CUBLAS_WORKSPACE_CONFIG=:4096:8: 0.6834 vs 0.6962, every gate field differing. Falsified."
+  },
+  "predicted_fix_NOT_APPLIED": "Move torch.manual_seed(seed) and np.random.default_rng(seed) above the UnifiedTrunk construction. NOT done here: it changes what every historical ablation number means, and the three shipped ablation artifacts were produced by the current ordering. Whoever applies it should re-run the tables, not silently reinterpret them.",
+  "does_this_invalidate_the_ablation_CONCLUSIONS": "No. The within-file comparisons were re-analysed unpaired earlier and held: full vs no_grl +0.0447 p<0.0001 SIG; no_coral +0.0008 p=0.9124 ns; no_vicreg -0.0115 p=0.1039 ns. What it explains is why full@seed7 has three different records across three artifacts."
  }
 }
