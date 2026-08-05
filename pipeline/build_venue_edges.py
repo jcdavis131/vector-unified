@@ -56,12 +56,15 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "data" / "market_cultural" / "_venue_wikitext_cache.json"
 MATCHES = ROOT / "data" / "market_cultural" / "venue_sponsors.json"
 GRID_EMB = ROOT / "pipeline" / "data" / "gridiron_season_emb.npz"
-HOOPS_META = Path(r"C:\Users\jcdav\vector-hoops\assets\player_meta.json")
-HOOPS_EMB = Path(r"C:\Users\jcdav\vector-hoops\pipeline\data\embedding_v3.npz")
+HOOPS_META = ESTATE / "vector-hoops/assets/player_meta.json"
+HOOPS_EMB = ESTATE / "vector-hoops/pipeline/data/embedding_v3.npz"
 OUT = ROOT / "data" / "venue_edges.json"
 
 # nflverse team codes. Hardcoded because they are a naming convention, not a derivable

@@ -1,6 +1,10 @@
 import torch, json
 from pathlib import Path
-HOME = Path(r"C:\Users\jcdav")
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
+HOME = ESTATE
 ck = torch.load(HOME/"vector-hoops/pipeline/data/mtnn_best.pt", map_location="cpu", weights_only=False)
 print("=== hoops checkpoint args (full) ===")
 print(json.dumps(ck["args"], indent=2, default=str))

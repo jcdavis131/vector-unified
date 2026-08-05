@@ -49,8 +49,11 @@ from pathlib import Path
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-PITCH = Path("C:/Users/jcdav/vector-pitch/assets/pitch_mtnn_embeddings.json")
+PITCH = ESTATE / "vector-pitch/assets/pitch_mtnn_embeddings.json"
 OUT = ROOT / "data" / "pitch_expectation_sources.json"
 
 ENDPOINT = "https://query.wikidata.org/sparql"

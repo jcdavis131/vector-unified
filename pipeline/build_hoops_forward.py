@@ -50,10 +50,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import build_hoops_vor_draft_value as B  # noqa: E402
 from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
 # One implementation of the estimator AND of the null, imported not copied.
 
 ROOT = Path(__file__).resolve().parent.parent
-HOOPS = Path("C:/Users/jcdav/vector-hoops/assets")
+HOOPS = ESTATE / "vector-hoops/assets"
 OUT = ROOT / "data" / "hoops_forward_report.json"
 SEED = 7
 CUT_YEAR = 2019

@@ -78,12 +78,15 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "promotion_gate_audit.json"
-HOOPS_FLOOR = Path(r"C:\Users\jcdav\vector-hoops\pipeline\seed_floor.json")
-GRID_FLOOR = Path(r"C:\Users\jcdav\vector-gridiron\pipeline\seed_floor.json")
-PITCH_FLOOR = Path(r"C:\Users\jcdav\vector-pitch\pipeline\seed_floor.json")
-EQ_AB = Path(r"C:\Users\jcdav\vector-equities\pipeline\data\ab_sector_labels.json")
+HOOPS_FLOOR = ESTATE / "vector-hoops/pipeline/seed_floor.json"
+GRID_FLOOR = ESTATE / "vector-gridiron/pipeline/seed_floor.json"
+PITCH_FLOOR = ESTATE / "vector-pitch/pipeline/seed_floor.json"
+EQ_AB = ESTATE / "vector-equities/pipeline/data/ab_sector_labels.json"
 UNIFIED_REPORT = ROOT / "data" / "unified_report.json"
 TENNIS_PROBE = ROOT / "data" / "tennis_metric_probe_enriched.json"
 

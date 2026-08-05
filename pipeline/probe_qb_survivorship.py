@@ -47,7 +47,7 @@ from math import log1p
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-GRIDIRON = Path("C:/Users/jcdav/vector-gridiron")
+GRIDIRON = ESTATE / "vector-gridiron"
 DRAFT_CSV = GRIDIRON / "pipeline" / "cache" / "draft_picks.csv"
 VECTORS = GRIDIRON / "assets" / "vectors.json"
 OUT = ROOT / "data" / "qb_survivorship_probe.json"
@@ -65,6 +65,10 @@ BUCKETS = [(1, 32, "R1"), (33, 64, "R2"), (65, 105, "R3"), (106, 262, "R4-7")]
 # had a private norm_name(); that is the same "two copies of one rule" defect as the VOR
 # series in 7.8a, at five times the scale.
 from build_vor_draft_value import norm_name  # noqa: E402
+
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
 
 
 def bucket(pick: int) -> str:

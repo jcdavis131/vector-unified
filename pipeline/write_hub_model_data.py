@@ -43,9 +43,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portable_paths import find_absolute, resolve, to_portable  # noqa: E402
+from portable_paths import ESTATE, find_absolute, resolve, to_portable  # noqa: E402
 
-HUB = Path("C:/Users/jcdav/vector-hub")
+HUB = ESTATE / "vector-hub"
 OUTDIR = HUB / "assets" / "data"
 SLUGS = {"hoops", "gridiron", "pitch", "equities", "tennis", "unified"}
 

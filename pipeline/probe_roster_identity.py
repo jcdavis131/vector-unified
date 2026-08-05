@@ -45,10 +45,13 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 GEMB = ROOT / "pipeline" / "data" / "gridiron_season_emb.npz"
-HEMB = Path(r"C:\Users\jcdav\vector-hoops\pipeline\data\embedding_v3.npz")
-HMETA = Path(r"C:\Users\jcdav\vector-hoops\assets\player_meta.json")
+HEMB = ESTATE / "vector-hoops/pipeline/data/embedding_v3.npz"
+HMETA = ESTATE / "vector-hoops/assets/player_meta.json"
 OUT = ROOT / "data" / "roster_identity_probe.json"
 
 RNG = np.random.default_rng(7)

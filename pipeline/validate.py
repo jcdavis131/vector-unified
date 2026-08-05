@@ -143,6 +143,24 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # as a FAILURE, and silently deleting it to keep the board green would be the exact
     # kind of unearned green this file exists to prevent.
     "internal_prose": (["check_internal_prose.py"], False),
+    # BLOCKING, and it earns it. portable_paths.ESTATE existed for a while and 37 path
+    # literals across 20 files ignored it — the convention was written down, applied to the
+    # published citations by migrate_hub_portable_paths.py, and then never enforced on
+    # python source. A convention with no checker is a preference.
+    #
+    # Blocking rather than report-only because it is AST-based and the precision is not a
+    # judgement call: comments are invisible to ast by construction, docstrings are excluded
+    # by node identity, and the match is anchored at the START of the string so prose ABOUT
+    # a path is not a path claim. Exactly one true false-positive exists estate-wide — the
+    # laptop path check_guards_nonvacuous.py injects on purpose — and it is exempted by file
+    # AND substring, so an accidental second path in that same file still fails.
+    #
+    # Clone-safe: it needs only `git ls-files` and the source, no untracked artifact, so it
+    # does not want the N/A prerequisite treatment the seven data-hungry checks got.
+    # Non-vacuity is testable rather than asserted: `--selftest <commit>` re-runs it against
+    # that commit's files and fails if it finds nothing, because this repo has already
+    # shipped one static scanner that passed green while matching nothing.
+    "laptop_paths": (["check_laptop_paths.py", "--check"], True),
 }
 
 # Large artifacts a check CANNOT RUN WITHOUT, declared per check.

@@ -38,9 +38,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portable_paths import find_absolute, to_portable  # noqa: E402
+from portable_paths import ESTATE, find_absolute, to_portable  # noqa: E402
 
-DATA = Path("C:/Users/jcdav/vector-hub/assets/data")
+DATA = ESTATE / "vector-hub/assets/data"
 SLUGS = ("hoops", "gridiron", "pitch", "equities", "tennis", "unified")
 
 

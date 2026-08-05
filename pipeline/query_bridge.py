@@ -64,13 +64,16 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 IDX = ROOT / "data" / "bridge_index.json"
 EDGES = ROOT / "data" / "venue_edges.json"
 UMAT = ROOT / "pipeline" / "data" / "unified_matrix.npz"
 GEMB = ROOT / "pipeline" / "data" / "gridiron_season_emb.npz"
-HEMB = Path(r"C:\Users\jcdav\vector-hoops\pipeline\data\embedding_v3.npz")
-HMETA = Path(r"C:\Users\jcdav\vector-hoops\assets\player_meta.json")
+HEMB = ESTATE / "vector-hoops/pipeline/data/embedding_v3.npz"
+HMETA = ESTATE / "vector-hoops/assets/player_meta.json"
 OUT = ROOT / "data" / "bridge_answers.json"
 
 SPORT_GRIDIRON = 1

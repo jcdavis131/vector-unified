@@ -166,8 +166,15 @@ NOT_GENERATED = {
     # produced them lives in a scratch directory and is not part of the repo, so an
     # mtime check has no producer to compare against. Reproducing them means
     # re-running that harness by hand.
-    #   tennis_hparam_sweep.json  -- sweep_tennis_hparams.py writes SC/"tennis_sweep.json"
-    #                                to scratch; this file was copied in.
+    #   tennis_hparam_sweep.json  -- this file was copied in by hand. sweep_tennis_hparams.py
+    #                                used to write its result into a SESSION scratch dir
+    #                                (a hardcoded .../Temp/claude/<session-id>/scratchpad),
+    #                                which is why there was no in-repo producer to compare
+    #                                an mtime against. That script now writes
+    #                                data/tennis_sweep.json instead. The exemption STAYS:
+    #                                the two are different files and their schemas have not
+    #                                been compared, so treating the new producer as this
+    #                                artifact's source would be a claim nobody has checked.
     #   stage2_seed_nonvacuity.json -- written by the in-place backup/restore harness
     #                                that exercised train_stage2.py --seed.
     "tennis_hparam_sweep.json",

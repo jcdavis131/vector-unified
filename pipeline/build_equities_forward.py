@@ -109,8 +109,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-REAL = Path("C:/Users/jcdav/vector-equities/assets/real_data.json")
+REAL = ESTATE / "vector-equities/assets/real_data.json"
 OUT = ROOT / "data" / "equities_forward_report.json"
 CUT_YEAR = 2021
 TARGETS = ("Profitability", "Balance_Health", "Market_Momentum")

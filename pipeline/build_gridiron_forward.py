@@ -89,8 +89,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_vor_draft_value as B  # noqa: E402
 from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-VEC = Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json")
+VEC = ESTATE / "vector-gridiron/assets/vectors.json"
 OUT = ROOT / "data" / "gridiron_forward_report.json"
 CUT_YEAR = 2018          # train on target seasons <= this, test strictly after
 MIN_GAMES = 8            # pre-registered, both sides of the pair

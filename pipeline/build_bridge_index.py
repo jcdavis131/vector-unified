@@ -54,9 +54,12 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 EDGES = ROOT / "data" / "venue_edges.json"
-EQ = Path(r"C:\Users\jcdav\vector-equities\pipeline\data")
+EQ = ESTATE / "vector-equities/pipeline/data"
 OFFICERS = EQ / "officers.json"
 UNIVERSE = EQ / "universe.json"
 OFFICER_FEATURES = EQ.parent / "officer_features.py"

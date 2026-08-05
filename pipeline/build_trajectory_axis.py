@@ -66,14 +66,17 @@ import build_vor_draft_value as G  # noqa: E402
 from build_hoops_vor_draft_value import norm_name as norm_hoops  # noqa: E402
 from build_vor_draft_value import norm_name as norm_gridiron  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-HOOPS = Path("C:/Users/jcdav/vector-hoops")
+HOOPS = ESTATE / "vector-hoops"
 PEDIGREE = HOOPS / "assets" / "pedigree.json"
 SKILLS = HOOPS / "assets" / "skills.json"
 VECTORS = HOOPS / "assets" / "vectors.json"
 UNIFIED = ROOT / "assets" / "unified.json"
 GRID_PED = ROOT / "data" / "gridiron_pedigree.json"
-GRID_VEC = Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json")
+GRID_VEC = ESTATE / "vector-gridiron/assets/vectors.json"
 OUT = ROOT / "data" / "trajectory_axis.json"
 
 IMPACT = "impact"

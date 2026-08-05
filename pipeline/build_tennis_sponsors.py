@@ -62,10 +62,13 @@ import sys
 import unicodedata
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 ENTITIES = ROOT / "data" / "tennis_entities.json"
 OUT = ROOT / "data" / "tennis_sponsors.json"
-EQUITIES = Path("C:/Users/jcdav/vector-equities/assets/universe_full_history.json")
+EQUITIES = ESTATE / "vector-equities/assets/universe_full_history.json"
 
 # Generic event vocabulary. A word here can never be a sponsor. Deliberately broad: a
 # false NEGATIVE costs one candidate, a false POSITIVE puts a common noun in a sponsor

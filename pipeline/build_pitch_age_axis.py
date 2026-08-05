@@ -51,8 +51,12 @@ from pathlib import Path
 
 import numpy as np
 
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-PITCH = Path("C:/Users/jcdav/vector-pitch")
+PITCH = ESTATE / "vector-pitch"
 MATRIX = PITCH / "pipeline" / "data" / "tm_full.npz"
 META = PITCH / "pipeline" / "data" / "meta_tm_full.json"
 EMB = PITCH / "assets" / "pitch_mtnn_embeddings.json"

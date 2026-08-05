@@ -37,13 +37,25 @@ both times. It now refuses to pass on zero coverage, so the current state is:
     fresh clone     7 PASS   2 SKIP   3 FAIL   7 N/A
     pass-here-fail-on-clone: 1, and it is a TRUE positive.
 
-THAT ONE MUST NOT BE SILENCED THE WAY THE SEVEN WERE. Those were sound checks missing a
-deliberately-untracked artifact. This is check_cited_fields.py:95 hardcoding
-HUB = Path("C:/Users/jcdav/vector-hub/assets/data") -- an absolute path into a sibling
-repo, so it is machine-specific rather than clone-specific and has verified zero values
-for every reader who is not the author. It stays FAIL until that path is resolved, which
-is an estate-wide convention call (check_hub_freshness.py and check_superlatives.py reach
-into vector-hub the same way).
+THAT ONE WAS NOT SILENCED THE WAY THE SEVEN WERE -- it was fixed at the source. It was
+check_cited_fields.py:95 hardcoding HUB = Path("C:/Users/jcdav/vector-hub/assets/data"),
+an absolute path into a sibling repo: machine-specific rather than clone-specific, so it
+had verified zero published values for every reader who is not the author while printing a
+green line. It now resolves through portable_paths.ESTATE, and the current state is:
+
+    fresh clone     9 PASS   2 SKIP   1 FAIL   9 N/A
+    pass-here-fail-on-clone: 0.  fail-in-both: artifact_freshness, a genuine open finding.
+
+RESOLVING IT WAS THE PRECONDITION FOR N/A BEING HONEST HERE. While the absolute path
+remained, "the sibling repo is missing" was a lie about the cause -- the check was broken
+on every box, not just in a clone. Once the path is derived from the repo root, a sibling
+that is genuinely absent from a temp clone directory IS the same missing-prerequisite
+condition the seven had, and reports N/A truthfully. Order matters: N/A first would have
+buried the defect.
+
+The same laptop-path defect turned out to be estate-wide rather than confined to this one
+gate -- 37 literals across 20 files, 8 of them guarded by .exists() and therefore silent.
+pipeline/check_laptop_paths.py now blocks on it.
 
 NOT REGISTERED IN validate.py, DELIBERATELY. This script runs validate.py; registering it
 inside validate.py is unbounded recursion. It is a standalone diagnostic, run by hand, and
@@ -203,17 +215,16 @@ def main() -> int:
                 "values in the working tree and 0 in the clone, and printed PASS both "
                 "times. It now refuses to pass on zero coverage, so it appears in "
                 "pass_here_fail_on_clone as a TRUE positive rather than being invisible.",
-            "the_remaining_pass_here_fail_on_clone_is_NOT_the_same_class": "The seven "
-                "entries this audit originally found were checks that work fine and lack "
-                "a deliberately-untracked artifact; they are now N/A. cited_fields is a "
-                "different defect and must not be silenced the same way: "
-                "check_cited_fields.py:95 hardcodes "
-                "HUB = Path('C:/Users/jcdav/vector-hub/assets/data'), an absolute path "
-                "into a sibling repo. It is machine-specific, not clone-specific — on any "
-                "box that is not the author's it verifies zero values. It stays FAIL "
-                "until that path is resolved properly, which is an estate-wide convention "
-                "decision (check_hub_freshness.py and check_superlatives.py reach into "
-                "vector-hub too) and not one to settle from inside this lane.",
+            "RESOLVED_the_last_pass_here_fail_on_clone": "cited_fields was the one true "
+                "positive here and it was FIXED AT THE SOURCE rather than silenced. "
+                "check_cited_fields.py:95 hardcoded an absolute path into vector-hub, so "
+                "it was machine-specific, not clone-specific, and verified zero published "
+                "values on any box that is not the author's while printing green. It now "
+                "resolves through portable_paths.ESTATE. Resolving it was the PRECONDITION "
+                "for N/A being honest: while the absolute path remained, 'the sibling repo "
+                "is missing' misstated the cause. The same defect proved estate-wide — 37 "
+                "path literals across 20 files, 8 guarded by .exists() and therefore "
+                "silent — and pipeline/check_laptop_paths.py now blocks on it.",
             "why_not_registered": "This script runs validate.py. Registering it inside "
                 "validate.py is unbounded recursion. Excluded by name in validate.py's "
                 "glob rather than silently forgotten.",

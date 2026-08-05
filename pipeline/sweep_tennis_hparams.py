@@ -16,13 +16,36 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-REPO = Path(r"C:\Users\jcdav\vector-unified")
-SC = Path(r"C:\Users\jcdav\AppData\Local\Temp\claude\C--Users-jcdav"
-          r"\be69d382-ce38-4d23-b6d1-d92c62546c02\scratchpad")
-PY = r"C:\Users\jcdav\vector-hoops\pipeline\.venv\Scripts\python.exe"
+REPO = Path(__file__).resolve().parents[1]
+
+# A FRESH TEMP DIR PER RUN, not a fixed scratch path. This was hardcoded to
+# .../Temp/claude/C--Users-jcdav/be69d382-ce38-4d23-b6d1-d92c62546c02/scratchpad — a
+# SESSION id, baked into a tracked file. Two ways that goes wrong, and the second is the
+# one that matters:
+#
+#   the directory is gone      shutil.copy2 at the backup step raises, and the sweep dies
+#                              before it retrains anything. Loud, and safe.
+#   the directory still holds  the restore below copies a *.sweepbak from some earlier
+#   stale *.sweepbak files     session back over the gate artifacts, silently reverting
+#                              them to whatever that run left. Quiet, and not safe.
+#
+# These backups only have to survive within one invocation — the restore happens in this
+# same process — so a fresh mkdtemp is strictly safer and cannot inherit another run's
+# state. It is deliberately NOT cleaned up on exit: if the sweep dies mid-run the backups
+# are the only copy of the gate artifacts, and the path is printed below.
+SC = Path(tempfile.mkdtemp(prefix="tennis_sweep_"))
+
+# The CUDA venv, resolved from the estate root rather than one laptop. Falls back to the
+# interpreter running this file, and SAYS SO, rather than dying.
+_VENV = ESTATE / "vector-hoops/pipeline/.venv/Scripts/python.exe"
+PY = str(_VENV) if _VENV.exists() else sys.executable
 REPORT = REPO / "pipeline" / "data" / "tennis_mtnn_report.json"
 REPORT2 = REPO / "data" / "tennis_mtnn_report.json"
 EMB = REPO / "pipeline" / "data" / "tennis_mtnn_embedding.npz"
@@ -82,5 +105,15 @@ if base:
         v = "inside floor" if abs(d) <= mde else ("BETTER" if d > 0 else "worse")
         print(f"  {r['name']:20} {r['mean']:>8.4f} {d:>+9.4f}  {v}")
 
-(SC / "tennis_sweep.json").write_text(json.dumps(rows, indent=1), encoding="utf-8")
-print(f"\nwrote {SC/'tennis_sweep.json'}  (gate artifact restored from backup)")
+# THE RESULT GOES IN THE REPO, the backups stay in temp. It used to write here into the
+# same session scratch dir, which is why check_artifact_freshness.py exempts
+# tennis_hparam_sweep.json with "the harness that produced them lives in a scratch
+# directory and is not part of the repo". That reason no longer holds for this file.
+#
+# NOT claiming this is the same artifact as data/tennis_hparam_sweep.json — that one was
+# copied in by hand and its schema has not been compared. Different name, its own file.
+OUT = REPO / "data" / "tennis_sweep.json"
+OUT.parent.mkdir(parents=True, exist_ok=True)
+OUT.write_text(json.dumps(rows, indent=1), encoding="utf-8")
+print(f"\nwrote {OUT}  (gate artifact restored from backup)")
+print(f"backups kept at {SC}")

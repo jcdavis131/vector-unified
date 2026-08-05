@@ -49,8 +49,12 @@ import unicodedata
 from math import log1p
 from pathlib import Path
 
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-HOOPS = Path("C:/Users/jcdav/vector-hoops")
+HOOPS = ESTATE / "vector-hoops"
 CACHE = HOOPS / "pipeline" / "cache"
 DRAFT = CACHE / "draft_history.json"
 VECTORS = HOOPS / "assets" / "vectors.json"

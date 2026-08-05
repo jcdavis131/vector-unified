@@ -61,11 +61,14 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "market_cultural" / "venue_sponsors.json"
 CACHE = ROOT / "data" / "market_cultural" / "_venue_wikitext_cache.json"
-EQ_UNIVERSE = Path(r"C:\Users\jcdav\vector-equities\pipeline\data\universe.json")
-EQ_FULL = Path(r"C:\Users\jcdav\vector-equities\pipeline\data\full_history_universe.json")
+EQ_UNIVERSE = ESTATE / "vector-equities/pipeline/data/universe.json"
+EQ_FULL = ESTATE / "vector-equities/pipeline/data/full_history_universe.json"
 
 PAGES = {
     "hoops": "List of National Basketball Association arenas",

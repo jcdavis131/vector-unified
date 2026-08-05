@@ -19,11 +19,12 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, r"C:\Users\jcdav\vector-unified\pipeline")
+_HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(_HERE))
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 from acquire_tennis import path_for, read_sheet  # noqa: E402
 
-META = r"C:\Users\jcdav\vector-unified\pipeline\data\meta_tennis_matrix.json"
+META = _HERE / "data" / "meta_tennis_matrix.json"
 meta = json.load(open(META, encoding="utf-8"))
 tours = np.array([m["tour"] for m in meta])
 

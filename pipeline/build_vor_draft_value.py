@@ -61,10 +61,14 @@ import unicodedata
 from math import log1p
 from pathlib import Path
 
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-GRID_VEC = Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json")
+GRID_VEC = ESTATE / "vector-gridiron/assets/vectors.json"
 SURV = ROOT / "data" / "qb_survivorship_probe.json"
-DRAFT_CSV = Path("C:/Users/jcdav/vector-gridiron/pipeline/cache/draft_picks.csv")
+DRAFT_CSV = ESTATE / "vector-gridiron/pipeline/cache/draft_picks.csv"
 OUT = ROOT / "data" / "vor_draft_value.json"
 
 # DECLARED LEAGUE SETTINGS — 12 teams, 1QB / 2RB / 3WR / 1TE.
@@ -189,7 +193,7 @@ def bucket(pick) -> str | None:
 
 
 COLLISIONS = Path(__file__).resolve().parent.parent / "data" / "gridiron_name_collisions.json"
-GRID_MATRIX = Path("C:/Users/jcdav/vector-gridiron/pipeline/data/train_matrix.npz")
+GRID_MATRIX = ESTATE / "vector-gridiron/pipeline/data/train_matrix.npz"
 
 
 def gsis_acquitted(seasons_of: dict) -> set[str]:

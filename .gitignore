@@ -68,6 +68,10 @@ data/*
 # checks pass here and fail on a clone, and check_cited_fields.py goes green over 0
 # values there. Losing it loses the finding, not just a report.
 !data/gate_inputs_tracked_audit.json
+# Laptop-path audit. Tracked because laptop_paths is a BLOCKING gate and this file is what
+# a reader checks to see the count is 0 rather than 0-because-nothing-was-scanned: it
+# carries files_scanned and string_literals_examined for exactly that reason.
+!data/laptop_paths_audit.json
 # The sweep log. A row is evidence a sweep happened, including when it found nothing;
 # an ABSENT row is not "clean", it means nobody looked. That history is the artifact.
 !data/validation_sweep_log.md

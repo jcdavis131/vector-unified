@@ -54,8 +54,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # artifact relative to every consumer of it. Import, never re-implement.
 from build_vor_draft_value import norm_name  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-GRIDIRON = Path("C:/Users/jcdav/vector-gridiron")
+GRIDIRON = ESTATE / "vector-gridiron"
 DRAFT_CSV = GRIDIRON / "pipeline" / "cache" / "draft_picks.csv"
 VECTORS = GRIDIRON / "assets" / "vectors.json"
 OUT = ROOT / "data" / "gridiron_pedigree.json"

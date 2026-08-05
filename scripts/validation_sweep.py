@@ -41,13 +41,16 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "pipeline"))
+from portable_paths import ESTATE  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 LOG = ROOT / "data" / "validation_sweep_log.md"
 
 # The CUDA venv is the interpreter the estate's checks are known to run under. Falls back
 # to whatever is running this file if that venv is gone, rather than dying — a sweep that
 # refuses to start reports nothing, which is worse than a sweep that reports a degraded run.
-VENV = Path("C:/Users/jcdav/vector-hoops/pipeline/.venv/Scripts/python.exe")
+VENV = ESTATE / "vector-hoops/pipeline/.venv/Scripts/python.exe"
 PY = str(VENV) if VENV.exists() else sys.executable
 
 # name -> argv. Every one verified read-only: it opens artifacts and writes at most its own
@@ -101,9 +104,18 @@ def main() -> int:
 
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
     npass = sum(1 for v in results.values() if v == "PASS")
+    # RECORD WHICH INTERPRETER RAN THE CHECKS. The fallback above is deliberate, and its
+    # comment says it "reports a degraded run" — but nothing in the row ever said so, so a
+    # degraded sweep was indistinguishable from a pinned one. Five verdicts computed under
+    # an interpreter without torch or numpy are a real value answering a different question
+    # than the one the row appears to answer.
+    #
+    # Stated positively every row rather than only on the anomaly: a convention where
+    # absence means "the pinned venv" is the same silent-default trap one layer down.
+    interp = "pinned-venv" if str(VENV) == PY else f"FALLBACK:{Path(PY).name}"
     line = (f"| {stamp} | {npass}/{len(results)} pass | "
             + " ".join(f"{k}={v}" for k, v in results.items())
-            + f" | semantics {counts or 'n/a'} |")
+            + f" | semantics {counts or 'n/a'} | {interp} |")
 
     if not LOG.exists():
         LOG.parent.mkdir(parents=True, exist_ok=True)
@@ -113,8 +125,8 @@ def main() -> int:
             "file's docstring for what is deliberately NOT run and why.\n\n"
             "A row here is evidence a sweep happened, including when it found nothing.\n"
             "An absent row is not 'clean'; it means nobody looked.\n\n"
-            "| when (UTC) | summary | per-check | semantics counts |\n"
-            "|---|---|---|---|\n", encoding="utf-8")
+            "| when (UTC) | summary | per-check | semantics counts | interpreter |\n"
+            "|---|---|---|---|---|\n", encoding="utf-8")
     with LOG.open("a", encoding="utf-8") as fh:
         fh.write(line + "\n")
 
