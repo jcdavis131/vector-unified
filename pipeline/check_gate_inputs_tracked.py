@@ -121,21 +121,46 @@ def main() -> int:
         # put back what it moves. Only TRACKED files are restored, and only to their
         # committed state — nothing untracked is touched, so a legitimately regenerated
         # audit still shows up in git status.
-        def dirty() -> set[str]:
-            r = subprocess.run(["git", "diff", "--name-only"], cwd=str(ROOT),
+        # SNAPSHOT CONTENT, RESTORE CONTENT — not `git checkout`, and not keyed on which
+        # files were dirty. The first version compared `git diff --name-only` before and
+        # after and restored only files that BECAME dirty. Tested with a file that was
+        # ALREADY dirty: validate.py destroyed the local edit, the guard skipped the file
+        # because it was in the before-set, and the run's drift was left in place —
+        # ridge16_all_features_r sitting at 0.8332 instead of 0.8427. Worst of both, and
+        # the comment claiming it "leaves pre-existing local edits alone" was simply wrong;
+        # the edit was already gone by then.
+        #
+        # Restoring to HEAD would clobber a legitimate local edit. Restoring to the PRE-RUN
+        # bytes undoes exactly what this audit did and nothing else, whatever state the
+        # tree was in when it started.
+        def snapshot() -> dict[str, bytes]:
+            r = subprocess.run(["git", "ls-files", "data", "assets"], cwd=str(ROOT),
                                capture_output=True, text=True, encoding="utf-8",
                                errors="replace")
-            return {ln.strip() for ln in (r.stdout or "").splitlines() if ln.strip()}
+            snap = {}
+            for rel in (ln.strip() for ln in (r.stdout or "").splitlines()):
+                f = ROOT / rel
+                if rel and f.is_file():
+                    try:
+                        snap[rel] = f.read_bytes()
+                    except OSError:
+                        pass
+            return snap
 
-        tracked_before = dirty()
+        before = snapshot()
         here = verdicts(ROOT)
-        tracked_after = dirty()
-        moved = sorted(tracked_after - tracked_before)
+        moved = []
+        for rel, blob in before.items():
+            f = ROOT / rel
+            try:
+                if f.is_file() and f.read_bytes() != blob:
+                    f.write_bytes(blob)
+                    moved.append(rel)
+            except OSError:
+                pass
         if moved:
-            subprocess.run(["git", "checkout", "--", *moved], cwd=ROOT,
-                           capture_output=True)
-            print(f"  restored {len(moved)} tracked artifact(s) this audit mutated: "
-                  f"{', '.join(moved[:4])}")
+            print(f"  restored {len(moved)} tracked artifact(s) this audit mutated, to "
+                  f"their PRE-RUN bytes: {', '.join(sorted(moved)[:4])}")
         there = verdicts(clone)
         n_here = len(list((ROOT / "data").glob("*")))
         n_there = len(list((clone / "data").glob("*")))
