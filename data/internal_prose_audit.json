@@ -4,8 +4,8 @@
  "files_scanned": 187,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 1253,
-  "STALE": 30,
+  "EXACT": 1245,
+  "STALE": 32,
   "NEAR_NO_CLAIM": 2770,
   "UNMATCHED": 286
  },
@@ -180,6 +180,64 @@
      "field": ".G2_sport_acc.per_seed.17",
      "value": -0.1522,
      "why": "equal at one fewer decimal"
+    }
+   ]
+  },
+  {
+   "file": "g2_centroid_ab.json",
+   "repo": "vector-unified",
+   "prose_path": ".n_is_3",
+   "number_in_prose": 0.0674,
+   "context": "nst a floor built with the n=9 constant. p=0.0118, 95% CI [-0.0674, -0.0241]. A 5-seed confirmation is the cheap next step and",
+   "near_fields": [
+    {
+     "field": ".G2_sport_acc.paired_MDE_n5",
+     "value": 0.0677,
+     "why": "within 5%"
+    },
+    {
+     "field": ".G2_sport_acc.paired_MDE_n5_WRONG",
+     "value": 0.0677,
+     "why": "within 5%"
+    },
+    {
+     "field": ".G2_delta_vs_majority.paired_MDE_n5",
+     "value": 0.0677,
+     "why": "within 5%"
+    },
+    {
+     "field": ".G2_delta_vs_majority.paired_MDE_n5_WRONG",
+     "value": 0.0677,
+     "why": "within 5%"
+    }
+   ]
+  },
+  {
+   "file": "g2_centroid_ab.json",
+   "repo": "vector-unified",
+   "prose_path": ".n_is_3",
+   "number_in_prose": 0.0241,
+   "context": "or built with the n=9 constant. p=0.0118, 95% CI [-0.0674, -0.0241]. A 5-seed confirmation is the cheap next step and was not ",
+   "near_fields": [
+    {
+     "field": ".G2_sport_acc.p_two_sided",
+     "value": 0.0251,
+     "why": "within 5%"
+    },
+    {
+     "field": ".G2_delta_vs_majority.p_two_sided",
+     "value": 0.0251,
+     "why": "within 5%"
+    },
+    {
+     "field": ".DECOMPOSITION.total_effect.se",
+     "value": 0.02437,
+     "why": "equal at one fewer decimal"
+    },
+    {
+     "field": ".DECOMPOSITION.total_effect.p_two_sided",
+     "value": 0.0251,
+     "why": "within 5%"
     }
    ]
   },

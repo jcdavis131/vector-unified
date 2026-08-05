@@ -491,10 +491,20 @@ def fix_floors() -> int:
         was = bool(v["clears_floor"])
         now = abs(m) > new
         p = float(2 * stats.t.cdf(-abs(m / se), df)) if se > 0 else 1.0
+        # THE KEY IS FOUND, NOT ASSUMED. This read v["paired_MDE_n3"] literally, which was
+        # correct when the artifact had three seeds and started raising KeyError the moment
+        # rebuild() wrote paired_MDE_n5. A documented command crashed for two commits and
+        # nothing noticed, because nothing ran the usage lines in these docstrings. Found
+        # by executing every documented invocation during close-out review.
+        mde_key = next((k for k in v if k.startswith("paired_MDE_n")
+                        and not k.endswith("_WRONG")), None)
+        if mde_key is None:
+            print(f"  skip {name}: no paired_MDE_n* key to correct")
+            continue
         # idempotent: a second run must not overwrite the preserved original with the
         # already-corrected value, which would erase the evidence of the correction.
-        v.setdefault("paired_MDE_n3_WRONG", v["paired_MDE_n3"])
-        v["paired_MDE_n3"] = round(new, 4)
+        v.setdefault(f"{mde_key}_WRONG", v[mde_key])
+        v[mde_key] = round(new, 4)
         v["margin_over_floor"] = round(abs(m) / new, 2) if new else None
         v["clears_floor"] = now
         v["p_two_sided"] = round(p, 4)
@@ -528,11 +538,13 @@ def fix_floors() -> int:
                     "decomposition -- not by anything downstream catching it.",
     }
     g2 = blocks["G2_sport_acc"]
+    _g2_mde_key = next(k for k in g2 if k.startswith("paired_MDE_n")
+                       and not k.endswith("_WRONG"))
     d["VERDICT"] = (
         f"G2 REAL. Paired mean {g2['mean_difference']:+.4f}, t={g2['mean_difference']/(g2['sd_of_differences']/math.sqrt(n)):.2f} "
         f"df={df}, p={g2['p_two_sided']}, 95% CI [{g2['ci95'][0]:+.4f}, {g2['ci95'][1]:+.4f}] "
         f"which excludes 0; {n} of {n} seeds agree in sign. That is {g2['margin_over_floor']}x "
-        f"the corrected floor {g2['paired_MDE_n3']}, NOT the 3.9x originally published "
+        f"the corrected floor {g2[_g2_mde_key]}, NOT the 3.9x originally published "
         f"against a floor built with the n=9 constant. All gates PASS on all three "
         f"treatment seeds (G1=PASS G3=PASS collapse_detector=PASS). Nothing promoted.")
     d["n_is_3"] = (
