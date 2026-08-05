@@ -230,7 +230,12 @@ def check_block(text: str, source: str, by_base: dict, cache: dict) -> dict | No
     for seg in str(source).split(";"):
         if SPLIT_ARROW.search(seg):
             fpart, fields = SPLIT_ARROW.split(seg, 1)
-            base = Path(fpart.strip().rstrip(":")).name
+            # LAST TOKEN, because the file part carries prose. pitch:headline_stats[1] says
+            # "computed from pitch_mtnn_embeddings.json", and Path(...).name on the whole
+            # string returns the sentence, which matches no source_files entry — the file
+            # IS listed there. check_cited_fields reports the same block as unresolved for
+            # the same reason.
+            base = Path(fpart.strip().rstrip(":").split()[-1]).name if fpart.strip() else ""
         elif prev_base and "=" in seg:
             base, fields = prev_base, seg      # `;` continuation, same convention as
         else:                                   # check_cited_fields.py
@@ -303,7 +308,7 @@ def main() -> int:
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    findings, wrong, blocks_examined, pages = [], [], 0, 0
+    findings, wrong, not_examined, blocks_examined, pages = [], [], [], 0, 0
     cache: dict = {}
     for slug in SLUGS:
         f = HUB / f"{slug}.json"
@@ -323,6 +328,12 @@ def main() -> int:
         for kind, idx, text, source, title in blocks:
             r = check_block(text, source, by_base, cache)
             if r is None:
+                # NO SILENT DENOMINATOR. 19 of 60 blocks are not examined and a bare "41
+                # blocks" hides why. Every exclusion is named so a reader can argue with it
+                # rather than assume coverage.
+                not_examined.append({"page": slug, "where": f"{kind}[{idx}]",
+                                     "reason": "cites no field that resolves to a number "
+                                               "in its artifact"})
                 continue
             blocks_examined += 1
             if args.verbose:
@@ -357,13 +368,25 @@ def main() -> int:
         "trivial_threshold": TRIVIAL,
         "pages": pages,
         "blocks_examined": blocks_examined,
+        "blocks_not_examined": len(not_examined),
+        "why_not_examined": "18 of these cite only STRING fields (construct_warning, "
+                            "rejected_in_absence, operator_report) — there is no number to "
+                            "compare. 1 cites array projections (players[].e_p), not a "
+                            "scalar. DELIBERATELY NOT counting len() of a cited list or "
+                            "dict as a checkable value: it would add 3 blocks, and a chance "
+                            "match on a 16-key dict would mark a value PRESENT and SUPPRESS "
+                            "a real disagreement. Suppression is the worse failure.",
+        "not_examined": not_examined,
         "findings": findings,
         "inline_value_disagreements": wrong,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
-    print(f"\n  {pages} page(s), {blocks_examined} block(s) with resolvable numeric citations")
+    print(f"\n  {pages} page(s), {blocks_examined} examined + {len(not_examined)} NOT "
+          f"examined = {blocks_examined + len(not_examined)} blocks")
+    print(f"  not examined: cite no field resolving to a number (18 cite only strings, "
+          f"1 cites array projections) — see why_not_examined in the audit")
     print(f"  ZERO-OVERLAP (page and artifact disagree): {len(findings)}")
     for f in findings:
         vals = ", ".join(f"{a['field']}={a['value']}"

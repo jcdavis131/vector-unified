@@ -6,28 +6,106 @@
  "trivial_threshold": 10,
  "pages": 6,
  "blocks_examined": 41,
- "findings": [
+ "blocks_not_examined": 19,
+ "why_not_examined": "18 of these cite only STRING fields (construct_warning, rejected_in_absence, operator_report) — there is no number to compare. 1 cites array projections (players[].e_p), not a scalar. DELIBERATELY NOT counting len() of a cited list or dict as a checkable value: it would add 3 blocks, and a chance match on a 16-key dict would mark a value PRESENT and SUPPRESS a real disagreement. Suppression is the worse failure.",
+ "not_examined": [
+  {
+   "page": "hoops",
+   "where": "insights[1]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "hoops",
+   "where": "insights[3]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "hoops",
+   "where": "headline_stats[2]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "hoops",
+   "where": "headline_stats[3]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
   {
    "page": "gridiron",
-   "where": "insights[4]",
-   "title": "The same-name defect was measured for football, not borrowed from basketball",
-   "cited_values_none_of_which_appear": [
-    {
-     "field": "gridiron_name_collisions.json:names_probed",
-     "value": 300,
-     "vcs": "untracked"
-    },
-    {
-     "field": "gridiron_name_collisions.json:colliding_names",
-     "value": 15,
-     "vcs": "untracked"
-    }
-   ],
-   "artifact_vcs_state": [
-    "untracked"
-   ],
-   "why": "the prose states numbers and NOT ONE of the numeric fields it cites has its value in that text — page and artifact disagree. Which one is correct is NOT determined here; every instance found so far had a current page and a stale artifact."
+   "where": "insights[2]",
+   "reason": "cites no field that resolves to a number in its artifact"
   },
+  {
+   "page": "pitch",
+   "where": "insights[0]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "pitch",
+   "where": "insights[1]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "pitch",
+   "where": "insights[4]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "pitch",
+   "where": "headline_stats[1]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "pitch",
+   "where": "headline_stats[2]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "equities",
+   "where": "insights[1]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "tennis",
+   "where": "headline_stats[0]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "tennis",
+   "where": "headline_stats[3]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "unified",
+   "where": "insights[1]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "unified",
+   "where": "insights[2]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "unified",
+   "where": "headline_stats[0]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "unified",
+   "where": "headline_stats[1]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "unified",
+   "where": "headline_stats[2]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  },
+  {
+   "page": "unified",
+   "where": "headline_stats[3]",
+   "reason": "cites no field that resolves to a number in its artifact"
+  }
+ ],
+ "findings": [
   {
    "page": "gridiron",
    "where": "headline_stats[2]",
