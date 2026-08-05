@@ -18,18 +18,24 @@ arithmetic on the third arm that closes that gap.
     total         = FULL - CTRL   (identically the sum; checked, not assumed)
 
 THE FLOOR IS RECOMPUTED PER EFFECT, and that is the whole point of this file. The
-headline's floor (paired MDE 0.0116) was derived from the sd of the TOTAL differences.
-A component effect has its own spread, so reusing the total's floor would be a real
-number answering a different question -- the same defect class this estate keeps finding.
-Each effect below is tested against 2.31 * sd(its own diffs) / sqrt(n).
+headline's floor was derived from the sd of the TOTAL differences. A component effect has
+its own spread, so reusing the total's floor would be a real number answering a different
+question -- the same defect class this estate keeps finding. Each effect is tested on its
+OWN differences: its own sd, its own se, its own interval.
 
-n = 3 SEEDS. 2.31 is t(0.95, df=2) one-sided; with df=2 the interval is wide and a
-component can easily land BELOW its own floor. That is a reportable outcome, not a
-failure -- "this term's contribution is not separable from noise at n=3" is the honest
-reading and is written into the artifact as such.
+EVERY CONSTANT COMES FROM scipy.stats.t.ppf(0.975, df), KEYED ON df = n-1. An earlier
+draft of this file looked its constant up by n instead, and the artifact it was written
+to correct had published 2.31 -- t(0.975, df=8), the n=9 value -- at n=3. Two off-by-one
+lookups of the same kind in the same afternoon is why nothing here hard-codes a t.
 
-    python pipeline/decompose_g2_ab.py                 # print only
-    python pipeline/decompose_g2_ab.py --write         # update data/g2_centroid_ab.json
+Results are reported as t / p / 95% CI first and the "x floor" ratio second. A ratio reads
+as a margin of safety and is one substituted constant away from being fiction; an interval
+that excludes zero is checkable against its own definition.
+
+    python pipeline/decompose_g2_ab.py --runs DIR                    # decompose, print
+    python pipeline/decompose_g2_ab.py --runs DIR --write            # + update artifact
+    python pipeline/decompose_g2_ab.py --rebuild --runs DIR --seeds 7,11,13,17,19 --write
+    python pipeline/decompose_g2_ab.py --fix-floors                  # repair old floors
 
 Reads the per-seed eval reports from the run directory (--runs), NOT from the repo:
 the arms overwrite the same four shipped write targets, so only the copies taken
@@ -67,6 +73,32 @@ HEADLINE_T_WRONG = 2.31
 HEADLINE_T_WHY = "t(0.975, df=8) -- the n=9 constant, used at n=3"
 
 
+# Artifact block -> path into unified_report.json.
+#
+# THE G1 PATHS WERE IDENTIFIED, NOT GUESSED. Each sport exposes four candidate scores
+# (native_knn5_e_s, native_knn5_z, pos_knn5_e_s, pos_knn5_z) and the artifact's block
+# names say only "G1_hoops". Picking by plausibility is how you publish a real number
+# answering a different question. Instead every candidate was differenced across the
+# 3 original seeds and compared to the per_seed values already in the artifact; exactly
+# one field reproduced them for each sport. Re-runnable: --verify-metric-map.
+METRICS: dict[str, tuple[str, ...]] = {
+    "G2_sport_acc": ("G2_sport_invariance", "sport_acc"),
+    "G2_delta_vs_majority": ("G2_sport_invariance", "delta_vs_majority"),
+    "effective_rank": ("G2_sport_invariance", "effective_rank"),
+    "G3_silhouette": ("G3_cross_sport_archetype", "silhouette"),
+    "G3_separation": ("G3_cross_sport_archetype", "separation"),
+    "G1_hoops": ("G1_per_sport_noninferiority", "hoops", "native_knn5_z"),
+    "G1_gridiron": ("G1_per_sport_noninferiority", "gridiron", "native_knn5_z"),
+    "G1_pitch": ("G1_per_sport_noninferiority", "pitch", "native_knn5_z"),
+}
+
+
+def dig(d: dict, path: tuple[str, ...]):
+    for k in path:
+        d = d[k]
+    return d
+
+
 def acc(p: Path) -> float:
     return json.loads(p.read_text(encoding="utf-8"))["G2_sport_invariance"]["sport_acc"]
 
@@ -102,6 +134,140 @@ def paired(diffs: list[float]) -> dict:
         "consistent_sign": len({d < 0 for d in diffs}) == 1,
         "diffs": [round(d, 4) for d in diffs],
     }
+
+
+CANDIDATES = ("native_knn5_e_s", "native_knn5_z", "pos_knn5_e_s", "pos_knn5_z")
+
+
+def verify_metric_map(runs: Path) -> int:
+    """Is each declared G1 source_field the UNIQUE candidate reproducing the artifact?
+
+    METRICS asserts that G1_hoops means native_knn5_z and not one of the three other
+    per-sport scores. That assertion was derived by matching, but a derivation that ran
+    once in a terminal is not a check. If someone repoints a METRICS entry, or a future
+    eval renames a field, the artifact's per_seed values and the code disagree and nothing
+    would say so.
+
+    Non-vacuity is the point: this passes only if exactly ONE candidate matches. Zero
+    matches means the map is wrong; more than one means the candidates are degenerate on
+    these seeds and the match does not identify anything, which is just as unusable.
+    """
+    d = json.loads(ART.read_text(encoding="utf-8"))
+    bad = []
+    for name, path in METRICS.items():
+        blk = d.get(name)
+        if not isinstance(blk, dict) or "per_seed" not in blk:
+            bad.append(f"{name}: no per_seed in artifact to check against")
+            continue
+        want = {k: round(float(v), 4) for k, v in blk["per_seed"].items()}
+        seeds = sorted(int(k) for k in want)
+        if path[0] != "G1_per_sport_noninferiority":
+            continue
+        sport = path[1]
+        hits = []
+        for cand in CANDIDATES:
+            got = {}
+            for s in seeds:
+                try:
+                    c = json.loads((runs / f"ctrl{s}" / "unified_report.json").read_text(encoding="utf-8"))
+                    f = json.loads((runs / f"seed{s}" / "unified_report.json").read_text(encoding="utf-8"))
+                except FileNotFoundError:
+                    got = None
+                    break
+                got[str(s)] = round(f["G1_per_sport_noninferiority"][sport][cand]
+                                    - c["G1_per_sport_noninferiority"][sport][cand], 4)
+            if got == want:
+                hits.append(cand)
+        # Four outcomes, not two. An earlier version collapsed the middle case into the
+        # ambiguity branch and reported "1 candidates match -- does not identify a field"
+        # when a mutation repointed G1_hoops at pos_knn5_z. That reads as "the data is
+        # degenerate" when the truth was "your declaration is wrong and the data says so
+        # unambiguously" -- a real message answering a different question than the one it
+        # appears to answer, in the diagnostic of a guard written against that exact bug.
+        if hits == [path[-1]]:
+            print(f"  OK      {name:<14} {path[-1]} is the unique match over {len(seeds)} seeds")
+        elif not hits:
+            bad.append(f"{name}: NO candidate reproduces the recorded per_seed. Declared "
+                       f"{path[-1]}. Either METRICS is wrong or the artifact's per_seed "
+                       f"was not built from these runs.")
+        elif len(hits) == 1:
+            bad.append(f"{name}: declared {path[-1]} but the data uniquely identifies "
+                       f"{hits[0]}. The declaration is WRONG, not ambiguous.")
+        else:
+            bad.append(f"{name}: {len(hits)} candidates match {hits} -- degenerate on "
+                       f"these seeds, so the match identifies nothing and the "
+                       f"declaration is unverified either way.")
+    if bad:
+        print("\nFAIL:\n  " + "\n  ".join(bad), file=sys.stderr)
+        return 1
+    print("  every declared G1 source_field is uniquely identified by the data")
+    return 0
+
+
+def rebuild(runs: Path, seeds: list[int], write: bool) -> int:
+    """Recompute EVERY stat block from the per-seed reports at whatever n is available.
+
+    The n=3 blocks were written by hand from three runs. Extending to n=5 by editing
+    numbers in place would be error-prone in exactly the way this file keeps documenting,
+    so the blocks are regenerated from the reports and the correction history is kept.
+    """
+    have, absent = [], []
+    for s in seeds:
+        ps = {a: runs / f"{a}{s}" / "unified_report.json" for a in ("ctrl", "lam", "seed")}
+        miss = [a for a, p in ps.items() if not p.exists()]
+        if miss:
+            absent.append({"seed": s, "arms_absent": miss})
+            continue
+        have.append((s, {a: json.loads(p.read_text(encoding="utf-8")) for a, p in ps.items()}))
+    if len(have) < 2:
+        print(f"FAIL: need >=2 complete seeds, have {len(have)}; missing {absent}",
+              file=sys.stderr)
+        return 2
+
+    n = len(have)
+    d = json.loads(ART.read_text(encoding="utf-8"))
+    print(f"  rebuilding {len(METRICS)} blocks at n={n} (df={n-1}), seeds "
+          f"{[s for s, _ in have]}")
+    flipped_vs_n3 = []
+    for name, path in METRICS.items():
+        per = {str(s): round(dig(r["seed"], path) - dig(r["ctrl"], path), 4)
+               for s, r in have}
+        e = paired([dig(r["seed"], path) - dig(r["ctrl"], path) for _, r in have])
+        was = bool(d.get(name, {}).get("clears_floor"))
+        now = bool(e["significant_p05"])
+        d[name] = {
+            "per_seed": per,
+            "mean_difference": e["mean"], "sd_of_differences": e["sd_of_diff"],
+            "df": e["df"], "paired_MDE_n%d" % n: e["paired_MDE"],
+            "margin_over_floor": e["x_floor"], "clears_floor": now,
+            "t_obs": e["t_obs"], "p_two_sided": e["p_two_sided"],
+            "ci95": e["ci95"], "source_field": ".".join(path),
+        }
+        if was != now:
+            flipped_vs_n3.append(f"{name}: {was} -> {now}")
+        print(f"  {name:<22} {e['mean']:+.4f}  p {e['p_two_sided']:.4f}  "
+              f"CI [{e['ci95'][0]:+.4f},{e['ci95'][1]:+.4f}]  "
+              f"{'SIG' if now else 'ns'}")
+
+    d["n_is_%d" % n] = (
+        f"{n} seeds, df={n-1}. Blocks regenerated from the per-seed reports rather than "
+        f"edited in place. Verdicts that changed against the n=3 version: "
+        f"{flipped_vs_n3 or 'NONE'}.")
+    d["N5_CONFIRMATION"] = {
+        "seeds": [s for s, _ in have],
+        "seeds_incomplete": absent or "none",
+        "verdict_changes_vs_n3": flipped_vs_n3 or "NONE",
+        "why": "The n=3 result flagged the coral term as one seed-pair from flipping "
+               "(p=0.0298, failing a Bonferroni 0.025). This is the confirmation run.",
+    }
+    if write:
+        ART.write_text(json.dumps(d, indent=1, ensure_ascii=False), encoding="utf-8")
+        print(f"\n  wrote {ART}")
+    else:
+        print("\n  (no --write, artifact untouched)")
+    if absent:
+        print(f"  INCOMPLETE SEEDS excluded, not silently dropped: {absent}")
+    return 0
 
 
 def fix_floors() -> int:
@@ -187,6 +353,10 @@ def fix_floors() -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--verify-metric-map", action="store_true",
+                    help="each declared G1 source_field must be the unique match")
+    ap.add_argument("--rebuild", action="store_true",
+                    help="regenerate every stat block from the per-seed reports")
     ap.add_argument("--fix-floors", action="store_true",
                     help="recompute every paired floor in the artifact with t(0.975,df)")
     ap.add_argument("--runs", help="directory holding ctrl<seed>/ lam<seed>/ seed<seed>/")
@@ -195,8 +365,20 @@ def main() -> int:
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+    if args.verify_metric_map:
+        if not args.runs:
+            print('FAIL: --verify-metric-map needs --runs', file=sys.stderr)
+            return 2
+        return verify_metric_map(Path(args.runs))
     if args.fix_floors:
         return fix_floors()
+    if args.rebuild:
+        if not args.runs:
+            print("FAIL: --rebuild needs --runs", file=sys.stderr)
+            return 2
+        rc = rebuild(Path(args.runs), [int(s) for s in args.seeds.split(",")], args.write)
+        if rc:
+            return rc
     if not args.runs:
         print("FAIL: --runs is required unless --fix-floors", file=sys.stderr)
         return 2
