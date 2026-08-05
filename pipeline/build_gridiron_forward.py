@@ -218,6 +218,14 @@ def main() -> int:
     per_pos = [w for w in scored if w["group"] in POSITIONS]
     earners = [w["group"] for w in per_pos if w["earns_its_keep"]]
 
+    # Quoted by why_per_position_is_the_finding below, so the prose cannot drift from
+    # the numbers it describes. See the comment there for what it used to say.
+    _pooled_r = next((w["persistence_r"] for w in scored
+                      if w["group"].startswith("POOLED")), None)
+    _pos_rs = [w["persistence_r"] for w in per_pos if w.get("persistence_r") is not None]
+    _pos_lo = round(min(_pos_rs), 4) if _pos_rs else None
+    _pos_hi = round(max(_pos_rs), 4) if _pos_rs else None
+
     OUT.write_text(json.dumps({
         "question": ("Does an NFL season's 18-feature profile predict next season's PPR "
                      "points-per-game beyond what this season's PPR already predicts?"),
@@ -237,13 +245,22 @@ def main() -> int:
             "real gain half the time), and QB persistence is itself the weakest at 0.4914 "
             "against 0.74-0.77 elsewhere. QB output is the least self-similar season to "
             "season, and the volume-dominated features add noise on the smallest sample."),
+        # INTERPOLATED, NOT HARDCODED. This sentence used to say "Pooled persistence is
+        # 0.7642 against per-position 0.58-0.74" — and 0.7642 appeared in NO field of the
+        # report it was written into, while the real range was 0.4914-0.7731. Annotating
+        # the ARTIFACT could not fix it: this builder regenerates
+        # gridiron_forward_report.json on every validate.py run, so the inline correction
+        # was wiped the next time the gate ran. A generated file cannot hold its own
+        # correction. Quoting the values instead of retyping them is the only form that
+        # survives a rebuild.
         "why_per_position_is_the_finding": (
             "Pooling QB/RB/WR/TE puts a 14.48-mean population beside a 5.86-mean one, and "
             "the 18 features are z-scored WITHIN SEASON ACROSS ALL FOUR positions, so "
             "PASS_ATT_PG is strongly negative for every non-QB. A ridge can recover "
             "position from them almost exactly, and 'the model knows a quarterback is a "
             "quarterback' would be reported as forecasting skill. Pooled persistence is "
-            "0.7642 against per-position 0.58-0.74 for exactly that reason."),
+            f"{_pooled_r} against per-position {_pos_lo}-{_pos_hi} for exactly that "
+            "reason."),
         "merged_name_note": (
             f"vectors.json has NO player key — `id` is a row index, 10,700 distinct over "
             f"10,700 rows, and 2,014 names own more than one. {excluded} of {len(raw)} "
