@@ -71,6 +71,10 @@ data/*
 # The sweep log. A row is evidence a sweep happened, including when it found nothing;
 # an ABSENT row is not "clean", it means nobody looked. That history is the artifact.
 !data/validation_sweep_log.md
+# The open finding that dumbmodel.com cites two artifacts git does not carry. It is
+# the record of WHY cited_fields is red; losing it on a clone leaves a failing gate
+# with no explanation, which is how a real finding gets dismissed as noise.
+!data/TENNIS_CITATION_GAP.md
 # The four forward-probe reports. A DIFFERENT reason from the four above — these ARE
 # generated, and the rule at the top of this file says generated artifacts stay out. They
 # are the exception because dumbmodel.com CITES THEM BY PATH as the source of published
