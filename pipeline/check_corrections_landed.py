@@ -44,6 +44,24 @@ does not flag a correction block that quotes nothing -- some corrections describ
 process ("the first version of this audit was incomplete") rather than replacing a
 sentence, and there is no wrong text to reach. Those are counted, not reported.
 
+THE BLIND SPOT, FOUND BY TRIPPING OVER IT AN HOUR AFTER WRITING THIS FILE. This check can
+only see an UNLANDED correction. It cannot see a DELETED one, and deletion is the routine
+case rather than the exotic one:
+
+    gate_nonvacuity.json and gridiron_forward_report.json are GENERATED. Running
+    validate.py regenerates both. The inline [CORRECTED: ...] markers and the
+    CORRECTION_* keys written into them were wiped on the next validate run -- and this
+    check went GREEN, because with the correction key gone there was nothing left to
+    check. Zero findings, for the worst possible reason.
+
+So a green here means "no correction failed to land", NOT "every correction is intact".
+The lesson is upstream of the check: A GENERATED FILE CANNOT HOLD ITS OWN CORRECTION.
+Annotating the artifact is futile; the fix belongs in the generator, and the durable form
+is to INTERPOLATE the value rather than retype it, so the prose cannot drift from the
+numbers it describes. Both files above were fixed that way — see the comments at
+check_gate_nonvacuity.py's note_rank and build_gridiron_forward.py's
+why_per_position_is_the_finding.
+
     python pipeline/check_corrections_landed.py            # report
     python pipeline/check_corrections_landed.py --check     # exit 1 if any did not land
 

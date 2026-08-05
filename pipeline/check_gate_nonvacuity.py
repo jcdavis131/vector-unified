@@ -21,7 +21,9 @@ eval_unified.py). Only ONE of them had actually been passing on a null — separ
 
 ONE QUANTITY CANNOT BE TESTED THIS WAY AT ALL, and it is reported as such rather than
 counted: G2's effective_rank is a function of the singular values, and a row permutation
-leaves the Gram spectrum untouched. Both shuffles score 12.4, exactly the real value.
+leaves the Gram spectrum untouched. Both shuffles score exactly the real value (12.1
+at the current checkpoint; the report interpolates it rather than spelling it, because
+this docstring said 12.4 for long enough that the two disagreed).
 random_gaussian moves it UP to 64.0, so a high rank is not evidence of quality either.
 rank_nondeg_pass detects collapse and nothing more.
 
@@ -300,13 +302,25 @@ def main() -> int:
             "A gate that PASSES on within_sport_shuffle is not measuring what it claims "
             "and its historical PASS must be withdrawn until it is redefined. Fixed "
             "before the first run."),
+        # INTERPOLATED, NOT HARDCODED. This sentence used to spell the rank as a literal
+        # 12.4 while the file's own fields said 12.1 — the numbers had moved and the
+        # summary had not. Annotating the ARTIFACT could not fix it: this script
+        # regenerates gate_nonvacuity.json on every validate.py run, so an inline
+        # correction written into the JSON was wiped the next time the gate ran. A
+        # generated file cannot hold its own correction; the fix has to be in the
+        # generator, and the durable form is to quote the value rather than retype it.
         "note_rank": (
             "G2's effective_rank is NOT testable by these nulls and its green must not be "
             "read as earned. Rank is a function of the singular values and a row "
-            "permutation leaves the Gram spectrum untouched — global_shuffle and "
-            "within_sport_shuffle both score 12.4, exactly the real value. Only "
-            "random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not "
-            "evidence of quality either. rank_nondeg_pass detects collapse, nothing more."),
+            "permutation leaves the Gram spectrum untouched — global_shuffle "
+            f"({null_results['global_shuffle']['G2_effective_rank']}) and "
+            "within_sport_shuffle "
+            f"({null_results['within_sport_shuffle']['G2_effective_rank']}) both score "
+            f"exactly the real value ({real['G2_effective_rank']}). Only random_gaussian "
+            f"moves it, and it moves it UP to "
+            f"{null_results['random_gaussian']['G2_effective_rank']}, so a high rank is "
+            "not evidence of quality either. rank_nondeg_pass detects collapse, nothing "
+            "more."),
         "note_G2": ("G2 has no pass/fail here on purpose — it is a leakage measure, not a "
                     "quality gate, and a null SHOULD drive sport accuracy toward the FLOOR. "
                     "Its value under each null is a sanity check on the nulls themselves: "
@@ -383,7 +397,8 @@ def main() -> int:
     print("\nno gate survives a null — every PASS above is earned,")
     print("EXCEPT effective_rank, which no permutation null can test. Rank is a function")
     print("of the singular values and a row permutation leaves them unchanged: both")
-    print("shuffles score 12.4, exactly the real value. random_gaussian moves it UP to")
+    print(f"shuffles score {real['G2_effective_rank']}, exactly the real value. "
+          f"random_gaussian moves it UP to")
     print("64.0, so a high rank is not evidence of quality either. It detects collapse.")
     print(f"\nwrote {OUT}")
     return 0
