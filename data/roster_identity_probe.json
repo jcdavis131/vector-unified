@@ -1,0 +1,73 @@
+{
+ "built": "2026-08-04T22:07:27",
+ "question": "Is a player's TEAMMATE SET the hoops/gridiron analogue of tennis's 287-wide tournament calendar — a sparse chosen set that identifies?",
+ "why_not_opponents": "The league writes the schedule. Every NBA team plays every other team, so a 30-wide opponent block is nearly constant across players and carries almost no identity. The tennis calendar identifies because the player CHOOSES it.",
+ "how_this_can_fail_stated_first": "A teammate set can fail in the OPPOSITE direction from a tennis calendar. A player who stays put keeps most of his teammates, so own-next-year overlap could be so high that the block is a franchise label wearing a roster's clothes — an identity KEY, which is exactly what probe_tennis_calendar_identity.py was written to rule out.",
+ "tennis_reference": {
+  "jaccard_own_next_year": 0.3329,
+  "jaccard_random_same_tour": 0.1782,
+  "jaccard_separation": 0.1547,
+  "pairs_with_identical_set": 0,
+  "pct_duplicated_in_same_tour_year": 24.3,
+  "median_per_player_year": 17
+ },
+ "results": {
+  "gridiron": {
+   "label": "gridiron",
+   "note": "team and season come straight off gridiron_season_emb.npz; all 5,323 rows.",
+   "n_player_seasons": 5323,
+   "median_teammates": 16,
+   "max_teammates": 22,
+   "n_consecutive_pairs": 3494,
+   "jaccard_own_next_year": 0.2659,
+   "jaccard_random_same_season": 0.0138,
+   "jaccard_separation": 0.2521,
+   "pairs_with_identical_set": 0,
+   "pct_sets_duplicated_in_same_season": 0.0,
+   "pct_duplicated_IS_A_STRUCTURAL_ZERO": "Not comparable to tennis's 24.3%. Two teammates' sets each exclude the holder, so they differ by exactly those two and can never be identical. Tennis's figure is real because two players CAN enter the same tournaments. This column measures nothing here.",
+   "DECISIVE_stay_vs_move": {
+    "n_stayed": 2513,
+    "n_moved": 981,
+    "jaccard_stayed": 0.3676,
+    "jaccard_moved": 0.0056,
+    "pct_of_stayer_overlap_retained_by_movers": 1.5,
+    "jaccard_between_two_players_on_the_SAME_roster": 0.8801
+   }
+  },
+  "hoops": {
+   "label": "hoops",
+   "note": "team via assets/player_meta.json roster map; 3385 of 12966 corpus rows covered (2015-16..2025-26 only). Keyed on player_id, NOT name — the Jaren Jackson hazard.",
+   "n_player_seasons": 3385,
+   "median_teammates": 9,
+   "max_teammates": 13,
+   "n_consecutive_pairs": 2329,
+   "jaccard_own_next_year": 0.2971,
+   "jaccard_random_same_season": 0.0128,
+   "jaccard_separation": 0.2843,
+   "pairs_with_identical_set": 0,
+   "pct_sets_duplicated_in_same_season": 0.0,
+   "pct_duplicated_IS_A_STRUCTURAL_ZERO": "Not comparable to tennis's 24.3%. Two teammates' sets each exclude the holder, so they differ by exactly those two and can never be identical. Tennis's figure is real because two players CAN enter the same tournaments. This column measures nothing here.",
+   "DECISIVE_stay_vs_move": {
+    "n_stayed": 1690,
+    "n_moved": 639,
+    "jaccard_stayed": 0.4066,
+    "jaccard_moved": 0.0075,
+    "pct_of_stayer_overlap_retained_by_movers": 1.9,
+    "jaccard_between_two_players_on_the_SAME_roster": 0.8021
+   }
+  }
+ },
+ "VERDICT": {
+  "answer": "NO. Do not build a teammate block for either sport.",
+  "the_headline_numbers_looked_BETTER_than_tennis": "separation 0.2521 gridiron and 0.2843 hoops against tennis's 0.1547, because teammate sets do not overlap by chance (random 0.0138 / 0.0128) whereas tennis calendars do (0.1782 — everyone plays the Slams). Taken alone that reads as a stronger feature than the one that gave tennis +0.0385.",
+  "the_decisive_split_kills_it": {
+   "gridiron": "stayed 0.3676 (n=2513), moved 0.0056 (n=981) — movers retain 1.5%",
+   "hoops": "stayed 0.4066 (n=1690), moved 0.0075 (n=639) — movers retain 1.9%",
+   "reading": "A tennis calendar follows the PLAYER: he picks his tournaments and takes them with him. A teammate set follows the FRANCHISE. Change team and it resets to noise."
+  },
+  "and_it_fails_the_other_way_too": "Two players on the SAME roster have Jaccard 0.8801 (gridiron) and 0.8021 (hoops). The block barely distinguishes players WITHIN a team either. So it is high-variance across the one boundary that should not matter and near-constant across the one that should.",
+  "what_it_actually_is": "A 30/32-way team label with extra steps. A team one-hot carries the same information in 32 dimensions instead of thousands, trains faster, and does not create the impression that the model learned something about the player.",
+  "cost_of_having_probed_first": "One script. The alternative was adding a thousands-wide block to two trainers, measuring a gain against a seed floor, and then having to explain a feature that is a team label — which is how vector-equities' three merged sectors survived as long as they did.",
+  "next_candidate_and_its_predicted_failure": "The set that DOES follow a team-sport player is his APPEARANCE pattern — which weeks or games he actually played, a 17-wide (gridiron) or 82-wide (hoops) binary vector driven by injury, rest and benching rather than by the league. Predicted failure, stated before measuring: for a healthy starter the vector is all ones, so it may be near-constant across exactly the players the corpus is densest in. That is a different failure from this one and needs its own probe."
+ }
+}
