@@ -94,3 +94,31 @@ own 10-seed `no_coral` ablation agrees independently: +0.0008, p=0.9111, CI [-0.
   `export_unified_stage2.py`'s own `g2_note` already warns ("a weak bar").
 - The CONTROL config breaches that shipped gate on 2 of 5 seeds (0.7782, 0.7616). For the
   untreated config the gate's verdict is seed-dependent.
+
+## One thing to weigh before deciding
+
+`data/stage2_history.json` — the training history of the SHIPPED model — was written
+2026-07-31. `pipeline/train_stage2.py` has been committed three times since:
+
+    4cdc0db  2026-08-03  7.20: Stage 2's shippability bar was unreachable
+    ecc1efa  2026-08-04  add --seed (the last trainer that could not vary its seed)
+    b0a7713  2026-08-05  implement coral_centroid_loss + the GRL lambda-target schedule
+
+So the shipped model's recorded history describes a run produced by code that is no longer
+in the tree. `check_artifact_freshness.py` reports it STALE (118.4h) and that is a TRUE
+positive, not a checker artifact.
+
+It was ALREADY stale against 4cdc0db before this lane started; the last two commits are
+mine and WIDENED the gap. An earlier note in this session called that failure
+"pre-existing, not caused by me" — half right, and corrected here.
+
+DELIBERATELY NOT CLEARED. The symbol-level exemption in `data/symbol_dep_registry.json`
+does not legitimately apply: that mechanism is for an artifact depending on a few NAMED
+SYMBOLS of a module, and this artifact is the output of the entire training procedure. The
+only honest ways to clear it are to re-run training — which produces a NEW model and
+discards the shipped checkpoint — or for the operator to accept it knowingly. Engineering
+a green line here would be the unearned green the rest of this repo exists to prevent.
+
+Practical consequence either way: promoting the G2 result means a retrain, which
+regenerates `stage2_history.json` and clears this by itself. Discarding it leaves the entry
+red until the shipped model is retrained for some other reason.
