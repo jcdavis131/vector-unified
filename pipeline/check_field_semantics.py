@@ -201,7 +201,17 @@ def check_doc(doc: dict, label: str, spans: list | None = None) -> list[dict]:
                 # players as violations, which was the arm inventing the relationship it
                 # then declared broken. Skipped and counted as an acknowledged blind spot
                 # rather than guessed at.
-                if (len(coll) == 2 and all(numeric(x) for x in coll)
+                # STRINGS COUNT AS SPANS TOO. The first version of this guard required the
+                # pair to be numeric, so vector-hoops/assets/manifest.json's
+                # `seasons: ['1996-97', '2025-26']` beside `n_seasons: 30` slipped through
+                # and was reported as a violation. 1996-97 through 2025-26 IS 30 seasons.
+                # The convention is "an ordered pair is endpoints", and it does not care
+                # whether the endpoints are numbers or labels.
+                same_type = len({type(x) for x in coll}) == 1
+                orderable = same_type and all(
+                    isinstance(x, (int, float, str)) and not isinstance(x, bool)
+                    for x in coll)
+                if (len(coll) == 2 and orderable
                         and coll[0] <= coll[1] and int(v) != 2):
                     spans.append({"file": label, "field": p, "collection": key,
                                   "why": "2-element ascending numeric list reads as a "

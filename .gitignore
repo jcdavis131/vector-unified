@@ -68,6 +68,9 @@ data/*
 # checks pass here and fail on a clone, and check_cited_fields.py goes green over 0
 # values there. Losing it loses the finding, not just a report.
 !data/gate_inputs_tracked_audit.json
+# The sweep log. A row is evidence a sweep happened, including when it found nothing;
+# an ABSENT row is not "clean", it means nobody looked. That history is the artifact.
+!data/validation_sweep_log.md
 # The four forward-probe reports. A DIFFERENT reason from the four above — these ARE
 # generated, and the rule at the top of this file says generated artifacts stay out. They
 # are the exception because dumbmodel.com CITES THEM BY PATH as the source of published
