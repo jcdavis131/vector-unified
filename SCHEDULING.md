@@ -71,3 +71,24 @@ caused by the sweep:
 - `cited_fields` — 6 published tennis values disagree with their artifact (page
   `mtnn_mean=0.1168`, artifact `0.1157`). The finding is that the published number does not
   survive a re-run. Not repairable by editing either side.
+
+## The cron that was wrong, and why it is worth writing down
+
+The first scheduled sweep instructed three commands, one of them
+`python pipeline/validate.py --offline`. That **contradicted its own hard rule** ("do NOT
+run any trainer"): `validate.py` registers `tennis_mtnn` as `train_tennis_mtnn.py --check`,
+and that arm retrains. Every sweep therefore moved `data/tennis_forward_report.json` —
+`gain_mean_across_cuts` 0.0949 -> 0.0863, observed on two separate runs — and every sweep
+had to revert it by hand.
+
+A schedule whose instructions violate its own safety rule is worse than no schedule: it
+runs unattended, and the damage is silent because the next run's diff looks like ordinary
+churn.
+
+Replaced with `scripts/validation_sweep.py --check` plus
+`pipeline/check_gate_inputs_tracked.py`. Verified after the change: a full sweep modifies
+`data/validation_sweep_log.md` and nothing else.
+
+**If you add a check to the sweep, run it once and diff `git status` across every repo in
+the estate before trusting it.** "It looks read-only" is exactly the assumption that caused
+both the sibling-repo damage and this one.
