@@ -284,7 +284,7 @@
    }
   }
  },
- "VERDICT": "G2 drops. Paired mean -0.0851, t=-3.49, df=4, p=0.0251, 95% CI [-0.1527, -0.0174]; 5 of 5 seeds agree in sign. BUT THE MEAN IS THE WRONG SUMMARY: the treated arm is near-constant (sd 0.0030) while the control spans 0.6614-0.7782 (sd 0.0564), a 343x variance ratio (F-test p=0.00005). The treatment CLAMPS G2 to a floor; the headline difference is a fact about which controls were drawn. The lambda schedule is 66% of it and is significant (p=0.0122); the coral/centroid term is NOT (p=0.0659). Nothing promoted. The n=3 floors this file once published were CORRECTED — see CORRECTION_the_paired_floor_constant_was_the_n9_one; every constant here now comes from scipy.stats.t.ppf(0.975, df).",
+ "VERDICT": "SPORT IS NO LONGER DECODABLE ABOVE THE BASE RATE under the full treatment. That is the result; the paired difference is not. Residual decodability (sport_acc minus majority_class_share) is -0.0022 with 95% CI [-0.0060, +0.0016] — bounded at +0.0016. The control is decodable at +0.0829 (p=0.0304). The lambda-only arm is UNDETERMINED, not at the floor: its upper bound is +0.0613. THE PAIRED MEAN IS THE WRONG SUMMARY of this experiment (-0.0851, p=0.0251, 5/5 seeds): the treated arm is pinned at the floor (sd 0.0030) while the control spans 0.6614-0.7782 (sd 0.0564), a 343x variance ratio (F p=0.00005) that is a floor effect, so the difference measures which controls were drawn. The lambda schedule is 66% of it and is significant (p=0.0122); the coral/centroid term is NOT (p=0.0659). Nothing promoted. The n=3 floors this file once published were CORRECTED — see CORRECTION_the_paired_floor_constant_was_the_n9_one; every constant here now comes from scipy.stats.t.ppf(0.975, df).",
  "CORRECTION_the_costs_were_a_BASELINE_ARTIFACT": "Before the control ran I reported G3 silhouette -0.0610 and G1 hoops -0.0201 as the price of sport-blindness, measured against the shipped 0.6851 report. Both vanish under pairing: G3 silhouette -0.0154 with sd_of_differences 0.0309 (inside its own noise) and G1 hoops +0.0006 with sd 0.0081 (nil). The shipped baseline was ONE draw of a DIFFERENT config — it uses --grl-lambda 0.05, not 0.3 — so differences against it were never attributable to the flags under test. Three treatment seeds against one baseline run is the same asymmetry this repo keeps finding, and I published it before catching it.",
  "WHAT_THIS_DOES_NOT_ISOLATE": "The paired effect is the COMBINED effect of all three flags. The control ramps lambda 0 -> 0.3; the treatment ramps 0.3 -> 0.5 AND adds both coral terms. Separating the centroid term from the lambda schedule needs a third arm that was not run. The shipped 0.6851 (lambda 0.05) vs this control's 0.6679 mean suggests the lambda increase alone already moves G2, so attributing all -0.0458 to the centroid term would be wrong.",
  "n_is_3": "SUPERSEDED by n_is_5. Kept because a CORRECTION_ block declares this field as its target, and removing a correction's target is not the same as landing the correction. Original meaning: the seed count and floor discussion for the 3-seed version of this artifact, whose floors were built with the wrong t constant.",
@@ -520,5 +520,71 @@
    "lambda_schedule": "CONFIRMED. p 0.0094 -> 0.0122, still significant, still the majority of the effect (78% at n=3, 66% at n=5).",
    "headline_G2": "CONFIRMED IN SIGN, but the magnitude nearly doubled (-0.0458 -> -0.0851) purely because 2 of 5 controls landed in a high basin. See VARIANCE_CLAMP_reframes_the_headline: the treated arm is near-constant, so this mean is a fact about the control draw, not a stable effect size."
   }
+ },
+ "FLOOR_ANALYSIS_is_sport_still_decodable_at_all": {
+  "question": "Not 'did G2 drop' but 'is sport decodable above the majority-class base rate (0.6258) at all'. A drop of any size is uninteresting if the arm is still decodable, and a drop is unnecessary if it is already at the floor.",
+  "per_arm": {
+   "ctrl": {
+    "values": [
+     0.0356,
+     0.0402,
+     0.0504,
+     0.1524,
+     0.1358
+    ],
+    "mean": 0.0829,
+    "sd": 0.0564,
+    "t_obs": 3.28,
+    "p_two_sided": 0.0304,
+    "ci95": [
+     0.0128,
+     0.153
+    ],
+    "decodable_above_base_rate": true,
+    "upper_95_bound_on_residual_decodability": 0.153
+   },
+   "lam": {
+    "values": [
+     0.0069,
+     0.0021,
+     0.0105,
+     0.0588,
+     0.0552
+    ],
+    "mean": 0.0267,
+    "sd": 0.0278,
+    "t_obs": 2.14,
+    "p_two_sided": 0.0987,
+    "ci95": [
+     -0.0079,
+     0.0613
+    ],
+    "decodable_above_base_rate": false,
+    "upper_95_bound_on_residual_decodability": 0.0613
+   },
+   "seed": {
+    "values": [
+     -0.0008,
+     -0.0071,
+     -0.0032,
+     0.0002,
+     -0.0001
+    ],
+    "mean": -0.0022,
+    "sd": 0.003,
+    "t_obs": -1.61,
+    "p_two_sided": 0.1817,
+    "ci95": [
+     -0.006,
+     0.0016
+    ],
+    "decodable_above_base_rate": false,
+    "upper_95_bound_on_residual_decodability": 0.0016
+   }
+  },
+  "reading": "CTRL is decodable above the base rate (p=0.0304). FULL is not, and its interval is TIGHT: residual decodability is at most +0.0016. That is evidence of absence, not merely absence of evidence.",
+  "LAM_and_FULL_are_not_the_same_null": "Both fail to reject at 0.05, and treating that as 'both reached the floor' would be wrong. LAM's upper bound is +0.0613; FULL's is +0.0016, about 38x tighter. LAM is UNDETERMINED -- it could still be substantially decodable and this n cannot tell. FULL is bounded.",
+  "does_this_rescue_the_coral_term": "NO, and it must not be read that way. The paired coral effect is still p=0.0659, which does not clear 0.05. What this adds is that the ARM CONTAINING the coral terms is demonstrably at the floor while the lambda-only arm is not demonstrably anywhere. Those are different claims and only the first is established.",
+  "explains_the_variance_clamp": "The 343x variance ratio is a FLOOR EFFECT, not a mysterious basin: an arm sitting on the majority-class base rate cannot vary downward, so its spread collapses. The control has room to wander and does."
  }
 }

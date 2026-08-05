@@ -4,9 +4,9 @@
  "files_scanned": 183,
  "files_unreadable": [],
  "prose_numbers_classified": {
-  "EXACT": 1234,
+  "EXACT": 1240,
   "STALE": 26,
-  "NEAR_NO_CLAIM": 2756,
+  "NEAR_NO_CLAIM": 2758,
   "UNMATCHED": 272
  },
  "what_STALE_means": "matches NO field exactly, but is within rounding at one fewer decimal place of a field, or within 5% of one. That is the shape a number takes when the artifact was regenerated and its summary was not.",

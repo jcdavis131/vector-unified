@@ -278,6 +278,64 @@ def rebuild(runs: Path, seeds: list[int], write: bool) -> int:
     F = st.variance(arms["ctrl"]) / st.variance(arms["seed"])
     pF = 2 * min(_st.f.cdf(F, n - 1, n - 1), 1 - _st.f.cdf(F, n - 1, n - 1))
 
+    # THE LEVEL QUESTION, which the paired difference cannot answer.
+    #
+    # G2_delta_vs_majority was tracked as a paired DIFFERENCE, which asks "how much did
+    # the gap over the base rate change". Because majority_class_share is constant across
+    # arms, that difference is numerically identical to the sport_acc difference, so the
+    # block looked redundant and nobody read its LEVEL. But the level is the question the
+    # whole experiment is about: is sport still decodable above the base rate at all?
+    #
+    # A real value answering a different question than the one it appears to answer --
+    # this time by being correct, present, and read as a duplicate.
+    floors = {}
+    for a in ("ctrl", "lam", "seed"):
+        v = [dig(r[a], ("G2_sport_invariance", "delta_vs_majority")) for _, r in have]
+        m, sd = st.mean(v), st.stdev(v)
+        se = sd / math.sqrt(n)
+        t = m / se if se > 0 else float("inf")
+        p = float(2 * _st.t.cdf(-abs(t), n - 1))
+        half = float(_st.t.ppf(0.975, n - 1)) * se
+        floors[a] = {
+            "values": [round(x, 4) for x in v],
+            "mean": round(m, 4), "sd": round(sd, 4),
+            "t_obs": round(t, 2), "p_two_sided": round(p, 4),
+            "ci95": [round(m - half, 4), round(m + half, 4)],
+            "decodable_above_base_rate": bool(p < 0.05),
+            "upper_95_bound_on_residual_decodability": round(m + half, 4),
+        }
+    d["FLOOR_ANALYSIS_is_sport_still_decodable_at_all"] = {
+        "question": "Not 'did G2 drop' but 'is sport decodable above the majority-class "
+                    "base rate (%.4f) at all'. A drop of any size is uninteresting if the "
+                    "arm is still decodable, and a drop is unnecessary if it is already "
+                    "at the floor." % dig(have[0][1]["ctrl"],
+                                          ("G2_sport_invariance", "majority_class_share")),
+        "per_arm": floors,
+        "reading": "CTRL is decodable above the base rate (p=%.4f). FULL is not, and its "
+                   "interval is TIGHT: residual decodability is at most %+.4f. That is "
+                   "evidence of absence, not merely absence of evidence."
+                   % (floors["ctrl"]["p_two_sided"],
+                      floors["seed"]["upper_95_bound_on_residual_decodability"]),
+        "LAM_and_FULL_are_not_the_same_null": "Both fail to reject at 0.05, and treating "
+            "that as 'both reached the floor' would be wrong. LAM's upper bound is %+.4f; "
+            "FULL's is %+.4f, about %.0fx tighter. LAM is UNDETERMINED -- it could still "
+            "be substantially decodable and this n cannot tell. FULL is bounded."
+            % (floors["lam"]["upper_95_bound_on_residual_decodability"],
+               floors["seed"]["upper_95_bound_on_residual_decodability"],
+               floors["lam"]["upper_95_bound_on_residual_decodability"]
+               / max(abs(floors["seed"]["upper_95_bound_on_residual_decodability"]), 1e-9)),
+        "does_this_rescue_the_coral_term": "NO, and it must not be read that way. The "
+            "paired coral effect is still p=%s, which does not clear 0.05. What this adds "
+            "is that the ARM CONTAINING the coral terms is demonstrably at the floor "
+            "while the lambda-only arm is not demonstrably anywhere. Those are different "
+            "claims and only the first is established."
+            % (d.get("DECOMPOSITION", {}).get("coral_effect", {}).get("p_two_sided",
+                                                                      "not computed")),
+        "explains_the_variance_clamp": "The %.0fx variance ratio is a FLOOR EFFECT, not a "
+            "mysterious basin: an arm sitting on the majority-class base rate cannot vary "
+            "downward, so its spread collapses. The control has room to wander and does."
+            % F,
+    }
     g2b = d["G2_sport_acc"]
     agree = sum(1 for v in g2b["per_seed"].values()
                 if (v < 0) == (g2b["mean_difference"] < 0))
@@ -289,18 +347,25 @@ def rebuild(runs: Path, seeds: list[int], write: bool) -> int:
                f"term is NOT (p={dec['coral_effect']['p_two_sided']})."
                if dec else "Decomposition not yet computed for this seed set — run "
                            "without --rebuild to produce it.")
+    fl = d["FLOOR_ANALYSIS_is_sport_still_decodable_at_all"]["per_arm"]
     d["VERDICT"] = (
-        f"G2 drops. Paired mean {g2b['mean_difference']:+.4f}, t={g2b['t_obs']}, "
-        f"df={g2b['df']}, p={g2b['p_two_sided']}, 95% CI "
-        f"[{g2b['ci95'][0]:+.4f}, {g2b['ci95'][1]:+.4f}]; {agree} of {n} seeds agree in "
-        f"sign. BUT THE MEAN IS THE WRONG SUMMARY: the treated arm is near-constant "
-        f"(sd {sds['seed']:.4f}) while the control spans "
-        f"{min(arms['ctrl']):.4f}-{max(arms['ctrl']):.4f} (sd {sds['ctrl']:.4f}), a "
-        f"{F:.0f}x variance ratio (F-test p={pF:.5f}). The treatment CLAMPS G2 to a "
-        f"floor; the headline difference is a fact about which controls were drawn. "
-        f"{dec_txt} Nothing promoted. The n=3 floors this file once published were "
-        f"CORRECTED — see CORRECTION_the_paired_floor_constant_was_the_n9_one; every "
-        f"constant here now comes from scipy.stats.t.ppf(0.975, df).")
+        f"SPORT IS NO LONGER DECODABLE ABOVE THE BASE RATE under the full treatment. "
+        f"That is the result; the paired difference is not. Residual decodability "
+        f"(sport_acc minus majority_class_share) is {fl['seed']['mean']:+.4f} with 95% CI "
+        f"[{fl['seed']['ci95'][0]:+.4f}, {fl['seed']['ci95'][1]:+.4f}] — bounded at "
+        f"{fl['seed']['upper_95_bound_on_residual_decodability']:+.4f}. The control is "
+        f"decodable at {fl['ctrl']['mean']:+.4f} (p={fl['ctrl']['p_two_sided']}). The "
+        f"lambda-only arm is UNDETERMINED, not at the floor: its upper bound is "
+        f"{fl['lam']['upper_95_bound_on_residual_decodability']:+.4f}. "
+        f"THE PAIRED MEAN IS THE WRONG SUMMARY of this experiment "
+        f"({g2b['mean_difference']:+.4f}, p={g2b['p_two_sided']}, {agree}/{n} seeds): the "
+        f"treated arm is pinned at the floor (sd {sds['seed']:.4f}) while the control "
+        f"spans {min(arms['ctrl']):.4f}-{max(arms['ctrl']):.4f} (sd {sds['ctrl']:.4f}), a "
+        f"{F:.0f}x variance ratio (F p={pF:.5f}) that is a floor effect, so the "
+        f"difference measures which controls were drawn. {dec_txt} Nothing promoted. The "
+        f"n=3 floors this file once published were CORRECTED — see "
+        f"CORRECTION_the_paired_floor_constant_was_the_n9_one; every constant here now "
+        f"comes from scipy.stats.t.ppf(0.975, df).")
     d["VARIANCE_CLAMP_reframes_the_headline"] = {
         "per_arm": {a: {"mean": round(st.mean(v), 4), "sd": round(sds[a], 4),
                         "range": [round(min(v), 4), round(max(v), 4)],
