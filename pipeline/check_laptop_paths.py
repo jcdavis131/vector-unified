@@ -59,12 +59,22 @@ SIX OF THOSE HARDCODE A SESSION SCRATCHPAD and are on a clock:
 
 That id is the CURRENT session. The directory exists right now, which is exactly why
 nothing has failed and why nobody noticed — these scripts work today and break the moment
-the session ends. Same defect as sweep_tennis_hparams.py, which was fixed here with
-tempfile.mkdtemp() per run; it turns out the pattern had already propagated to two sibling
-repos, one of which is the live-site repo.
+the session ends.
 
-NOT FIXED FROM HERE. Those are other repos' lanes, and vector-hoops master is a deploy.
-The fix is known and proven, and it is one commit in each repo — the operator's call.
+THE FIX IS NOT THE ONE USED IN sweep_tennis_hparams.py, and this docstring said it was.
+That script backed up and restored inside ONE run, so tempfile.mkdtemp() per run is
+strictly safer there. These use the directory as a workspace shared ACROSS scripts and
+ACROSS runs — rejudge_paired.py reads ab_results.json, seedfloor.json and relweight04.json
+written by other scripts in earlier runs — so mkdtemp would hand it an empty directory and
+fail on the first open(). Same defect, different fix.
+
+The directory also held 41 files, 31 MB, including six analysis scripts that exist in NO
+repository and the .shipped backups of live artifacts. Rescued to
+C:/Users/jcdav/experiment-rescue-2026-08-05; see data/EXPERIMENT_DATA_IN_TEMP.md.
+
+NOT FIXED FROM HERE. Other repos' lanes, and vector-hoops master is a deploy. The real fix
+is a durable per-repo experiments directory, which is a decision about what belongs in
+history — the operator's call.
 
     python pipeline/check_laptop_paths.py
     python pipeline/check_laptop_paths.py --check              # exit 1 on any finding

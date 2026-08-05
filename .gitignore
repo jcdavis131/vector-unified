@@ -76,6 +76,9 @@ data/*
 # (113 files, 0 findings); this is 358 files across 8 repos with 19. One path for both
 # would mean the committed artifact says 113 or 358 depending on who ran last.
 !data/laptop_paths_estate_audit.json
+# The record that two repos' A/B experiment data lived in a session temp dir, what was
+# in it, and where it was rescued to. Indexed from README; losing it loses the finding.
+!data/EXPERIMENT_DATA_IN_TEMP.md
 # The stdout-encoding gap list. Tracked because it is a BACKLOG of 42 files, not a pass/fail
 # — the value is the list surviving between sessions so it can be worked down deliberately.
 !data/stdout_encoding_audit.json
