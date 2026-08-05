@@ -84,7 +84,31 @@ SCAN_DIRS = [ROOT / "data", ROOT / "data" / "market_cultural"]
 for _sib in ("vector-hoops", "vector-gridiron", "vector-pitch", "vector-equities"):
     SCAN_DIRS += [ESTATE / _sib / "pipeline" / "data", ESTATE / _sib / "pipeline"]
 
-CORRECTION_KEY = re.compile(r"CORRECTION|CORRECTED|SUPERSEDED", re.I)
+# UPPERCASE PREFIX, AND THE VALUE MUST BE PROSE. The first version matched any key
+# CONTAINING correction/corrected/superseded, case-insensitively, and reported 20
+# "correction blocks". Enumerating them showed most were not corrections at all:
+#
+#   .superseded_shuffled_target_null_r    a retained VALUE (float). The old number kept
+#                                         beside the new one, self-documenting by name.
+#                                         There is no sentence to reach.
+#   .gates[2].corrected_arm               a data field in promotion_gate_audit.json --
+#                                         "corrected" as an adjective for the fixed arm
+#                                         of an A/B, not a correction.
+#   .baseline_correction_note             lowercase prose about a baseline, not a block
+#                                         announcing that a claim in this file is wrong.
+#
+# So "1 declared of 20" understated coverage by counting fourteen non-corrections into
+# the denominator -- a real value answering a different question than the one it appears
+# to answer, in the metric this file reports about itself.
+#
+# The convention actually used for a correction BLOCK is an UPPERCASE prefix, and its
+# value is a dict or a string. A float named SUPERSEDED_x is a kept value; a lowercase
+# key is ordinary prose.
+CORRECTION_KEY = re.compile(r"^(CORRECTION|CORRECTED|SUPERSEDED)")
+
+
+def is_correction_block(key: str, val) -> bool:
+    return bool(CORRECTION_KEY.match(key)) and isinstance(val, (dict, str))
 
 # Fields inside a correction block that quote the wrong claim verbatim.
 QUOTE_FIELDS = ("prose_says", "corrects", "verdict_as_shipped", "was", "old",
@@ -98,10 +122,10 @@ MIN_FRAGMENT = 25
 
 
 def walk(obj, path=""):
-    """(path, key, value) for every dict entry in the document."""
+    """(path, key, value, containing_dict) for every dict entry in the document."""
     if isinstance(obj, dict):
         for k, v in obj.items():
-            yield path, k, v
+            yield path, k, v, obj
             yield from walk(v, f"{path}.{k}")
     elif isinstance(obj, list):
         for i, v in enumerate(obj):
@@ -124,7 +148,7 @@ def all_strings(obj, path="", skip_prefix=None):
     return out
 
 
-def declared_target(block):
+def declared_target(block, key=None, parent_obj=None):
     """The document path a correction says it corrects, if it says.
 
     THE VERBATIM-QUOTE ARM IS NOT ENOUGH, and a mutation proved it rather than an
@@ -150,7 +174,25 @@ def declared_target(block):
     if isinstance(block, dict):
         v = block.get("corrects_field")
         if isinstance(v, str) and v.strip():
-            return v.strip()
+            return [v.strip()]
+        # A LIST, because one notice can supersede several fields.
+        # trajectory_sport_comparison.json says "THIS COMPARISON IS REFUTED. Do not
+        # quote its verdict" at the top while carrying three separate verdict fields;
+        # two of them read as live conclusions to anyone landing on them directly.
+        if isinstance(v, list):
+            out = [x.strip() for x in v if isinstance(x, str) and x.strip()]
+            return out or None
+    # A STRING block cannot hold a field, so its declaration lives in a SIBLING key
+    # named "<KEY>_corrects_field". Scoped to the block by name rather than a bare
+    # sibling `corrects_field`, so two string corrections in one object cannot claim
+    # each other's targets.
+    if key and isinstance(parent_obj, dict):
+        v = parent_obj.get(f"{key}_corrects_field")
+        if isinstance(v, str) and v.strip():
+            return [v.strip()]
+        if isinstance(v, list):
+            out = [x.strip() for x in v if isinstance(x, str) and x.strip()]
+            return out or None
     return None
 
 
@@ -205,17 +247,35 @@ def main() -> int:
             repo = f.resolve().relative_to(ESTATE).parts[0]
         except ValueError:
             repo = "?"
-        for parent, key, val in walk(doc):
-            if not CORRECTION_KEY.search(key):
+        for parent, key, val, parent_obj in walk(doc):
+            if not is_correction_block(key, val):
                 continue
             n_blocks += 1
             block_path = f"{parent}.{key}"
 
             # ARM 1 (exact): the block declares which field it corrects.
-            tgt = declared_target(val)
-            if tgt:
+            tgts = declared_target(val, key, parent_obj)
+            if tgts:
                 n_declared += 1
-                text = resolve_path(doc, tgt)
+                bad = []
+                for tgt in tgts:
+                    text = resolve_path(doc, tgt)
+                    if text is None:
+                        bad.append({"claim_fragment": f"(declared target {tgt!r})",
+                                    "still_asserted_at": tgt,
+                                    "context": "corrects_field names a path that does "
+                                               "not exist or is not a string"})
+                    elif not MARKER.search(text):
+                        bad.append({"claim_fragment": f"(declared target {tgt!r})",
+                                    "still_asserted_at": tgt, "context": text[:200]})
+                if bad:
+                    findings.append({"repo": repo, "file": f.name,
+                                     "correction_key": block_path, "unlanded": bad})
+                else:
+                    n_landed += 1
+                continue
+            if False:
+                text = None
                 if text is None:
                     findings.append({
                         "repo": repo, "file": f.name, "correction_key": block_path,

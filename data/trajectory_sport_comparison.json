@@ -1,0 +1,100 @@
+{
+  "hoops": {
+    "n": 1293,
+    "r": 0.2611,
+    "lo": 0.2045,
+    "hi": 0.3157,
+    "reps": 10000
+  },
+  "gridiron": {
+    "n": 1156,
+    "r": 0.4175,
+    "lo": 0.3692,
+    "hi": 0.4637,
+    "reps": 10000
+  },
+  "gridiron_by_position": {
+    "RB": {
+      "n": 313,
+      "r": 0.566,
+      "ci95": [
+        0.5031,
+        0.6271
+      ],
+      "ci_includes_zero": false,
+      "expect_sd": 0.1927,
+      "expect_iqr": 0.2875,
+      "delivery_sd": 23.07,
+      "delivery_iqr": 35.21,
+      "undrafted_pct": 25.9
+    },
+    "TE": {
+      "n": 249,
+      "r": 0.4767,
+      "ci95": [
+        0.3826,
+        0.5618
+      ],
+      "ci_includes_zero": false,
+      "expect_sd": 0.1534,
+      "expect_iqr": 0.2302,
+      "delivery_sd": 22.43,
+      "delivery_iqr": 35.91,
+      "undrafted_pct": 21.7
+    },
+    "QB": {
+      "n": 116,
+      "r": 0.1224,
+      "ci95": [
+        -0.0532,
+        0.2885
+      ],
+      "ci_includes_zero": true,
+      "expect_sd": 0.313,
+      "expect_iqr": 0.6012,
+      "delivery_sd": 18.42,
+      "delivery_iqr": 28.85,
+      "undrafted_pct": 10.3
+    },
+    "WR": {
+      "n": 454,
+      "r": 0.4688,
+      "ci95": [
+        0.3956,
+        0.5373
+      ],
+      "ci_includes_zero": false,
+      "expect_sd": 0.1964,
+      "expect_iqr": 0.3116,
+      "delivery_sd": 21.94,
+      "delivery_iqr": 32.0,
+      "undrafted_pct": 20.9
+    }
+  },
+  "position_stratification_verdict": "[SUPERSEDED — see the SUPERSEDED key in this file: the whole comparison is refuted, because it puts hoops `impact` percentile against gridiron fantasy PPR percentile. Read this as a record of what was concluded, not as a finding.] The gap is NOT pool composition. Every gridiron position except QB exceeds hoops' pooled r, so splitting by position does not collapse the difference. A composition artefact would have shown one dominant position carrying the pooled number; instead the pooled number is DRAGGED DOWN by its smallest group.",
+  "qb_verdict": "[SUPERSEDED — see the SUPERSEDED key in this file.] QB r=+0.12 with a 95% CI that INCLUDES ZERO — draft slot has no detectable relationship with fantasy delivery at quarterback — while RB is +0.57 with a non-overlapping CI. RESTRICTED RANGE WAS THE OBVIOUS MECHANICAL EXPLANATION AND IT IS REFUTED, INVERTED: QB has the WIDEST spread in draft expectation of any position (sd 0.313 and IQR 0.601, against ~0.15-0.20 and 0.23-0.30 elsewhere). Attenuation from a narrow predictor would require the opposite. Teams spend draft capital on quarterbacks across the whole board, and among those who last four fantasy-relevant seasons, where they were taken tells you nothing.",
+  "qb_remaining_alternative": "[SUPERSEDED — see the SUPERSEDED key in this file.] SURVIVORSHIP, and it is not excluded. A high-pick QB who busts is benched quickly and never reaches four charted seasons, so the surviving QB pool is more heavily selected on delivery than any other position — exactly the selection that would flatten this correlation. The undrafted share at QB is 10.3% against 20-25% elsewhere, consistent with a pool that is mostly drafted players who survived. Testing this needs the players who left, which this dataset does not contain.",
+  "undrafted_share": {
+    "gridiron": 20.9,
+    "hoops": 15.2
+  },
+  "difference_gridiron_minus_hoops": {
+    "point": 0.1564,
+    "ci95": [
+      0.0838,
+      0.2287
+    ],
+    "excludes_zero": true
+  },
+  "resamples": 10000,
+  "seed": 7,
+  "SUPERSEDED_corrects_field": [
+    "position_stratification_verdict",
+    "qb_verdict",
+    "qb_remaining_alternative"
+  ],
+  "SUPERSEDED": "THIS COMPARISON IS REFUTED. Do not quote its verdict. It compares hoops `impact` percentile against gridiron fantasy PPR percentile — different constructs, which was logged as the binding caveat (7.7b) and turned out to be the whole finding. Rebuilt on MATCHED constructs (fantasy VOR, floored, 5-year window, identical log-expectation transform): gridiron +0.3950 CI [+0.3463, +0.4433], hoops +0.4534 CI [+0.3982, +0.5047], gap -0.0584 CI [-0.1296, +0.0156] which DOES NOT exclude zero. The difference reverses direction and loses significance. See data/hoops_vor_draft_value.json and data/vor_draft_value.json. This file is kept because the position stratification below is still sound and because the refutation is worth more than the result it replaced.",
+  "verdict": "SUPERSEDED — on matched constructs the gap is -0.0584 with a CI spanning zero. The unmatched difference below is a construct artefact, not a fact about the two sports.",
+  "comparability_caveat": "hoops delivery is the `impact` percentile (curated composite of on-court value); gridiron delivery is fantasy PPR percentile (rewards volume and touchdowns, blind to blocking, route running and all defence). Same scoring rule, different yardsticks. The comparison is defensible at the level of RELATIVE STANDING AMONG SEASON PEERS and not at the level of the underlying statistic.",
+  "scope_caveat": "gridiron covers QB/RB/WR/TE only — all 18 features are pass/rush/receiving. hoops covers every charted player. The gridiron pool is therefore already restricted to the positions where draft capital is most concentrated, which could inflate its correlation on its own."
+}

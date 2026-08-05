@@ -176,12 +176,16 @@ def main() -> int:
         "gridiron": gb,
         "gridiron_by_position": per_position,
         "position_stratification_verdict": (
-            "The gap is NOT pool composition. Every gridiron position except QB exceeds "
+            "[SUPERSEDED — see the SUPERSEDED key in this file: the whole comparison is "
+            "refuted, because it puts hoops `impact` percentile against gridiron fantasy "
+            "PPR percentile. Read this as a record of what was concluded, not as a "
+            "finding.] The gap is NOT pool composition. Every gridiron position except QB exceeds "
             "hoops' pooled r, so splitting by position does not collapse the difference. "
             "A composition artefact would have shown one dominant position carrying the "
             "pooled number; instead the pooled number is DRAGGED DOWN by its smallest "
             "group."),
         "qb_verdict": (
+            "[SUPERSEDED — see the SUPERSEDED key in this file.] "
             "QB r=+0.12 with a 95% CI that INCLUDES ZERO — draft slot has no detectable "
             "relationship with fantasy delivery at quarterback — while RB is +0.57 with a "
             "non-overlapping CI. RESTRICTED RANGE WAS THE OBVIOUS MECHANICAL EXPLANATION "
@@ -192,6 +196,7 @@ def main() -> int:
             "those who last four fantasy-relevant seasons, where they were taken tells you "
             "nothing."),
         "qb_remaining_alternative": (
+            "[SUPERSEDED — see the SUPERSEDED key in this file.] "
             "SURVIVORSHIP, and it is not excluded. A high-pick QB who busts is benched "
             "quickly and never reaches four charted seasons, so the surviving QB pool is "
             "more heavily selected on delivery than any other position — exactly the "
@@ -210,6 +215,13 @@ def main() -> int:
         },
         "resamples": RESAMPLES,
         "seed": SEED,
+        # Declares which fields it supersedes so check_corrections_landed.py can verify
+        # each still carries its inline marker. Without this the file said "do not quote
+        # its verdict" at the top while position_stratification_verdict and
+        # qb_remaining_alternative read as live conclusions to anyone landing on them
+        # directly — which is precisely the failure that check exists for.
+        "SUPERSEDED_corrects_field": ["position_stratification_verdict",
+                                      "qb_verdict", "qb_remaining_alternative"],
         "SUPERSEDED": (
             "THIS COMPARISON IS REFUTED. Do not quote its verdict. It compares hoops "
             "`impact` percentile against gridiron fantasy PPR percentile — different "
