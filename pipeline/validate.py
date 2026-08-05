@@ -217,8 +217,21 @@ def main() -> int:
     # the gate cost for a meta-check best run deliberately. Named here rather than left to
     # trip the unregistered-checker FAILURE, so the exclusion is arguable rather than
     # forgotten.
-    RUNS_VALIDATE = {"check_gate_inputs_tracked.py", "check_documented_usage.py"}
-    found = {p.name for p in PIPE.glob("check_*.py")} - RUNS_VALIDATE
+    # Checkers deliberately OUTSIDE the gate, each with its own reason. Named here rather
+    # than left to trip the unregistered-checker FAILURE: an exclusion a reader can see and
+    # argue with is not the same as a checker quietly forgotten, which is the failure that
+    # rule exists to catch.
+    #
+    #   check_gate_inputs_tracked  RUNS this file — registering it is unbounded recursion
+    #   check_documented_usage     executes ~100 documented commands; minutes per run, and
+    #                              it is a meta-check best run deliberately
+    #   check_doc_links            ~90% precision after four calibration passes, not 100%
+    #                              (gitignored artifacts are absent on purpose). A check
+    #                              that is right most of the time still teaches its reader
+    #                              to skim, which is why internal_prose is report-only too.
+    EXCLUDED_BY_NAME = {"check_gate_inputs_tracked.py", "check_documented_usage.py",
+                        "check_doc_links.py"}
+    found = {p.name for p in PIPE.glob("check_*.py")} - EXCLUDED_BY_NAME
     registered = {argv[0] for argv, _ in CHECKS.values()}
     unregistered = sorted(found - registered)
 
