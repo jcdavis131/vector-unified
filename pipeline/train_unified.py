@@ -169,6 +169,39 @@ def coral_loss(z, sport, n_sports=3):
     return loss / n
 
 
+def coral_centroid_loss(z, sport, n_sports=3):
+    """Pairwise squared L2 between per-sport CENTROIDS — the first moment.
+
+    coral_loss above aligns SECOND moments only: it matches the per-sport covariance
+    matrices and says nothing about where those clouds sit. Two sports can share a
+    covariance exactly and still be centred in different places, and then the sport is
+    decodable from the mean alone — which is precisely what G2's logistic probe reads off
+    z_full. So CORAL can be satisfied while G2 stays at 0.6851.
+
+    Applied to z, not h. coral_loss uses the raw h because it is regularising the
+    representation the trunk builds; this term exists to move the quantity G2 actually
+    measures, and G2 is computed on z.
+
+    Not normalised by dimension: the sum over dims keeps the gradient proportional to how
+    far apart the centroids are, which is the thing being driven to zero. Averaging over
+    pairs keeps the scale independent of n_sports.
+    """
+    cents = []
+    for s in range(n_sports):
+        m = sport == s
+        if m.sum() < 1:
+            continue
+        cents.append(z[m].mean(0))
+    if len(cents) < 2:
+        return z.new_zeros(())
+    loss, n = 0.0, 0
+    for i in range(len(cents)):
+        for j in range(i + 1, len(cents)):
+            loss = loss + ((cents[i] - cents[j]) ** 2).sum()
+            n += 1
+    return loss / n
+
+
 def effective_rank(z):
     """Participation ratio: (sum s)^2 / sum s^2. Higher = less collapsed."""
     s = torch.linalg.svdvals(z - z.mean(0))
@@ -331,6 +364,10 @@ def main():
     ap.add_argument("--d-adapter", type=int, default=48)
     ap.add_argument("--d-sport-tok", type=int, default=8, help="dim of per-sport token (0 to drop the sport leak)")
     ap.add_argument("--w-coral", type=float, default=0.5)
+    # FIRST-moment alignment. --w-coral only matches per-sport covariances, which leaves
+    # the sport decodable from the centroid — the exact quantity G2's probe reads.
+    # default 0.0 so behaviour is unchanged unless asked for.
+    ap.add_argument("--w-coral-centroid", type=float, default=0.0)
     ap.add_argument("--w-task", type=float, default=2.0)
     ap.add_argument("--w-sport", type=float, default=0.3)
     ap.add_argument("--w-market", type=float, default=0.5,
@@ -339,6 +376,9 @@ def main():
                     help="weight for cultural-text cosine align (only with --cultural-text)")
     ap.add_argument("--grl-lambda", type=float, default=0.05)
     ap.add_argument("--grl-ramp", type=int, default=10, help="epochs to ramp GRL lambda to full")
+    # Ramp lambda from --grl-lambda TO this instead of from 0 to --grl-lambda. None keeps
+    # the original 0 -> grl_lambda ramp exactly, so the default run is untouched.
+    ap.add_argument("--grl-lambda-target", type=float, default=None)
     ap.add_argument("--warmup", type=int, default=5,
                     help="epochs of task+CORAL only (no SupCon/GRL) to build anti-collapse structure first")
     ap.add_argument("--lr", type=float, default=1e-3)
@@ -463,8 +503,14 @@ def main():
         model.train()
         steps = max(1, min(len(pools[s]) for s in range(3)) // q)
         folding = (epoch + 1) > args.warmup
-        lam = args.grl_lambda * min(1.0, max(0.0, (epoch + 1) - args.warmup) / max(1, args.grl_ramp))
-        ep = {"sup": 0.0, "coral": 0.0, "task": 0.0, "sport": 0.0,
+        _frac = min(1.0, max(0.0, (epoch + 1) - args.warmup) / max(1, args.grl_ramp))
+        # Two schedules, and the default is the ORIGINAL one. Without --grl-lambda-target
+        # this is lam = grl_lambda * frac, ramping 0 -> grl_lambda, byte-for-byte what it
+        # was. With it, lam ramps grl_lambda -> target, which is what the handoff asks for
+        # (0.3 -> 0.5) and which starts the adversary already applying pressure.
+        lam = (args.grl_lambda * _frac if args.grl_lambda_target is None
+               else args.grl_lambda + (args.grl_lambda_target - args.grl_lambda) * _frac)
+        ep = {"sup": 0.0, "coral": 0.0, "ccent": 0.0, "task": 0.0, "sport": 0.0,
               "var": 0.0, "cov": 0.0, "market": 0.0, "text": 0.0}
         for _ in range(steps):
             gi = one_batch()
@@ -475,6 +521,8 @@ def main():
             z, h = model.encode(e_per, sid, eid, return_raw=True)
             l_task = task_loss(z, sid, native, pos, posm)
             l_coral = coral_loss(h, sid)
+            l_ccent = (coral_centroid_loss(z, sid) if args.w_coral_centroid
+                       else z.new_zeros(()))
             l_var = var_loss(z)
             l_cov = cov_loss(z)
             l_market = z.new_zeros(())
@@ -484,6 +532,7 @@ def main():
             if text_t is not None:
                 l_text = text_loss(z, *text_t)
             loss = (args.w_task * l_task + args.w_coral * l_coral
+                    + args.w_coral_centroid * l_ccent
                     + args.w_var * l_var + args.w_cov * l_cov
                     + args.w_market * l_market + args.w_text * l_text)
             l_sup = z.new_zeros(()); l_sport = z.new_zeros(())
@@ -494,6 +543,7 @@ def main():
             loss.backward()
             opt.step()
             ep["sup"] += float(l_sup); ep["coral"] += float(l_coral)
+            ep["ccent"] += float(l_ccent)
             ep["task"] += float(l_task); ep["sport"] += float(l_sport)
             ep["var"] += float(l_var); ep["cov"] += float(l_cov)
             ep["market"] += float(l_market)

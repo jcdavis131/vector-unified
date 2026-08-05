@@ -36,6 +36,7 @@ from sklearn.metrics import silhouette_score
 from train_unified import (
     UnifiedTrunk, GRL, supcon_loss, effective_rank, per_sport_pools,
     load_matrix, SPORTS, SEED, DATA, UCACHE,
+    coral_loss, coral_centroid_loss,
 )
 from eval_unified import knn5_acc
 from load_live_encoders import load_live, DEVICE_DEF
@@ -143,6 +144,17 @@ def main():
     ap.add_argument("--w-sport", type=float, default=0.3)
     ap.add_argument("--grl-lambda", type=float, default=0.05)
     ap.add_argument("--grl-ramp", type=int, default=10)
+    # Stage 2 had NO coral term at all — only task + SupCon + the GRL sport classifier.
+    # Both default to 0.0, so an unflagged run is byte-for-byte the previous behaviour.
+    #   --w-coral            2nd moment: match per-sport covariances (on raw h)
+    #   --w-coral-centroid   1st moment: pull per-sport centroids together (on z)
+    # The second is the one G2 can see: its probe reads z, and a sport whose cloud is
+    # merely SHAPED like the others is still trivially decodable from where it sits.
+    ap.add_argument("--w-coral", type=float, default=0.0)
+    ap.add_argument("--w-coral-centroid", type=float, default=0.0)
+    # Ramp lambda from --grl-lambda TO this rather than 0 -> --grl-lambda. None keeps the
+    # original schedule exactly.
+    ap.add_argument("--grl-lambda-target", type=float, default=None)
     ap.add_argument("--warmup", type=int, default=5)
     ap.add_argument("--rank-floor", type=float, default=12.0)
     ap.add_argument("--revert-threshold", type=float, default=0.02)
@@ -251,15 +263,21 @@ def main():
         model.train()
         steps = max(1, min(len(pools[s]) for s in range(3)) // q)
         folding = (epoch + 1) > args.warmup
-        lam = args.grl_lambda * min(1.0, max(0.0, (epoch + 1) - args.warmup) / max(1, args.grl_ramp))
-        ep = {"sup": 0.0, "task": 0.0, "sport": 0.0}
+        _frac = min(1.0, max(0.0, (epoch + 1) - args.warmup) / max(1, args.grl_ramp))
+        lam = (args.grl_lambda * _frac if args.grl_lambda_target is None
+               else args.grl_lambda + (args.grl_lambda_target - args.grl_lambda) * _frac)
+        ep = {"sup": 0.0, "task": 0.0, "sport": 0.0, "coral": 0.0, "ccent": 0.0}
         for _ in range(steps):
             gi = one_batch()
             sid, eid, arch, native, pos, posm, e_per = gather_live_batch(live, M, gi, device)
             opt.zero_grad()
             z, h = model.encode(e_per, sid, eid, return_raw=True)
             l_task = task_loss(z, sid, native, pos, posm)
-            loss = args.w_task * l_task
+            l_coral = coral_loss(h, sid) if args.w_coral else z.new_zeros(())
+            l_ccent = (coral_centroid_loss(z, sid) if args.w_coral_centroid
+                       else z.new_zeros(()))
+            loss = (args.w_task * l_task + args.w_coral * l_coral
+                    + args.w_coral_centroid * l_ccent)
             l_sup = z.new_zeros(()); l_sport = z.new_zeros(())
             if folding:
                 l_sup = supcon_loss(z, arch, sid, model.log_temp)
@@ -268,6 +286,7 @@ def main():
             loss.backward()
             opt.step()
             ep["sup"] += float(l_sup); ep["task"] += float(l_task); ep["sport"] += float(l_sport)
+            ep["coral"] += float(l_coral); ep["ccent"] += float(l_ccent)
         for k in ep:
             ep[k] /= max(1, steps)
 
@@ -292,7 +311,8 @@ def main():
         g1str = " ".join(f"{s[:2]}:{g1[s]['role_knn5_live']:.3f}" for s in SPORTS)
         print(f"epoch {epoch+1:>2}/{args.epochs} [{phase}] "
               f"sup={ep['sup']:.3f} task={ep['task']:.3f} sport={ep['sport']:.3f} | "
-              f"G1_role[{g1str}] G2={g2:.3f} G3={g3:.3f} rank={rank:.1f} lam={lam:.3f}")
+              f"G1_role[{g1str}] G2={g2:.3f} G3={g3:.3f} rank={rank:.1f} lam={lam:.3f} "
+              f"coral={ep['coral']:.4f} ccent={ep['ccent']:.4f}")
         history.append({"epoch": epoch + 1, "phase": phase, **ep,
                         "g2": round(g2, 4), "g3": round(g3, 4), "rank": round(rank, 1),
                         "g1": {s: {k: (round(v, 4) if v is not None else None)
