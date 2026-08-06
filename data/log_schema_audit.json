@@ -1,0 +1,49 @@
+{
+ "question": "Does every markdown table row have the cell count its header declares?",
+ "why": "validation_sweep_log.md and drift_watch_log.md are the evidence trail. A row with MORE cells than the header pushes content into a column nothing names, and markdown renders it without complaint. sweep_log:21 hides 'tennis_forward_report drifted AGAIN — reverted' in a sixth cell of a five-column table.",
+ "two_classes": {
+  "over": "content mis-assigned to a column that does not exist — the failing class",
+  "under": "trailing cells empty, usually a column added later. `interpreter` was added 2026-08-05 and the earlier rows predate it; the log's own header already states an empty cell there means 'not recorded'. Reported, not failed."
+ },
+ "calibration": "An escaped pipe is content. Counting raw '|' reported docs/CULTURAL_TEXT_SCHEMA.md:26 (`str \\| null`) as over-wide when the table is fine — 1 of 2 findings was this checker's own bug.",
+ "files_scanned": 28,
+ "tables_found": 45,
+ "over_wide": [],
+ "under_wide": [
+  {
+   "file": "data/validation_sweep_log.md",
+   "line": 16,
+   "cells": 4,
+   "header_cells": 5,
+   "text": "| 2026-08-05 12:56Z | 3/5 pass | field_semantics=FAIL cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS su"
+  },
+  {
+   "file": "data/validation_sweep_log.md",
+   "line": 17,
+   "cells": 4,
+   "header_cells": 5,
+   "text": "| 2026-08-05 12:58Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS su"
+  },
+  {
+   "file": "data/validation_sweep_log.md",
+   "line": 18,
+   "cells": 4,
+   "header_cells": 5,
+   "text": "| 2026-08-05 12:59Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS su"
+  },
+  {
+   "file": "data/validation_sweep_log.md",
+   "line": 20,
+   "cells": 4,
+   "header_cells": 5,
+   "text": "| 2026-08-05 13:51Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS su"
+  },
+  {
+   "file": "data/validation_sweep_log.md",
+   "line": 22,
+   "cells": 4,
+   "header_cells": 5,
+   "text": "| 2026-08-05 19:50Z | 4/5 pass | field_semantics=PASS cited_fields=FAIL ablation_consistency=PASS merged_careers=PASS su"
+  }
+ ]
+}

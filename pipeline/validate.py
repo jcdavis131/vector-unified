@@ -198,6 +198,19 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
     # Non-vacuity is measured, not assumed: restoring the stale gridiron artifact
     # (names_probed 300) makes it fire on gridiron:insights[4] at once.
     "prose_values": (["check_prose_values.py"], False),
+    # BLOCKING via --check, needs_network False. Only the OVER-WIDE class fails: a row with
+    # more cells than its header pushes content into a column nothing names, and markdown
+    # renders it silently. sweep_log:21 hid "tennis_forward_report drifted AGAIN — reverted"
+    # in a sixth cell of a five-column table — the most important thing in the row.
+    #
+    # Under-wide rows are reported and NOT failed: they are trailing empties, normally from
+    # a column added later, which is exactly the `interpreter` column added 2026-08-05. The
+    # log's own header already tells a reader an empty cell there means "not recorded".
+    #
+    # Precision was 1 of 2 on the first run and the other finding was this checker's own
+    # bug: it counted an ESCAPED pipe in docs/CULTURAL_TEXT_SCHEMA.md (`str \| null`) as a
+    # delimiter. Fixed before registering, not after.
+    "log_schema": (["check_log_schema.py", "--check"], False),
 }
 
 # Large artifacts a check CANNOT RUN WITHOUT, declared per check.

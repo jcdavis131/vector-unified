@@ -86,6 +86,9 @@ data/*
 # count — the first draft of that checker examined 6 of 60 blocks and reported 0, and
 # only the denominator makes that distinguishable from a clean estate.
 !data/prose_values_audit.json
+# Table-schema audit for the evidence logs. Tracked because it carries tables_found
+# alongside the finding count — 45 tables is what makes 1 finding meaningful.
+!data/log_schema_audit.json
 # The record of four artifacts found holding a smaller sample than their own live
 # page publishes. Indexed from README.md; losing it loses the finding.
 !data/LOCAL_ARTIFACTS_BEHIND_PAGES.md
