@@ -383,6 +383,25 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
+    # REFUSE TO REPORT CLEAN ON ZERO COVERAGE. The pages live in the SIBLING repo
+    # vector-hub, and every one is skipped with `continue` when absent — so on a fresh
+    # clone, or any box without vector-hub, this examined 0 blocks, found 0 disagreements
+    # and printed a clean line. check_cited_fields.py shipped exactly that bug and was fixed
+    # for it; I registered this one three commits ago without checking whether it had
+    # inherited the same shape. It had.
+    #
+    # Prints in both modes, not just --check, because the reader who runs it without --check
+    # is the one most likely to believe the clean line.
+    if pages == 0 or blocks_examined == 0:
+        print(f"\nREFUSING TO REPORT CLEAN: {pages} page(s), {blocks_examined} block(s) "
+              f"examined. This gate compares published numbers against the artifacts they "
+              f"cite; with nothing examined it has established nothing. Usually means the "
+              f"vector-hub pages are absent — expected on a fresh clone, since they live in "
+              f"a sibling repo git does not carry.", file=sys.stderr)
+        out["refused_zero_coverage"] = True
+        OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
+        return 1 if args.check else 0
+
     print(f"\n  {pages} page(s), {blocks_examined} examined + {len(not_examined)} NOT "
           f"examined = {blocks_examined + len(not_examined)} blocks")
     print(f"  not examined: cite no field resolving to a number (18 cite only strings, "
