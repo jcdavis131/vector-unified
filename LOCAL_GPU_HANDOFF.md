@@ -119,3 +119,37 @@ And Hatch will pick it up via `bundles/coordination/active-tasks.md` mirror.
 3. Log even no-op
 4. Provenance-honest numbers — cite source file in json
 
+### 2026-08-06 03:02 CDT — vector-unified heavy 60ep — MLOps operator lane3
+
+**Why heavy:** Hatch VM 2.1G tmpfs — torch wheel OOMs, local GPU needed.
+
+**Run on your GPU (CUDA 12.1/12.4):**
+```bash
+cd vector-unified
+pip install torch --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt  # or pyproject.toml extras
+
+# smoke first (proves wiring, no OOM)
+python3 pipeline/train_mtnn.py --epochs 2 --dim 64  # or v6 shim for hoops
+
+# heavy
+python3 pipeline/train_unified.py --epochs 60 --grl-lambda 0.3 --grl-lambda-target 0.5 --grl-ramp 10 --w-task 2.0 --w-coral 0.5 --w-coral-centroid 0.5 --w-sport 0.5 
+
+# eval + candidate
+python3 pipeline/build_eval_scoreboard.py  # hoops | or eval_sector_coherence.py equities | etc
+python -m json.tool assets/eval_scoreboard.json > /dev/null && echo "eval OK"
+python -m json.tool assets/eval_scoreboard_v6.json > /dev/null 2>&1 && echo "v6 OK" || echo "v6 candidate only"
+
+# gate / promote
+# candidate.json → promote only if beats current + gate passes
+# hoops: composite 0.7937→0.85, test top1 0.438→0.55 (Recall@10 0.977 path)
+# equities: 0.7057 lift 6.32 verified
+# pitch: 633 WC-only 92.9%
+# gridiron: 4.268→3.8
+```
+
+**Target:** G1 per-sport hoops -0.0526 gridiron 0.0 pitch +0.0021 shuffled +0.5493 PASS, G2 0.6851 vs 0.6258 Δ+0.0593 MET weak, G3 0.683 sil, G4 0.9828 lift 0.8116
+**Status:** handed off 2026-08-06T03:02:08Z by scout/mlops-operator
+**Smoke in Hatch:** ok dry-run (no torch pip), heavy via LOCAL
+**Coordination:** update COORDINATION.md row to done, mirror to bundles/coordination/active-tasks.md
+
