@@ -359,6 +359,9 @@ def masked_cosine_loss(pred, target, mask):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--epochs", type=int, default=40)
+    ap.add_argument("--seed", type=int, default=SEED,
+                    help="random seed; vary it to measure the noise floor "
+                         "before believing any A/B. Was a module constant.")
     ap.add_argument("--batch-per-sport", type=int, default=86)
     ap.add_argument("--d-emb", type=int, default=64)
     ap.add_argument("--d-adapter", type=int, default=48)
@@ -401,7 +404,14 @@ def main():
     if args.smoke:
         args.epochs = 3
 
-    torch.manual_seed(SEED); np.random.seed(SEED)
+    # SEED was a module constant with no flag, so every experiment ever run on
+    # this model was one seed against one seed -- the same measurement blocker
+    # vector-pitch removed in 38d68f4, and the design that would report a gain
+    # smaller than its own arm spread as a win. Default is 7, the previous
+    # hardcoded value, so nothing changes unless the flag is passed.
+    seed = int(getattr(args, "seed", SEED))
+    torch.manual_seed(seed); np.random.seed(seed)
+    print(f"seed={seed}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device={device}  market={args.market}  cultural_text={args.cultural_text}")
     M = load_matrix(device, market=args.market, cultural_text=args.cultural_text)
@@ -436,7 +446,7 @@ def main():
     n_params = sum(p.numel() for p in model.parameters())
     print(f"params={n_params:,}  (encoders frozen, not counted)")
 
-    rng = np.random.default_rng(SEED)
+    rng = np.random.default_rng(seed)
     q = args.batch_per_sport
 
     def one_batch():
