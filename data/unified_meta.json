@@ -1,0 +1,13 @@
+{
+  "entity_count": 20719,
+  "dims": 64,
+  "native": {
+    "hoops": 12966,
+    "gridiron": 5323,
+    "pitch": 2430
+  },
+  "d_emb": 64,
+  "n_rows": 20719,
+  "coverage": "hoops 12966 gridiron 5323 pitch 2430",
+  "rank": 12.4
+}

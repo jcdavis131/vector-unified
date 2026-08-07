@@ -1,0 +1,14 @@
+{
+  "G4_cross_sport_nn_role_coherence": {
+    "hit_rate": 0.9828,
+    "random_baseline": 0.1712,
+    "lift": 0.8116
+  },
+  "curated": {
+    "top10_hit_rate": 0.0,
+    "n": 40,
+    "mean_b_rank": 2114,
+    "random_expected": 2067,
+    "ratio": 0.978
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "best_epoch": 58,
+  "epochs": 60,
+  "checkpoint": "pipeline/data/unified_stage2_best.pt",
+  "G2_shipped": 0.6851,
+  "experimental_predicted": 0.642
+}

@@ -1,0 +1,10 @@
+{
+  "verdict": "QUALITY TIERING",
+  "pc1_variance_share": 0.375,
+  "pc1_top_loadings": {
+    "WIN_RATE": 0.41,
+    "DRAW_PROGRESS_MEAN": 0.402
+  },
+  "role_like_clusters": 1,
+  "note": "4th sport probed left out"
+}

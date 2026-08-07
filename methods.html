@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#1A150F">
+<link rel="manifest" href="/manifest.json">
+<title>Methods — How Vector Unified is built</title>
+<meta name="description" content="Every number recomputable — 3 encoders → CORAL+GRL joint 64-d, gates G1-G4 with shuffled nulls, sport-blindness, caveats."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shell.css"/>
+<link rel="stylesheet" href="assets/responsive.css"/>
+<link rel="stylesheet" href="assets/final-qa.css"/>
+<link rel="stylesheet" href="assets/unified.css"/>
+<link rel="stylesheet" href="assets/motion.css"/>
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://unified.dumbmodel.com/methods">
+<meta property="og:title" content="Methods — How Vector Unified is built">
+<meta property="og:description" content="Every number recomputable — 3 encoders, CORAL+GRL, joint 64-d, gates, shuffled nulls, sport-blindness, caveats.">
+<meta property="og:image" content="/assets/og-1200x630.png">
+<style>
+:root{--paper:#FFFEF7;--ink:#1A150F;--orange:#D55E00;--blue:#0072B2;--yellow:#F0E442;--mono:ui-monospace,monospace;--sans:ui-sans-serif,system-ui;--page-gutter:clamp(12px,3.2vw,20px)}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65}
+.main{width:min(1180px,100%);max-width:1180px;margin:0 auto;padding:12px var(--page-gutter) calc(96px+env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border:2.2px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);overflow:hidden;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.kicker{font-family:var(--mono);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#5A5248;display:flex;gap:6px;align-items:center}
+.kdot{width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block}
+.hd{margin:6px 0 0;font-family:"Architects Daughter",var(--mono);font-size:clamp(20px,4vw,28px);line-height:1.15}
+.method-h2{font-family:var(--mono);font-size:clamp(16px,3.6vw,20px);margin:6px 0 4px}
+.method-p{font-size:14px;line-height:1.6;margin:6px 0;color:#2E2A23;max-width:74ch}
+.mono{font-family:var(--mono);font-size:11px;line-height:1.5}
+.small-mono{font-family:var(--mono);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#5A5248}
+.pill{border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;background:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;font-weight:800;box-shadow:1.5px 1.5px 0 var(--ink);margin:2px}
+.method-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.method-grid{grid-template-columns:1fr 1fr}}
+.lb-table{width:100%;border-collapse:collapse;font-size:12px}
+.lb-table th,.lb-table td{border:1px solid #E5E2D8;padding:6px 8px;text-align:left}
+.lb-table th{background:#FFFEF7;font-family:var(--mono);font-size:10px;text-transform:uppercase}
+.cqs-strip{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding:2px 0 6px}
+.cqs-badge{flex:0 0 auto;white-space:nowrap;border:1.8px solid var(--ink);border-radius:999px;padding:6px 12px;background:#fff;font-family:var(--mono);font-size:11px;font-weight:800;box-shadow:2px 2px 0 var(--ink)}
+.cqs-badge b{font-size:13px;margin-right:6px}
+.arch-diagram{font-family:var(--mono);font-size:11px;line-height:1.5;background:#111;color:#ddd;border-radius:10px;padding:12px;border:1.5px solid var(--ink);white-space:pre-wrap;word-break:break-word}
+.site-nav{position:sticky;top:0;z-index:100}
+</style>
+</head><body>
+<noscript><div role="alert" style="padding:16px;text-align:center">Enable JS — Vector Unified Methods needs JavaScript for nav</div></noscript>
+
+<nav class="site-nav" data-active="/methods" aria-label="Vector Unified site"></nav>
+<div class="main">
+  <div class="card">
+    <div class="kicker"><span class="kdot"></span> Methods · shared role space · every number recomputable · best-guess analogies, never proven similarity · no vibes</div>
+    <h1 class="hd" style="font-size:clamp(28px,5vw,42px);margin:8px 0 6px">Method & data sources — Vector Unified 64-d</h1>
+    <p style="margin:0;font-size:15px;line-height:1.5;color:#3A332A;max-width:74ch">Doctrine: one joint embedding — many data sources, eventually many sports, folded into one geometry where <b>role is shared and sport is faded</b>. <b>20,719 player-seasons</b> (hoops 12,966 / gridiron 5,323 / pitch 2,430) → <b>3 encoders</b> → CORAL centroid+cov + SupCon adjacent-FY + GRL + task anchor + VICReg → 64-d L2 joint <code>z</code>. Caveats, shuffled nulls, sport-blindness floors, and the six open-files table are first-class. <a href="/model" style="font-weight:800;border-bottom:2px solid var(--ink);text-decoration:none">Training Cockpit → 3 encoders → CORAL centroid → joint</a></p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+      <a class="pill" href="#vector-space">Vector space (3 enc)</a><a class="pill" href="#joint-training">Joint training</a><a class="pill" href="#each-loss">Each loss earns keep</a><a class="pill" href="#shuffled-nulls">Shuffled nulls</a><a class="pill" href="#sport-blindness">Sport blindness</a><a class="pill" href="#cross-sport">Cross-sport A0-A11</a><a class="pill" href="#caveats">Caveats 6 files</a><a class="pill" href="#limitations">Limits</a>
+    </div>
+  </div>
+
+  <div class="method-grid">
+    <div class="card" id="vector-space">
+      <h2 class="method-h2">The vector space — three encoders, one L2 sphere</h2>
+      <p class="method-p"><b>Hoops 64-d:</b> 12,966 seasons 1996-97→2025-26 from stats.nba.com per-100 MIN≥800. 130 feats × 17 towers cat([x·m,m]) masked (missing tracking pre-2013, form pre-2015) → ResidualTower cat([x·m,m])→96h→24d skip LayerNorm L2-norm → TransformerFusion 128d 4-head CLS→64-d → L2 unit. Shipped <code>mtnn_v5_concat_b2_h160_t32_d64_mlp128_fus256</code> drifted in Stage 2.1 (best_epoch 58, 60ep, enc_lr 3e-5). Era-honest per-season z, clipped ±4, Procrustes-chained root 1996-97 RᵀR=I.</p>
+      <p class="method-p"><b>Gridiron 32-d:</b> 5,323 season-agg from 49,881 weeks 2016-2025 nflverse/PFR/NGS/depth/injuries/combine/draft/ffopportunity EP. 82 feats 13 families → small towers → 32-d gated-fusion (compat 16-d wrapper for unified). 18 features pass/rush/receive disjoint → <b>position 0.999 is a property of the data, not an achievement</b> (18-feats ceiling). 1,509 unique / 93.3% have SALARY_LOG from Spotrac 2015-2025 (23,143 player-years). Era z on train only, temporal split.</p>
+      <p class="method-p"><b>Pitch 24-d:</b> 2,430 seasons full male StatsBomb open corpus — 11 contexts 1,157 matches (PR: PCA(3)/~600-row baseline replaced Phase 1). 16 per-90 rates → 3 families attacking/passing-defending/dueling → small MTNN ~24-d. Pitch has <b>only 4 of 10 sport-agnostic families</b> (volume, efficiency, defense, playmaking) — NO bio/market/pedigree/honors/clutch/career. Cross-sport analogies involving pitch are <b>role-only, never physical/market</b>. Accepted and documented; not faked (SPEC §4a, §8).</p>
+      <div class="cqs-strip"><span class="cqs-badge"><b>20,719</b> joint rows</span><span class="cqs-badge"><b>64-d</b> L2 z</span><span class="cqs-badge"><b>12.4</b> eff rank ≥12</span><span class="cqs-badge"><b>rank=shuffle</b> 12.4 0Δ permutation-inv</span></div>
+      <div class="card" style="box-shadow:2px 2px 0 var(--ink);margin-top:8px"><b class="small-mono">CORAL centroid vs cov</b><div style="font-size:12px;line-height:1.5;margin-top:4px"><b>centroid L2</b> = pairwise squared L2 between per-sport centroids μ_i−μ_j (location-match) — directly minimizes sport centroid separation for sport-blindness (z_source docs). <b>cov Frobenius</b> = ||C_i−C_j||_F (shape-match). Stage 1 cov-only left sport decodable from <b>mean</b>. Combined w=0.5 each.</div></div>
+    </div>
+    <div class="card" id="joint-training">
+      <div class="small-mono">Unified Stage 2.1 unfrozen encoders — best_epoch 58</div>
+      <h3 class="hd" style="margin:6px 0">Joint training + GRL λ schedule</h3>
+      <p class="method-p">Stage 1 frozen encoders (G1 PASS G2 fail ~0.74-0.79 GRL inert Δ≈3pp). Stage 2 unfreezes encode-path (towers+fusion, heads frozen) two AdamW groups — lets encoders drift toward shared basis without breaking per-sport games when G1 holds (hoops role even improved +0.08 clean draw). <b>Stage 2.1:</b> 60ep enc_lr 3e-5 trunk_lr 1e-3 batch 256 GRL λ 0.10 ramp5 → 0.30, G1 holds, G2 plateaus 0.693. <b>Stage 2.2 hill-climb (exp):</b> GRL λ 0.3→0.5 schedule after warmup 5ep linear ramp 10ep w_sport 0.5 CORAL cov+centroid 0.5 each w_task 2.0 anchor SupCon same-ticker adjacent-FY temp 0.07 modality-aware VICReg var25 cov1 rank floor 12. House rule: each loss must earn keep.</p>
+      <div class="arch-diagram">3 encoders → zero-pad 64
+e_h 64-d (cat residual tower 96h→24d skip LN L2) • e_g 32-d 16-d compat MTNN 18 feats • e_p 24-d 11 ctx MTNN 16 feats (role-only)
+
+CORAL centroid (μ_i−μ_j)² mean w0.5 + CORAL cov ||C_i−C_j||_F w0.5
+  → directly minimizes sport centroid separation (G2), complements cov
+  → shape-match (G3+S) — within 0.746 between -0.121 sep +0.867
+
+SupCon same-arch cross-sport synthetic positives A0-A11 T0.07
+  + same-ticker adjacent-FY (per-ticker time edge)
+  + modality-aware temp (pitch tiny vs hoops 12k balanced)
+  → THE folder, drop 0.718→0.125 G3 0.988→0.137 G4
+
+Task anchor w2.0 native-cluster CE + pos CE per sport (light)
+  → anti-collapse, G1 PASS -0.0526/0.0/+0.0021
+
+GRL sport head λ 0.10→0.30→0.50 warmup5 ramp10 w0.5
+  → LogReg eval max_iter 400 C=1.0 stratified 80/20
+  → 0.05→0.10 gave -7pp 0.74→0.685, full decom 66% lambda p=0.0122
+
+VICReg var hinge 1-std w1.0 λ25 + cov off-diag w1.0 λ1 rank floor 12
+  → literal 32 floor over-alarms on ~13-d role manifold (true floor 12)
+  → z 64-d L2 unit effective rank 12.4 (same as global shuffle — perm-inv)
+
+z = L2norm( TransformerFusion 128d 4-head CLS→64-d( Residual(e_s)+CORAL+SupCon+GRL ) )</div>
+      <p class="method-p" style="font-size:12px;color:#666">Structural: per-sport adapter distinct Linear per sport bakes sport into z — ceiling ~0.68 even with strong GRL. Shared-adapter probe 0.759 vs 0.743 (adapter not leak, native dim footprint zero-pad pattern is perfect linear separator). True invariance needs encoders sharing basis (Stage 2 proven partially via FULL clamp 343x var ratio). See <code>STAGE2_PLAN §1.1</code>.</p>
+    </div>
+  </div>
+
+  <div class="card" id="each-loss">
+    <h2 class="method-h2">Each loss earns keep — drop table (house rule SPEC §5)</h2>
+    <p class="method-p">From <code>data/unified_report.json</code> + hub #unified-ablation (Stage 1 30-ep final-epoch state) + <code>data/g2_centroid_ab.json</code> LOCAL GPU decomposition. Each loss must earn keep — if Δ≈0 on every gate it ships dropped.</p>
+    <table class="lb-table"><thead><tr><th>Config</th><th>G1</th><th>G2 sport-acc</th><th>rank</th><th>G3 sil</th><th>G4 hit</th><th>Verdict</th></tr></thead><tbody>
+      <tr><td><code>full</code> SupCon+CORAL+GRL+VICReg+task</td><td>PASS</td><td>0.668 (Stage1 0.771→0.799 leak base) / shipped 0.6851</td><td>13.5 / 12.4</td><td>0.718 / 0.683</td><td>0.988 / 0.9828</td><td><b>leanship</b></td></tr>
+      <tr><td><code>no_supcon</code></td><td>PASS</td><td>0.669</td><td>20.3</td><td>0.125</td><td>0.137</td><td><b>WORKHORSE</b> −0.59 G3 −0.85 G4 collapses cross-sport folding — <b>essential</b></td></tr>
+      <tr><td><code>no_coral_cov</code> (keep centroid?)</td><td>PASS</td><td>0.664</td><td>13.3</td><td>0.718</td><td>0.988</td><td><b>inert alone</b> 0Δ every gate Stage1, but combined +centroid −1.5pp probe — <b>keep for G3+G2 small</b></td></tr>
+      <tr><td><code>no_coral_centroid</code> / <code>no_coral (both)</code></td><td>PASS</td><td>0.664→0.68ish</td><td>12.4 same as shuffle</td><td>same</td><td>0.988</td><td><b>centroid did not confirm alone</b> LOCAL GPU decomp −0.0289 p=0.0659 CI[−0.0608,+0.0030] spans zero, 34% share — <b>do not credit result to centroid alone</b></td></tr>
+      <tr><td><code>no_grl</code></td><td>PASS</td><td>0.716→0.799</td><td>13.5</td><td>0.723</td><td>0.989</td><td><b>modest</b> ~5pp 0.716→0.668 no G3/G4 harm — <b>kept small benefit no cost</b> but alone cannot reach ≤0.7258 Δ≥10pp target; drop GRL → 0.799 baseline</td></tr>
+      <tr><td><code>no_vicreg</code></td><td>PASS</td><td>0.668</td><td>13.4</td><td>0.722</td><td>0.987</td><td><b>inert at default</b> 0Δ rank/G3/G4 — Aggressive w_var100/w_cov200 → rank 17-24 trades task sharpness — <b>dropped lean but kept as rank-floor insurance</b></td></tr>
+      <tr><td><code>task_only</code></td><td>PASS</td><td>0.730 / Stage1 0.771</td><td>20.4 / 19.6 collapsed highest</td><td>0.142</td><td>0.129</td><td>preserves within-sport role but <b>no cross-sport folding</b> — sport leak +0.13 over majority</td></tr>
+      <tr><td><code>task+SupCon+GRL lean v0.1</code></td><td>PASS</td><td>0.668 / shipped 0.6851</td><td>12.4≥12</td><td>0.683 sil 0.746 within −0.121 between</td><td>0.9828 vs 0.1712 random +0.8116</td><td><b>Lean shipped</b> — every remaining loss earns keep; revisit CORAL/VICReg once encoders unfreeze (Stage2 did)</td></tr>
+    </tbody></table>
+    <p class="method-p"><b>LOCAL GPU full decomp:</b> 5 seeds (7/11/13/17/19) paired 60ep — same <code>--w-task2.0 --w-sport0.5 --grl-lambda0.3 --grl-ramp10</code> only flags differ (CTRL none ramp 0→0.3 vs LAM <code>--grl-lambda-target0.5</code> vs FULL <code>--w-coral0.5 --w-coral-centroid0.5 --grl-lambda-target0.5</code>). Effect mean Δ −0.0851 CI[−0.1527,−0.0174] p=0.0251 t=−3.49 df4 paired MDE n5 0.0677 clears floor. Lambda −0.0562 p=0.0122 CI[−0.0921,−0.0203] 66%, coral/centroid −0.0289 p=0.0659 CI[−0.0608,+0.0030] 34% — coral CI spans zero before multiplicity — do not credit centroid. At n=3 coral p=0.0298, at n=5 spanning zero. Estate's own 10-seed <code>no_coral</code> ablation +0.0008 p=0.9111 CI[−0.0146,+0.0161] related evidence not identical (theirs removes 2nd-moment coral_loss).</p>
+    <p class="method-p" style="font-size:12px;color:#666">Leakage: Stage1 0.771 base → 0.799 no-debias control Δ 0.028, +0.13 over majority 0.6258. Drop contrastive inherits that leakage pattern. Structural ceiling ~0.68: adapter Linear per sport bakes sport into z, fully erased only via encoder drift (Stage2 partially: FULL arm residual −0.0022). Ablation.py nondet 0.6940/0.6926/0.6827 triple — root cause seed order line 56 after model line 50, determinism flags did not fix. See <code>data/ablation_determinism.json</code> + <code>data/seed_order_audit.json</code> + GOTCHAS.md.</p>
+  </div>
+
+  <div class="method-grid">
+    <div class="card" id="shuffled-nulls">
+      <h2 class="method-h2">Shuffled null baselines — each gate earn keep over null</h2>
+      <p class="method-p">Every gate carries a null that COULD have failed. Gates that cannot fail are vacuous (SPEC CORRECTIONS 2026-08-03). History: <code>pos_mask</code> int64 {0,1} used as fancy-index selecting rows 0/1 12,966× gave 1.0 artefact globally shuffled also 1.0 — now corrected to 0.738→0.784 hoops pos etc.</p>
+      <table class="lb-table"><thead><tr><th>Gate</th><th>Real</th><th>Null</th><th>Floor</th><th>Proves</th></tr></thead><tbody>
+        <tr><td><b>G1 hoops</b> per-sport pos non-inf</td><td>-0.0526 (0.7385→0.7911 joint better, neg = joint better convention baseline−joint)</td><td>shuffled +0.5493 global z drop</td><td>majority 0.211 (hoops pos base 0.170 native, 0.189 pitch)</td><td>PASS rests on evidence not constant 0.0 buggy mask</td></tr>
+        <tr><td><b>G1 gridiron</b></td><td>0.0000 0.9991 ceiling</td><td>shuffled +0.692</td><td>0.397 majority / 0.175 native</td><td>0.0000 pos_drop expected — 18 feats pass/rush/receive disjoint profiles</td></tr>
+        <tr><td><b>G1 pitch</b></td><td>+0.0021 0.893→0.8909 (one place z worse than e_s −1.4pp — invisible at old 1.0 vs 1.0)</td><td>shuffled +0.5617</td><td>0.437 majority</td><td>same — true G1 only place z regresses</td></tr>
+        <tr><td><b>G2</b> sport-invariance</td><td>0.6851 vs majority 0.6258 Δ+0.0593 MET weak / FULL 0.6236 −0.0022 floor</td><td>globally shuffled z 0.6257 any emb 0.6257 floor</td><td>majority 0.6258 FLOOR — not chance 0.3333 — retired 0.433 UNREACHABLE balanced-math needs active misleading</td><td>Old 0.433 target would require z to mislead — corrected ≤0.7258 = majority+0.10 — Stage1 leak +0.13 over floor not +0.42 over uniform</td></tr>
+        <tr><td><b>G3 sil</b></td><td>0.683 sil 0.746 within −0.121 between sep +0.867</td><td>within-sport shuffle null silhouette ~0 floor</td><td>0.05 sil + 0.05 sep carry null +0.0440</td><td>sil >0 was bare inequality holds ~half on null — now 0.683 clearly above floor</td></tr>
+        <tr><td><b>G3 sep</b></td><td>+0.867 separation (within−between)</td><td>null +0.0440 across 50 within-sport shuffles archetype labels randomized</td><td>0.05 sep floor</td><td>real sep +0.8448 never in doubt but old test vacuous (+0.0440 on null half the time)</td></tr>
+        <tr><td><b>G4 arch hit</b></td><td>0.9828 vs random 0.1712 lift +0.8116</td><td>random arch overlap 0.1712 (computed from actual archetype mix — validates baseline, nulls land exactly on 0.1712)</td><td>60% bar now real vs 0.1712</td><td>NN arch agreement works — role space real</td></tr>
+        <tr><td><b>G4 curated top10</b></td><td>0.0 /40 top10 hit-rate</td><td>random expected rank 2067 mean B-rank, real 2114 ratio 0.978 indistinguishable if slightly worse</td><td>0.60 bar had no baseline — 40 triples still curated panel valuable</td><td>Space knows role not person — 0.650 vs computed 0.162 baseline lift +0.488 arch-agreement 40 curated survives; SUPERSEDED 3.23× used N/2 baseline but b_best_rank is MIN over all B's rows E[min_k]=(N−k)/(k+1) — corrected 0.98×</td></tr>
+        <tr><td><b>Rank</b></td><td>12.4 ≥12 floor</td><td>shuffle null 12.4 same as real, random gaussian 64.0 higher</td><td>12 literal — 32 over-alarms on ~13-d role manifold</td><td>rank permutation-inv — high rank not evidence quality, 2 collapsed configs carry highest ranks 19.6/18.8 vs 12.8 — collapse_detector PASS only when rank≥12 AND G1 AND G3</td></tr>
+      </tbody></table>
+      <p class="method-p" style="font-size:11px;color:#666" class="mono">Pos_mask bug history: `pos_mask` int64 {0,1} used as `emb[mask]` integer fancy-indexing selecting rows 0 and 1 12,966× — kNN then separates two vectors carrying two labels perfectly forever. 1.0 on globally shuffled embedding too. True figures maj baselines now stated. See SPEC § CORRECTIONS 2026-08-03 (Phase 7.16–7.24 4 numbers wrong).</p>
+    </div>
+    <div class="card" id="sport-blindness">
+      <h2 class="method-h2">Sport blindness — G2 0.6851 vs 0.6258 floor Δ+0.0593 target ≤0.7258 MET weak</h2>
+      <p class="method-p"><b>Shipped G2:</b> sport_acc 0.6851 vs majority_class_share 0.6258 (hoops 12,966 62.58% / gridiron 5,323 25.69% / pitch 2,430 11.73%) Δ +0.0593, target ≤0.7258 (majority+0.10) MET weak. Chance 0.3333 (balanced) gives Δ vs chance 0.3518 — misleading because sports unbalanced. Any embedding guessing hoops hits 0.6258 floor (globally shuffled z scored 0.6257). Retired 0.433 UNREACHABLE would require z to actively mislead (SPEC § CORRECTIONS 2026-08-03).</p>
+      <p class="method-p"><b>Experimental projection (smoke 2ep — full data missing on this VM):</b> predicted G2 0.642 in range [0.64,0.65] Δ vs majority 0.0162, improvement vs shipped -0.0431. Conservative -4.3pp expected from Δ historically GRL λ 0.05→0.10 gave -7pp 0.74→0.685 and CORAL centroid historically -2pp Stage1 probe. Recipe: GRL λ 0.3→0.5 schedule after warmup 5ep ramp 10ep w_sport 0.5 CORAL cov+centroid w=0.5 each w-task 2.0 anchor SupCon adjacent-FY T0.07. Written to <code>data/unified_report.json</code> experimental + stage2.1_smoke fields. Pipeline/data caches missing (load_encoders expects embedding_v3.npz mtnn_best.pt+train_matrix.npz pitch_mtnn_embeddings.json) — no space error earlier but now FS 96G avail after cleanup, still missing caches — smoke numbers projection not measured until caches restored.</p>
+      <p class="method-p"><b>Measured (LOCAL GPU, NOT PROMOTED):</b> 5 seeds CTRL 0.7087 sd0.0564 residual +0.0829 p=0.0304 CI[+0.0128,+0.1530] decodable, LAM 0.6525 sd0.0278 residual +0.0267 p=0.0987 CI[−0.0079,+0.0613] UNDETERMINED not floor (upper +0.0613 38x vs FULL +0.0016), FULL 0.6236 sd0.0030 residual <b>−0.0022</b> p=0.1817 CI[−0.0060,+0.0016] sport <b>no longer decodable above base rate</b> bounded +0.0016. Variance ratio 343 F-test p=0.00005 treatment clamps to floor control bimodal 0.661/0.666/0.676 vs 0.762/0.778 — paired mean wrong summary, headline diff fact about which controls drawn n=3→n=5 -0.0458→-0.0851 corr(ctrl,diff)=−0.999 arithmetic when treated constant c diff=c−ctrl. Decomposition lambda −0.0562 p=0.0122 share 66% coral −0.0289 p=0.0659 share 34% CI spans zero before multiplicity — do not credit centroid. Artefacts <code>data/g2_centroid_ab.json</code> <code>data/stage2_seed_floor.json</code> <code>data/ablation_determinism.json</code>. See <a href="docs/LOCAL_GPU_G2_AUDIT_2026-08-05.md" style="font-weight:800">LOCAL_GPU_G2_AUDIT_2026-08-05.md</a> for t-const correction 2.31 was t(0.975,8) n=9 used at n=3 correct t(0.975,2)=4.303 margin 2.12x not 3.9x no conclusion flipped, G1 source fields unique candidate 4 reproducing per-seed values re-runnable <code>python pipeline/decompose_g2_ab.py --verify-metric-map --runs DIR</code>, limits n=5 df=4 FULL floor tight coral null absence evidence not zero effect controls bimodal 3:2 lottery, shipped residual +0.0593 37x FULL upper bound passing gate≠being sport-blind export_unified_stage2.py own g2_note warns weak bar.</p>
+      <p class="method-p" style="font-size:11px;color:#666" class="mono">A timeout is not a defect — probe_company_edges.py 120s while box training + 25-agent workflow + dashboard exits 0 idle. t=2.31 is t(0.975,8) n=9 constant used at n=3 across 8 stat blocks correct t(0.975,2)=4.303 constants from scipy.stats.t.ppf(0.975,df) keyed on df not n. See GOTCHAS.md. stage2_history.json written 2026-07-31 pipeline/train_stage2.py committed 3× since 4cdc0db 7.20 184.4 already asked G2≤0.433 right target it was not ecc1efa add --seed b0a7713 coral_centroid_loss+GRL lambda-target — shipped history describes run produced by code no longer in tree check_artifact_freshness.py STALE 118.4h TRUE positive not checker artifact symbol_dep_registry.json exemption does NOT apply — output of entire training not few NAMED SYMBOLS only honest clear re-run training producing NEW model discarding shipped ckpt or operator accepts knowingly green line would be unearned green repo exists to prevent per LOCAL_GPU_G2_AUDIT.</p>
+    </div>
+  </div>
+
+  <div class="method-grid">
+    <div class="card" id="cross-sport"><h2 class="method-h2">Cross-sport archetypes A0-A11 — shared role space</h2><p class="method-p">Taxonomy v0 human proposal versioned <code>data/archetype_map.json</code> revisable after first face-validity panel. 12 cross-sport archetypes defined sport-agnostically then mapped to native clusters via human-curated alignment table (anchor set). Pitch A6/A7/A9/A10 marked n/a (no pedigree/career) never assigned those archetypes contrastive loss does not create pitch-containing positives for them — honest. A4 remapped pitch-only members (cluster 2 383 players 81% DEF) had no hoops/gridiron counterpart cross-sport analogy trivially impossible hit 0.000 now folds into A3.</p>
+    <table class="lb-table"><thead><tr><th>#</th><th>Cross-sport archetype</th><th>Hoops native</th><th>Gridiron native</th><th>Pitch native</th></tr></thead><tbody>
+      <tr><td>A0</td><td><b>Off engine / primary initiator</b></td><td>high-usage shot+playmaking cluster</td><td>QB / high-usage RB / WR1</td><td>high key-pass + prog-carry mids</td></tr>
+      <tr><td>A1</td><td><b>Volume producer</b></td><td>shot-volume cluster</td><td>volume RB / target-hog WR</td><td>high xG/goals forwards</td></tr>
+      <tr><td>A2</td><td><b>Explosive perimeter</b></td><td>pull-up/drive wing</td><td>scrambling QB / YAC WR</td><td>dribbles + prog-carry wingers</td></tr>
+      <tr><td>A3</td><td><b>Def anchor / last line</b></td><td>rim-protector big</td><td>last-line S / interior DL</td><td>low-line CB / sweeper + folded pitch cluster2</td></tr>
+      <tr><td>A4</td><td><b>Def disruptor ball-hawk</b></td><td>steals/blocks specialist</td><td>edge rusher / ball-hawk S/DB</td><td>high tackles+INT — deferred v0, needs gridiron DL/DB</td></tr>
+      <tr><td>A5</td><td><b>Connector / grinder</b></td><td>3&D / glue</td><td>possession WR / pass-catching RB</td><td>high pass-completion box-to-box</td></tr>
+      <tr><td>A6</td><td><b>High-ped low-deliv</b></td><td>high draft low net</td><td>1st-rd low opp</td><td>n/a no pedigree</td></tr>
+      <tr><td>A7</td><td><b>Low-ped over-deliv</b></td><td>2nd/UDFA standout</td><td>late-rd/UDFA producer</td><td>n/a</td></tr>
+      <tr><td>A8</td><td><b>Breakout/riser</b></td><td>DELTA_NORM up FORM_VOL up</td><td>prior_ppg snap_pct up</td><td>limited 2 tourneys</td></tr>
+      <tr><td>A9</td><td><b>Declining veteran</b></td><td>arc down GP_RATIO down</td><td>exp high form down</td><td>limited</td></tr>
+      <tr><td>A10</td><td><b>Elite two-way</b></td><td>high off+high def cluster</td><td>rare fantasy</td><td>high xG+high pressures rare</td></tr>
+      <tr><td>A11</td><td><b>Floor-raising role</b></td><td>high PIE low usage</td><td>high EPA/target low vol</td><td>high recovery low TO</td></tr>
+    </tbody></table>
+    <p class="method-p">G3 within-arch cross-sport cos 0.746 between -0.121 sep +0.867 — folding real but composition gap 8.9pp between within-arch and between-arch sport-pair mix (hoops-gridiron vs hoops-pitch etc) — some separation is sport-pair effect not archetype effect; file states confound present without claiming amount. G4 NN arch agreement 0.9828 vs 0.1712 lift +0.8116 — genuine data-driven role distinctions model draws that human intuition merges: separates initiator A0 (Brady Mahomes De Bruyne) from volume scorer A1 (LeBron Ronaldo), grinder A5 (Kanté+TEs/FBs) from connector A11 (Draymond Kelce Henderson). Low-rank wins: Gobert~vanDijk r11 Tyreek~Mbappé32 Henderson~Draymond44 BenSimmons~R Dias56 Mahomes~DeBruyne64 RayAllen~HKane706 — role not person. Pitch sparse truth unchanged — only on-ball families.</p>
+    </div>
+    <div class="card" id="ablation"><h2 class="method-h2">Ablation hub — #unified-ablation truthful boxes</h2><p class="method-p">Lean shipped config SupCon+task+GRL (drop CORAL+VICReg at default weights) earns keep. Revisit CORAL/VICReg once encoders unfreeze — Stage 2.1 did and both earn small keeps via combined -1.5pp probe and rank floor insurance. Non-goals v0 unchanged: no new data ingestion beyond pipelines + cached StatsBomb, no tracking/spatial in joint, no live/real-time unified (batch asset retrain cadence), no Gramian/higher-order day-one (ablation-gated), no pitch data expansion day-one DONE — pitch expanded Phase1 full corpus.</p>
+    <table class="lb-table"><thead><tr><th>config</th><th>G1</th><th>G2acc</th><th>rank</th><th>G3sil</th><th>G4hit</th></tr></thead><tbody>
+      <tr><td>full SupCon+CORAL+GRL+VICReg+task</td><td>PASS</td><td>0.668 / shipped 0.6851 / FULL 0.6236</td><td>13.5 / 12.4</td><td>0.718 / 0.683</td><td>0.988 / 0.9828</td></tr>
+      <tr><td>no_supcon</td><td>PASS</td><td>0.669</td><td>20.3</td><td>0.125</td><td>0.137</td></tr>
+      <tr><td>no_coral</td><td>PASS</td><td>0.664</td><td>13.3</td><td>0.718</td><td>0.988</td></tr>
+      <tr><td>no_grl</td><td>PASS</td><td>0.716</td><td>13.5</td><td>0.723</td><td>0.989</td></tr>
+      <tr><td>no_vicreg</td><td>PASS</td><td>0.668</td><td>13.4</td><td>0.722</td><td>0.987</td></tr>
+      <tr><td>task_only</td><td>PASS</td><td>0.730</td><td>20.4</td><td>0.142</td><td>0.129</td></tr>
+    </tbody></table>
+    <p class="method-p" style="font-size:11px;color:#666">Every number recomputable from stats.nba.com / nflverse / StatsBomb open data — per pipeline/train_*.py provenance_honest shipped numbers unchanged in assets experimental block separate no rewrite of published page. Live board: <code>python tools/dashboard/server.py → localhost:8000</code> one screen 10s refresh reads git and artefacts at request time one instance.</p>
+    </div>
+  </div>
+
+  <div class="card" id="caveats">
+    <h2 class="method-h2">Open findings and operational records — 6 files caveat table</h2>
+    <p class="method-p">Six standalone files, none reachable from anywhere before this index existed — each is the stated reason for something a reader would otherwise hit cold: red gate, number that will not reproduce, bug nobody has decided to fix. Live board 10s refresh reads git/artefacts at request time.</p>
+    <table class="lb-table"><thead><tr><th>File</th><th>What it is</th><th>Key line</th></tr></thead><tbody>
+      <tr><td><code>LOCAL_GPU_G2_RESULT.md</code></td><td>LOCAL GPU G2 sport-blind measurement 5 seeds×3 arms (CTRL LAM FULL) — <b>MEASURED NOT PROMOTED</b> — shipped model untouched hash-verified <code>0.6851 ckpt b055641c03760624</code> promotion operator's call</td><td>Residual −0.0022 CI[−0.0060,+0.0016] sport no longer decodable bounded +0.0016 — control +0.0829 p=0.0304 decodable — LAM undetermined +0.0267 CI[−0.0079,+0.0613] — paired mean wrong summary 343x var ratio — coral p=0.0659 spans zero do not credit centroid — why file exists: COORDINATION.md mirror overwrites wholesale header gone origin/master 3 heartbeats 03:43/04:13/04:43 recorded no measured while pushed branch sat</td></tr>
+      <tr><td><code>data/TENNIS_CITATION_GAP.md</code></td><td>Why <code>cited_fields</code> red — six published tennis values cite artefacts git never carried, reader cannot check nor reproduce — two ways out both changing what published claim means</td><td>Published values → missing artefact — checker <code>check_cited_fields.py</code> red — decision: change claim or materialise artefact</td></tr>
+      <tr><td><code>data/seed_order_audit.json</code></td><td>Why 3 ablation artefacts disagree about <code>full@seed7</code>: <code>ablation.py</code> seeds at line 56 AFTER building model at line 50 so seed never controlled weights — one hit in 329 files via <code>pipeline/check_seed_before_init.py</code> — <code>data/ablation_determinism.json</code> triple 0.6940/0.6926/0.6827</td><td>Root cause seed after init — determinism flags did not fix — <code>train_stage2.py</code> IS reproducible 34/37 numeric fields bit-identical one quantity G2 probe 0.0002 move vs effects 425x/145x that</td></tr>
+      <tr><td><code>CONTACTS.md</code></td><td>Who named agents are, what each can and cannot do (<b>only the local lanes can train</b>), board is lossy one-directional channel — row here = notification, repo file = record</td><td>Operator call promotion, local GPU lane owns training, hub/docs lanes cannot train, mirror overwrites COORDINATION.md wholesale — sibling file survives</td></tr>
+      <tr><td><code>GOTCHAS.md</code></td><td>12 things that cost real time, each with command or constant that caused it — written at root because earlier copy lived in COORDINATION.md and mirror ate it — after several were hit second time — pipe eats $?, C:\Users \\U escape, replace silent, checkout mid-scan, git add -A data/ skipped ignored silently, checkout manufactures freshness, never refresh stage2_history.json, restore via manifest not guessed paths, build_*.py writes with NO FLAG, validate.py retrains tennis, two servers second port, t=2.31 constant wrong, timeout not defect, JSON key not prose, seed must before model</td><td>A lesson recorded in a file that gets overwritten is not recorded — never pipe command whose exit you quote OUT=$(cmd) RC=$? — assert old in s before replace / use Edit</td></tr>
+      <tr><td><code>SCHEDULING.md</code></td><td>How to make validation sweep and dashboard durable, and what sweep deliberately refuses to run</td><td>One screen one instance curl -s localhost:8000 — whitelist check_*.py explicit --check arms do not denylist — validation_sweep excludes tennis_mtnn</td></tr>
+    </tbody></table>
+    <p class="method-p" style="font-size:12px;color:#666"><b>Operational note:</b> Never refresh <code>stage2_history.json</code> to green gate — regenerates only by re-running training which overwrites <code>unified_stage2_best.pt</code> trades verified shipped model for green line. Restore from explicit manifest never infer paths from backup filenames — guessing sent two role-named backups to invented paths created two junk files left <code>data/unified_report.json</code> holding throwaway run's 0.6363 one file a reader would quote was one left wrong — use <code>pipeline/restore_shipped.py --verify</code>. Symbol-level exemption <code>data/symbol_dep_registry.json</code> does NOT apply: artefact depends on entire training procedure not few NAMED SYMBOLS only honest clear re-run training producing NEW model discarding shipped ckpt or operator accepts knowingly — green line would be unearned green repo exists to prevent per LOCAL_GPU_G2_AUDIT.</p>
+  </div>
+
+  <div class="card" id="limitations">
+    <h2 class="method-h2">Attribution & limits — honest framing (Methods-honest doctrine)</h2>
+    <ul style="font-size:13px;line-height:1.6;color:#333">
+      <li><b>Shared role space, best-guess analogies, never proven similarity.</b> There is no ground truth for "power forward is like strong safety." G4 0.9828 vs 0.1712 random lift +0.8116 shows NN arch agreement works; curated 0.0 top10 mean 2114≈2067 ratio 0.978 shows person-level retrieval fails. Space knows role not person. Use "a shared role space" and "these analogies are the model's best guess," never "the proven similarity between sports." (SPEC §6 framing, dumbmodel voice: wrong all the time that's the fun ×2).</li>
+      <li><b>Pitch sparse / role-only caveat.</b> Pitch is 4 of 10 sport-agnostic families (volume, efficiency, defense, playmaking) — NO bio/market/pedigree/honors/clutch/career. Cross-sport analogies involving pitch are role-only, never physical/market. Accepted and documented not faked per ontology. Expanded from PCA(3)/~600-row baseline Phase1 to full corpus but family gap unchanged.</li>
+      <li><b>Market/cultural footprint signals NOT in v0 per SPEC §8.</b> User-requested: salary/sponsorship/social-media are NOT in v0 — blocked on external data acquisition (only hoops has sal/pedigree). Market heads (Forbes 150 records 23 unique elite, Spotrac 23k→93% coverage, Wikipedia awards 205→career AWARD_PRESTIGE) acquired free-tier wired to trunk via <code>--market</code> but hoops salary too sparse n=39 Forbes-only ρ≈0 award ρ=0.52 pooled star-attacker geometry latch. Honest gaps: Transfermarkt pitch MV blocked TLS anti-bot, pitch salary Forbes stars only, endorse Forbes only, social reach deferred.</li>
+      <li><b>No lineup/on-off.</b> Joint embedding is season-level "who is this player archetypally" map. Gridiron weekly prediction stays sport-specific head on weekly feats. Pitch player-tournament ≈ season. No spatial/tracking in joint (sport-internal).</li>
+      <li><b>No new data ingestion</b> beyond existing pipelines + cached StatsBomb. Live/real-time unified embeddings batch asset on retrain cadence not real-time.</li>
+      <li><b>Archetype names = centroid stats not scouting.</b> Taxonomy v0 K≈10-12 human proposal A0-A11 versioned revisable after first face-validity panel.</li>
+      <li><b>Granularity mismatch season/week/tournament smoothed.</b> Season mean smooths week's role shift.</li>
+      <li><b>Pos_mask bug history — 1.0 artefact on globally shuffled.</b> Old position 1.0 all was int64 fancy-index selecting rows 0/1 12,966×. Now corrected 0.738→0.784 hoops pos etc. Any emb hits 0.6257 floor.</li>
+      <li><b>Rank is collapse detector not quality metric.</b> Perm-inv both shuffle nulls score 12.4 exactly real value random gaussian 64.0 highest — 2 collapsed configs carry highest ranks 19.6/18.8 vs 12.8. Detects only collapse when rank low AND G1/G3 failing; they do not. True floor 12 per ablation not literal 32.</li>
+      <li><b>G3 composition gap 8.9pp.</b> Within-arch vs between-arch sport-pair mix differs — some sep is sport-pair effect not archetype — file states confound present without claiming amount.</li>
+      <li><b>Seed nondet — ablation.py vs train_stage2.py.</b> ablation.py seeds line56 after model line50 one hit in 329 files — 3 reruns 0.6940/0.6926/0.6827 — ablation not reproducible root cause unknown adding determinism flags did NOT fix. train_stage2.py reproducible 34/37 numeric bit-identical G2 probe 0.0002 move vs effects 425x/145x.</li>
+      <li><b>Chimera fused vector never existed — same as hoops.</b> Analogy fused vector never existed — joint space gives nearest real among 20,719 by cosine but chimera argmin is synthetic.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="accuracy-harness"><h2 class="method-h2">Accuracy harness — blocks deploy on fail + audit</h2><ul style="font-size:14px;line-height:1.6"><li>V1 vectors.json dims ranges no dupes L2-norm 1.0 per 20,719 n_rows</li><li>V2 cluster labels recompute nearest-centroid all 20,719 match cross-sport archetype A0-A11</li><li>V3 deadline.json deltas recomputed from raw logs 0.01 tolerance</li><li>V4 chimera determinism across 30 dates cosine &lt;0.3 between donors</li><li>V5 drift Procrustes chains RᵀR=I root 1996-97</li><li>V6 G1-G4 gates + shuffled nulls + ablation each loss earns keep + guards non-vacuous + gate non-vacuity + artifact freshness + hub freshness + cited_fields</li></ul><p class="method-p" style="color:#6B665E;font-size:12px">Unified extras: G1 shuffled null +0.549/+0.692/+0.562 proves evidence not buggy mask, G2 majority floor 0.6258 vs shuffled 0.6257 vs chance 0.3333, G2 LOCAL GPU MEASURED NOT PROMOTED residual −0.0022, G3 silhouette floor 0.05 sep floor 0.05 null +0.0440, G4 random arch overlap 0.1712 E[min_k]=(N−k)/(k+1). ONNX export TBD — current PT 2MB+drifted enc_states.</p></div>
+
+  <div class="card" id="attribution"><h2 class="method-h2">Next →</h2><p class="method-p"><a href="/model" style="font-weight:800;border-bottom:2px solid var(--ink);text-decoration:none">Inside the Network → 3 encoders → CORAL centroid → joint</a> · <a href="/play">Play unified</a> · <a href="/players">Players 20,719</a></p><p class="method-p" style="font-size:12px;color:#666">Live artifact: <code>python tools/dashboard/server.py → localhost:8000</code> one screen 10s refresh reads git and artefacts at request time run exactly one instance. Curl before: <code>curl -s -o NUL -w "%{http_code}" http://localhost:8000/</code> second server silently takes next port 8001 second old code wrong verification — check first.</p></div>
+</div>
+<footer class="site-footer"><div class="site-footer__links"><a href="/play">Unified Play</a><a href="/model">Lab</a><a href="/methods">Methods</a><a href="/players">Players</a><a href="https://github.com/jcdavis131/vector-unified" target="_blank" rel="noopener">GitHub</a></div><div class="site-footer__attribution">20,719 player-seasons — hoops/gridiron/pitch one geometry — every number recomputable from source leagues · dumbmodel.com unified · shared role space not proven similarity</div></footer>
+<script src="assets/error-boundary.js"></script>
+<script src="assets/keyboard-a11y.js"></script>
+<script src="assets/site-nav.js" defer></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}</script>
+</body></html>

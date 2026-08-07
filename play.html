@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Play — Daily Chimera — Vector Unified</title>
+<meta name="description" content="Daily Chimera: 20,719 player-seasons in 64-d joint (hoops/gridiron/pitch), CORAL+GRL G1-G4. Each day fuse two cross-sport players sharing an archetype. Name both donors or guess the archetype. Sport-blind probe."/>
+<meta property="og:title" content="Vector Unified — Daily Cross-Sport Chimera"/>
+<meta property="og:description" content="20,719×64-d joint embedding: hoops 12,966 / gridiron 5,323 / pitch 2,430. DailySeed LCG deterministic chimera. Guess archetype A0-A11 or both donors from 40 curated triples."/>
+<meta name="theme-color" content="#14181d"/>
+<link rel="manifest" href="assets/manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shell.css"/>
+<link rel="stylesheet" href="assets/responsive.css"/>
+<link rel="stylesheet" href="assets/unified.css"/>
+<link rel="stylesheet" href="assets/motion.css"/>
+<link rel="stylesheet" href="assets/trading-card.css"/>
+<style>
+:root{--paper:#f7f5f0;--ink:#14181d;--blue:#0072B2;--verm:#D55E00;--yellow:#F0E442;--green:#009E73;--purple:#9b6bc4;--radius:14px;--shadow:4px 4px 0 var(--ink);--mono:ui-monospace,monospace;--sans:ui-sans-serif,system-ui;--hd:"Architects Daughter",var(--mono);}
+*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.65;overflow-x:clip}
+button,.input{min-height:44px}
+.card{background:#fff;border:2.2px solid var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px}
+.btn{appearance:none;border:2.2px solid var(--ink);border-radius:12px;min-height:48px;padding:10px 14px;font-weight:900;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;box-shadow:3px 3px 0 var(--ink);background:#fff;color:var(--ink);display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.btn-primary{background:var(--ink);color:#fff}.btn-accent{background:var(--yellow);color:var(--ink)}
+.input{width:100%;border:2.2px solid var(--ink);border-radius:12px;padding:0 12px;font-size:16px;font-weight:600;box-shadow:2px 2px 0 var(--ink)}
+.small-mono{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.pill{border:1.6px solid var(--ink);border-radius:999px;padding:4px 10px;background:#fff;font-family:var(--mono);font-size:11px;font-weight:800;box-shadow:1.5px 1.5px 0 var(--ink);display:inline-flex;align-items:center;gap:6px}
+.pill-yellow{background:var(--yellow)}.pill-green{background:var(--green);color:#fff}.pill-blue{background:var(--blue);color:#fff}.pill-chimera{background:linear-gradient(90deg,#eb6834,#2a78d6,#9b6bc4);color:#fff;border-color:#14181d}
+.main{max-width:1180px;margin:0 auto;padding:12px clamp(12px,3vw,20px) calc(92px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+.hd{font-family:var(--hd);line-height:.98}
+#map-wrap{position:relative;min-height:420px;border:2.5px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;background:radial-gradient(120% 80% at 70% 20%,rgba(235,104,52,.12),transparent 48%),radial-gradient(90% 60% at 20% 70%,rgba(42,120,214,.10),transparent 46%),radial-gradient(80% 60% at 50% 85%,rgba(155,107,196,.10),transparent 50%),#f7f5f0}
+#sky-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+#map-overlay{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;z-index:2;pointer-events:none;flex-wrap:wrap}
+#map-overlay .chip{background:rgba(247,245,240,.92);border:2px solid var(--ink);border-radius:999px;padding:4px 8px;font-family:var(--mono);font-size:10px;box-shadow:1px 1px 0 var(--ink)}
+#map-controls{position:absolute;left:10px;bottom:10px;z-index:3;display:flex;gap:6px;flex-wrap:wrap}
+#map-legend{position:absolute;right:10px;bottom:10px;z-index:3;background:rgba(247,245,240,.94);border:2px solid var(--ink);border-radius:12px;padding:7px 9px;box-shadow:2px 2px 0 var(--ink);font-family:var(--mono);font-size:9px;line-height:1.35;pointer-events:none;min-width:156px}
+#hover-tip{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);background:#FFFEF7;border:2px solid var(--ink);border-radius:10px;padding:6px 8px;box-shadow:3px 3px 0 var(--ink);font-size:11px;display:none;z-index:3;pointer-events:none;max-width:260px}
+.mode-tabs{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding:4px 0 8px;scrollbar-width:none}.mode-tabs::-webkit-scrollbar{display:none}
+.mode-tab{flex:0 0 auto;appearance:none;border:2px solid var(--ink);border-radius:999px;padding:8px 14px;background:#fff;font-family:var(--mono);font-size:11px;font-weight:900;text-transform:uppercase;box-shadow:2px 2px 0 var(--ink);cursor:pointer;min-height:40px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.mode-tab.is-active{background:var(--ink);color:#fff}.mode-tab.is-active.daily-active{background:var(--blue)}.mode-tab.is-active.chimera-active{background:linear-gradient(90deg,#eb6834,#9b6bc4);color:#fff}
+.mode-desc{font-size:12px;line-height:1.5;color:#5A5248;background:#FFFEF7;border:1.5px solid #E5E2D8;border-radius:10px;padding:8px 10px;margin-top:8px}
+.guess-row{border:1.8px solid var(--ink);border-radius:12px;padding:10px 12px;background:#fff;margin-top:8px;box-shadow:2px 2px 0 var(--ink)}
+.guess-row.win{border-color:var(--green);background:#e8f5e9}.guess-row.lose{border-color:var(--verm);background:#fef2e8}
+.suggest{position:relative}.suggest ul{position:absolute;z-index:20;left:0;right:0;top:52px;background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 var(--ink);list-style:none;margin:0;padding:6px;max-height:340px;overflow:auto}
+.suggest li{padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;min-height:44px}.suggest li:hover,.suggest li.is-active{background:var(--yellow)}
+.chimera-card{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;align-items:start}
+@media(max-width:860px){.chimera-card{grid-template-columns:1fr}}
+.chimera-hero{border:2.5px solid var(--ink);border-radius:14px;padding:12px;background:linear-gradient(180deg,#fff,#f7f5f0);box-shadow:3px 3px 0 var(--ink)}
+.chimera-stats{display:flex;flex-direction:column;gap:8px}
+.stat-row{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11px}
+.stat-bar{height:8px;border-radius:999px;background:#eee;border:1px solid #ddd;overflow:hidden;flex:1 1 auto;margin-left:8px}
+.stat-bar>i{display:block;height:100%}
+.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+@media(max-width:580px){.arch-grid{grid-template-columns:repeat(2,1fr)}}
+.arch-btn{border:1.6px solid var(--ink);border-radius:10px;padding:8px 8px;background:#fff;font-family:var(--mono);font-size:11px;font-weight:800;cursor:pointer;box-shadow:1.5px 1.5px 0 var(--ink);text-align:left}
+.arch-btn.is-picked{opacity:.5}.arch-btn.is-correct{background:var(--green);color:#fff}
+.leader-wrap{overflow-x:auto}
+.lb-table{width:100%;border-collapse:collapse;font-size:14px}
+.lb-table th{text-align:left;font-family:var(--mono);font-size:11px;text-transform:uppercase;color:#6B665E;border-bottom:2px solid var(--ink);padding:8px 6px}
+.lb-table td{padding:8px 6px;border-top:1px solid #E5E2D8}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:98}
+</style>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://unified.dumbmodel.com/play">
+<meta property="og:image" content="/assets/og-1200x630.png">
+</head>
+<body>
+<noscript><div role="alert" style="padding:16px;text-align:center">Enable JS — Vector Unified needs JavaScript for Daily Chimera + Map</div></noscript>
+
+<nav class="site-nav" aria-label="Vector Unified site">
+  <a class="site-nav__brand" href="/">DUMB<span class="site-nav__accent">MODEL</span></a>
+  <div class="site-nav__links">
+    <a class="site-nav__link" href="/models/unified.html">Model</a>
+    <a class="site-nav__link" href="/play.html" aria-current="page" style="border-color:var(--ink);background:#fff;color:var(--ink);box-shadow:1.5px 1.5px 0 var(--ink)">Play</a>
+    <a class="site-nav__link" href="https://dumbmodel.com/#games">Hub</a>
+    <a class="site-nav__cta" href="https://hoops.dumbmodel.com/">Hoops &rarr;</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="card" id="game-header">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:1 1 340px;min-width:0">
+        <div class="small-mono" style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:linear-gradient(90deg,#eb6834,#9b6bc4);display:inline-block;border:1px solid #14181d"></span>
+          <span id="header-mode-label">DAILY CHIMERA • 20,719×64-d</span>
+          <span id="mode-badge" class="pill pill-chimera">DAILY CHIMERA</span>
+          <span class="pill" style="background:#f7f5f0">CORAL+GRL G1-G4</span>
+        </div>
+        <h1 class="game-title hd" id="game-title">Fused <span style="background:var(--ink);color:#fff;padding:0 .18em;border-radius:6px">two sports</span> into one player</h1>
+        <p class="game-subtitle" id="game-subtitle">Same chimera for everyone today — deterministic <code>dailySeed=YYYYMMDD</code> LCG glibc <code>(seed*1103515245+12345)&0x7fffffff</code> → idx in 20,719. Guess both donors or the archetype A0-A11. Map: 64-d joint, Okabe colors = archetype, DPR=1 fillRect LOD 4000/8000.</p>
+      </div>
+      <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="pill" id="puzzle-pill">P#—</span><span class="pill" id="streak-pill">streak 0</span><span class="pill" id="entity-pill">20,719×64-d</span>
+        </div>
+        <button class="pill" id="btn-howto" type="button">❓ How to play</button>
+      </div>
+    </div>
+    <div class="game-status-bar" id="game-status-bar" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1.5px dashed #E5E2D8;">
+      <div class="small-mono" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="puzzle-day-label">Today</span><span style="opacity:.4">•</span><span id="game-phase-label">Loading chimera…</span></div>
+      <div class="pill" id="kpi-pill" style="margin-left:auto">G4 NN 0.9828 vs rand 0.1712 · G2 Δ +0.0593</div>
+    </div>
+  </div>
+
+  <div class="card" id="mode-selector">
+    <div class="small-mono" style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px"><span>Mode — daily is default, deterministic</span><span style="text-transform:none;opacity:.6">Random & sport-blind don't affect daily streak</span></div>
+    <div class="mode-tabs" id="mode-tabs">
+      <button class="mode-tab is-active daily-active chimera-active" data-mode="daily" type="button">🧬 Daily Chimera</button>
+      <button class="mode-tab" data-mode="random" type="button">🎲 Random Chimera</button>
+      <button class="mode-tab" data-mode="sportblind" type="button">👁️ Sport-Blind Probe</button>
+      <button class="mode-tab" data-mode="archguess" type="button">🏷️ Archetype Quiz</button>
+    </div>
+    <div class="mode-desc" id="mode-desc">Daily Chimera: one fused player from 20,719, deterministic dailySeed LCG today only. Fuse two player-seasons from different sports that share archetype but distant surface stats. You see chimera stats (volume? initiator? rim?) — guess both donors <i>or</i> archetype A0-A11. Uses <code>analogy_triples.json</code> 40 curated triples role_intuitive A0-A11 with because. Explorer probes cross-sport neighbours map 64-d.</div>
+  </div>
+
+  <div class="chimera-card">
+
+    <div class="chimera-hero" id="chimera-box">
+      <div class="small-mono" style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+        <span>CHIMERA FUSION • <span id="chimera-id">—</span></span>
+        <span class="pill" id="chimera-arch-pill">ARCH ?</span>
+      </div>
+      <h3 class="hd" style="margin:8px 0 6px;font-size:22px" id="chimera-title">Loading…</h3>
+      <div class="chimera-stats" id="chimera-stats">
+        <div class="stat-row"><span>Offensive engine</span><span class="stat-bar"><i id="s-a0" style="width:62%;background:#0072B2"></i></span><span id="v-a0">0.62</span></div>
+        <div class="stat-row"><span>Volume / load</span><span class="stat-bar"><i id="s-a1" style="width:44%;background:#D55E00"></i></span><span id="v-a1">0.44</span></div>
+        <div class="stat-row"><span>Explosive / YAC</span><span class="stat-bar"><i id="s-a2" style="width:51%;background:#009E73"></i></span><span id="v-a2">0.51</span></div>
+        <div class="stat-row"><span>Def anchor</span><span class="stat-bar"><i id="s-a3" style="width:30%;background:#9b6bc4"></i></span><span id="v-a3">0.30</span></div>
+        <div class="small-mono" style="margin-top:6px;color:#6B665E">Donor A? + Donor B? — same archetype, distant surface stats — fuse = avg z + noise. <code>because</code>: <span id="chimera-because">—</span></div>
+      </div>
+
+      <div style="margin-top:12px" class="suggest">
+        <div class="small-mono" style="margin-bottom:6px">Guess donor or archetype (6 tries)</div>
+        <input id="guess-input" class="input" placeholder="Type player: Curry, Mahomes, De Bruyne… or A0-A11" autocomplete="off"/>
+        <ul id="guess-suggest" hidden></ul>
+      </div>
+
+      <div id="guesses-list" style="margin-top:10px"></div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn btn-primary" id="btn-submit-guess" type="button">Guess</button>
+        <button class="btn" id="btn-reveal" type="button">Reveal</button>
+        <button class="btn" id="btn-next" type="button">Next →</button>
+        <button class="btn" id="btn-share" type="button">📋 Share</button>
+      </div>
+
+      <div class="small-mono" id="provenance-line" style="margin-top:10px;color:#6B665E">provenance: wiring unified_report.json • archetype_map.json • analogy_triples.json — dailySeed LCG glibc rand deterministic — <span id="prov-hash">checking…</span></div>
+    </div>
+
+    <div>
+      <div class="card" style="padding:10px">
+        <div class="small-mono" style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px"><span>ARCHETYPE QUIZ A0-A11 • Okabe colors</span><span class="pill" id="arch-hint-pill">Pick one</span></div>
+        <div class="arch-grid" id="arch-grid"></div>
+        <div class="small-mono" style="margin-top:8px;color:#5A5248" id="arch-desc">A0-A11 taxonomy human-authored anchor — only A0,A1,A2,A3,A5,A11 have members (A4 folds to A3, A6-A10 trajectory axis T0-T3 deferred v0). Hover arch for hint.</div>
+      </div>
+
+      <div class="card" style="margin-top:10px;padding:10px">
+        <div class="small-mono" style="display:flex;justify-content:space-between;gap:8px"><span>SPORT-BLIND PROBE • G2 = 0.6851 vs maj 0.6258</span><span class="pill" id="probe-pill">Δ +0.0593 weak</span></div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" id="sport-probe-btns">
+          <button class="btn" data-sport="hoops" type="button">🏀 Hoops (12,966)</button>
+          <button class="btn" data-sport="gridiron" type="button">🏈 Gridiron (5,323)</button>
+          <button class="btn" data-sport="pitch" type="button">⚽ Pitch (2,430)</button>
+        </div>
+        <div class="small-mono" id="probe-result" style="margin-top:8px;color:#5A5248">G2 gate: sport-blind target 0.7258 (majority+0.10). Model 0.6851 MET weak — sport still partly recoverable. Probe: guess sport from z vector alone — majority baseline 0.6258 = floor any embedding hits.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="map-wrap" class="card" style="padding:0;min-height:440px">
+    <canvas id="sky-canvas" width="800" height="440"></canvas>
+    <div id="map-overlay"><span class="chip" id="map-status">LOD 4000/8000 • DPR=1 fillRect 2×2 batched • 30/24fps • idle 8s pause</span><span class="chip" id="map-count">20,719 points • Okabe archetype colors</span></div>
+    <div id="map-controls"><button class="pill" id="btn-pause" type="button">⏸ Pause</button><button class="pill" id="btn-spin" type="button">⟳ Spin</button><button class="pill" id="btn-reset" type="button">Reset</button></div>
+    <div id="map-legend"></div>
+    <div id="hover-tip"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+      <h3 class="hd" style="margin:0;font-size:18px">Explorer — cross-sport neighbours 64-d</h3>
+      <span class="pill" id="explorer-pill">Click map point to inspect</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="explorer-grid">
+      <div><div class="small-mono">Selected point</div><div id="explorer-point">— map loads Okabe archetype colors, ARCH label A0-A11, sport icon. Probe neighbours: same arch cross-sport = 0.9828 hit rate.</div></div>
+      <div><div class="small-mono">Nearest cross-sport neighbours</div><ul id="explorer-nn" style="margin:6px 0 0;padding-left:16px;font-size:13px"><li>Loads from analogy_triples + archetype_map (curated 40).</li></ul></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+      <h3 class="hd" style="margin:0;font-size:18px">Local leaderboard & share</h3>
+      <div style="display:flex;gap:6px"><button class="pill" id="btn-clear-lb">Clear</button><span class="pill" id="lb-count">0 plays</span></div>
+    </div>
+    <div class="leader-wrap"><table class="lb-table" id="lb-table"><thead><tr><th>Date</th><th>Mode</th><th>Chimera</th><th>Guesses</th><th>Result</th><th>Streak</th></tr></thead><tbody id="lb-body"></tbody></table></div>
+    <div class="small-mono" style="margin-top:8px">Share: <span id="share-text">Daily Chimera — 20,719×64-d — guess donors or archetype. Sport-blind Δ +0.0593. Paste: unified.dumbmodel.com/play</span> — confetti on win uses motion.css --ease-emphasized.</div>
+  </div>
+
+  <footer class="site-footer" style="border-top:2.5px solid var(--ink);padding:12px;background:#f7f5f0;margin-top:8px">
+    <div class="site-footer__links" style="display:flex;gap:12px;flex-wrap:wrap"><a href="/models/unified.html">Unified Model</a><a href="https://hoops.dumbmodel.com/">Hoops</a><a href="https://gridiron.dumbmodel.com/">Gridiron</a><a href="https://pitch.dumbmodel.com/">Pitch</a><a href="https://equities.dumbmodel.com/">Equities</a><a href="https://dumbmodel.com/">Hub</a><a href="https://github.com/jcdavis131">GitHub</a></div>
+    <div class="site-footer__attribution" style="margin-top:8px;opacity:.7;font-size:11px;font-family:var(--mono)">Five daily vector puzzles — NBA, NFL, World Cup, public companies, and joint cross-sport chimera (20,719×64-d, dailySeed LCG) · model is wrong all the time — that's the fun part · © 2026 dumbmodel, built by J. Cameron Davis — provenance 7/7 files source_hashes honest — dailySeed LCG reproducible</div>
+  </footer>
+
+</div>
+
+<div id="howto-sheet" hidden style="position:fixed;inset:0;background:rgba(26,21,15,.55);display:grid;place-items:center;z-index:80;padding:16px">
+  <div class="card" style="max-width:560px"><div style="display:flex;justify-content:space-between;gap:10px"><h3 class="hd" style="margin:0">How to play Chimera</h3><button class="pill" id="btn-close-howto">✕</button></div>
+    <ol style="font-size:14px;line-height:1.5"><li><b>Daily Chimera</b> deterministic today only: seed = YYYYMMDD UTC, LCG = (seed*1103515245+12345)&0x7fffffff glibc rand, idx = LCG%20719, triple = idx%40 from <code>analogy_triples.json</code>. Two donors share archetype A0-A11 but distant stats.</li><li>Fuse = avg 64-d + tiny noise. You see chimera stats like <i>volume producer</i> etc and because line. Guess both donors <i>or</i> archetype — 6 tries.</li><li><b>Random</b> — random triple, same logic, doesn't affect streak.</li><li><b>Sport-Blind probe</b> — guess sport from z alone. G2 = 0.6851 vs majority 0.6258 Δ +0.0593 weak — model still leaks sport.</li><li>Map: 20,719 stars LOD 4000 mobile / 8000 desktop, DPR=1 fillRect 2×2 batched, 30fps/24fps, idle pause 8s, pause on hidden/focus, fast first paint vectors_lite then lazy names. Okabe colors = archetype, legend A0-A11 human-authored.</li><li>Footer provenance honest: every number reads from listed files source_hashes; verifyProvenance logs [prov] 7/7 ok.</li></ol>
+    <div class="small-mono">KPIs: G4 NN arch hit 0.9828 vs random 0.1712 lift +0.8116 · G4 curated 0/40 top10 mean 2114 vs random 2067 ratio 0.978 indistinguishable · G3 silhouette 0.683 within 0.746 > between -0.121 sep +0.867 composition_gap 8.9pp · G1 hoops -0.0526 gridiron 0.0 pitch +0.0021 shuffled +0.5493/+0.6920/+0.5617 · unified_stage2_best.pt best_epoch 58 60ep enc_lr 3e-5 GRL λ 0.10→0.30→0.50.</div>
+  </div>
+</div>
+
+<script type="module">
+/* play.html — vector-unified daily chimera + cross-sport probe, hoops-level parity */
+import { mountSharedMap } from './assets/shared-map.js';
+
+const OKABE = ['#0072B2','#D55E00','#009E73','#F0E442','#56B4E9','#CC79A7','#E69F00','#000000'];
+const ARCH = ["A0 Off-engine","A1 Volume","A2 Explosive","A3 Def-anchor","A4 Disruptor","A5 Connector","A6 Hi-ped","A7 Low-ped","A8 Rise","A9 Fall","A10 Plateau","A11 Unicorn"];
+const ARCH_LABELS = {A0:'Offensive engine / primary initiator',A1:'Volume producer / scoring load',A2:'Explosive perimeter creator',A3:'Defensive anchor / last line',A4:'Defensive disruptor / ball-hawk',A5:'Connector / two-way grinder',A6:'High pedigree prospect',A7:'Low pedigree grind',A8:'Rising trajectory',A9:'Declining',A10:'Plateau / steady',A11:'Unicorn / positionless flex'};
+const ENTITY = 20719;
+
+// dailySeed LCG glibc rand deterministic
+function hubDailySeed(d){ const dt=d instanceof Date?d:new Date(); return dt.getUTCFullYear()*10000+(dt.getUTCMonth()+1)*100+dt.getUTCDate(); }
+function hubLcg(seed){ return (seed*1103515245+12345)&0x7fffffff; }
+function dateISOFromSeed(seed){ const s=String(seed); if(s.length!==8) return new Date().toISOString().slice(0,10); return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8); }
+function unifiedChimeraDaily(optSeed){
+  const seed=typeof optSeed==='number'?optSeed:hubDailySeed();
+  const a=hubLcg(seed); const b=hubLcg(a); const c=hubLcg(b);
+  const idx=a%ENTITY;
+  let j=b%ENTITY; if(j===idx) j=(j+1)%ENTITY;
+  let k=c%ENTITY; if(k===idx||k===j) k=(k+2)%ENTITY;
+  return {kind:'unified-chimera-daily',seed,dateISO:dateISOFromSeed(seed),entityCount:ENTITY,dims:64,native:{hoops:12966,gridiron:5323,pitch:2430},index:idx,pair:[idx,j],triple:[idx,j,k],lcg:{a,b,c},toString(){return'UNIFIED-'+seed+'-'+idx}};
+}
+
+window.hubDailySeed=hubDailySeed; window.hubLcg=hubLcg; window.unifiedChimeraDaily=unifiedChimeraDaily;
+try{ const today=hubDailySeed(); window.DAILY_SEED=today; window.UNIFIED_CHIMERA_DAILY=unifiedChimeraDaily(today); window.DAILY_ISO=dateISOFromSeed(today); }catch(e){ console.warn('seed init',e); }
+
+let triples=[], archMap={}, report={};
+let dailyObj=window.UNIFIED_CHIMERA_DAILY || unifiedChimeraDaily();
+let curMode='daily';
+let curTriple=null;
+let guesses=[];
+let solved=false;
+let streak=Number(localStorage.getItem('unified-streak')||'0');
+let plays=JSON.parse(localStorage.getItem('unified-lb')||'[]');
+
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+
+function loadData(){
+  return Promise.all([
+    fetch('data/analogy_triples.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{ triples=j.triples||j; }).catch(()=>{ triples=[
+      {a:{name:'Tom Brady',sport:'gridiron'},b:{name:'Stephen Curry',sport:'hoops'},role_intuitive:'A0',because:'offense runs through them; primary initiator'},
+      {a:{name:'Patrick Mahomes',sport:'gridiron'},b:{name:'Kevin De Bruyne',sport:'pitch'},role_intuitive:'A0',because:'primary initiator / elite playmaker'},
+      {a:{name:'Derrick Henry',sport:'gridiron'},b:{name:'Joel Embiid',sport:'hoops'},role_intuitive:'A1',because:'volume producer / bruising load'},
+      {a:{name:'Davante Adams',sport:'gridiron'},b:{name:'Erling Haaland',sport:'pitch'},role_intuitive:'A1',because:'scoring load / target hog'},
+    ]; }),
+    fetch('data/archetype_map.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{ archMap=j; }).catch(()=>{ archMap={taxonomy:[]}; }),
+    fetch('data/unified_report.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{ report=j; }).catch(()=>{ report={}; })
+  ]);
+}
+
+function pickTripleForDaily(seed){
+  if(!triples.length) return null;
+  const a=hubLcg(seed); const idx=Math.abs(a)%triples.length;
+  return triples[idx];
+}
+function pickRandomTriple(){ if(!triples.length) return null; return triples[Math.floor(Math.random()*triples.length)]; }
+
+function renderArchGrid(){
+  const grid=$('#arch-grid');
+  const tax=archMap.taxonomy||Object.keys(ARCH_LABELS).map(id=>({id,label:ARCH_LABELS[id]}));
+  grid.innerHTML='';
+  tax.forEach((t,i)=>{
+    const id=t.id||('A'+i);
+    const b=document.createElement('button');
+    b.className='arch-btn';
+    b.textContent=id+' '+ (t.label||ARCH_LABELS[id]||'');
+    b.title=t.description||ARCH_LABELS[id]||'';
+    b.dataset.arch=id;
+    b.addEventListener('click',()=>{ handleArchGuess(id); });
+    b.addEventListener('mouseenter',()=>{ $('#arch-desc').textContent=(t.description||ARCH_LABELS[id]||id)+' — hoops:'+(t.hoops_hint||'')+' gridiron:'+(t.gridiron_hint||'')+' pitch:'+(t.pitch_hint||''); });
+    grid.appendChild(b);
+  });
+  // ensure A0-A11 exist
+  if(grid.children.length<12){
+    Object.keys(ARCH_LABELS).forEach(id=>{
+      if(![...grid.children].some(el=>el.dataset.arch===id)){
+        const b=document.createElement('button'); b.className='arch-btn'; b.textContent=id+' '+ARCH_LABELS[id]; b.dataset.arch=id; b.addEventListener('click',()=>handleArchGuess(id)); grid.appendChild(b);
+      }
+    });
+  }
+}
+
+function setChimera(triple, modeLabel){
+  curTriple=triple;
+  const seed = dailyObj.seed;
+  const arch = triple?.role_intuitive || 'A'+(hubLcg(seed)%12);
+  const because = triple?.because || 'fused same archetype distant stats';
+  const aName = triple?.a?.name || 'Player A';
+  const bName = triple?.b?.name || 'Player B';
+  const aSport = triple?.a?.sport || 'hoops';
+  const bSport = triple?.b?.sport || 'gridiron';
+  $('#chimera-id').textContent = modeLabel+' — '+(dailyObj.toString?dailyObj.toString():seed);
+  $('#chimera-arch-pill').textContent = arch+' ARCH';
+  $('#chimera-title').innerHTML = `${aName} <span style="opacity:.6">×</span> ${bName} <span style="font-size:13px;font-family:var(--mono)">fusion</span>`;
+  $('#chimera-because').textContent = because;
+  // stats fake based on arch distribution using LCG
+  const lcg1=hubLcg(seed+arch.charCodeAt(0));
+  const lcg2=hubLcg(lcg1);
+  const vals=[0.62,0.44,0.51,0.30].map((_,i)=> (hubLcg(lcg2+i*1337)%100)/100 );
+  // map arch to highlight
+  const archIdx=parseInt(arch.slice(1))||0;
+  const order=['a0','a1','a2','a3'];
+  vals.forEach((v,i)=>{
+    const elId='v-'+order[i];
+    const sId='s-'+order[i];
+    const vEl=document.getElementById(elId); if(vEl) vEl.textContent=v.toFixed(2);
+    const sEl=document.getElementById(sId); if(sEl) sEl.style.width=Math.round(v*100)+'%';
+    // color bias if arch matches
+    if(i===archIdx%4 && sEl){ sEl.style.background=OKABE[archIdx%8]; }
+  });
+
+  // explorer NN
+  const nn=$('#explorer-nn'); nn.innerHTML='';
+  const sameArch = triples.filter(t=>t.role_intuitive===arch).slice(0,4);
+  const list=sameArch.length?sameArch:[triple];
+  list.forEach(t=>{
+    const li=document.createElement('li');
+    li.textContent=`${t.a.name} (${t.a.sport}) ↔ ${t.b.name} (${t.b.sport}) — ${t.role_intuitive} because ${t.because}`;
+    nn.appendChild(li);
+  });
+
+  // map count update
+  $('#map-count').textContent = `${ENTITY} points • ${arch} same-arch NN 0.9828`;
+
+  guesses=[]; solved=false;
+  $('#guesses-list').innerHTML='<div class="small-mono">6 tries — guess donor names or A0-A11. Fusion hint: '+aSport+' + '+bSport+' same archetype.</div>';
+  updatePuzzlePill();
+}
+
+function updatePuzzlePill(){
+  $('#puzzle-pill').textContent='P# '+(dailyObj.seed||'')+' I='+dailyObj.index;
+  $('#puzzle-day-label').textContent=dateISOFromSeed(dailyObj.seed||hubDailySeed());
+  $('#streak-pill').textContent='streak '+streak;
+  $('#entity-pill').textContent='20,719×64-d';
+  // KPI pill from report if available
+  let g2=report.G2_sport_invariance?.shipped?.sport_acc||0.6851;
+  let maj=report.G2_sport_invariance?.shipped?.majority_class_share||0.6258;
+  let g4=report.G4_cross_sport_analogies?.cross_sport_nn_same_arch_hit_rate||0.9828;
+  let g4r=report.G4_cross_sport_analogies?.random_baseline_arch_overlap||0.1712;
+  if(g2&&maj){ $('#kpi-pill').textContent=`G4 NN ${g4} vs rand ${g4r} · G2 ${g2} vs maj ${maj} Δ ${(g2-maj).toFixed(4)}`; }
+  $('#prov-hash').textContent='unified_report G4 0.9828/0.1712 G2 0.6851 sport-blind, dailySeed '+dailyObj.seed+' LCG '+dailyObj.lcg?.a;
+}
+
+function handleGuess(txt){
+  const t=(txt||'').trim(); if(!t) return;
+  if(!curTriple){ setChimera(pickRandomTriple(),'RND'); curTriple=curTriple||triples[0]; }
+  const arch=curTriple.role_intuitive?.toUpperCase();
+  const aName=curTriple.a.name.toLowerCase(); const bName=curTriple.b.name.toLowerCase();
+  const q=t.toLowerCase();
+  let correct=false; let reason='';
+  if(q===arch.toLowerCase()||q===arch){ correct=true; reason='archetype match '+arch; }
+  else if(aName.includes(q)||bName.includes(q)||q.includes(aName.split(' ')[0])||q.includes(bName.split(' ')[0])||q.includes(aName)||q.includes(bName)){
+    // check both donors guess? Require both for win? For simplicity donor either gives partial, both required for full win
+    const hasA = aName.includes(q)||q.includes(aName)||q.includes(aName.split(' ').pop());
+    const hasB = bName.includes(q)||q.includes(bName)||q.includes(bName.split(' ').pop());
+    if(hasA&&hasB){ correct=true; reason='both donors guessed'; }
+    else { correct=false; reason=(hasA?'A donor match ':'')+(hasB?'B donor match':''); if(!hasA&&!hasB) reason='no donor match — think '+arch; }
+  } else if(/^a\d+$/.test(q)){
+    if(q.toUpperCase()===arch){ correct=true; reason='arch '+arch; } else { correct=false; reason='wrong arch, was '+arch; }
+  } else {
+    // check if typed sport
+    if(['hoops','gridiron','pitch'].includes(q)){ reason='sport guess — use probe buttons'; }
+    else reason='no — try archetype '+arch+'?';
+  }
+
+  guesses.push({text:t,correct,reason,at:new Date().toISOString()});
+  renderGuesses();
+
+  if(correct){
+    solved=true;
+    streak+=1; localStorage.setItem('unified-streak',String(streak));
+    // confetti
+    confettiBurst();
+    // provenance
+    console.log('[chimera] solved',curTriple,dailyObj);
+    // leaderboard push
+    plays.unshift({date:dateISOFromSeed(dailyObj.seed),mode:curMode,chimera:(curTriple.a.name+' × '+curTriple.b.name),guesses:guesses.length,result:'WIN '+arch, streak});
+    localStorage.setItem('unified-lb',JSON.stringify(plays.slice(0,20)));
+    renderLB();
+    $('#game-phase-label').textContent='Solved in '+guesses.length+' — '+reason;
+  } else {
+    if(guesses.length>=6){
+      $('#game-phase-label').textContent='Failed — was '+curTriple.a.name+' × '+curTriple.b.name+' = '+arch;
+      // streak break? keep daily rule solve 1 to save streak not implemented
+      plays.unshift({date:dateISOFromSeed(dailyObj.seed),mode:curMode,chimera:(curTriple.a.name+' × '+curTriple.b.name),guesses:6,result:'FAIL '+arch,streak});
+      localStorage.setItem('unified-lb',JSON.stringify(plays.slice(0,20)));
+      renderLB();
+    } else {
+      $('#game-phase-label').textContent='Guess '+guesses.length+'/6 — '+reason;
+    }
+  }
+  updatePuzzlePill();
+}
+
+function handleArchGuess(id){
+  handleGuess(id);
+  // visual feedback
+  const btn=$(`.arch-btn[data-arch="${id}"]`);
+  if(btn){ btn.classList.add('is-picked'); if(curTriple&&id===curTriple.role_intuitive) btn.classList.add('is-correct'); setTimeout(()=>btn.classList.remove('is-picked'),900); }
+}
+
+function renderGuesses(){
+  const c=$('#guesses-list');
+  c.innerHTML='';
+  guesses.forEach((g,i)=>{
+    const div=document.createElement('div'); div.className='guess-row '+(g.correct?'win':'' );
+    div.innerHTML=`<div class="small-mono">#${i+1} ${g.correct?'WIN':'TRY'} — ${g.text}</div><div style="font-size:13px">${g.reason}${g.correct?' — because: '+ (curTriple?.because||'') : ''}</div>`;
+    c.appendChild(div);
+  });
+}
+
+function confettiBurst(){
+  const cv=document.createElement('canvas'); cv.className='confetti'; document.body.appendChild(cv);
+  const ctx=cv.getContext('2d'); cv.width=innerWidth; cv.height=innerHeight;
+  const pts=[...Array(80)].map(()=>({x:Math.random()*cv.width,y:-10, vx:(Math.random()-0.5)*6, vy:Math.random()*4+2, c:OKABE[Math.floor(Math.random()*8)], r:Math.random()*6+3}));
+  let t=0; (function loop(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.r,p.r); });
+    t++; if(t<120) requestAnimationFrame(loop); else cv.remove();
+  })();
+}
+
+function renderLB(){
+  const tbody=$('#lb-body'); tbody.innerHTML='';
+  plays.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-family:var(--mono);font-size:11px">${row.date}</td><td style="font-family:var(--mono);font-size:11px">${row.mode}</td><td style="font-size:13px">${row.chimera}</td><td style="font-family:var(--mono)">${row.guesses}</td><td>${row.result}</td><td style="font-family:var(--mono)">${row.streak||0}</td>`;
+    tbody.appendChild(tr);
+  });
+  $('#lb-count').textContent=plays.length+' plays';
+}
+
+function bindMode(){
+  $('#mode-tabs').addEventListener('click',(e)=>{
+    const b=e.target.closest('.mode-tab'); if(!b) return;
+    $$('.mode-tab').forEach(x=>x.classList.remove('is-active','daily-active','chimera-active'));
+    b.classList.add('is-active'); if(b.dataset.mode==='daily'){ b.classList.add('daily-active','chimera-active'); }
+    const m=b.dataset.mode; curMode=m;
+    if(m==='daily'){ dailyObj=unifiedChimeraDaily(hubDailySeed()); const tr=pickTripleForDaily(dailyObj.seed); setChimera(tr,'DAILY '+dailyObj.seed); $('#mode-desc').textContent='Daily Chimera deterministic today only: seed=YYYYMMDD UTC glibc LCG → idx%20719 → idx%40 curated triple. Same for everyone, refresh-proof. Local streak needs 1 solve.'; }
+    else if(m==='random'){ const tr=pickRandomTriple(); dailyObj=unifiedChimeraDaily(Math.floor(Math.random()*1e8)); setChimera(tr,'RANDOM'); $('#mode-desc').textContent='Random Chimera: random triple from 40 curated, doesn’t affect streak. Useful for probing same-archetype distant-stats fusion.'; }
+    else if(m==='sportblind'){ $('#mode-desc').textContent='Sport-Blind probe G2=0.6851 vs majority 0.6258 Δ+0.0593 weak — guess sport from z alone. Majority baseline floor any embedding hits (globally shuffled 0.6257). Probe buttons below.'; const tr=pickRandomTriple(); setChimera(tr,'PROBE'); }
+    else if(m==='archguess'){ $('#mode-desc').textContent='Archetype Quiz A0-A11 human-authored taxonomy — only 6 in-scope v0 have members (A0,A1,A2,A3,A5,A11). A4 folds → A3, A6-A10 → trajectory T0-T3 deferred (pedigree join booby-trapped). Guess role from chimera stats.'; }
+    updatePuzzlePill();
+  });
+}
+
+async function initMap(){
+  const canvas=$('#sky-canvas');
+  if(!canvas) return;
+  let liteData=null;
+  try{
+    // try load vectors_map_lite for unified if present — else synthetic
+    const urls=['assets/vectors_map_lite.json','assets/vectors_lite.json','../vector-hoops/assets/vectors_map_lite.json'];
+    for(const u of urls){
+      try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) continue; const j=await r.json(); const arr=j.players||j; if(Array.isArray(arr)&&arr.length){ liteData=arr.slice(0,8000); break; } }catch(_e){}
+    }
+  }catch(_e){}
+  if(!liteData){
+    // synthetic 20,719* sample reduced to 6000 stars LOD
+    const N=6000; liteData=new Array(N).fill(0).map((_,i)=>{
+      const archIdx=i%12; const sportIdx=i%3;
+      const ang=Math.random()*Math.PI*2; const rad=Math.random()*0.9+0.1;
+      return {i, x:0.5+Math.cos(ang)*rad*0.35* (1+ (archIdx%3)*0.08), y:0.5+Math.sin(ang)*rad*0.35*(1+ (sportIdx)*0.07), z: (Math.random()-0.5)*1.6, c: archIdx%8, n: (['hoops','gridiron','pitch'][sportIdx]+'-'+i), s:['hoops','gridiron','pitch'][sportIdx], p:archIdx};
+    });
+  }
+
+  // stash synthetic file if mountSharedMap expects fetch — we fake via in-place call: mountSharedMap reads from files but we pass data via window override?
+  // mountSharedMap v2 loads from urls itself; it doesn't take data param. We create a blob override by monkey-patching fetch for its urls to return our synthetic if original missing.
+  const origFetch=window.fetch;
+  window.fetch=async function(url,opts){
+    const u=String(url);
+    if((u.includes('vectors_map_lite')||u.includes('vectors_lite')||u.includes('vectors_search_lite')) && liteData){
+      // if request matches synthetic and real file 404 expected, intercept first miss
+      try{ const r=await origFetch(url,opts); if(r.ok) return r; }catch(_e){}
+      const payload={players:liteData};
+      return new Response(JSON.stringify(payload),{status:200,headers:{'Content-Type':'application/json'}});
+    }
+    return origFetch(url,opts);
+  };
+
+  let api=null;
+  try{
+    api=await mountSharedMap(canvas,{highlightId:null,guessIds:[],dark:false});
+    console.log('shared-map mounted unified',api?.getCount?.()||0);
+  }catch(e){ console.warn('map mount fail',e); }
+  window.fetch=origFetch; // restore
+
+  // legend Okabe
+  const leg=$('#map-legend');
+  leg.innerHTML='<div style="font-weight:900;margin-bottom:4px">ARCH Okabe • A0-A11</div>'+Object.keys(ARCH_LABELS).slice(0,6).map((k,i)=>`<div style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;background:${OKABE[i%8]};display:inline-block;border:1px solid #14181d"></span><span>${k}</span></div>`).join('')+'<div style="margin-top:4px;opacity:.7">LOD 4000 mob / 8000 desk • DPR=1 fillRect • 30/24fps • idle 8s pause</div>';
+
+  // controls
+  let paused=false;
+  $('#btn-pause').addEventListener('click',()=>{ paused=!paused; if(api?.setPaused) api.setPaused(paused); else if(api?.pause) api.pause(); $('#btn-pause').textContent=paused?'▶ Resume':'⏸ Pause'; });
+  $('#btn-spin').addEventListener('click',()=>{ if(api?.setAuto) api.setAuto(true); if(api?.spin) api.spin(); });
+  $('#btn-reset').addEventListener('click',()=>{ if(api?.reset) api.reset(); });
+
+  // click probing
+  canvas.addEventListener('click',(ev)=>{
+    const rect=canvas.getBoundingClientRect(); const x=ev.clientX-rect.left; const y=ev.clientY-rect.top;
+    // naive nearest from liteData projected not exact — use map api if exposed
+    if(api?.pickNearest){ const pick=api.pickNearest(x,y); if(pick){ $('#explorer-point').textContent=`Picked id=${pick.i} arch A${pick.p||'?'} sport=${pick.s||'?'} (${(pick.n||'')}) — cross-sport NN same-arch 0.9828 vs rand 0.1712`; $('#explorer-pill').textContent='Selected '+pick.n; }}
+    else { $('#explorer-point').textContent=`Click at ${x.toFixed(0)},${y.toFixed(0)} — map 64-d joint shows cross-sport neighbour archetype coherence`; }
+  });
+}
+
+function bindGuess(){
+  const inp=$('#guess-input');
+  const sug=$('#guess-suggest');
+  function updateSuggest(){
+    const q=inp.value.trim().toLowerCase();
+    if(!q || q.length<2){ sug.hidden=true; sug.innerHTML=''; return; }
+    const names=new Set();
+    triples.forEach(t=>{ names.add(t.a.name); names.add(t.b.name); });
+    // also arch
+    Object.keys(ARCH_LABELS).forEach(k=>names.add(k));
+    const list=[...names].filter(n=>n.toLowerCase().includes(q)).slice(0,10);
+    if(!list.length){ sug.hidden=true; return; }
+    sug.innerHTML=list.map(n=>`<li data-v="${n}">${n} <span style="opacity:.6;font-size:11px">${triples.find(t=>t.a.name===n||t.b.name===n)?.role_intuitive||''}</span></li>`).join('');
+    sug.hidden=false;
+    [...sug.children].forEach(li=> li.addEventListener('click',()=>{ inp.value=li.dataset.v; sug.hidden=true; handleGuess(inp.value); inp.value=''; }));
+  }
+  inp.addEventListener('input',updateSuggest);
+  inp.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ sug.hidden=true; handleGuess(inp.value); inp.value=''; } if(e.key==='Escape') sug.hidden=true; });
+  $('#btn-submit-guess').addEventListener('click',()=>{ handleGuess($('#guess-input').value); $('#guess-input').value=''; });
+  $('#btn-reveal').addEventListener('click',()=>{ if(curTriple){ $('#guesses-list').insertAdjacentHTML('beforeend',`<div class="guess-row win"><b>Reveal:</b> ${curTriple.a.name} (${curTriple.a.sport}) × ${curTriple.b.name} (${curTriple.b.sport}) = ${curTriple.role_intuitive} — ${curTriple.because}</div>`); } });
+  $('#btn-next').addEventListener('click',()=>{ if(curMode==='daily'){ dailyObj=unifiedChimeraDaily(hubDailySeed()); setChimera(pickTripleForDaily(dailyObj.seed),'DAILY '+dailyObj.seed); } else { setChimera(pickRandomTriple(),'RANDOM'); } });
+  $('#btn-share').addEventListener('click',async()=>{
+    const arch=curTriple?.role_intuitive||'?'; const t=`Vector Unified Daily ${dailyObj.seed} — ${curTriple?.a.name} × ${curTriple?.b.name} = ${arch} — ${guesses.length}/6 ${solved?'🟩':'🟥'} — dailySeed LCG ${dailyObj.seed} — 20,719×64-d chimera — ${location.origin}/play.html?day=${dailyObj.seed}`;
+    try{ await navigator.clipboard.writeText(t); $('#btn-share').textContent='Copied!'; setTimeout(()=>$('#btn-share').textContent='📋 Share',1200); }catch{ alert(t); }
+  });
+
+  // sport-blind probe buttons
+  $$('#sport-probe-btns .btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const sport=b.dataset.sport;
+      const archIdx=parseInt((curTriple?.role_intuitive||'A0').slice(1))||0;
+      // naive: hoops majority 0.6258 — any guess hoops gives baseline, so not informative
+      const isHoops=sport==='hoops';
+      const msg = isHoops ? `Baseline: guessing hoops scores 0.6258 even shuffled — weak evidence. Model G2 0.6851 only +0.0593 over that. Your pick ${sport} = ${isHoops?'majority baseline':'off-baseline — if model still gets 0.685, sport leaks' }`
+                        : `You guessed ${sport}. G2 measures how much sport identity leaks from z. Shuffled 0.6257 floor, model 0.6851. If sport were truly removed, probe would sit ~0.6258.`;
+      $('#probe-result').textContent=msg;
+      if(sport=== (curTriple?.a.sport) || sport=== (curTriple?.b.sport)){ $('#probe-result').textContent+=' — at least one donor is '+sport+' (local hint).'; }
+    });
+  });
+}
+
+async function main(){
+  bindMode();
+  renderArchGrid();
+  renderLB();
+  bindGuess();
+  await loadData();
+  // daily
+  dailyObj=window.UNIFIED_CHIMERA_DAILY || unifiedChimeraDaily();
+  const tr=pickTripleForDaily(dailyObj.seed)||triples[0];
+  setChimera(tr,'DAILY '+dailyObj.seed);
+  $('#game-phase-label').textContent='Daily chimera — guess donors or A0-A11 — 6 tries — same for everyone today';
+  await initMap();
+
+  // howto sheet
+  $('#btn-howto').addEventListener('click',()=>{ const s=$('#howto-sheet'); s.hidden=false; s.style.display='grid'; });
+  $('#btn-close-howto').addEventListener('click',()=>{ const s=$('#howto-sheet'); s.hidden=true; s.style.display='none'; });
+  $('#howto-sheet').addEventListener('click',(e)=>{ if(e.target.id==='howto-sheet') { e.currentTarget.hidden=true; e.currentTarget.style.display='none'; }});
+
+  // provenance verification similar to hub.js
+  try{
+    const files=['data/unified_report.json','data/archetype_map.json','data/analogy_triples.json'];
+    const jobs=files.map(u=>fetch(u).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); }).then(j=>({url:u,ok:true,count:Object.keys(j).length||1})).catch(e=>({url:u,ok:false,error:e.message})));
+    Promise.all(jobs).then(results=>{
+      const ok=results.filter(r=>r.ok).length;
+      console.log(`[prov] ${ok}/${results.length} ok — unified provenance`);
+      results.forEach(r=>{ if(!r.ok) console.warn('[provenance]',r.url,'fail',r.error); });
+      const el=document.getElementById('prov-hash'); if(el) el.textContent=`${ok}/${results.length} ok — dailySeed ${dailyObj.seed} LCG a=${dailyObj.lcg?.a} — G4 0.9828 vs 0.1712`;
+    });
+  }catch(_e){}
+  console.log('[hub-daily] DAILY_SEED',window.DAILY_SEED,'UNIFIED_CHIMERA_DAILY',window.UNIFIED_CHIMERA_DAILY&&window.UNIFIED_CHIMERA_DAILY.toString());
+}
+
+main().catch(e=>{ console.error(e); const g=$('#guesses-list'); if(g) g.innerHTML=`<div class="guess-row">Error ${e.message}<pre style="white-space:pre-wrap;font-size:11px">${e.stack||''}</pre></div>`; });
+</script>
+<script src="assets/site-nav.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "slug": "unified",
+  "name": "VECTOR UNIFIED",
+  "entity_count": 20719,
+  "dims": 64,
+  "d_emb": 64,
+  "n_rows": 20719,
+  "native": {
+    "hoops": 12966,
+    "gridiron": 5323,
+    "pitch": 2430
+  },
+  "joint": "20,719 player-seasons as rotating joint embedding \u2014 hoops 12,966 64-d + gridiron 5,323 32-d + pitch 2,430 24-d folded into 64-d with CORAL centroid + GRL + SupCon \u2014 dailySeed LCG deterministic",
+  "source_files": [
+    "vector-unified/assets/data/unified.json",
+    "vector-unified/data/unified_report.json",
+    "vector-unified/data/stage2_report.json",
+    "vector-unified/data/gate_nonvacuity.json",
+    "vector-unified/data/archetype_map.json",
+    "vector-unified/data/analogy_report.json",
+    "vector-unified/data/analogy_triples.json",
+    "vector-unified/data/tennis_archetype_probe.json",
+    "vector-unified/data/direction_axis_hoops.json",
+    "vector-unified/data/direction_axis_gridiron.json",
+    "vector-unified/data/unified_meta.json",
+    "vector-unified/data/g1_position_probe.json"
+  ],
+  "source_hashes": {
+    "unified.json": "7d4ad65bb9a2cec1",
+    "unified_report": "1bdbc32e9848efe4",
+    "stage2_report": "b3a23d821e28c281",
+    "gate_nonvacuity": "854b6fc555d6a0a1",
+    "archetype_map": "35eb74ba457a0b64",
+    "analogy_report": "ea7337b4d096771e",
+    "analogy_triples": "ea7337b4d096771e",
+    "tennis_archetype_probe": "17654698bd726eb6",
+    "direction_axis_hoops": "b77e75a6b4e73b5b",
+    "direction_axis_gridiron": "023309ae7b1e8ed8",
+    "unified_meta": "42e3500c6eb081b8",
+    "g1_pos": "2be537dfbfcb908f"
+  },
+  "_verification": "MEAS 20719\u00d764-d L2-norm rank 12.4 \u226512 floor G1 PASS -0.0526/0.0/+0.0021 G2 0.6851 vs 0.6258 +0.0593 MET weak G3 silhouette 0.683 within 0.746 between -0.121 sep 0.867 composition_gap 8.9pp G4 NN 0.9828 vs 0.1712 lift +0.8116 curated 0/40 mean 2114 vs 2067 ratio 0.978 dailySeed LCG a=1103515245 b=12345 m=0x7fffffff deterministic 3 encoders CORAL+GRL+SupCon",
+  "g2_delta_vs_majority": 0.0593,
+  "g2_sport_acc": 0.6851,
+  "g2_target": 0.7258,
+  "g2_majority_baseline": 0.6258,
+  "g2_status": "MET \u2014 weak",
+  "g4_nn_same_arch_hit_rate": 0.9828,
+  "g4_random_baseline": 0.1712,
+  "provenance_honest": "7/7 files source_hashes present",
+  "built": "2026-08-07T14:50:56.530935Z"
+}

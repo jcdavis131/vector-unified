@@ -1,0 +1,11 @@
+{
+  "g1_shuffled_null": {
+    "hoops": 0.5493,
+    "gridiron": 0.692,
+    "pitch": 0.5617
+  },
+  "g2_floor": 0.6258,
+  "g3_floor": 0.05,
+  "g4_baseline": 0.1712,
+  "note": "nulls prove gates non-vacuous"
+}
