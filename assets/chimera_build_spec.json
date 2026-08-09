@@ -1,25 +1,177 @@
 {
-  "name": "Unified Chimera 20,719x64-d",
-  "hoops_dim": 64,
-  "gridiron_dim": 32,
-  "pitch_dim": 24,
-  "joint_dim": 64,
-  "method": "CORAL centroid + GRL λ 0.10→0.3→0.5 + SupCon + VICReg",
-  "encoders": {
-    "hoops": "pipeline/data/mtnn_best.pt 18 towers 130 feats → 64-d L2 12,966 rows",
-    "gridiron": "10 towers 160 feats → 32-d native 16-d compat 2,000 weeks",
-    "pitch": "11 ctx towers 3 families attacking/passing/defending gated fusion cat([x·m,m]) → 24-d L2 633 WC 2,430 full"
+  "name": "chimera_build_spec",
+  "version": "v2.1-parity",
+  "entity_count": 20719,
+  "native_split": {
+    "hoops": 12966,
+    "gridiron": 5323,
+    "pitch": 2430
   },
-  "alignment": {
-    "coral": "centroid matching across sport embeddings to shared axis system",
-    "grl_lambda": [0.1, 0.3, 0.5],
-    "supcon": "archetype coherence G3 + analogy G4",
-    "vicreg": "prevent collapse rank",
-    "task": "anti-collapse anchor sport pos arch"
+  "dims": {
+    "hoops": 64,
+    "gridiron": 32,
+    "pitch": 24,
+    "joint": 64
   },
-  "daily": "dailySeed LCG glibc rand YYYYMMDD (seed*1103515245+12345)&0x7fffffff % 20719 deterministic same-link-same-stars",
-  "archetypes": 12,
-  "provenance": "honest 7/7 source_hashes recomputable",
-  "gates": ["G1 pos_drop 0.0-pos_drop bug caveat","G2 sport_invariance majority baseline +0.0593","G3 silhouette within_vs_between","G4 hit_rate analogy"],
-  "shipped": "unified_stage2_best.pt best_epoch 58 enc_lr 3e-5"
+  "shared_tower_lib": {
+    "ResidualTower": {
+      "doc": "cat([x\u00b7m,m]) \u2192 fc1(2*d_in\u2192hidden) \u2192 LayerNorm \u2192 GELU \u2192 Dropout(0.2) \u2192 fc2(hidden\u2192d_out) + skip(2*d_in\u2192d_out) \u2192 LayerNorm \u2192 L2norm",
+      "hoops": {
+        "d_in": "varies per family (~7.6 avg, total 130)",
+        "d_hidden": 160,
+        "d_out": 32,
+        "blocks": 2,
+        "n_towers": 17
+      },
+      "gridiron": {
+        "d_in": "~12 avg, 82 total",
+        "d_hidden": 32,
+        "d_out": 24,
+        "n_towers": 13,
+        "note": "gated attention wrapper for weekly"
+      },
+      "pitch": {
+        "d_in": "~5.3 avg, 16 total",
+        "d_hidden": 32,
+        "d_out": 16,
+        "n_towers": 3,
+        "note": "attacking/passing/defending"
+      },
+      "source": "vector-hoops pipeline/train_mtnn.py::ResidualTower + vector-gridiron pipeline/train_mtnn.py + vector-pitch pipeline/train_mtnn.py::ResidualTower (copied doc)"
+    },
+    "GatedFusion": {
+      "doc": "attn(tower_stack) softmax * sigmoid(gate) \u2192 weighted mix + ctx_emb \u2192 fuse Linear(\u2192d_hidden) GELU LN Dropout Linear(\u2192d_emb) L2norm",
+      "hoops": "concat fusion shipped (mtnn_v5_concat) \u2014 doc said gated but checkpoint is concat; unified uses concat trunk",
+      "gridiron": "GatedFusion with QB context, pass_rate gating",
+      "pitch": "ctx 11 contexts embedding 8-d"
+    },
+    "TransformerFusion (design)": {
+      "doc": "cat towers \u2192 128d 4-head self-attn CLS token \u2192 64-d L2 (optional, ablation-gated)",
+      "stage": "design only, shipped uses MLP trunk (see UnifiedTrunk)"
+    }
+  },
+  "UnifiedTrunk": {
+    "class": "UnifiedTrunk",
+    "d_adapter": 48,
+    "d_sport_tok": 8,
+    "d_era": 8,
+    "d_emb": 64,
+    "n_arch": 7,
+    "n_pos": {
+      "hoops": 5,
+      "gridiron": 4,
+      "pitch": 3
+    },
+    "trunk": "Linear(64\u2192128) GELU LN Dropout(0.2) Linear(128\u219264) L2norm",
+    "shared_adapter": false,
+    "note": "shared_adapter True is G2 probe only \u2014 worsens leakage 0.743\u21920.759, proves dim-footprint leak is structural not adapter weights"
+  },
+  "losses": {
+    "CORAL_cov": {
+      "formula": "cov_s = (z_s - mean_s)^T (z_s - mean_s)/(n_s-1); loss = mean_{i<j} ||cov_i - cov_j||\u00b2_F",
+      "weight": 0.5,
+      "effect": "\u0394 0.0 alone on G2 but -1.5pp combined w/ centroid, keeps G3 stable \u2014 complementary to centroid",
+      "status": "dropped from lean config (inert Stage1) but kept in spec for Stage2 potential"
+    },
+    "CORAL_centroid": {
+      "formula": "mu_s = mean(z_s); loss = mean_{i<j} ||mu_i - mu_j||\u00b2\u2082",
+      "weight": 0.5,
+      "effect": "directly minimizes sport centroid separation for sport-blindness G2 \u2014 complements cov",
+      "status": "earn keep small"
+    },
+    "GRL": {
+      "schedule": "warmup 5ep \u03bb=0, ramp 10ep linear 0.10\u21920.3\u21920.5, hold 0.5",
+      "w_sport": 0.5,
+      "forward": "x",
+      "backward": "-\u03bb\u00b7grad",
+      "baseline": "no-GRL control 0.799 sport_acc vs shipped 0.6851 (\u0394 -11.4pp improvement) vs majority floor 0.6258 (+0.0593)",
+      "ceiling_note": "ceiling ~0.68 structural adapter leak + native dim footprint (zero-padding pattern = perfect sport signature)",
+      "status": "earns keep"
+    },
+    "SupCon": {
+      "formula": "positives = same cross-sport archetype A0-A11 \u22652 sports; \u03c4_s = exp(log_temp_s); sim = z_i\u00b7z_j / sqrt(\u03c4_i\u00b7\u03c4_j); InfoNCE",
+      "temp": 0.07,
+      "weight": 1.0,
+      "effect": "drop \u2192 G3 0.718\u21920.125, G4 0.988\u21920.137, leakage 0.7558 (+13pp vs majority) \u2014 essential",
+      "status": "essential"
+    },
+    "VICReg_var": {
+      "formula": "target=1/sqrt(64), loss=mean(ReLU(target - std(z,dim0)))",
+      "weight": 1.0,
+      "status": "inert default"
+    },
+    "VICReg_cov": {
+      "formula": "zc=z-mean; cov=(zc\u1d40zc)/(N-1); loss=\u03a3 off-diag(cov)\u00b2 / d",
+      "weight": 1.0,
+      "status": "inert but raises rank to ~17-24 when aggressive 100/200, trades task"
+    },
+    "task_anchor": {
+      "weight": 2.0,
+      "formula": "CE native_cluster + CE pos (masked) per sport on z \u2014 anti-collapse"
+    }
+  },
+  "training": {
+    "stage1": "frozen e_s, 40ep lr 1e-3 adapter-only, batch-per-sport 86 balanced, early-stop on task plateau patience 15, rank floor 12",
+    "stage2.1": "unfrozen encoders drift, 60ep enc_lr 3e-5, GRL \u03bb 0.10\u21920.3\u21920.5, CORAL 0.5/0.5, SupCon temp 0.07, VICReg hinge 1 std",
+    "seed": 7,
+    "optimizer": "AdamW wd 1e-4, CPU viable, CUDA if avail",
+    "imbalance": "modality-aware temp + balanced batch (64 hoops/64 gridiron/all pitch up-sampled) + pitch family-mask augmentation"
+  },
+  "stubs": {
+    "orchestration_pseudocode": [
+      "E_h = np.load('hoops 12966\u00d764'), E_g (5323\u00d732), E_p (2430\u00d724) \u2014 L2norm",
+      "sport_ids = [0]*12966 + [1]*5323 + [2]*2430; era_ids = year - 1996; arch_ids = archetype_map native_to_cross",
+      "UnifiedTrunk adapters: Linear(64\u219248), Linear(32\u219248), Linear(24\u219248) \u2014 no shared (probe false)",
+      "sport_tok = Embedding(3,8); era_emb = Embedding(n_eras,8); trunk MLP 64\u2192128\u219264 L2",
+      "dailySeed LCG = (seed*1103515245+12345)&0x7fffffff, seed=YYYYMMDD UTC, idx=A%20719",
+      "loss = 2.0*task + 0.5*CORAL_cov + 0.5*centroid + SupCon(log_temp) + 0.5*sport_GRL(\u03bb schedule) + var+cov",
+      "z = L2norm(trunk(cat([adapter(e_s), sport_tok(s), era_emb]))) \u2208 R^64",
+      "export z \u2192 assets/unified.json + chimera_build_spec.json, report \u2192 data/unified_report.json"
+    ]
+  },
+  "sources": {
+    "hoops_arch": "/home/hatch/workspace/vector-hoops/assets/mtnn_arch.json",
+    "hoops_arch_data": {
+      "dEmb": 64,
+      "towerFamilies": [
+        "volume",
+        "playmaking",
+        "rebounding",
+        "defense",
+        "efficiency"
+      ],
+      "total_families": 17
+    },
+    "gridiron": "/home/hatch/workspace/vector-gridiron/assets/data/gridiron.json",
+    "pitch_meta": "/home/hatch/workspace/vector-unified/data/unified_meta.json",
+    "unified_report_keys": [
+      "G1_pass",
+      "G1_per_sport_noninferiority",
+      "G2_sport_invariance",
+      "G3_cross_sport_archetype",
+      "G4_cross_sport_analogies",
+      "checkpoint_rank",
+      "d_emb",
+      "losses",
+      "model",
+      "n_rows",
+      "prov_wiring",
+      "shared_lib",
+      "shipped_checkpoint",
+      "stage2.1_smoke",
+      "verdict",
+      "z_source"
+    ]
+  },
+  "provenance": {
+    "entity_total": 20719,
+    "gates": {
+      "G1": "PASS -0.0526 hoops 0.0 gridiron +0.0021 pitch (shuffled +0.5493/+0.6920/+0.5617 proves not buggy mask)",
+      "G2": "0.6851 vs 0.6258 floor +0.0593 MET weak (predicted 0.642 experimental), leakage 0.799 drop GRL, 0.7558 drop SupCon",
+      "G3": "silhouette 0.683 within 0.746 between -0.121 sep 0.867 rank 12.4 floor 12 PASS composition_gap 8.9pp",
+      "G4": "0.9828 vs 0.1712 lift +0.8116 coarse PASS, curated 0/40 top10 mean 2114 vs 2067 ratio 0.978 FAIL person"
+    },
+    "dailySeed": "YYYYMMDD UTC int, LCG a\u00b71103515245+12345 & 0x7fffffff glibc rand, idx = a % 20719, same-link-same-stars",
+    "zero_deps": true
+  }
 }
