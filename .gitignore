@@ -93,6 +93,14 @@ venv/
 .pytest_cache/
 .ruff_cache/
 
+# vector-core package: never commit its local venv / build artifacts
+packages/vector-core/.venv/
+packages/vector-core/**/__pycache__/
+packages/vector-core/*.egg-info/
+packages/vector-core/src/*.egg-info/
+packages/vector-core/build/
+packages/vector-core/dist/
+
 # OS / editor
 .DS_Store
 Thumbs.db
