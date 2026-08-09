@@ -60,3 +60,4 @@ python pipeline/train_stage2.py --smoke --epochs 2 --grl-lambda 0.3 --grl-lambda
 - Contacts `CONTACTS.md`, Gotchas `GOTCHAS.md` 12 things cost time, Scheduling `SCHEDULING.md` sweep/dashboard durable, Coordination `COORDINATION.md`, Local GPU `COORDINATION_LOCAL_GPU.md` + blocker.
 
 Last verified: 2026-08-09 — json.tool passing, no push until files pass per task, Vercel cleanUrls true, PWA manifest + assets/manifest.json dup, LICENSE MIT, bundles/manifest.json copied root.
+# coherence verified 2026-08-09T17:09Z
