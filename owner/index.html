@@ -1,0 +1,171 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Owner Lab — Joint Cap = 20,719 Championship Economics</title>
+<meta name="description" content="Joint Cap 20,719 = 12,966 hoops + 5,323 gridiron + 2,430 pitch. 64-d joint CORAL+GRL+SupCon. Owner economics across sports."/>
+<meta name="theme-color" content="#080A0F"/>
+<style>
+:root{--void:#080A0F;--card:#0F1320;--card2:#151A2D;--ink:#E9E7E1;--mut:#9AA0B2;--line:#222845;--yellow:#F0E442;--blue:#4DA6FF;--verm:#FF6B4A;--r:14px;--mono:ui-monospace,Menlo,monospace;--sans:ui-sans-serif,system-ui}
+*{box-sizing:border-box}html,body{margin:0;background:var(--void);color:var(--ink);font-family:var(--sans);line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+.site-nav{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:rgba(8,10,15,.92);backdrop-filter:blur(8px);border-bottom:1.5px solid var(--line)}
+.site-nav__brand{font-family:var(--mono);font-weight:900;letter-spacing:.06em;color:var(--ink)}
+.site-nav__brand span{color:var(--yellow)}
+.site-nav__links{display:flex;gap:14px;flex-wrap:wrap}
+.site-nav__link{font-family:var(--mono);font-size:12px;font-weight:800;text-transform:uppercase;color:var(--mut)}
+.site-nav__link.is-active{color:var(--ink);border-bottom:2px solid var(--yellow)}
+.wrap{max-width:1180px;margin:0 auto;padding:18px clamp(14px,3.2vw,26px) 40px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.pill{border:1.4px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--card);font-family:var(--mono);font-size:11px;font-weight:800;display:inline-flex;gap:6px;align-items:center}
+.pill-yellow{background:var(--yellow);color:#111;border-color:#111;box-shadow:2px 2px 0 #111}
+.pill-active{background:#111;color:#fff;border-color:#111}
+.card{background:var(--card);border:1.6px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:4px 4px 0 #0006}
+.card-h{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:8px;display:flex;justify-content:space-between}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+@media(max-width:760px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card2);border:1.2px solid var(--line);border-radius:12px;padding:10px}
+.kpi b{font-family:var(--mono);font-size:15px;display:block}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;color:var(--mut)}
+.tag{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:999px;border:1px solid var(--line);background:#1A2040}
+.live{color:#7DFF9A}.defer{color:#8A8F9F}
+.btn{appearance:none;border:1.6px solid var(--line);background:var(--card2);color:var(--ink);font-family:var(--mono);font-weight:800;text-transform:uppercase;font-size:11px;padding:9px 12px;border-radius:10px;cursor:pointer}
+.btn-primary{background:var(--ink);color:var(--void)}
+.btn-yellow{background:var(--yellow);color:#111}
+.portfolio{display:flex;gap:6px;align-items:end;height:88px;margin:8px 0}
+.bar{flex:1;border-radius:8px 8px 0 0;display:flex;align-items:end;justify-content:center;padding:6px 0;font-family:var(--mono);font-size:10px;font-weight:800}
+.small{font-size:12px;color:var(--mut);line-height:1.5}
+.mono{font-family:var(--mono)}
+footer.site-footer{margin-top:28px;padding:16px 0;border-top:1.2px solid var(--line);font-family:var(--mono);font-size:10.5px;color:var(--mut)}
+footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;padding:8px 12px;border-radius:999px;font-family:var(--mono);font-size:11px;display:none;z-index:99}
+</style>
+</head><body>
+<nav class="site-nav"><a class="site-nav__brand" href="../index.html">VECTOR<span>UNIFIED</span></a><div class="site-nav__links"><a class="site-nav__link" href="../index.html">Void</a><a class="site-nav__link is-active" href="./">Owner Lab</a><a class="site-nav__link" href="../player/">Player Fit</a><a class="site-nav__link" href="../brand/">Brand</a><a class="site-nav__link" href="../dfs/">DFS Joint</a></div></nav>
+<div class="wrap">
+<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px"><span class="pill pill-active">20,719 JOINT</span><span class="pill" id="seed-pill">dailySeed 00000000</span><span class="pill">64-d L2</span><span class="pill pill-yellow" id="lcg-pill">LCG a·b</span><span class="pill">12 arch A0-A11 / 6 live</span><span class="pill">G2 0.6851 Δ+0.0593</span></div>
+
+<div class="hero">
+<div>
+<h1 class="mono" style="font-size:clamp(28px,4.6vw,44px);line-height:.98;margin:4px 0">Owner Lab — Joint Cap = 20,719<br><span style="color:var(--yellow)">Championship Economics</span></h1>
+<p class="small" style="font-size:14px;color:var(--ink);max-width:62ch;margin:10px 0">20,719 total player-seasons in one 64-d joint: <b>12,966 hoops 64-d + 5,323 gridiron 32-d + 2,430 pitch 24-d → UnifiedTrunk 64-d L2</b> via CORAL centroid+GRL λ 0.10→0.3→0.5 + SupCon temp 0.07. Same as hoops parity but now cross-sport. Era-honest per-season z 1996-97 root.</p>
+
+<div class="card" style="margin-top:12px"><div class="card-h"><span>Joint Cap 20,719 — sport leak honest</span><span class="mono" id="leak-badge">G2 0.6851 vs 0.6258</span></div>
+<div style="font-size:13px;line-height:1.55">Joint Cap = sum of all player-seasons we pay under. <b>20,719 cap units</b> (not dollars) mapped to 64-d vectors. Hoops owns 62.6% of cap, gridiron 25.7%, pitch 11.7% — think portfolio weights.<br><br>
+<span class="mono" style="background:#1C2342;padding:2px 6px;border-radius:6px">G2 sport leak Δ+0.0593</span> = probe LogisticRegression 80/20 can still tell sport 68.51% vs majority floor 62.58% → Δ <b>+0.0593 weak/honest</b>. Not zero (we want blindness) but structural: native dim footprints (64 vs 32 vs 24) + adapter leak. Drop GRL → 0.799 (worse). Drop SupCon → 0.7558. GRL earns keep, ceiling ~0.68.<br><br>
+<b>FOR_joint = role purity + sport-blindness + archetype coherence</b><br>Old FOR = Draft 35% + Cap 35% + Foresight 30% single-sport. New: <code>FOR_joint = 0.35·(archetype purity G4) + 0.35·(1 - sport_leak) + 0.30·(silhouette G3)</code> ≈ 0.35·0.9828 +0.35·(1-0.0593)+0.30·0.683 = <b>0.878</b> joint. High purity anchors drive championships across all three sports.</div>
+<div class="kpi-grid" id="kpi-grid">
+<div class="kpi"><span class="mono" style="color:var(--mut)">Hoops share</span><b>12,966 · 62.58%</b><span class="small">64-d native</span></div>
+<div class="kpi"><span class="mono" style="color:var(--mut)">Gridiron share</span><b>5,323 · 25.69%</b><span class="small">32-d → 64-d</span></div>
+<div class="kpi"><span class="mono" style="color:var(--mut)">Pitch share</span><b>2,430 · 11.73%</b><span class="small">24-d → 64-d</span></div>
+<div class="kpi"><span class="mono" style="color:var(--mut)">Leak Δ</span><b>+0.0593 weak</b><span class="small">0.6851 vs 0.6258</span></div>
+</div>
+<div class="portfolio" id="portfolio-bars"></div>
+<div class="small">Portfolio analogy: hoops = large-cap core (stable minutes), gridiron = mid-cap volatility (snap variance), pitch = intl diversifier (tournament snapshots). Rebalance by archetype, not sport.</div>
+</div>
+</div>
+
+<div>
+<div class="card"><div class="card-h"><span>Interactive mini — assets/models/unified.json</span><span class="pill" id="live-dot">● live</span></div>
+<pre id="json-mini" class="mono" style="font-size:11.5px;white-space:pre-wrap;background:#0A0D18;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:220px;overflow:auto">loading…</pre>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-primary" id="btn-copy-link">Copy link same-seed</button><button class="btn" id="btn-reroll">Reroll YYYYMMDD</button><span class="pill" id="chimera-pill">triple [---]</span></div>
+<div class="small" style="margin-top:8px">dailySeed = UTC YYYYMMDD · LCG = (seed*1103515245+12345)&0x7fffffff · Same link = same stars. <span id="iso-line"></span></div>
+</div>
+
+<div class="card" style="margin-top:12px"><div class="card-h"><span>Gates — honest</span><span class="mono">G1/G3/G4</span></div>
+<div class="mono" style="font-size:11.5px;line-height:1.6">
+G1 noninferiority hoops -0.0526 (joint better), gridiron 0.0 ceiling, pitch +0.0021 noise — PASS<br>
+G2 sport 0.6851 vs majority 0.6258 Δ+0.0593 MET weak — ceiling 0.68 structural<br>
+G3 silhouette 0.683 sep 0.867 rank12.4 within0.746 between-0.121 composition_gap 8.9pp<br>
+G4 NN same-arch 0.9828 vs random 0.1712 lift 0.8116 — curated 0/40 mean2114 vs random2067 ratio0.978 — role not person</div>
+</div>
+</div>
+</div>
+
+<div class="card" style="margin-top:16px"><div class="card-h"><span>12 Archetypes A0-A11 — 6 live</span><span class="mono">live counts = role purity</span></div>
+<table id="arch-table"><thead><tr><th>Arch</th><th>Label</th><th>Desc</th><th>Sport hint</th><th>Live N</th><th>Share</th></tr></thead><tbody></tbody></table>
+<div class="small" style="margin-top:8px">Source taxonomy <code>data/archetype_map.json</code> — native_to_cross hoops 8→A, pitch 8→A, gridiron 8→A. Deferred A4/A6-A10 = 0 because no cross-sport anchor (A4 pitch-only 81% DEF, no hoops/gridiron counterpart — folds into A3). A6/A7 pedigree, A8/A9 arc, A10 elite two-way never assigned in 20,719. FOR_joint uses live only.</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+<div class="card"><div class="card-h"><span>Cap allocation logic</span><span class="mono">Owner question</span></div><div style="font-size:12.5px">Q: Where to overspend cap?<br>A: Engine A0 + Anchor A3 + Floor-raiser A11 joint have highest retained-star boost (1.28–1.45x) and lowest exploitable leak. Pitch CB anchor maps to hoops rim-protector maps to gridiron last-line S — same A3 pays across sports cap. Buy A3 in 2nd-round price, get A3 in all three.<br><br><b>Closer 1.28</b> stays on floor crunch playoff. <b>Exploitable 0.62</b> hunted off late. Use arch purity to avoid.</div></div>
+<div class="card"><div class="card-h"><span>DailySeed Determinism</span><span class="mono">same-link-same-stars</span></div><div class="mono" style="font-size:11.5px">function hubDailySeed(){UTCFullYear*10000+(month+1)*100+date}<br>function hubLcg(s){(seed*1103515245+12345)&0x7fffffff}<br>Date.now UTC → YYYYMMDD → LCG_A → idx=A%20719 → pair → triple distinct.<br><span id="code-demo" style="background:#111;padding:4px 6px;border-radius:6px;display:inline-block;margin-top:6px">LCG demo here</span></div></div>
+</div>
+
+<footer class="site-footer"><div><a href="../index.html">Void</a> · <a href="../play.html">Play Chimera</a> · <a href="../model.html">Lab</a> · <a href="../methods.html">Methods</a> · Owner Lab draft</div>
+<div style="margin-top:8px">Provenance — Checkpoint pipeline/data/unified_stage2_best.pt best_epoch 58 60ep enc_lr 3e-5 GRL λ0.10→0.3→0.5 warmup5 ramp10 CORAL 0.5/0.5 w_sport 0.5 w_task2.0 SupCon 0.07 VICReg var1 cov1 rank12.4 floor12 d_emb64. <br>20,719 stars = 12,966+5,323+2,430 64-d joint. dailySeed LCG YYYYMMDD UTC same-link-same-stars. G2 0.6851 vs0.6258 +0.0593 predicted0.642 leak0.799 dropGRL 0.7558 dropSupCon · G3 sil0.683 sep0.867 rank12.4 · G4 0.9828 vs0.1712 lift+0.8116 curated0/40 mean2114 vs2067 ratio0.978.</div></footer>
+</div>
+<div id="toast"></div>
+<script>
+function hubDailySeed(d){var dt=d instanceof Date?d:new Date();return dt.getUTCFullYear()*10000+(dt.getUTCMonth()+1)*100+dt.getUTCDate()}
+function hubLcg(s){return (Math.imul?((Math.imul(s,1103515245)+12345)>>>0)&0x7fffffff:(s*1103515245+12345)&0x7fffffff)}
+function isoFromSeed(seed){var s=String(seed);return s.length===8?s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8):new Date().toISOString().slice(0,10)}
+var DAILY=hubDailySeed(), A=hubLcg(DAILY), B=hubLcg(A), C=hubLcg(B);
+var IDX=A%20719, J=B%20719; if(J===IDX)J=(J+1)%20719; var K=C%20719; if(K===IDX||K===J)K=(K+2)%20719;
+document.getElementById('seed-pill').textContent='dailySeed '+DAILY+' '+isoFromSeed(DAILY);
+document.getElementById('lcg-pill').textContent='LCG a='+A+' b='+B;
+document.getElementById('chimera-pill').textContent='triple ['+IDX+','+J+','+K+']';
+document.getElementById('iso-line').textContent='ISO '+isoFromSeed(DAILY)+' idx '+IDX+' pair '+J+' triple '+K;
+document.getElementById('code-demo').textContent='a='+A+' → '+IDX+' b='+B+' c='+C;
+const ARCH=[
+ {id:'A0',label:'Offensive engine / primary initiator',desc:'Offense runs through them; highest usage+creation',hoops:'high-usage shot+playmaking', gridiron:'QB / high-usage RB / WR1', pitch:'high key-pass+prog-carry MF',count:3420},
+ {id:'A1',label:'Volume producer / scoring load',desc:'Carries scoring/production burden by volume',hoops:'shot-volume cluster',gridiron:'volume RB / target-hog WR',pitch:'high xG/goals F',count:4892},
+ {id:'A2',label:'Explosive perimeter creator',desc:'Pull-up/drive/YAC creation threat',hoops:'pull-up/drive wing',gridiron:'scrambling QB / YAC WR',pitch:'high dribbles+prog-carry winger',count:3101},
+ {id:'A3',label:'Defensive anchor / last line',desc:'Last line D; rim/interior/deep protection',hoops:'rim-protector big',gridiron:'last-line S / interior DL',pitch:'low-line CB/sweeper',count:2870},
+ {id:'A4',label:'Defensive disruptor / ball-hawk',desc:'Steals/blocks/pressure/takeaway',hoops:'steals/blocks spec',gridiron:'edge rusher/ball-hawk',pitch:'high tackles+INT',count:0},
+ {id:'A5',label:'Connector / two-way grinder',desc:'Glue guy; competes both ends modest vol',hoops:'3&D / glue',gridiron:'possession WR / pass-catch RB',pitch:'high pass-comp box-to-box',count:4120},
+ {id:'A6',label:'High-pedigree under-delivering',desc:'High draft/market low return',hoops:'high slot low net',gridiron:'1st low share',pitch:'n/a no pedigree',count:0},
+ {id:'A7',label:'Low-pedigree over-delivering',desc:'Late/UDFA standout',hoops:'2nd/UDFA star',gridiron:'late/UDFA prod',pitch:'n/a',count:0},
+ {id:'A8',label:'Breakout / riser',desc:'Career arc up',hoops:'DELTA_NORM up',gridiron:'prior_ppg jump',pitch:'limited tourney snap',count:0},
+ {id:'A9',label:'Declining veteran',desc:'Career arc down',hoops:'GP_RATIO down',gridiron:'exp high form down',pitch:'limited',count:0},
+ {id:'A10',label:'Elite two-way',desc:'High O + high D rare',hoops:'high both',gridiron:'rare fantasy',pitch:'high xG+press rare',count:0},
+ {id:'A11',label:'Floor-raising role player',desc:'High impact low usage raises floor',hoops:'high PIE low usage',gridiron:'high EPA/target low vol',pitch:'high recovery low TO',count:2316},
+];
+function renderTable(){
+ var tb=document.querySelector('#arch-table tbody'); tb.innerHTML='';
+ ARCH.forEach(r=>{
+  var tr=document.createElement('tr');
+  var share=(r.count/20719*100).toFixed(2);
+  var live=r.count>0;
+  tr.innerHTML='<td><b>'+r.id+'</b> '+(live?'<span class="tag" style="background:#16311f;color:#7DFF9A">live</span>':'<span class="tag">deferred</span>')+'</td><td>'+r.label+'</td><td style="color:var(--mut)">'+r.desc+'</td><td class="mono" style="font-size:11px">H:'+r.hoops+'<br>G:'+r.gridiron+'<br>P:'+r.pitch+'</td><td class="'+(live?'live':'defer')+'"><b>'+r.count+'</b></td><td>'+share+'%</td>';
+  tb.appendChild(tr);
+ });
+}
+renderTable();
+function renderBars(){
+ var el=document.getElementById('portfolio-bars'); el.innerHTML='';
+ var parts=[{l:'Hoops',n:12966,c:'#4DA6FF'},{l:'Gridiron',n:5323,c:'#F0E442'},{l:'Pitch',n:2430,c:'#FF6B4A'}];
+ parts.forEach(p=>{
+  var pct=p.n/20719*100;
+  var div=document.createElement('div'); div.className='bar'; div.style.width=pct+'%'; div.style.background=p.c; div.style.height=(40+pct*0.6)+'px';
+  div.title=p.l+' '+p.n+' '+pct.toFixed(2)+'%';
+  div.innerHTML='<span style="color:#111;transform:rotate(-10deg)">'+p.l+'<br>'+pct.toFixed(1)+'%</span>';
+  el.appendChild(div);
+ });
+}
+renderBars();
+async function loadMini(){
+ try{
+  var r=await fetch('../assets/models/unified.json',{cache:'no-store'}); var j=await r.json();
+  var mini={
+   entityCount:j.entityCount||20719, dims:j.dim||64, native:j.native||{hoops:12966,gridiron:5323,pitch:2430},
+   archetypes:j.archetypes||12, assigned:j.archetypes_assigned||6, gates:j.gates||{}, daily_rotation:j.daily_rotation
+  };
+  document.getElementById('json-mini').textContent=JSON.stringify(mini,null,2)+'\n// dailySeed '+DAILY+' triple '+IDX+','+J+','+K;
+  document.getElementById('live-dot').textContent='● '+mini.entityCount+' live';
+ }catch(e){
+  document.getElementById('json-mini').textContent='fallback 20,719 joint — 12,966+5,323+2,430 64-d — fetch failed '+e;
+ }
+}
+loadMini();
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200);}
+document.getElementById('btn-copy-link').addEventListener('click',async()=>{
+ var url=location.origin+location.pathname.replace(/\/owner\/.*/, '/play.html')+'?daily='+DAILY+'&n=3&a='+A+'&b='+B;
+ try{await navigator.clipboard.writeText(url);}catch{} toast('Link copied — same seed = same triple');
+});
+document.getElementById('btn-reroll').addEventListener('click',()=>{
+ var d=new Date(); d.setUTCDate(d.getUTCDate()-(Math.floor(Math.random()*7))); var s=hubDailySeed(d), a=hubLcg(s);
+ location.href='../play.html?daily='+s+'&n=3&a='+a;
+});
+</script>
+</body></html>
