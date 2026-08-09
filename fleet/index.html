@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>VECTOR FLEET — private</title>
+  <link rel="stylesheet" href="./fleet.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">
+        <span class="badge-private">private</span>
+        <span class="eyebrow-text">VECTOR FLEET</span>
+      </div>
+      <h1 id="fleet-title">Fleet status</h1>
+      <p class="thesis" id="thesis"></p>
+      <div class="legend" id="legend" aria-label="maturity legend"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid" id="grid" aria-live="polite">
+      <p class="loading" id="loading">Loading fleet…</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p id="foot-note"></p>
+    <p class="foot-sub">Private dashboard — contains private-model metrics. Not deployed.</p>
+  </footer>
+
+  <script src="./fleet.js"></script>
+</body>
+</html>
