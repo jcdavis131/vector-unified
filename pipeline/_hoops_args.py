@@ -1,7 +1,8 @@
-import torch, json
+import torch, json  # noqa: F401
 from pathlib import Path
+from _torch_safe import safe_torch_load
 HOME = Path(r"C:\Users\jcdav")
-ck = torch.load(HOME/"vector-hoops/pipeline/data/mtnn_best.pt", map_location="cpu", weights_only=False)
+ck = safe_torch_load(HOME/"vector-hoops/pipeline/data/mtnn_best.pt", map_location="cpu")
 print("=== hoops checkpoint args (full) ===")
 print(json.dumps(ck["args"], indent=2, default=str))
 print("\n=== hoops checkpoint weights ===")

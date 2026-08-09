@@ -28,6 +28,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn.functional as F
+from _torch_safe import safe_torch_load
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -164,7 +165,7 @@ def main():
     # load Stage 1 trunk weights as a warm start (if present)
     s1 = UCACHE / "unified_best.pt"
     if s1.exists():
-        ck = torch.load(s1, map_location=device, weights_only=False)
+        ck = safe_torch_load(s1, map_location=device)
         a = ck["args"]
         # only load if arch compatible (d_emb, d_adapter, d_sport_tok match)
         compat = (int(a.get("d_emb", 64)) == args.d_emb and

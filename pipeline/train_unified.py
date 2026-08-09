@@ -38,6 +38,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from load_encoders import SPORT_DIM, SPORT_ID, ROOT, UCACHE
+from _torch_safe import safe_torch_load
 
 DATA = ROOT / "data"
 SEED = 7
@@ -388,7 +389,7 @@ def main():
     elif (args.market or args.cultural_text) and (UCACHE / "unified_best.pt").exists():
         init_path = UCACHE / "unified_best.pt"
     if init_path is not None and init_path.exists():
-        ck = torch.load(init_path, map_location=device, weights_only=False)
+        ck = safe_torch_load(init_path, map_location=device)
         missing, unexpected = model.load_state_dict(ck["state"], strict=False)
         print(f"warm-started from {init_path.name}  "
               f"(missing={list(missing)[:4]}{'...' if len(missing)>4 else ''})")

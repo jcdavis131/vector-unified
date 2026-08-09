@@ -26,6 +26,7 @@ import torch.nn.functional as F
 
 from load_encoders import (HOOPS, GRID, PITCH, ROOT, UCACHE, SPORT_DIM,
                            _MTNN, _family_slices, _split_by_family, _l2norm)
+from _torch_safe import safe_torch_load
 
 # native train_mtnn modules import sibling helpers (e.g. hoops `composite_score`),
 # so their pipeline dirs must be on sys.path for those imports to resolve.
@@ -51,8 +52,8 @@ def _hoops_bundle(device):
         sys.path.insert(0, _hp)
     spec = importlib.util.spec_from_file_location("hoops_train_mtnn", HOOPS / "pipeline" / "train_mtnn.py")
     hm = importlib.util.module_from_spec(spec); spec.loader.exec_module(hm)
-    ck = torch.load(HOOPS / "pipeline" / "data" / "mtnn_best.pt",
-                    map_location=device, weights_only=False)
+    ck = safe_torch_load(HOOPS / "pipeline" / "data" / "mtnn_best.pt",
+                         map_location=device)
     a = ck["args"]
     Z, M, names, seasons, pids, clusters, positions, season_ids, manifest = hm.load_bundle()
     fams = hm.family_slices(manifest)
@@ -93,8 +94,8 @@ def _pitch_bundle(device):
     import importlib.util
     spec = importlib.util.spec_from_file_location("pitch_train_mtnn", PITCH / "pipeline" / "train_mtnn.py")
     pm = importlib.util.module_from_spec(spec); spec.loader.exec_module(pm)
-    ck = torch.load(PITCH / "pipeline" / "data" / "pitch_mtnn.pt",
-                    map_location=device, weights_only=False)
+    ck = safe_torch_load(PITCH / "pipeline" / "data" / "pitch_mtnn.pt",
+                         map_location=device)
     cfg = ck["config"]
     d = np.load(PITCH / "pipeline" / "data" / "tm_full.npz", allow_pickle=False)
     X = d["X"].astype(np.float32); M = d["M"].astype(np.float32)
@@ -120,8 +121,8 @@ def _pitch_bundle(device):
 # ---------------------------------------------------------------------------
 
 def _gridiron_bundle(device):
-    ck = torch.load(GRID / "pipeline" / "data" / "mtnn_best.pt",
-                    map_location=device, weights_only=False)
+    ck = safe_torch_load(GRID / "pipeline" / "data" / "mtnn_best.pt",
+                         map_location=device)
     feats = ck["feats"]; families = ck["families"]
     mu = ck["mu"]; sd = ck["sd"]
     n_seasons = int(ck["n_seasons"]); season_min = int(ck["season_min"])

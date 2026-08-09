@@ -41,6 +41,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from _torch_safe import safe_torch_load
+
 ROOT = Path(__file__).resolve().parents[1]
 HOME = ROOT.parent  # C:\Users\jcdav
 HOOPS = HOME / "vector-hoops"
@@ -184,7 +186,7 @@ def load_gridiron(device=None):
         } for i in range(E.shape[0])]
         return E, recs
 
-    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
+    ckpt = safe_torch_load(ckpt_path, map_location=device)
     feats = ckpt["feats"]; families = ckpt["families"]
     mu = ckpt["mu"]; sd = ckpt["sd"]
     n_seasons = int(ckpt["n_seasons"]); season_min = int(ckpt["season_min"])
