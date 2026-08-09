@@ -1,0 +1,25 @@
+{
+  "name": "Unified Chimera 20,719x64-d",
+  "hoops_dim": 64,
+  "gridiron_dim": 32,
+  "pitch_dim": 24,
+  "joint_dim": 64,
+  "method": "CORAL centroid + GRL λ 0.10→0.3→0.5 + SupCon + VICReg",
+  "encoders": {
+    "hoops": "pipeline/data/mtnn_best.pt 18 towers 130 feats → 64-d L2 12,966 rows",
+    "gridiron": "10 towers 160 feats → 32-d native 16-d compat 2,000 weeks",
+    "pitch": "11 ctx towers 3 families attacking/passing/defending gated fusion cat([x·m,m]) → 24-d L2 633 WC 2,430 full"
+  },
+  "alignment": {
+    "coral": "centroid matching across sport embeddings to shared axis system",
+    "grl_lambda": [0.1, 0.3, 0.5],
+    "supcon": "archetype coherence G3 + analogy G4",
+    "vicreg": "prevent collapse rank",
+    "task": "anti-collapse anchor sport pos arch"
+  },
+  "daily": "dailySeed LCG glibc rand YYYYMMDD (seed*1103515245+12345)&0x7fffffff % 20719 deterministic same-link-same-stars",
+  "archetypes": 12,
+  "provenance": "honest 7/7 source_hashes recomputable",
+  "gates": ["G1 pos_drop 0.0-pos_drop bug caveat","G2 sport_invariance majority baseline +0.0593","G3 silhouette within_vs_between","G4 hit_rate analogy"],
+  "shipped": "unified_stage2_best.pt best_epoch 58 enc_lr 3e-5"
+}
