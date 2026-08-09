@@ -85,6 +85,11 @@ def validate_entry(d: dict[str, Any]) -> list[str]:
         for key in ("name", "value"):
             if key not in hm:
                 problems.append(f"headlineMetric missing {key}")
-    elif hm is not None:
+    elif "headlineMetric" in d:
+        # Present but not an object (includes an explicit ``None``). An absent
+        # headlineMetric is already reported by the required-field loop above; a
+        # present-but-null one must be rejected too — a fleet entry whose headline
+        # metric is null is malformed, matching vector-unified's aggregate_fleet
+        # validator (the canonical consumer of this contract).
         problems.append("headlineMetric must be an object")
     return problems

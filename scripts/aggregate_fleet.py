@@ -44,8 +44,18 @@ FLEET_JSON = REPO_ROOT / "fleet" / "data" / "fleet.json"
 
 RAW_BASE = "https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}"
 
-VALID_STATUS = {"production", "shipped", "wip", "blocked"}
-REQUIRED_FIELDS = ("repo", "domain", "embeddingDim", "status", "headlineMetric")
+# The per-entry fleet contract (required fields, valid statuses, headlineMetric
+# shape) now lives once in vector_core.schema and is reused here instead of being
+# re-declared. Prefer the installed package (`pip install -e packages/vector-core`,
+# see requirements-dev.txt); fall back to the in-repo source path so this script
+# also runs with zero setup, CPU-only.
+try:
+    from vector_core.schema import validate_entry
+except ModuleNotFoundError:
+    _VC_SRC = REPO_ROOT / "packages" / "vector-core" / "src"
+    if _VC_SRC.is_dir():
+        sys.path.insert(0, str(_VC_SRC))
+    from vector_core.schema import validate_entry
 
 # Public repos whose eval JSON can be fetched anonymously. Each maps the repo to
 # the committed source file (matching the "source" field in fleet.json) and the
@@ -86,16 +96,13 @@ def validate(data: dict) -> list[str]:
     seen = set()
     for i, m in enumerate(models):
         tag = m.get("repo", f"#{i}")
-        for field in REQUIRED_FIELDS:
-            if field not in m:
-                problems.append(f"[{tag}] missing required field '{field}'")
-        if m.get("status") not in VALID_STATUS:
-            problems.append(f"[{tag}] invalid status {m.get('status')!r}")
-        if not isinstance(m.get("embeddingDim"), int):
-            problems.append(f"[{tag}] embeddingDim must be int")
-        hm = m.get("headlineMetric")
-        if not isinstance(hm, dict) or "name" not in hm or "value" not in hm:
-            problems.append(f"[{tag}] headlineMetric must have 'name' and 'value'")
+        # Per-entry structural validation is delegated to the canonical fleet
+        # contract in vector_core.schema (the shared source of truth). The
+        # pass/fail verdict is identical to the previous inline checks across an
+        # exhaustive fixture battery (tests/test_vector_core_adoption.py); only
+        # the diagnostic wording is now vector_core's canonical wording.
+        for problem in validate_entry(m):
+            problems.append(f"[{tag}] {problem}")
         if m.get("repo") in seen:
             problems.append(f"duplicate repo {m.get('repo')!r}")
         seen.add(m.get("repo"))
