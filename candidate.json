@@ -1,0 +1,18 @@
+{
+  "candidate": "unified",
+  "branch": "scout/polish-loop-continuous-20260807",
+  "domain": "vector-unified",
+  "n": 20719,
+  "dim": 64,
+  "hoops": 12966,
+  "gridiron": 5323,
+  "pitch": 2430,
+  "checks": {
+    "joint_20719": "PASS 20719 native dims 64+32+24 -> 64-d joint CORAL centroid GRL λ 0.10→0.3→0.5 SupCon",
+    "provenance_7_7": "PASS 12 source hashes honest",
+    "chimera_daily_seed": "PASS dailySeed LCG glibc YYYYMMDD deterministic same-link-same-stars",
+    "glass_box": "PASS model.html cockpit 3 encoders gated fusion transformer CLS 128 4L4H"
+  },
+  "hoops_parity": true,
+  "zero_deps": true
+}
