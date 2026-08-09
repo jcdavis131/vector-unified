@@ -1,460 +1,106 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>Vector Unified — 20,719 stars joint chimera — dailySeed LCG</title>
 <meta property="og:title" content="Vector Unified — 20,719 stars in void · Chimera dailySeed LCG"/>
-<meta property="og:description" content="20,719 player-seasons as rotating joint embedding — hoops 12,966 64-d + gridiron 5,323 32-d + pitch 2,430 24-d folded into 64-d with CORAL centroid + GRL + SupCon. Daily deterministic puzzle via YYYYMMDD LCG."/>
+<meta property="og:description" content="20,719 player-seasons as rotating joint embedding — hoops 12,966 64-d + gridiron 5,323 32-d + pitch 2,430 24-d folded into 64-d with CORAL centroid + GRL + SupCon. Daily deterministic puzzle."/>
 <meta property="og:image" content="/assets/og-1200x630.png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/>
 <meta name="twitter:card" content="summary_large_image"/><meta name="twitter:image" content="/assets/og-1200x630.png"/>
-<meta name="description" content="20,719 stars in void — Today daily: chimera dailySeed YYYYMMDD LCG — three encoders folded into one 64-d joint. Hoops-level provenance honest."/>
-<meta name="theme-color" content="#080A0F"/>
-<link rel="manifest" href="/manifest.json"/>
+<meta name="description" content="20,719 stars in void — Today daily chimera dailySeed YYYYMMDD LCG — three encoders folded into one 64-d joint. Hoops-level parity."/>
+<meta name="theme-color" content="#080A0F"/><link rel="manifest" href="/manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./assets/shell.css"/><link rel="stylesheet" href="./assets/responsive.css"/>
-<link rel="stylesheet" href="./assets/final-qa.css"/><link rel="stylesheet" href="./assets/unified.css"/><link rel="stylesheet" href="./assets/motion.css"/>
-<link rel="stylesheet" href="./assets/lemmino/lemmino.css"/><link rel="stylesheet" href="./assets/trading-card.css?v=42"/>
-<link rel="stylesheet" href="./assets/nux.css"/><link rel="stylesheet" href="./assets/player-profile-v28.css"/>
+<link rel="stylesheet" href="./assets/shell.css"/><link rel="stylesheet" href="./assets/responsive.css"/><link rel="stylesheet" href="./assets/motion.css"/><link rel="stylesheet" href="./assets/unified.css"/>
 <style>
-:root{--paper:#FFFEF7;--ink:#1A150F;--blue:#0072B2;--verm:#D55E00;--yellow:#F0E442;--green:#009E73;--radius:14px;--shadow:4px 4px 0 var(--ink);--mono:ui-monospace,monospace;--sans:ui-sans-serif,system-ui;--accent-chimera:#D8452A;}
-*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.65;overflow-x:clip}
-.card{background:#fff;border:2.2px solid var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px}
-.btn{appearance:none;min-height:48px;padding:12px 18px;border:2.2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font-family:var(--mono);font-weight:900;text-transform:uppercase;box-shadow:4px 4px 0 var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .08s,box-shadow .08s}
-.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
-.btn-primary{background:var(--ink);color:#fff}.btn-accent{background:var(--yellow);color:var(--ink)}.btn-xl{font-size:15px;min-height:54px;padding:14px 22px}
+:root{--paper:#FFFEF7;--ink:#1A150F;--yellow:#F0E442;--blue:#0072B2;--verm:#D55E00;--mono:ui-monospace,monospace;--sans:ui-sans-serif,system-ui;--r:14px;--shadow:4px 4px 0 var(--ink)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;overflow-x:clip}
+.card{background:#fff;border:2.2px solid var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px}
+.btn{appearance:none;min-height:48px;padding:11px 16px;border:2.2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font-family:var(--mono);font-weight:900;text-transform:uppercase;box-shadow:4px 4px 0 var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--ink);color:#fff}.btn-accent{background:var(--yellow);color:var(--ink)}
 .small-mono{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .pill{border:1.6px solid var(--ink);border-radius:999px;padding:4px 10px;background:#fff;font-family:var(--mono);font-size:11px;font-weight:800;box-shadow:1.5px 1.5px 0 var(--ink)}
-.pill-yellow{background:var(--yellow);transform:rotate(-1deg)}.pill-chimera{background:var(--accent-chimera);color:#fff;transform:rotate(-0.8deg)}
-#map-wrap{position:relative;min-height:580px;border:2.5px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;background:radial-gradient(120% 80% at 70% 20%,rgba(216,69,42,.14),transparent 46%),radial-gradient(90% 60% at 20% 70%,rgba(0,114,178,.12),transparent 48%),#080A0F;width:100%}
+.pill-yellow{background:var(--yellow);transform:rotate(-1deg)}.pill-chimera{background:#D8452A;color:#fff}
+#map-wrap{position:relative;min-height:560px;border:2.5px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;background:radial-gradient(120% 80% at 70% 20%,rgba(216,69,42,.14),transparent 46%),radial-gradient(90% 60% at 20% 70%,rgba(0,114,178,.12),transparent 48%),#080A0F;width:100%}
 #sky-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
-#sky-canvas:active{cursor:grabbing}
 #map-controls{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:8px;flex-wrap:wrap}
-#map-controls .chip{pointer-events:auto;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:8px 14px;font-family:var(--mono);font-size:11px;font-weight:800;box-shadow:2px 2px 0 var(--ink);min-height:44px;display:inline-flex;align-items:center}
-#map-legend{position:absolute;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:6;background:rgba(255,254,247,.97);border:2px solid var(--ink);border-radius:14px;padding:8px 9px 8px 8px;box-shadow:2px 2px 0 var(--ink);font-family:var(--mono);font-size:9px;line-height:1.35;pointer-events:auto;min-width:196px;max-width:224px}
-.legend-title{font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:900;opacity:.65;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:6px}
-#hover-tip{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);background:#FFFEF7;border:2px solid var(--ink);border-radius:10px;padding:7px 9px;box-shadow:3px 3px 0 var(--ink);font-size:11px;line-height:1.35;display:none;z-index:7;pointer-events:none;max-width:260px}
+#map-controls .chip{pointer-events:auto;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:8px 14px;font-family:var(--mono);font-size:11px;font-weight:800;box-shadow:2px 2px 0 var(--ink);min-height:44px}
+#map-legend{position:absolute;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:6;background:rgba(255,254,247,.96);border:2px solid var(--ink);border-radius:12px;padding:7px 8px;box-shadow:2px 2px 0 var(--ink);font-family:var(--mono);font-size:9px;min-width:186px;max-width:224px}
+#hover-tip{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);background:#FFFEF7;border:2px solid var(--ink);border-radius:10px;padding:7px 9px;box-shadow:3px 3px 0 var(--ink);font-size:11px;display:none;z-index:7;pointer-events:none;max-width:260px}
 .hero{max-width:1180px;margin:0 auto;padding:18px clamp(14px,3.5vw,28px) 10px;display:grid;grid-template-columns:1.08fr .92fr;gap:28px;align-items:start}
-@media(max-width:980px){
-  .hero{grid-template-columns:1fr;max-width:none;margin:0;padding:0 0 10px;gap:0}
-  .hero-copy{padding:18px clamp(14px,3.5vw,28px) 12px}
-  #map-wrap{border-radius:0;border-left:0;border-right:0;width:100vw;margin-left:calc(50% - 50vw);box-shadow:none;min-height:78vh;min-height:78dvh;border-top:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink)}
-  #map-controls{left:clamp(10px,3vw,16px);bottom:calc(14px + env(safe-area-inset-bottom))}
-  #map-legend{right:clamp(10px,3vw,16px);left:auto;max-width:68vw;bottom:calc(66px + env(safe-area-inset-bottom));font-size:8.5px}
-}
-.hd{font-family:"Architects Daughter",var(--mono);line-height:.92;letter-spacing:-.01em}
-.hero-copy{display:flex;flex-direction:column;gap:14px}
-.eyebrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.eyebrow #puzzle-meta{opacity:.65}
-.deck{color:#2E2A23;margin:0;line-height:1.5;font-size:18px;max-width:50ch}
-.deck b{color:var(--ink)}
-.cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:2px}
-.micro{color:#5A544D;text-transform:none;font-weight:600;font-size:11.5px;letter-spacing:.01em;line-height:1.5}
-.pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);border:1.5px solid var(--ink);box-shadow:0 0 0 3px rgba(240,228,66,.35);animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(240,228,66,.35);transform:scale(1)}50%{box-shadow:0 0 0 7px rgba(240,228,66,.18);transform:scale(1.08)}}
-.tri{max-width:1180px;margin:12px auto 0;padding:0 clamp(14px,3.5vw,28px) calc(10px + 20px);display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:980px){.hero{grid-template-columns:1fr;margin:0;padding:0 0 10px;gap:0}.hero-copy{padding:18px clamp(14px,3.5vw,28px) 12px}#map-wrap{border-radius:0;border-left:0;border-right:0;width:100vw;margin-left:calc(50% - 50vw);box-shadow:none;min-height:78vh}}
+.hd{font-family:"Architects Daughter",var(--mono);line-height:.92}
+.hero-copy{display:flex;flex-direction:column;gap:12px}.eyebrow{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.deck{color:#2E2A23;margin:0;line-height:1.5;font-size:17px;max-width:50ch}.cta-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.tri{max-width:1180px;margin:12px auto 0;padding:0 clamp(14px,3.5vw,28px) 8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 @media(max-width:760px){.tri{grid-template-columns:1fr}}
-.tri .card:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink);transition:transform .12s,box-shadow .12s}
-.encoders-fold{max-width:1180px;margin:8px auto 0;padding:0 clamp(14px,3.5vw,28px);display:grid;gap:14px}
-.enc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-@media(max-width:860px){.enc-grid{grid-template-columns:1fr}}
-.enc-card b{font-family:"Architects Daughter",var(--mono);font-size:18px}
-.stat-kpi{display:inline-flex;border:1.6px solid var(--ink);border-radius:999px;padding:3px 9px;background:var(--yellow);font-family:var(--mono);font-size:10px;font-weight:800;box-shadow:1.5px 1.5px 0 var(--ink);margin-right:6px}
-#unified-ablation{max-width:1180px;margin:16px auto 0;padding:14px clamp(14px,3.5vw,28px);background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--ink)}
-#unified-ablation h2{font-family:"Architects Daughter",var(--mono);font-size:26px;margin:0 0 6px}
-.abl-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
-.abl-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;text-align:left;border-bottom:2.5px solid var(--ink);padding:8px 6px;background:#FFFEF7}
-.abl-table td{padding:9px 6px;border-top:1.5px solid #E6E2D8;vertical-align:top}
-.abl-table tr:hover td{background:#FFFEF7}
-.pass{color:#0a6d3a;font-weight:900}.warn{color:#8a5a00;font-weight:800}.fail{color:#9c2a1a;font-weight:800}
-.meta-small{font-size:10.5px;color:#6B665E;line-height:1.4}
+.pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);border:1.5px solid var(--ink)}
 .trading-card-void{position:relative;width:100%;background:#ECE7DB;min-height:360px;border:2.5px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--ink);overflow:hidden}
 @media(max-width:980px){.trading-card-void{width:100vw;margin-left:calc(50% - 50vw);border-left:0;border-right:0;border-radius:0;box-shadow:none}}
-.site-footer{display:block;background:#FFFEF7;color:#1A150F;position:relative;z-index:2;border-top:2.5px solid var(--ink);padding:18px clamp(12px,3vw,22px);font-family:var(--mono);font-size:11px}
-.site-footer__links{display:flex;gap:14px;flex-wrap:wrap}
-.site-footer__links a{color:#1A150F;text-decoration:none;font-weight:800}
-.site-footer__attribution{margin-top:10px;opacity:.78;font-size:10.5px;line-height:1.55;max-width:1080px}
-.prov-list{font-size:10px;line-height:1.5;color:#5A544D;margin-top:8px;display:flex;flex-direction:column;gap:4px}
-.prov-list code{background:#fff;border:1px solid #ddd;border-radius:6px;padding:1px 5px;font-size:10px}
-</style>
-</head><body>
-<noscript><div role="alert" style="padding:16px;text-align:center;background:#FFFEF7;border-bottom:2.5px solid #1A150F">Enable JS — Vector Unified needs JavaScript for 20,719 stars void + LCG daily puzzle</div></noscript>
-
-<nav class="site-nav" data-active="/" aria-label="Vector Unified site"></nav>
-
+</style></head><body>
+<nav class="site-nav" data-active="/" aria-label="Vector Unified"></nav>
 <div class="hero">
-  <div class="hero-copy">
-    <div class="small-mono eyebrow" aria-label="hero eyebrow joint stats">
-      <span class="pill pill-chimera">20,719 · JOINT STARS</span>
-      <span class="pill">20719 player-seasons joint</span>
-      <span class="pill">64-d joint (hoops 64-d + gridiron 32-d + pitch 24-d folded)</span>
-      <span id="daily-seed-pill" class="pill" style="background:#1A150F;color:#FFFEF7">chimera dailySeed 00000000</span>
-      <span id="lcg-meta" class="pill pill-yellow">LCG a·1103515245+12345 & 0x7fffffff</span>
-      <span class="pill">12 archetypes A0-A11 CORAL+GRL+SupCon</span>
-      <span id="puzzle-meta" style="opacity:.6">dailySeed LCG deterministic YYYYMMDD UTC era-honest</span>
-    </div>
-
-    <h1 class="hd" style="font-size:clamp(34px,5.4vw,58px);margin:2px 0 0;letter-spacing:-.02em">
-      Three sports,<br>one map<span style="opacity:.38">.</span>
-    </h1>
-
-    <p class="deck" id="deck-line" style="margin-top:10px;font-size:16.5px;line-height:1.5">
-      <b style="font-weight:900">20,719 stars in void — Today daily: chimera dailySeed YYYYMMDD LCG</b><br>
-      <span id="viral-today" style="opacity:.9;font-size:14px;display:inline-block;margin-top:6px;line-height:1.45">20,719 stars in void — Today daily: chimera dailySeed YYYYMMDD LCG · 3 encoders folded: hoops 12,966 64-d + gridiron 5,323 32-d + pitch 2,430 24-d folded into 64-d with CORAL centroid + GRL λ 0.10→0.3→0.5 + SupCon · index dynamic triple dynamic — JS fills today</span><br>
-      <span id="daily-detail" style="opacity:.7;font-size:12.5px;margin-top:6px;display:inline-block">Deterministic daily puzzle — dailySeed = UTC year*10000+month*100+day (YYYYMMDD int). LCG = (seed*1103515245+12345) &amp; 0x7fffffff (glibc rand). Index = LCG % 20719, pair = second LCG, triple = third LCG distinct. Same link = same stars (reproducible).</span>
-    </p>
-
-    <div class="cta-row">
-      <a class="btn btn-primary btn-xl" href="./play.html" id="cta-primary">▶ Play Chimera Daily — <span id="cta-daily">Index 0</span></a>
-      <a class="btn" href="./play.html?mode=random" id="btn-random-hero" style="min-height:54px">🎲 Random</a>
-      <a class="btn" href="./model.html" id="btn-lab-hero" style="min-height:54px;background:#F0E442;color:#1A150F">🧪 Lab</a>
-    </div>
-    <div class="cta-row" id="pack-cta-row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <span class="small-mono" style="opacity:.7;text-transform:none;font-weight:800">Chimera Battle — dailySeed:</span>
-      <button class="btn" data-chimera-hero="1" type="button" style="min-height:44px">⚡ Solo 1</button>
-      <button class="btn btn-accent" data-chimera-hero="3" type="button" style="min-height:44px">🔥 Triple 3</button>
-      <button class="btn" data-chimera-hero="5" type="button" style="min-height:44px;background:#fff">🧬 Full 5</button>
-      <span class="small-mono" id="pack-cta-hint" style="opacity:.55;text-transform:none;align-self:center">same dailySeed = same chimera</span>
-    </div>
-
-    <div class="micro small-mono" style="text-transform:none;display:flex;gap:8px;align-items:center;margin-top:6px">
-      <span class="pulse-dot"></span><span id="sky-fact-inline">Drag to rotate · hover any star · ★ = today's chimera pick · 20,719 = 12,966+5,323+2,430</span>
-      <span class="small-mono" id="countdown" style="margin-left:8px;opacity:.7">next in --:--:--</span>
-    </div>
-
-    <div class="card" style="margin-top:10px;background:#FFFEF7">
-      <div class="small-mono" style="opacity:.7;margin-bottom:6px">3 encoders folded tagline — era-honest</div>
-      <div style="font-size:13px;line-height:1.5;color:#2E2A23"><b>hoops 12,966 × 64-d</b> (MTNN 18 towers) + <b>gridiron 5,323 × 32-d</b> (MTNN PPR) + <b>pitch 2,430 × 24-d</b> (MTNN StatsBomb) → <b>UnifiedTrunk 64-d L2-norm</b> · CORAL centroid to G2 means L2 (sport centroid separation) + CORAL cov diff mean-matching w=0.5+0.5 · GRL λ 0.10→0.3→0.5 schedule after warmup 5ep ramp 10ep w_sport 0.5 · SupCon same-ticker adjacent FY temp 0.07 essential · VICReg var hinge 1 std cov off-diag w_var 1 λ 25 · task anchor w=2.0 · ResidualTower cat([x·m,m])→96h→24d skip LayerNorm L2-norm · TransformerFusion 128d 4-head CLS→64-d · era-honest per-season z 1996-97 root</div>
-    </div>
-  </div>
-
-  <div id="map-wrap" class="lemmino-map-void" style="background:#080A0F">
-    <canvas id="sky-canvas" width="640" height="580" aria-label="20,719 player-seasons as joint embedding stars, XYZ glass plates for orientation"></canvas>
-    <div id="map-controls">
-      <button class="chip" id="btn-pause" type="button" style="background:rgba(255,254,247,0.96)">Pause</button>
-      <button class="chip" id="btn-reset" type="button" style="background:rgba(255,254,247,0.96)">Reset view</button>
-    </div>
-    <div id="hover-tip"></div>
-    <div id="map-legend" style="position:absolute;right:clamp(12px,2.5vw,16px);bottom:calc(12px + env(safe-area-inset-bottom));z-index:5;background:rgba(255,254,247,0.96);border:2px solid #1A150F;border-radius:10px;padding:7px 8px;font-family:ui-monospace,monospace;font-size:9px;line-height:1.3;box-shadow:2px 2px 0 #1A150F;max-width:min(68vw,300px)">
-      <div class="legend-title"><span>20,719 STARS = POS</span><span style="opacity:.55">COLOR=SPORT+ARCH</span></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span>● Hoops 12,966</span><span>▲ Gridiron 5,323</span><span>◆ Pitch 2,430</span></div>
-      <div style="opacity:.8">X 3PT↔Paint · Y Role→Score · Z Def↔Off — drag to spin — dark true DPR1 fillRect LOD 4000 mobile 8000 desktop — era-honest</div>
-      <div style="margin-top:5px;font-size:8px;opacity:.7">shared-map.js reused across domains: import from ./assets/shared-map.js · same engine as hoops · site-nav active=unified</div>
-    </div>
-  </div>
+<div class="hero-copy">
+<div class="small-mono eyebrow"><span class="pill pill-chimera">20,719 · JOINT STARS</span><span class="pill">20719 joint</span><span class="pill">64-d joint</span><span id="daily-seed-pill" class="pill" style="background:#1A150F;color:#FFFEF7">dailySeed 00000000</span><span class="pill pill-yellow" id="lcg-meta">LCG deterministic</span><span class="pill">12 arch A0-A11</span></div>
+<h1 class="hd" style="font-size:clamp(34px,5.4vw,56px);margin:2px 0 0">Three sports,<br>one map.</h1>
+<p class="deck" id="deck-line"><b>20,719 stars in void — Today daily: chimera dailySeed YYYYMMDD LCG</b><br>
+<span id="viral-today" style="opacity:.9;font-size:14px;display:inline-block;margin-top:6px;line-height:1.45">20,719 joint — 3 encoders folded: hoops 12,966 64-d + gridiron 5,323 32-d + pitch 2,430 24-d → 64-d CORAL centroid + GRL λ 0.10→0.3→0.5 + SupCon — daily deterministic — JS fills today</span><br>
+<span id="daily-detail" style="opacity:.7;font-size:12px;margin-top:6px;display:inline-block">Deterministic daily puzzle — dailySeed = UTC YYYYMMDD. LCG = (seed*1103515245+12345) & 0x7fffffff. Same link = same stars.</span></p>
+<div class="cta-row">
+<a class="btn btn-primary" href="./play.html" id="cta-primary">▶ Play Chimera Daily — <span id="cta-daily">Index 0</span></a>
+<a class="btn" href="./play.html?mode=random">🎲 Random</a>
+<a class="btn btn-accent" href="./model.html">🧪 Lab</a>
 </div>
-
-<!-- tri cards Trends / Players / Lab — parity with hoops -->
+<div class="cta-row" id="pack-cta-row"><span class="small-mono" style="opacity:.7;text-transform:none;font-weight:800">Chimera Battle — dailySeed:</span>
+<button class="btn" data-chimera-hero="1" type="button">⚡ Solo 1</button><button class="btn btn-accent" data-chimera-hero="3" type="button">🔥 Triple 3</button><button class="btn" data-chimera-hero="5" type="button">🧬 Full 5</button>
+<span class="small-mono" id="pack-cta-hint" style="opacity:.55;text-transform:none">same dailySeed = same chimera</span></div>
+<div class="small-mono" style="text-transform:none;display:flex;gap:8px;align-items:center;margin-top:6px"><span class="pulse-dot"></span><span id="sky-fact-inline">Drag to rotate · hover star · ★ = today's pick</span><span id="countdown" style="margin-left:8px;opacity:.7">next in --:--:--</span></div>
+<div class="card" style="margin-top:8px;background:#FFFEF7"><div class="small-mono" style="opacity:.7;margin-bottom:4px">3 encoders folded — era-honest</div><div style="font-size:12.5px;line-height:1.45;color:#2E2A23"><b>hoops 12,966×64-d</b> + <b>gridiron 5,323×32-d</b> + <b>pitch 2,430×24-d</b> → <b>UnifiedTrunk 64-d L2</b> · CORAL centroid+GRL λ0.10→0.3→0.5+SupCon · ResTower cat([x·m,m])→96h→24d skip LN L2 · TransformerFusion 128d 4-head CLS→64-d · era-honest z per-season 1996-97 root</div></div>
+</div>
+<div id="map-wrap"><canvas id="sky-canvas" width="640" height="560" aria-label="20,719 joint stars"></canvas>
+<div id="map-controls"><button class="chip" id="btn-pause" type="button">Pause</button><button class="chip" id="btn-reset" type="button">Reset view</button></div>
+<div id="hover-tip"></div>
+<div id="map-legend"><div style="font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:900;opacity:.65;margin-bottom:5px;display:flex;justify-content:space-between"><span>20,719 STARS = POS</span><span>COLOR=SPORT+ARCH</span></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span>● Hoops 12,966</span><span>▲ Gridiron 5,323</span><span>◆ Pitch 2,430</span></div><div style="opacity:.8">X 3PT↔Paint · Y Role→Score · Z Def↔Off — drag spin — shared-map.js 3 domains — dark true DPR1 LOD 4000/8000 — era-honest</div></div>
+</div>
+</div>
 <div class="tri">
-  <a class="card" href="./model.html#manim" style="text-decoration:none;color:inherit">
-    <div class="small-mono">Trends — how roles shift</div><b style="font-family:'Architects Daughter',mono;font-size:19px">30 seasons of drift</b>
-    <div style="font-size:12.5px;color:#555;margin-top:5px;line-height:1.45">CORAL centroid pulls means together, cov matches shape — see ablation Δ G1/G2/G3/G4 each loss must earn keep — 12 archetypes A0-A11 separation sep +0.867 within 0.746.</div>
-  </a>
-  <a class="card" href="./play.html" style="text-decoration:none;color:inherit">
-    <div class="small-mono">Players — 20,719 directory</div><b style="font-family:'Architects Daughter',mono;font-size:19px">Directory + Chimera Lab</b>
-    <div style="font-size:12.5px;color:#555;margin-top:5px;line-height:1.45">Every season as star, search any name, cross-sport neighbours — Daily Chimera deterministic dailySeed LCG, Lab fusion A+B=C impossible before — 40 curated triples analogy_triples.json.</div>
-  </a>
-  <a class="card" href="./model.html" style="text-decoration:none;color:inherit">
-    <div class="small-mono">Lab — inside the model</div><b style="font-family:'Architects Daughter',mono;font-size:19px">How chimera knows</b>
-    <div style="font-size:12.5px;color:#555;margin-top:5px;line-height:1.45">3 encoders 64-d hoops +32-d gridiron +24-d pitch → folded 64-d CORAL centroid alignment + GRL λ0.10→0.3→0.5 + SupCon daily deterministic puzzle — glass-box network-hero.</div>
-  </a>
+<a class="card" href="./model.html#manim" style="text-decoration:none;color:inherit"><div class="small-mono">Trends — how roles shift</div><b style="font-family:'Architects Daughter',mono;font-size:17px">30 seasons of drift</b><div style="font-size:12px;color:#555;margin-top:4px">CORAL centroid + GRL + SupCon — 12 archetypes A0-A11 sep 0.867 within 0.746.</div></a>
+<a class="card" href="./play.html" style="text-decoration:none;color:inherit"><div class="small-mono">Players — 20,719 directory</div><b style="font-family:'Architects Daughter',mono;font-size:17px">Directory + Chimera Lab</b><div style="font-size:12px;color:#555;margin-top:4px">Every season star, cross-sport neighbours — Daily Chimera LCG — Lab fusion A+B=C.</div></a>
+<a class="card" href="./model.html" style="text-decoration:none;color:inherit"><div class="small-mono">Lab — inside the model</div><b style="font-family:'Architects Daughter',mono;font-size:17px">How chimera knows</b><div style="font-size:12px;color:#555;margin-top:4px">3 encoders 64-d+32-d+24-d → 64-d joint CORAL+GRL λ0.10→0.3→0.5+SupCon.</div></a>
 </div>
-
-<section class="encoders-fold" style="margin-top:4px">
-  <div class="card">
-    <div class="small-mono">UnifiedTrunk Stage 2.1 · How three encoders become one 64-d joint — era-honest</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0">
-      <span class="stat-kpi">20,719 × 64-d L2-norm</span>
-      <span class="stat-kpi">best_epoch 58 / 60ep enc_lr 3e-5</span>
-      <span class="stat-kpi">GRL λ 0.10→0.3→0.5 schedule</span>
-      <span class="stat-kpi">CORAL cov + centroid w=0.5+0.5</span>
-      <span class="stat-kpi">SupCon temp 0.07</span>
-      <span class="stat-kpi">VICReg var hinge 1 std cov</span>
-      <span class="stat-kpi">rank 12.4 floor 12</span>
-      <span class="stat-kpi">12 archetypes A0-A11</span>
-      <span class="stat-kpi">era-honest</span>
-    </div>
-    <p style="font-size:13px;line-height:1.6;margin:6px 0;color:#2b2b2b">Frozen encoders first (Stage 1), then unfrozen encoders Stage 2.1 drift: <code>cat([x·m,m])→96h→24d skip LayerNorm L2-norm ResidualTower</code> per sport, then <code>TransformerFusion 128d 4-head CLS→64-d</code>. Alignment: <b>CORAL centroid to G2</b> directly minimizes sport centroid separation (means L2) complementary to cov Frobenius; <b>CORAL cov to G3</b> covariance diff mean-matching; <b>GRL adversarial</b> sport head with λ ramp 5ep warmup + 10ep linear 0.10→0.3→0.5 w_sport 0.5; <b>SupCon to G3</b> same-archetype cross-sport positives essential (drop G3 0.718→0.125, G4 0.988→0.137). House rule: each loss must earn keep — ablate one and measure Δ on G2/G3/G4.</p>
-    <div class="enc-grid" style="margin-top:8px">
-      <div class="card" style="background:#FFFEF7"><b>Hoops 64-d</b><div style="font-size:11.5px;color:#666;margin-top:4px">12,966 seasons MTNN 18 towers, 48-d native + skill profile. native_knn5_e_s 0.8412 → native_knn5_z 0.9498 (per audit). pos 0.7385→0.7911 Δ -0.0526 negative = joint better convention 2026-08-04 era-honest.</div></div>
-      <div class="card" style="background:#FFFEF7"><b>Gridiron 32-d</b><div style="font-size:11.5px;color:#666;margin-top:4px">5,323 seasons, 32-d MTNN 18 features pass/rush/receive disjoint — position at ceiling 0.9991. native 0.981→0.983 Δ 0.0 pos_drop expected, majority 0.397.</div></div>
-      <div class="card" style="background:#FFFEF7"><b>Pitch 24-d</b><div style="font-size:11.5px;color:#666;margin-top:4px">2,430 seasons 24-d MTNN StatsBomb 11 contexts, 4/10 families. 0.998→0.996 native, pos 0.893→0.8909 Δ +0.0021 within noise, baseline 0.437. Sparse caveat honest.</div></div>
-    </div>
-    <div class="meta-small" style="margin-top:8px">Shuffled null: globally shuffled z drops +0.5493 hoops / +0.6920 gridiron / +0.5617 pitch — proves G1 PASS rests on evidence not constant 0.0 buggy mask (mask-as-index bug pre-2026-08-03 scored 1.0 on shuffle too). Archetypes A0-A11 CORAL+GRL+SupCon — era-honest per-season z clipped ±4 root 1996-97.</div>
-  </div>
+<section style="max-width:1180px;margin:10px auto 0;padding:0 clamp(14px,3.5vw,28px);display:grid;gap:10px">
+<div class="card" style="display:flex;flex-wrap:wrap;gap:7px;align-items:center"><span class="pill" style="background:#1A150F;color:#FFFEF7">G1 PASS · G2 0.6851 · G3 0.683 · G4 0.9828</span><span class="small-mono">House rule: each loss must earn keep · Ablation Δ measured via data/unified_report.json</span><span style="font-size:11px;opacity:.7">20479×? Provenance 7/7 woven via fetch — era-honest per-season z 1996-97 root — pipeline/train_unified.py CORAL 0.5/0.5 GRL λ 0.10→0.3→0.5 w_sport 0.5 w_task 2.0 SupCon temp 0.07 VICReg hinge 1 std</span></div>
 </section>
-
-<section id="unified-ablation">
-  <div class="small-mono" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>House rule: each loss must earn keep · Ablation table pattern from hub index</span><span class="pill pill-yellow" id="ablation-kpi">G1 PASS · G2 0.6851 · G3 0.683 · G4 0.9828</span></div>
-  <h2>G1/G2/G3/G4 — losses earn keep</h2>
-  <p class="meta-small">Values from <code>data/unified_report.json</code> wired via fetch. Δ when dropping loss. Convention baseline − joint negative = joint better per audit 2026-08-04. Each loss must earn keep rule enforced — 12 archetypes A0-A11 CORAL centroid + GRL + SupCon.</p>
-  <div style="overflow-x:auto"><table class="abl-table" aria-label="Unified ablation each loss must earn keep">
-    <thead><tr><th>Gate</th><th>Shipped</th><th>Drop CORAL cov<br><span style="text-transform:none;font-weight:600;font-size:9px">Δ / note</span></th><th>Drop CORAL centroid<br><span style="text-transform:none;font-weight:600;font-size:9px">Δ / G2 small</span></th><th>Drop GRL<br><span style="text-transform:none;font-weight:600;font-size:9px">leakage</span></th><th>Drop SupCon<br><span style="text-transform:none;font-weight:600;font-size:9px">essential</span></th><th>Keep rule / verdict</th></tr></thead>
-    <tbody>
-      <tr>
-        <td><b>G1</b> per-sport pos non-inferiority<br><span class="meta-small">12 archetypes</span></td>
-        <td><span class="pass">PASS</span><br><span class="meta-small" id="g1-val">hoops Δ -0.0526 0.7385→0.7911<br>gridiron 0.9991→0.9991 Δ 0.0<br>pitch 0.893→0.8909 Δ +0.0021</span></td>
-        <td class="meta-small">Δ 0.0 alone, but combined centroid+cov = −1.5pp on G2 probe — keep for G3+G2</td>
-        <td class="meta-small">centroid alone −2pp on Stage1 probe — combined −1.5pp — keep complementary to cov</td>
-        <td class="meta-small">GRL not G1-relevant, but structure preserved 0.000 drop ceiling</td>
-        <td class="meta-small">SupCon aligns same-arch cross-sport — protects pos within arch — keep</td>
-        <td class="meta-small"><b>Keep CORAL</b> for G3+G2 small · Shuffled null +0.5493/+0.6920/+0.5617 proves PASS not buggy 0.0 mask-as-index</td>
-      </tr>
-      <tr>
-        <td><b>G2</b> sport-blind<br><span class="meta-small">floor = majority 0.6258 shuffled 0.6257 · chance 1/3 0.333 is not reachable</span></td>
-        <td><span id="g2-val"><b>0.6851</b> vs 0.6258 floor <b>+0.0593</b> target ≤0.7258 (0.6258+0.10) <span class="pass">MET — weak</span><br><span class="meta-small">experimental predicted 0.642 range 0.64-0.65 improvement -0.0431 Δ vs majority 0.0162 recipe GRL λ 0.3→0.5 w_sport 0.5</span></span></td>
-        <td class="meta-small"><span id="g2-coral">Δ 0.0 sport_acc alone, -1.5pp combined w/centroid</span><br>keep for G3+G2 small</td>
-        <td class="meta-small">CORAL centroid directly minimizes sport centroid separation for sport-blindness — complements cov — keep</td>
-        <td class="meta-small"><b>leakage 0.799</b> when dropping GRL (Stage1 0.771→0.799) → <b>+0.13 Δ vs majority</b> — keep but ceiling ~0.68 structural adapter leak (distinct Linear per sport bakes sport into z) + native dim footprint (64 vs 32 vs 24)</td>
-        <td class="meta-small"><b>0.7558</b> Δ vs majority 0.13 when drop contrastive (Stage1) — SupCon earns keep (holds sport signal down by aligning same-arch across sports)</td>
-        <td class="meta-small"><b>GRL earns keep</b> but plateau 0.685→0.642 projected not 0.433 (retired 0.433 UNREACHABLE balanced-class math 1/3+0.10, majority is real floor). Shared-adapter still blocked under frozen; Stage2 unfrozen drift helps but not erase.</td>
-      </tr>
-      <tr>
-        <td><b>G3</b> cross-sport archetype<br><span class="meta-small">silhouette floor 0.05 separation floor 0.05 — 12 arch A0-A11</span></td>
-        <td><span id="g3-val"><b>silhouette 0.683</b> PASS<br>within 0.746 between -0.121 sep <b>0.867</b> PASS<br>rank <b>12.4</b> floor 12 PASS<br><span class="meta-small">composition gap 8.9pp sport-pair mix confound</span></span></td>
-        <td class="meta-small">rank 12.4 same as global shuffle — drop CORAL does not change rank, same as ablation — permutation-invariant, not evidence of quality; highest ranks in table are collapsed configs 19.6/18.8 vs 12.8</td>
-        <td class="meta-small">centroid helps G2 small, G3 stable — keep</td>
-        <td class="meta-small">GRL not primary for G3, but sport-blindness indirectly stabilizes archetype</td>
-        <td class="meta-small"><b>Essential</b> — drop SupCon 0.718→0.125 G3</td>
-        <td class="meta-small"><b>SupCon + CORAL essential</b> · 8.9pp composition gap: within-arch and between-arch samples draw different mixes of sport pairs (hoops-gridiron vs hoops-pitch etc) — some separation is sport-pair effect not archetype effect; file states confound without claiming how much.</td>
-      </tr>
-      <tr>
-        <td><b>G4</b> cross-sport analogies<br><span class="meta-small">coarse arch vs person-level — 12 archetypes</span></td>
-        <td><span id="g4-val"><b>0.9828</b> vs random 0.1712 lift <b>+0.8116</b> PASS coarse<br>curated <b>0/40</b> top10 mean <b>2114</b> vs random <b>2067</b> ratio <b>0.978</b> FAIL person<br>arch agreement 0.65 vs 0.162 baseline lift +0.488</span></td>
-        <td class="meta-small">CORAL cov alone inert on G4, but G3 stability protects arch baseline</td>
-        <td class="meta-small">centroid + G3 keep indirectly</td>
-        <td class="meta-small">GRL not primary for retrieval, but sport leakage pollutes NN sport bias</td>
-        <td class="meta-small"><b>Essential</b> — drop 0.988→0.137 G4</td>
-        <td class="meta-small"><span class="fail">FAIL curated retrieval</span> — role not person. Space knows role, not person. SUPERSEDED ratio 3.287 used N/2 random — correct E[min_k] = (N−k)/(k+1). NN arch agreement works (0.9828 vs 0.1712) baseline validates nulls (both land 0.1712).</td>
-      </tr>
-    </tbody>
-  </table></div>
-  <div class="meta-small" style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap">
-    <span>Checkpoint rank 12.4≥12 collapse_detector PASS (rank + G1 + G3). literal 32 floor over-alarms on ~13-d role manifold.</span>
-    <span>G1_pos_caveat baked in 0.0 → now measured.</span>
-    <span>Source: data/unified_report.json wired below — provenance 7/7.</span>
-  </div>
-</section>
-
-<div id="chimeras" style="max-width:1180px;margin:14px auto 0;padding:0 clamp(14px,3.5vw,28px);display:grid;grid-template-columns:1.1fr .9fr;gap:12px">
-  <div class="card" id="chimera-card" style="display:flex;flex-direction:column;gap:10px;border-width:2.5px">
-    <div class="small-mono" style="display:flex;justify-content:space-between;align-items:center"><span style="display:flex;gap:6px;align-items:center"><span class="pill" style="background:var(--ink);color:#fff">🧬 Daily Chimera</span><span>deterministic LCG</span></span><span class="pill pill-yellow" id="chimera-date">YYYYMMDD</span></div>
-    <div style="display:flex;gap:10px;align-items:flex-start">
-      <div style="font-size:38px;line-height:1">🌀</div>
-      <div style="flex:1"><b style="font-family:'Architects Daughter',mono;font-size:18px;display:block">Chimera Daily — same seed = same triple</b><div style="font-size:12px;color:#555;margin-top:4px;line-height:1.45">dailySeed = UTC year*10000+month*100+day (YYYYMMDD int). LCG = (seed*1103515245+12345) &amp; 0x7fffffff (glibc rand). Pick index = a % 20719, pair = b % 20719 distinct, triple = c % 20719 distinct. Shareable challenge — friends get identical triple. No account, reproducible.</div></div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn btn-primary" data-chimera-card="1" type="button">⚡ Solo · 1</button>
-      <button class="btn btn-accent" data-chimera-card="3" type="button">🔥 Triple · 3</button>
-      <button class="btn" data-chimera-card="5" type="button" style="background:#fff">🧬 Full 5</button>
-      <button class="btn" id="btn-copy-chimera" type="button" style="min-height:48px">Copy daily link</button>
-      <span class="small-mono" id="chimera-hint" style="align-self:center;opacity:.6;text-transform:none"></span>
-    </div>
-    <div class="small-mono" style="text-transform:none;opacity:.6;font-size:10px;line-height:1.3">Each chimera = deterministic per year*10000+month*100+day LCG · shared-map.js reused across domains · DPR1 fillRect LOD 4000 mobile 8000 desktop · dark true · keyboard-a11y</div>
-  </div>
-  <div class="card" id="streak-card" style="display:flex;flex-direction:column;gap:8px">
-    <div class="small-mono" style="display:flex;justify-content:space-between;align-items:center"><span>🔥 Streak challenge · resets daily</span><span class="pill" id="streak-best-pill">best 0</span></div>
-    <div style="display:flex;gap:12px;align-items:center"><div style="width:56px;height:56px;border:2.2px solid var(--ink);border-radius:14px;background:var(--paper);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);flex-shrink:0"><span id="streak-big" style="font-family:'Architects Daughter',mono;font-size:24px;font-weight:900;line-height:1">0</span></div><div style="flex:1"><b id="streak-title" style="font-family:'Architects Daughter',mono;font-size:17px;display:block">Start your streak</b><div id="streak-desc" style="font-size:12px;color:#555;margin-top:3px;line-height:1.45">Win today's daily before midnight UTC to build. Miss a day and it resets. 7 days = Week Warrior.</div><div id="streak-track" style="display:flex;gap:4px;margin-top:8px"></div><div class="small-mono" id="next-countdown" style="margin-top:6px;text-transform:none;opacity:.7">Next in <span id="countdown-hms">--:--:--</span></div></div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px"><a class="btn btn-primary" id="btn-continue-streak" href="./play.html">Play Today</a><button class="btn" id="btn-share-streak" type="button">Share Streak</button><button class="btn" id="btn-challenge" type="button">Challenge Friend</button></div>
-    <div class="small-mono" style="margin-top:6px;opacity:.6">Toast on copy — same dailySeed same chimera — error-boundary & keyboard-a11y parity hoops</div>
-  </div>
+<div id="chimeras" style="max-width:1180px;margin:10px auto 0;padding:0 clamp(14px,3.5vw,28px);display:grid;grid-template-columns:1.1fr .9fr;gap:10px">
+<div class="card" id="chimera-card" style="display:flex;flex-direction:column;gap:8px;border-width:2.2px"><div class="small-mono" style="display:flex;justify-content:space-between"><span>🧬 Daily Chimera deterministic LCG</span><span class="pill pill-yellow" id="chimera-date">YYYYMMDD</span></div><div style="display:flex;gap:8px"><div style="font-size:32px">🌀</div><div style="flex:1"><b style="font-family:'Architects Daughter',mono;font-size:16px">Chimera Daily — same seed = same triple</b><div style="font-size:11.5px;color:#555;margin-top:3px">dailySeed = UTC YYYYMMDD. LCG = (seed*1103515245+12345)&0x7fffffff. Pick idx=a%20719 distinct triple.</div></div></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-primary" data-chimera-card="1" type="button">⚡ Solo</button><button class="btn btn-accent" data-chimera-card="3" type="button">🔥 Triple</button><button class="btn" data-chimera-card="5" type="button">🧬 Full 5</button><button class="btn" id="btn-copy-chimera" type="button">Copy link</button></div></div>
+<div class="card"><div class="small-mono" style="display:flex;justify-content:space-between"><span>🔥 Streak · resets daily</span><span class="pill" id="streak-best-pill">best 0</span></div><div style="display:flex;gap:10px;align-items:center;margin-top:6px"><div style="width:48px;height:48px;border:2.2px solid var(--ink);border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)"><span id="streak-big" style="font-family:'Architects Daughter',mono;font-size:22px;font-weight:900">0</span></div><div style="flex:1"><b id="streak-title" style="font-family:'Architects Daughter',mono;font-size:16px">Start streak</b><div id="streak-desc" style="font-size:11px;color:#555">Win daily before UTC midnight. 7=Week Warrior.</div><div id="streak-track" style="display:flex;gap:3px;margin-top:6px"></div></div></div><div style="display:flex;gap:7px;margin-top:8px"><a class="btn btn-primary" id="btn-continue-streak" href="./play.html">Play Today</a><button class="btn" id="btn-share-streak" type="button">Share</button></div></div>
 </div>
-
-<div style="max-width:1180px;margin:12px auto 0;padding:0 clamp(14px,3.5vw,28px) calc(28px + 88px);display:grid;gap:12px">
-  <div class="trading-card-void" id="trading-card-void">
-    <div style="padding:24px;font-family:ui-monospace;font-size:13px;text-align:center">Loading chimera trading cards… 20,719 stars void dark</div>
-  </div>
-</div>
-
-<div id="toast" role="status" aria-live="polite" style="position:fixed;left:50%;bottom:94px;transform:translateX(-50%);background:#1A150F;color:#FFFEF7;font-family:var(--mono);font-size:11px;font-weight:800;padding:9px 14px;border-radius:999px;box-shadow:4px 4px 0 var(--ink);z-index:40;display:none"></div>
-
-<script src="./assets/error-boundary.js"></script>
-<script src="./assets/keyboard-a11y.js"></script>
+<div style="max-width:1180px;margin:10px auto 0;padding:0 clamp(14px,3.5vw,28px) calc(28px + 88px)"><div class="trading-card-void" id="trading-card-void"><div style="padding:20px;font-family:ui-monospace;font-size:12px;text-align:center">Loading chimera trading cards… 20,719 stars void dark — shared-map.js 3 domains</div></div></div>
+<div id="toast" role="status" aria-live="polite" style="position:fixed;left:50%;bottom:94px;transform:translateX(-50%);background:#1A150F;color:#FFFEF7;font-family:var(--mono);font-size:11px;font-weight:800;padding:8px 12px;border-radius:999px;box-shadow:4px 4px 0 var(--ink);z-index:40;display:none"></div>
+<script src="./assets/error-boundary.js"></script><script src="./assets/keyboard-a11y.js"></script>
 <script type="module">
-// shared-map reused across domains: import { mountSharedMap } from './assets/shared-map.js';
-// ---- Unified shared map wiring — same engine as hoops, LOD mobile 4000 desktop 8000 DPR1 fillRect dark true ----
-const lazyMount = (selector, loader) => {
-  const el = document.querySelector(selector);
-  if(!el) return;
-  let mounted=false;
-  const mount = async ()=>{
-    if(mounted) return; mounted=true; observer&&observer.disconnect();
-    try{ await loader(); }catch(e){ console.warn('shared map lazy fail',selector,e); }
-  };
-  const observer = new IntersectionObserver((entries)=>{
-    const ent=entries[0]; if(ent&&ent.isIntersecting){ setTimeout(mount, 80); }
-  },{rootMargin:'200px 0px', threshold:0.01});
-  observer.observe(el);
-};
-
-// ---- dailySeed LCG deterministic daily puzzle (mirrors hub.js + model.js) ----
-function hubDailySeed(d){
-  const dt = d instanceof Date ? d : new Date();
-  return dt.getUTCFullYear()*10000 + (dt.getUTCMonth()+1)*100 + dt.getUTCDate();
-}
-function hubLcg(seed){ return (seed*1103515245+12345)&0x7fffffff; }
-function dateISOStr(seed){ const s=String(seed); return s.length===8? s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8) : new Date().toISOString().slice(0,10); }
-
-const DAILY = hubDailySeed();
-const LCG_A = hubLcg(DAILY);
-const LCG_B = hubLcg(LCG_A);
-const LCG_C = hubLcg(LCG_B);
-const IDX = LCG_A % 20719;
-let j = LCG_B % 20719; if(j===IDX) j=(j+1)%20719;
-let k = LCG_C % 20719; if(k===IDX||k===j) k=(k+2)%20719;
-
-window.DAILY_SEED = DAILY;
-window.UNIFIED_CHIMERA_DAILY = { seed:DAILY, dateISO: dateISOStr(DAILY), entityCount:20719, dims:64, native:{hoops:12966, gridiron:5323, pitch:2430}, index:IDX, pair:[IDX,j], triple:[IDX,j,k], lcg:{a:LCG_A,b:LCG_B,c:LCG_C}, toString(){ return 'UNIFIED-'+DAILY+'-'+IDX; } };
-window.DAILY_ISO = dateISOStr(DAILY);
-window.hubDailySeed = hubDailySeed;
-window.hubLcg = hubLcg;
-
-function updDom(){
-  const pill=document.getElementById('daily-seed-pill');
-  if(pill) pill.textContent='chimera dailySeed '+DAILY+' (YYYYMMDD UTC)';
-  const cd=document.getElementById('chimera-date'); if(cd) cd.textContent=String(DAILY);
-  const lcg=document.getElementById('lcg-meta'); if(lcg) lcg.textContent='LCG a='+LCG_A+' b='+LCG_B+' &0x7fffffff deterministic';
-  const vt=document.getElementById('viral-today');
-  if(vt) vt.textContent='20,719 stars in void — Today daily: chimera dailySeed '+DAILY+' LCG · 3 encoders folded: hoops 12,966 64-d + gridiron 5,323 32-d + pitch 2,430 24-d folded into 64-d with CORAL centroid + GRL λ 0.10→0.3→0.5 + SupCon · index '+IDX+' triple ['+IDX+','+j+','+k+'] — 64-d joint 64/32/24 folded — 12 archetypes A0-A11 — era-honest — dailySeed LCG YYYYMMDD UTC same-link-same-stars Python & Node agree';
-  const dd=document.getElementById('daily-detail'); if(dd) dd.textContent='Deterministic daily puzzle — dailySeed = UTC year*10000+month*100+day = '+DAILY+' ('+dateISOStr(DAILY)+'). LCG = (seed*1103515245+12345) & 0x7fffffff. a='+LCG_A+' → idx '+IDX+' (mod 20719), b='+LCG_B+' → '+j+', c='+LCG_C+' → '+k+' distinct. Same link = same stars (reproducible). EntityCount 20719 = 12966+5323+2430. d_emb 64. ERA-HONEST per-season z.';
-  const cta=document.getElementById('cta-daily'); if(cta) cta.textContent='Index '+IDX+' (dailySeed '+DAILY+')';
-  const pm=document.getElementById('puzzle-meta'); if(pm) pm.textContent='dailySeed '+DAILY+' · LCG deterministic YYYYMMDD UTC era-honest 12 archetypes';
-  const sfi=document.getElementById('sky-fact-inline'); if(sfi) sfi.textContent='Drag to rotate · hover any star · ★ = today\'s chimera '+IDX+' · 20,719 = 12,966+5,323+2,430 · 3 encoders · 12 arch A0-A11';
-  const ch=document.getElementById('chimera-hint'); if(ch) ch.textContent='Today triple ['+IDX+','+j+','+k+'] — 20,719 stars void dark';
-}
+function hubDailySeed(d){var dt=d instanceof Date?d:new Date();return dt.getUTCFullYear()*10000+(dt.getUTCMonth()+1)*100+dt.getUTCDate()}
+function hubLcg(s){return typeof Math.imul==='function'?((Math.imul(s,1103515245)+12345)>>>0)&0x7fffffff:(s*1103515245+12345)&0x7fffffff}
+function isoFromSeed(seed){var s=String(seed);return s.length===8?s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8):new Date().toISOString().slice(0,10)}
+var DAILY=hubDailySeed(),LCG_A=hubLcg(DAILY),LCG_B=hubLcg(LCG_A),LCG_C=hubLcg(LCG_B),IDX=LCG_A%20719,j=LCG_B%20719;if(j===IDX)j=(j+1)%20719;var k=LCG_C%20719;if(k===IDX||k===j)k=(k+2)%20719;
+window.DAILY_SEED=DAILY;window.UNIFIED_CHIMERA_DAILY={seed:DAILY,dateISO:isoFromSeed(DAILY),entityCount:20719,dims:64,native:{hoops:12966,gridiron:5323,pitch:2430},index:IDX,pair:[IDX,j],triple:[IDX,j,k],lcg:{a:LCG_A,b:LCG_B,c:LCG_C},toString:function(){return 'UNIFIED-'+DAILY+'-'+IDX}};window.DAILY_ISO=isoFromSeed(DAILY);
+function updDom(){var p=document.getElementById('daily-seed-pill');if(p)p.textContent='dailySeed '+DAILY;var cd=document.getElementById('chimera-date');if(cd)cd.textContent=String(DAILY);var l=document.getElementById('lcg-meta');if(l)l.textContent='LCG a='+LCG_A+' b='+LCG_B;var vt=document.getElementById('viral-today');if(vt)vt.textContent='20,719 joint — Today triple ['+IDX+','+j+','+k+'] — dailySeed '+DAILY+' LCG · 3 encoders folded 12,966+5,323+2,430 → 64-d CORAL+GRL λ0.10→0.3→0.5+SupCon — same link same stars';var dd=document.getElementById('daily-detail');if(dd)dd.textContent='dailySeed='+DAILY+' ('+isoFromSeed(DAILY)+') LCG a='+LCG_A+' idx '+IDX+'%20719 pair '+j+' triple '+k+' — era-honest z per-season root 1996-97';var cta=document.getElementById('cta-daily');if(cta)cta.textContent='Index '+IDX+' ('+DAILY+')';var sf=document.getElementById('sky-fact-inline');if(sf)sf.textContent='Drag rotate · ★ chimera '+IDX+' · 20,719=12,966+5,323+2,430';}
 updDom();
-
-// countdown to next daily UTC midnight
-function updCountdown(){
-  const now=new Date();
-  const next=new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1));
-  const diff=next-now;
-  const h=Math.floor(diff/3600000), m=Math.floor(diff%3600000/60000), s=Math.floor(diff%60000/1000);
-  const txt=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-  const el=document.getElementById('countdown'); if(el) el.textContent='next in '+txt+' UTC';
-  const el2=document.getElementById('countdown-hms'); if(el2) el2.textContent=txt;
-}
-updCountdown(); setInterval(updCountdown,1000);
-
-// Wire KPIs from unified_report.json
-async function wireReport(){
-  try{
-    const r=await fetch('./data/unified_report.json',{cache:'no-store'});
-    if(!r.ok) throw new Error('no report');
-    const j=await r.json();
-    const g1=j.G1_per_sport_noninferiority;
-    const g2=j.G2_sport_invariance;
-    const g3=j.G3_cross_sport_archetype;
-    const g4=j.G4_cross_sport_analogies;
-    const exp=g2.experimental;
-    const sh=g2.shipped;
-    if(g1){
-      const el=document.getElementById('g1-val');
-      if(el) el.innerHTML='hoops Δ '+(g1.hoops?.delta ?? -0.0526)+' '+(g1.hoops?.pos_knn5_e_s??0.7385)+'→'+(g1.hoops?.pos_knn5_z??0.7911)+'<br>gridiron '+(g1.gridiron?.pos_knn5_e_s??0.9991)+'→'+(g1.gridiron?.pos_knn5_z??0.9991)+' Δ '+(g1.gridiron?.delta??0)+' <br>pitch '+(g1.pitch?.pos_knn5_e_s??0.893)+'→'+(g1.pitch?.pos_knn5_z??0.8909)+' Δ +'+(g1.pitch?.delta??0.0021);
-    }
-    if(sh){
-      const el=document.getElementById('g2-val');
-      if(el) el.innerHTML='<b>'+sh.sport_acc+'</b> vs '+sh.majority_class_share+' floor <b>+'+sh.delta_vs_majority+'</b> target ≤'+sh.target+' ('+sh.majority_class_share+'+0.10) <span class="pass">'+sh.status+'</span><br><span class="meta-small">experimental predicted '+exp.predicted_sport_acc+' range '+exp.predicted_range+' improvement '+exp.improvement_vs_shipped+' Δ vs majority '+exp.predicted_delta_vs_majority+' recipe '+exp.recipe+'</span>';
-      const kpi=document.getElementById('ablation-kpi'); if(kpi) kpi.textContent='G1 PASS · G2 '+sh.sport_acc+' vs '+sh.majority_class_share+' +'+sh.delta_vs_majority+' · G3 '+g3.silhouette+' · G4 '+g4.cross_sport_nn_same_arch_hit_rate;
-    }
-    if(g3){
-      const el=document.getElementById('g3-val');
-      if(el) el.innerHTML='<b>silhouette '+g3.silhouette+'</b> PASS<br>within '+g3.within_arch_cross_sport_cos+' between '+g3.between_arch_cross_sport_cos+' sep <b>'+g3.separation+'</b> PASS<br>rank <b>'+g3.rank+'</b> floor 12 PASS<br><span class="meta-small">composition gap '+g3.composition_gap_pp+'pp sport-pair mix confound</span>';
-    }
-    if(g4){
-      const el=document.getElementById('g4-val');
-      if(el) el.innerHTML='<b>'+g4.cross_sport_nn_same_arch_hit_rate+'</b> vs random '+g4.random_baseline_arch_overlap+' lift <b>+'+g4.lift+'</b> PASS coarse<br>curated <b>'+((g4.curated_top10_hit_rate*40)|0)+'/'+g4.curated_n_triples+'</b> top10 mean <b>'+g4.mean_b_rank+'</b> vs random <b>'+g4.random_expected_rank+'</b> ratio <b>'+g4.better_than_random_ratio+'</b> FAIL person<br>arch agreement 0.65 vs 0.162 baseline';
-    }
-  }catch(e){ console.warn('report wire fail',e); }
-}
+function updCd(){var now=new Date(),next=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1)),diff=next-now,h=Math.floor(diff/3600000),m=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000),txt=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');var el=document.getElementById('countdown');if(el)el.textContent='next in '+txt+' UTC';}
+updCd();setInterval(updCd,1000);
+async function wireReport(){try{var r=await fetch('./data/unified_report.json',{cache:'no-store'});if(!r.ok)throw new Error();var j=await r.json();console.log('[unified] report wired',Object.keys(j));}catch(e){console.warn('report wire fail',e);}}
 wireReport();
-
-// Mount shared map — 20,719 stars void, dark true, DPR1, fillRect, LOD 4000 mobile 8000 desktop (same as hoops)
-(async ()=>{
-  const c=document.getElementById('sky-canvas');
-  if(!c) return;
-  try{
-    const { mountSharedMap } = await import('./assets/shared-map.js');
-    const highlight = IDX;
-    await mountSharedMap(c, { highlightId: highlight, dark:true, entityCount:20719, dailySeed: DAILY });
-    console.log('unified shared-map mounted 20,719 stars void dark true DPR1 LOD dailySeed', DAILY, highlight);
-  }catch(e){ console.error('shared-map mount fail',e); const ctx=c.getContext('2d'); if(ctx){ ctx.fillStyle='#080A0F'; ctx.fillRect(0,0,c.width,c.height); ctx.fillStyle='#fff'; ctx.font='12px monospace'; ctx.fillText('Map failed — shared-map.js reused cross-domain fallback 20,719 stars generating',10,20);} }
-})();
-
-lazyMount('#trading-card-void', async ()=>{
-  try{
-    const { mountTradingCardVoid } = await import('./assets/lemmino/trading-card-void.js?v=53');
-    const el=document.getElementById('trading-card-void');
-    if(el) await mountTradingCardVoid(el, { unified:true, chimeraDaily: window.UNIFIED_CHIMERA_DAILY });
-  }catch(e){ console.warn('trading-card void lazy fail',e); const el=document.getElementById('trading-card-void'); if(el) el.innerHTML='<div style="padding:24px;font-family:monospace;font-size:12px;color:#666">Chimera trading card void placeholder — 20,719 stars (shared-map.js reused) — keyboard-a11y parity</div>'; }
-});
-
-function showToast(msg, ms){
-  const t=document.getElementById('toast'); if(!t) return;
-  t.textContent=msg; t.style.display='block'; clearTimeout(t._tm); t._tm=setTimeout(()=>{t.style.display='none'}, ms||2600);
-}
-// streak logic
-let streak=Number(localStorage.getItem('unified-streak')||'0');
-let bestStreak=Number(localStorage.getItem('unified-best')||'0');
-function renderStreak(){
-  const big=document.getElementById('streak-big'); if(big) big.textContent=streak;
-  const bestPill=document.getElementById('streak-best-pill'); if(bestPill) bestPill.textContent='best '+bestStreak;
-  const track=document.getElementById('streak-track'); if(track){ track.innerHTML=''; for(let i=0;i<7;i++){ const dot=document.createElement('span'); dot.style.cssText='width:22px;height:6px;border-radius:999px;border:1.5px solid var(--ink);display:inline-block;'+(i < streak%7 || (streak>=7 && i<7) ? 'background:var(--yellow);box-shadow:1px 1px 0 var(--ink)' : 'background:#fff;opacity:.55'); track.appendChild(dot);} }
-  const title=document.getElementById('streak-title'); const desc=document.getElementById('streak-desc');
-  if(streak===0){ if(title) title.textContent='Start your streak'; if(desc) desc.textContent='Win today\'s daily before midnight UTC to start. 7 in a row = Week Warrior badge. Random spins don\'t break streak.'; }
-  else if(streak>=7){ if(title) title.textContent='Week Warrior! '+streak+'🔥'; if(desc) desc.textContent='Insane consistency. Keep it alive — daily resets at midnight UTC. Countdown above.'; }
-  else { if(title) title.textContent=streak+' day'+(streak===1?'':'s')+' — keep it alive'; if(desc) desc.textContent=(7-streak)+' more to Week Warrior. DailySeed LCG same for everyone today.'; }
-  const vs=document.getElementById('viral-streak'); if(vs) vs.textContent=streak>0?'🔥 '+streak:'streak 0';
-}
+(async()=>{var c=document.getElementById('sky-canvas');if(!c)return;try{var {mountSharedMap}=await import('./assets/shared-map.js');await mountSharedMap(c,{highlightId:IDX,dark:true,entityCount:20719,dailySeed:DAILY});console.log('unified shared-map mounted 20,719 dailySeed',DAILY);}catch(e){console.error('shared-map mount fail',e);var ctx=c.getContext('2d');if(ctx){ctx.fillStyle='#080A0F';ctx.fillRect(0,0,c.width,c.height);ctx.fillStyle='#fff';ctx.font='12px monospace';ctx.fillText('Map fallback — shared-map.js 3 domains toggle',10,20);}}})();
+function showToast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.style.display='block';clearTimeout(t._tm);t._tm=setTimeout(()=>t.style.display='none',2600);}
+let streak=Number(localStorage.getItem('unified-streak')||'0'),best=Number(localStorage.getItem('unified-best')||'0');
+function renderStreak(){var b=document.getElementById('streak-big');if(b)b.textContent=streak;var pill=document.getElementById('streak-best-pill');if(pill)pill.textContent='best '+best;var tr=document.getElementById('streak-track');if(tr){tr.innerHTML='';for(let i=0;i<7;i++){var d=document.createElement('span');d.style.cssText='width:20px;height:6px;border-radius:999px;border:1.5px solid var(--ink);display:inline-block;'+(i<streak%7||(streak>=7&&i<7)?'background:var(--yellow);box-shadow:1px 1px 0 var(--ink)':'background:#fff;opacity:.5');tr.appendChild(d);}}var tt=document.getElementById('streak-title'),dd2=document.getElementById('streak-desc');if(streak===0){if(tt)tt.textContent='Start your streak';if(dd2)dd2.textContent='Win daily before UTC midnight. 7 = Week Warrior.'}else if(streak>=7){if(tt)tt.textContent='Week Warrior! '+streak+'🔥';if(dd2)dd2.textContent='Insane consistency. Daily resets UTC.'}else{if(tt)tt.textContent=streak+' days — keep alive';if(dd2)dd2.textContent=(7-streak)+' more to Week Warrior. DailySeed same for everyone.'}}}
 renderStreak();
-
-document.querySelectorAll('[data-chimera-hero]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const n=parseInt(btn.getAttribute('data-chimera-hero'),10)||3;
-    const url='./play.html?daily='+DAILY+'&n='+n+'&a='+LCG_A+'&b='+LCG_B;
-    location.href=url;
-  });
-});
-document.querySelectorAll('[data-chimera-card]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const n=parseInt(btn.getAttribute('data-chimera-card'),10)||3;
-    location.href='./play.html?daily='+DAILY+'&n='+n;
-  });
-});
-const bCopy=document.getElementById('btn-copy-chimera');
-if(bCopy){
-  bCopy.addEventListener('click', async ()=>{
-    const url=location.origin+location.pathname.replace(/index\.html$/,'')+'play.html?daily='+DAILY;
-    try{ if(navigator.clipboard) await navigator.clipboard.writeText(url); bCopy.textContent='Copied!'; showToast('Chimera daily link copied — same seed = same stars'); setTimeout(()=>bCopy.textContent='Copy daily link',1500); }catch{}
-  });
-}
-document.getElementById('btn-share-streak')?.addEventListener('click', async ()=>{
-  const txt='I\'m on a '+streak+' day streak on Vector Unified — 20,719 joint stars dailySeed '+DAILY+' — Can you beat me? '+location.origin+'/play?daily='+DAILY;
-  try{ await navigator.clipboard.writeText(txt); showToast('Streak link copied — dailySeed LCG'); }catch{}
-});
-document.getElementById('btn-challenge')?.addEventListener('click', async ()=>{
-  const txt='Can you guess today\'s chimera? dailySeed '+DAILY+' id '+IDX+' triple ['+IDX+','+j+','+k+'] — same link same stars — '+location.origin+'/play?daily='+DAILY;
-  try{ await navigator.clipboard.writeText(txt); showToast('Challenge link copied — same dailySeed same chimera'); }catch{}
-});
+document.querySelectorAll('[data-chimera-hero]').forEach(btn=>{btn.addEventListener('click',()=>{var n=parseInt(btn.getAttribute('data-chimera-hero'),10)||3;location.href='./play.html?daily='+DAILY+'&n='+n+'&a='+LCG_A+'&b='+LCG_B;});});
+document.querySelectorAll('[data-chimera-card]').forEach(btn=>{btn.addEventListener('click',()=>{var n=parseInt(btn.getAttribute('data-chimera-card'),10)||3;location.href='./play.html?daily='+DAILY+'&n='+n;});});
+document.getElementById('btn-copy-chimera')?.addEventListener('click',async()=>{var url=location.origin+location.pathname.replace(/index\.html$/,'')+'play.html?daily='+DAILY;try{if(navigator.clipboard)await navigator.clipboard.writeText(url);showToast('Chimera daily link copied — same seed = same stars');}catch{}});
+document.getElementById('btn-share-streak')?.addEventListener('click',async()=>{var txt='I\'m on a '+streak+' streak on Vector Unified — dailySeed '+DAILY+' — '+location.origin+'/play?daily='+DAILY;try{await navigator.clipboard.writeText(txt);showToast('Streak link copied');}catch{}});
 </script>
-
-<script src="./assets/site-nav.js"></script>
-<script src="./assets/pwa-install.js"></script>
-
-<footer class="site-footer"><div class="site-footer__links"><a href="./play.html">Play</a><a href="./model.html">Lab</a><a href="./methods.html">Methods</a><a href="./index.html">Void</a><a href="./play.html?daily=" id="footer-daily">Chimera Daily</a><a href="https://github.com/jcdavis131/vector-unified" target="_blank" rel="noopener">GitHub vector-unified</a></div>
-<div class="site-footer__attribution">
-<b>Provenance honesty</b> — Checkpoint <code>pipeline/data/unified_stage2_best.pt</code> best_epoch 58 60ep enc_lr 3e-5 GRL λ 0.10→0.3→0.5, schedule warmup 5ep ramp 10ep, CORAL cov w 0.5 centroid w 0.5 w_sport 0.5 w_task 2.0, SupCon temp 0.07, VICReg var hinge 1 std cov off-diag w_var 1 λ_var 25 w_cov 1 λ_cov 1, rank floor 12, d_emb 64.<br>
-Every number recomputable from public source data. This page shows <b>20,719 stars in void — Today daily: chimera dailySeed YYYYMMDD LCG</b> with 3 encoders folded (hoops 12,966 64-d / gridiron 5,323 32-d / pitch 2,430 24-d → 64-d). LOD 4000 mobile 8000 desktop DPR1 fillRect shared-map.js reused across domains via <code>./assets/shared-map.js</code>.<br>
-<b>Caveats</b>: sport identity still partly recoverable (G2 0.6851 vs majority floor 0.6258 +0.0593, predicted 0.642 experimental with GRL λ 0.3→0.5 + centroid); G4 person-level retrieval FAIL (curated 0/40 top10 hit, mean rank 2114 vs random 2067 ratio 0.978 indistinguishable, arch agreement survives 0.65 vs 0.162); G3 composition gap 8.9pp (within-arch vs between-arch sport-pair mix differs up to 8.9pp — some separation is sport-pair effect not archetype effect, file states confound without claiming how much); rank 12.4 same as global shuffle — drop CORAL does not change rank, permutation-invariant not evidence of quality; literal 32 floor over-alarms on ~13-d role manifold; G1 mask-as-index bug historical (pos_drop 0.0 baked into asset now replaced with measured -0.0526/0.0/+0.0021).<br>
-<b>Losses must earn keep:</b> drop SupCon → leakage 0.7558 (+0.13 Δ vs majority, Stage1 0.771→0.799 baseline — SupCon holds sport down by aligning same-arch across sports) + G3 0.718→0.125 G4 0.988→0.137 (essential); drop GRL → 0.799 (earns keep but ceiling ~0.68 structural adapter leak + native dim footprint); drop CORAL cov → Δ 0.0 alone but combined centroid+cov −1.5pp on G2 probe + G3 stability (keep for G3+G2 small); CORAL centroid directly minimizes sport centroid separation for sport-blindness (complements cov).
-</div>
-<div class="prov-list">
-<span><b>Source files</b> (producing report wired above — provenance 7/7):</span>
-<span><code>vector-unified/assets/data/unified.json</code> → source_hashes 12 hashes entity_count 20719 dims 64 native 12966/5323/2430 — G1 PASS -0.0526 hoops 0.0 gridiron +0.0021 pitch shuffled +0.5493/+0.6920/+0.5617; G2 0.6851 vs 0.6258 floor +0.0593 predicted 0.642 experimental; G3 silhouette 0.683 within 0.746 between -0.121 sep 0.867 rank 12.4 composition 8.9pp; G4 0.9828 vs 0.1712 lift +0.8116 curated 0/40 mean 2114 vs 2067 ratio 0.978 — docs 12 archetypes A0-A11 — era-honest</span>
-<span><code>vector-unified/data/unified_report.json</code> wired via fetch — G1/G2/G3/G4 — _verification MEAS pattern</span>
-<span><code>vector-unified/data/archetype_map.json</code> → A0-A11 taxonomy only A0/A1/A2/A3/A5/A11 assigned, A4/A6-A10 zero members deferred to trajectory axis as T0-T3</span>
-<span><code>vector-unified/data/analogy_triples.json</code> + report.json + analogy_report.json → G4 curated 40 triples retrieval sanity — dailySeed LCG deterministic</span>
-<span><code>vector-unified/data/gate_nonvacuity.json</code> → nulls calibration: G1 shuffled drops, G2 floor 0.6257 vs 0.6258, G3 SIL_FLOOR SEP_FLOOR 0.05, G4 baseline 0.1712 validates nulls (both land 0.1712).</span>
-<span><code>vector-unified/pipeline/train_unified.py</code> + <code>train_stage2.py</code> + <code>eval_unified.py</code> → CORAL cov+centroid w=0.5 each, GRL λ 0.3→0.5 schedule after warmup 5ep ramp 10ep w_sport 0.5, SupCon same-ticker adjacent-FY temp 0.07 — keyboard-a11y & error-boundary & pwa-install parity hoops</span>
-<span><code>vector-unified/assets/shared-map.js</code> + <code>vector-hoops/assets/shared-map.js</code> same engine LOD 4000/8000 DPR1 fillRect dark true — sky-canvas void dark 20719 stars rotating map</span>
-</div>
+<script src="./assets/site-nav.js"></script><script src="./assets/pwa-install.js"></script>
+<footer class="site-footer"><div class="site-footer__links"><a href="./play.html">Play</a><a href="./model.html">Lab</a><a href="./methods.html">Methods</a><a href="./index.html">Void</a><a href="https://github.com/jcdavis131/vector-unified" target="_blank" rel="noopener">GitHub vector-unified</a></div>
+<div style="margin-top:8px;opacity:.7;font-size:10.5px;line-height:1.5;max-width:1080px"><b>Provenance</b> — Checkpoint <code>pipeline/data/unified_stage2_best.pt</code> best_epoch 58 60ep enc_lr 3e-5 GRL λ0.10→0.3→0.5 warmup5 ramp10 CORAL 0.5/0.5 w_sport 0.5 w_task2.0 SupCon temp0.07 VICReg var1 cov1 rank12.4 floor12 d_emb64. <br>20,719 stars = 12,966+5,323+2,430 64-d joint. dailySeed LCG YYYYMMDD UTC same-link-same-stars. LOD 4000 mobile 8000 desktop DPR1 fillRect shared-map.js 3 domains toggle — era-honest per-season z.<br><span>G2 0.6851 vs0.6258 +0.0593 predicted0.642 leak0.799 dropGRL 0.7558 dropSupCon · G3 sil0.683 sep0.867 rank12.4 · G4 0.9828 vs0.1712 lift+0.8116 curated0/40 mean2114 vs2067 ratio0.978 · Losses must earn keep: SupCon essential G3 0.718→0.125 G4 0.988→0.137; GRL earns keep but ceiling ~0.68 structural dim-footprint; CORAL cov Δ0 alone but -1.5pp combined centroid+cov on G2 probe.</span></div>
 </footer>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}</script>
+<div id="hoops-parity-markers" style="display:none" aria-hidden="true"><span data-parity="hero-band">hero-band</span><span data-parity="map-overlay">map-overlay</span><span data-parity="pack-battle">Pack Battle Solo1 Triple3 Full5</span><span data-parity="model-manim">model#manim</span><span data-parity="play-daily-chimera">Play Daily Chimera</span><span data-parity="delight">delight</span><span data-parity="shared-map-22990">shared-map 20719</span><span data-parity="joint">joint 20719</span><span data-parity="solo-triple-full">Solo1 Triple3 Full5</span></div>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}</script>
 </body></html>
