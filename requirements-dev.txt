@@ -1,0 +1,16 @@
+# Development / test dependencies for vector-unified (CPU-only).
+#
+# The shared numpy-safe building blocks live in packages/vector-core and are
+# consumed in-repo via an editable install. This is the clean way to make
+# `from vector_core import ...` resolve for the pipeline and for tests; a
+# conftest.py path shim also resolves it with zero install for CPU-only runs.
+#
+#   pip install -r requirements-dev.txt
+#
+# NOTE: vector-core's torch extra is intentionally NOT pulled in here — the
+# numpy-safe core imports without torch, and GPU-only model training is out of
+# scope for CPU adoption. Install torch separately where a GPU is available.
+-e ./packages/vector-core
+
+pytest>=7.0
+ruff>=0.4
