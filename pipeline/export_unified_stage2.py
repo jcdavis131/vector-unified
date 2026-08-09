@@ -30,6 +30,7 @@ from load_encoders import SPORTS, ROOT, UCACHE, load_all
 from load_live_encoders import load_live
 from train_unified import load_matrix, UnifiedTrunk
 from train_stage2 import full_z
+from _torch_safe import safe_torch_load
 
 DATA = ROOT / "data"
 ASSETS = ROOT / "assets"
@@ -38,7 +39,7 @@ ARCH_NAMES = _meta["arch_names"]
 
 
 def load_stage2_model(device):
-    ck = torch.load(UCACHE / "unified_stage2_best.pt", map_location=device, weights_only=False)
+    ck = safe_torch_load(UCACHE / "unified_stage2_best.pt", map_location=device)
     a = ck["args"]
     model = UnifiedTrunk(
         sport_dims=ck["sport_dim"], n_seasons_era=ck["n_eras"],

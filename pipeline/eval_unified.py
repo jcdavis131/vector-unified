@@ -46,6 +46,7 @@ from sklearn.model_selection import train_test_split
 
 from load_encoders import ROOT, UCACHE, SPORTS
 from train_unified import UnifiedTrunk, effective_rank
+from _torch_safe import safe_torch_load
 
 DATA = ROOT / "data"
 SEED = 7
@@ -57,7 +58,7 @@ SIL_FLOOR = 0.05
 
 
 def load_model(device, ckpt_name="unified_best.pt"):
-    ck = torch.load(UCACHE / ckpt_name, map_location=device, weights_only=False)
+    ck = safe_torch_load(UCACHE / ckpt_name, map_location=device)
     a = ck["args"]
     d_st = a["d_sport_tok"] if isinstance(a, dict) and "d_sport_tok" in a else getattr(a, "d_sport_tok", 8)
     sh = a["shared_adapter"] if isinstance(a, dict) and "shared_adapter" in a else getattr(a, "shared_adapter", False)

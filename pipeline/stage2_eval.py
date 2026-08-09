@@ -30,6 +30,7 @@ from train_unified import UnifiedTrunk, effective_rank, load_matrix, SPORTS, SEE
 from eval_unified import knn5_acc
 from load_live_encoders import load_live, DEVICE_DEF
 from load_encoders import load_all
+from _torch_safe import safe_torch_load
 
 # index -> cross-sport archetype LABEL ("A0", "A1", ...). Needed because
 # analogy_triples.json's role_intuitive is a label and arch_id is an index; comparing them
@@ -41,7 +42,7 @@ ASSETS = Path(__file__).resolve().parents[1] / "assets"
 
 def reconstruct_stage2(device):
     M = load_matrix(device)
-    ck = torch.load(UCACHE / "unified_stage2_best.pt", map_location=device, weights_only=False)
+    ck = safe_torch_load(UCACHE / "unified_stage2_best.pt", map_location=device)
     a = ck["args"]
     sport_dims = [int(M["E"][s].shape[1]) for s in range(3)]
     n_pos = [M["n_pos"][s] for s in SPORTS]
