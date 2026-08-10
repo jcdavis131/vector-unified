@@ -1,0 +1,84 @@
+{
+  "architecture": "shared trunk Linear(16,64)-GELU-Linear(64,64)-GELU-Linear(64,32), L2-normalized embedding; one Linear(32,1) head per (domain,target)",
+  "schema_alignment": "per-domain vector_core RobustScaler -> PCA(16, full SVD) -> per-component whitening, fit on that domain's train rows only",
+  "losses": "masked MSE on train-z-scored regression targets + masked BCE on binary targets (per-domain mean) + CORAL x0.1 (pairwise embedding mean+covariance alignment, train rows)",
+  "optimizer": "AdamW(lr=0.001, weight_decay=0.0001), full-batch",
+  "max_epochs": 300,
+  "early_stop_patience": 40,
+  "seed": 0,
+  "probe_head": "sklearn Ridge(alpha=1.0) fit on harness train side",
+  "hyperparameter_selection": "all hyperparameters fixed a priori (no grid, no val sweep, test never consulted)",
+  "runs": {
+    "transfer_forward_return": {
+      "trained_on": [
+        "hoops",
+        "gridiron",
+        "realty",
+        "pitch"
+      ],
+      "heads": [
+        "gridiron::next_game_fpts",
+        "gridiron::next_game_tds",
+        "gridiron::next_game_yards",
+        "hoops::next_season_ast",
+        "hoops::next_season_bpm",
+        "hoops::next_season_per",
+        "hoops::next_season_pts",
+        "hoops::next_season_reb",
+        "hoops::next_season_win_shares",
+        "pitch::next_window_goal_contribution",
+        "pitch::next_window_minutes",
+        "realty::above_market_appreciation",
+        "realty::next_year_price_change",
+        "realty::three_year_price_change"
+      ],
+      "best_epoch": 289,
+      "epochs_run": 300,
+      "best_val_loss": 0.789017,
+      "params_total": 7790,
+      "wall_seconds": 27.7
+    },
+    "transfer_next_season_per": {
+      "trained_on": [
+        "gridiron",
+        "equities",
+        "realty",
+        "pitch"
+      ],
+      "heads": [
+        "equities::drawdown_exceedance",
+        "equities::forward_realized_vol",
+        "equities::forward_return",
+        "gridiron::next_game_fpts",
+        "gridiron::next_game_tds",
+        "gridiron::next_game_yards",
+        "pitch::next_window_goal_contribution",
+        "pitch::next_window_minutes",
+        "realty::above_market_appreciation",
+        "realty::next_year_price_change",
+        "realty::three_year_price_change"
+      ],
+      "best_epoch": 170,
+      "epochs_run": 210,
+      "best_val_loss": 0.968948,
+      "params_total": 7691,
+      "wall_seconds": 14.5
+    }
+  },
+  "probe_tasks": {
+    "transfer_forward_return": {
+      "n_rows": 4788,
+      "n_train": 3297,
+      "n_test": 1491,
+      "cut": 2022,
+      "owner_seed": 42
+    },
+    "transfer_next_season_per": {
+      "n_rows": 10057,
+      "n_train": 9661,
+      "n_test": 396,
+      "cut": 2026,
+      "owner_seed": 7
+    }
+  }
+}

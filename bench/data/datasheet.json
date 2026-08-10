@@ -1,0 +1,23 @@
+{
+  "built": "2026-08-10T01:56:15",
+  "rows": 14845,
+  "row_layout": {
+    "transfer_forward_return (equities rows)": [
+      0,
+      4788
+    ],
+    "transfer_next_season_per (hoops rows)": [
+      4788,
+      14845
+    ]
+  },
+  "X": "32-d frozen cross-domain embedding of each held-out row (per-row trunk trained WITHOUT that row's domain)",
+  "labels": {
+    "transfer_forward_return": "identical to the owner lane's y_forward_return on its labeled rows (see bench/data/exchange/equities/datasheet.json)",
+    "transfer_next_season_per": "identical to the owner lane's y_next_season_per on its labeled rows (see bench/data/exchange/hoops/datasheet.json)"
+  },
+  "splits": "owner lanes' temporal splits reproduced exactly (equities fy >= 2022 test; hoops target_year >= 2026 test); split_val is empty because the probe head is closed-form ridge with no early stopping",
+  "time_id": "equities rows: fiscal year; hoops rows: target season year",
+  "training_config": "bench/training_config.json",
+  "report": "bench/benchmark_report.json"
+}
