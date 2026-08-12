@@ -11,6 +11,8 @@ Live at https://unified.dumbmodel.com or via https://dumbmodel.com/models/unifie
 
 > **Picking up in-progress work?** Start at [`docs/HANDOFF.md`](docs/HANDOFF.md) — current state (2026-08-09), Stage 2.1 checkpoint, G1-G4 gates, open sport-blindness hill-climb, verification commands, and pointers to SPEC + unified_report + Stage2 plans.
 
+> **PR #5 (`bench/real-data-e2e`, cross-domain transfer probe) is DRAFT and BLOCKED — do not merge.** It trains the shared embedding on `vector-realty`'s exchange dataset, and `vector-realty` PR #4 (a fix to that data pipeline) is intentionally held for the human owner's review pending a security-flag resolution. Merging #5 before #4 resolves would ship a reported result built on pre-fix data. See `docs/HANDOFF.md` for details; do not close this note until #4 lands and #5 is re-run against the fixed data.
+
 ## The embedding
 
 20,719 rows: hoops 12,966 (64-d MTNN 18 towers, 48-d native) + gridiron 5,323 (32-d MTNN) + pitch 2,430 (24-d MTNN StatsBomb 11 contexts, 4/10 families) → 64-d joint L2-normalized `z`, era-honest per-season z-scored.

@@ -13,4 +13,8 @@
 -e ./packages/vector-core
 
 pytest>=7.0
-ruff>=0.4
+# Pinned exact: ruff's default rule set has changed across releases (verified
+# 0.8.6 -> 0.16.2 newly flags RUF100/I001/EXE001 with zero code changes), so an
+# unpinned range would make CI fail on a ruff release bump instead of a real
+# regression. Bump deliberately and re-verify `ruff check` output when you do.
+ruff==0.8.6
