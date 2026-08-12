@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest tests/ -q
+
+      - name: Lint adopted code (vector-core + tests + scripts)
+        # Scoped on purpose: `pipeline/` and `tools/` are research-in-progress
+        # code with pre-existing lint debt (see tasks/todo.md) and are not
+        # covered by the test suite. `packages/vector-core`, `tests/`, and
+        # `scripts/` are the parts under active equivalence-gate discipline
+        # and are kept ruff-clean; widen this list as more of the repo earns
+        # test coverage rather than loosening it repo-wide.
+        run: python -m ruff check tests/ scripts/ packages/vector-core/ conftest.py
+
+      - name: JSON asset sanity
+        # Validate every committed JSON file loads cleanly (catches truncated
+        # writes / bad merges in the shipped assets and pipeline reports).
+        run: |
+          git ls-files '*.json' | while read -r f; do
+            python -m json.tool "$f" > /dev/null || { echo "INVALID JSON: $f"; exit 1; }
+          done

@@ -2,6 +2,15 @@
 
 > **Current as of 2026-08-09** — Stage 2.1 shipped, Stage 2.2 hill-climb in progress for sport-blindness. This file is the on-ramp for any new operator or sub-agent picking up mid-flight.
 
+## Blocked — do not merge PR #5 (added 2026-08-12)
+
+`bench/real-data-e2e` (PR #5, "real-data cross-domain transfer probe") is **draft and intentionally blocked**, independent of the G2/Stage 2 work below:
+
+- It trains the shared cross-domain embedding using `vector-realty`'s committed exchange dataset as one of the non-held-out training domains.
+- `vector-realty` PR #4 fixes a bug in that data pipeline, but is itself **held for the human owner's review pending a security-flag resolution** — it has not merged.
+- Merging vector-unified PR #5 before vector-realty #4 resolves would ship a "clean negative" result that was computed on pre-fix data, and the verdict would need to be re-run once #4 lands.
+- **Action for any agent or operator touching this repo:** leave PR #5 exactly as-is (don't merge, don't rebase past the blocker) until vector-realty #4 is resolved one way or the other. Once it is, re-run `bench/run_transfer_benchmark.py` against the fixed `vector-realty` data before treating #5's numbers as final.
+
 ## Where we are
 
 - **Shipped:** `data/unified.json` (20,719 × 64-d L2-norm, 12,966 hoops + 5,323 gridiron + 2,430 pitch) + `assets/` static PWA. Best checkpoint `pipeline/data/unified_stage2_best.pt` epoch 58/60, enc_lr 3e-5, GRL λ 0.10 ramp → 0.30 → 0.50 schedule (warmup 5ep + linear 10ep), `w_coral 0.5` cov + `w_coral_centroid 0.5` centroid, `w_sport 0.5`, `w_task 2.0`, SupCon temp 0.07, VICReg var hinge.

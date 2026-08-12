@@ -130,7 +130,7 @@ def _build_classes():
 
         def forward(self, x, mask=None):
             """``x``: (B, sum(family_dims)) tensor, or a list of per-family tensors."""
-            if isinstance(x, (list, tuple)):
+            if isinstance(x, list | tuple):
                 blocks = list(x)
                 masks = mask if mask is not None else [None] * len(blocks)
             else:
