@@ -21,6 +21,21 @@ jobs:
       - name: Run tests
         run: python -m pytest tests/ -q
 
+      - name: Run vector-core package tests
+        # packages/vector-core/ has its own pytest suite (26 tests covering
+        # align/era_align/eval/losses/model/pl_embedding/preproc/realmlp) that
+        # `pytest tests/` above does NOT collect — it's a separate package with
+        # its own pyproject.toml testpaths, so it was silently unexercised by
+        # CI even though the code is lint-checked below. Run as its own
+        # invocation (not `pytest tests/ packages/vector-core/tests/` combined)
+        # because pytest's rootdir/ini resolution picks up vector-core's
+        # pyproject.toml when both paths are passed together, which breaks
+        # module resolution for the root suite. The two torch-gated modules
+        # (test_model_torch.py, test_pl_embedding_torch.py) use
+        # pytest.importorskip("torch") and skip cleanly since torch isn't in
+        # requirements-dev.txt (CPU-only scope; see its NOTE).
+        run: python -m pytest packages/vector-core/tests/ -q
+
       - name: Lint adopted code (vector-core + tests + scripts)
         # Scoped on purpose: `pipeline/` and `tools/` are research-in-progress
         # code with pre-existing lint debt (see tasks/todo.md) and are not
