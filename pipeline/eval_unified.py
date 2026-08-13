@@ -322,7 +322,7 @@ def main():
     ap.add_argument("--ckpt", default="unified_stage2_best.pt",
                     help="checkpoint filename under pipeline/data to evaluate")
     args = ap.parse_args()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     from train_unified import load_matrix
     M = load_matrix(device)
     model, ck, z, z_source, model_label = load_and_encode(device, args.ckpt)

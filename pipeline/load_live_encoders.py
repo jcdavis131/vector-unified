@@ -35,7 +35,7 @@ for _d in (HOOPS / "pipeline", PITCH / "pipeline"):
         sys.path.insert(0, str(_d))
 
 DATA = ROOT / "data"
-DEVICE_DEF = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 
 
 # ---------------------------------------------------------------------------
@@ -193,7 +193,7 @@ class LiveEncoder:
         return out
 
 
-def load_live(device=DEVICE_DEF):
+def load_live(device=DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     live = {}
     # hoops
     hm, xs, ms, seas_t, recs = _hoops_bundle(device)
@@ -243,7 +243,7 @@ def main():
     import json as _json
     from load_encoders import load_all
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = DEVICE_DEF
+    device = DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     print(f"device={device}")
     meta = _json.loads((DATA / "unified_meta.json").read_text(encoding="utf-8"))
     frozen = load_all(verbose=False)

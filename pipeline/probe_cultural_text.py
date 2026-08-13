@@ -35,7 +35,7 @@ def main() -> int:
     ap.add_argument("--ckpt", default="unified_cultural.pt")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 
     model, ck = load_model(device, args.ckpt)
     if model.text_proj is None:

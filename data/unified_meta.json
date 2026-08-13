@@ -1,13 +1,45 @@
 {
-  "entity_count": 20719,
-  "dims": 64,
-  "native": {
+  "n_rows": 20719,
+  "coverage": {
     "hoops": 12966,
     "gridiron": 5323,
     "pitch": 2430
   },
-  "d_emb": 64,
-  "n_rows": 20719,
-  "coverage": "hoops 12966 gridiron 5323 pitch 2430",
-  "rank": 12.4
+  "n_eras": 30,
+  "min_year": 1996,
+  "max_year": 2025,
+  "arch_names": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7"
+  ],
+  "arch_counts": {
+    "A0": 2613,
+    "A1": 2596,
+    "A2": 2546,
+    "A3": 2607,
+    "A4": 2579,
+    "A5": 2594,
+    "A6": 2603,
+    "A7": 2581
+  },
+  "sport_dim": {
+    "hoops": 64,
+    "gridiron": 32,
+    "pitch": 24
+  },
+  "n_pos": {
+    "hoops": 5,
+    "gridiron": 4,
+    "pitch": 3
+  },
+  "fallback": true,
+  "fallback_reason": "15-feat 6 families partial, pending 130 feats full LOCAL-GPU",
+  "pt_size_mb": 3.7,
+  "gated": "honest not promoted"
 }

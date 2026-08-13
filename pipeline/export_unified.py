@@ -40,7 +40,7 @@ ARCH_NAMES = _meta["arch_names"]
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     M = load_matrix(device)
     # NAMED EXPLICITLY. This is the STAGE 1 exporter and it wants the Stage 1
     # checkpoint, but it was relying on load_model's DEFAULT to get it — so

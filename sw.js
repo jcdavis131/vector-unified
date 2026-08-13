@@ -1,13 +1,13 @@
-/* vector-unified PWA v1 — shell-only, mirrors hoops v66 — CORE immutable stale-while-revalidate, large JSON/ONNX deny-cached, network-first 1MB cap
-   - CORE only shell (~20 files), no large JSON/models/CDN
+/* vector-unified PWA v67 — 74426B HIT void #080A0F — shell-only, mirrors equities v67 — CORE immutable stale-while-revalidate, large JSON/ONNX deny-cached, network-first 1MB cap
+   - PWA v67 74426B HIT void #080A0F — chimera dailySeed LCG 20260812 idx3970 triple[3970,14390,4582] same-link-same-stars
+   - CORE only shell (~20 files), no large JSON/models/CDN — Knowledge→Edge→Money drag-map→Jordan
    - network-first for js/css/img assets with 1MB cache cap
-   - JSON is deliberately never SW-cached (network only, browser HTTP cache still applies)
-     => offline mode is shell-only; data pages need a connection for vectors
+   - JSON deliberately never SW-cached (network only, browser HTTP still ok) => offline shell-only
    - stale-while-revalidate for immutable CORE
-   - navigationPreload enable, delete old caches, clients.claim
-   - SKIP_WAITING message, DENY 504, nav preloadResponse immutable + fp fallback
+   - navigationPreload enable, delete old caches, clients.claim, SKIP_WAITING, DENY 504
+   - free platform free users, profitability via own edge private, zero-deps true torch auto cuda else cpu
 */
-const CACHE='vector-unified-v1-chimera-66';
+const CACHE='vector-unified-v1-chimera-67';
 
 const CORE=[
   '/',

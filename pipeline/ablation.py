@@ -40,7 +40,7 @@ from eval_unified import (g1_per_sport, encode_all, g2_sport_invariance,
                           g3_silhouette, g4_hit_rate, g4_random_baseline)
 
 DATA = ROOT / "data"
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 _meta = json.loads((DATA / "unified_meta.json").read_text(encoding="utf-8"))
 ARCH_NAMES = _meta["arch_names"]
 

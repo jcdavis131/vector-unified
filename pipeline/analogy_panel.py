@@ -78,7 +78,7 @@ def named_panel(z, M, names_per_sport=4):
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     M = load_matrix(device)
     # Shared contract: a Stage 2 checkpoint gets its DRIFTED encoders, not the frozen
     # cached ones. See eval_unified.load_and_encode.

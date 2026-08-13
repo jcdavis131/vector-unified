@@ -54,7 +54,7 @@ def main() -> int:
     if not rows:
         raise SystemExit("no ok extracts to embed")
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     print(f"embedding {len(rows)} leads with {args.model} on {device} …", flush=True)
     tok = AutoTokenizer.from_pretrained(args.model)
     model = AutoModel.from_pretrained(args.model).to(device)

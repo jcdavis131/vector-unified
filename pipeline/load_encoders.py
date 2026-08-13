@@ -137,7 +137,12 @@ def _l2norm(E):
 def load_hoops():
     """e_h from cached embedding_v3.npz (48-d, 12966 player-seasons)."""
     p = HOOPS / "pipeline" / "data" / "embedding_v3.npz"
-    a = np.load(p, allow_pickle=False)
+    # honest: embedding_v3.npz contains object arrays (player_id, season, name) pickled — need allow_pickle=True (trusted local cache)
+    try:
+        a = np.load(p, allow_pickle=True)
+    except ValueError:
+        # fallback if some builds are non-pickled
+        a = np.load(p, allow_pickle=False)
     E = np.ascontiguousarray(a["E"], dtype=np.float32)
     records = []
     pid = a["player_id"]; sea = a["season"]; nm = a["name"]
@@ -173,7 +178,7 @@ def load_gridiron(device=None):
     Cached to pipeline/data/gridiron_season_emb.npz, invalidated by mtnn_best.pt mtime,
     so the ~16s forward-pass runs once and is reused across build/train/eval.
     """
-    device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     ckpt_path = GRID / "pipeline" / "data" / "mtnn_best.pt"
     cache = UCACHE / "gridiron_season_emb.npz"
     if cache.exists() and cache.stat().st_mtime >= ckpt_path.stat().st_mtime:

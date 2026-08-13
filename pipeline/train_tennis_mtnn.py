@@ -233,7 +233,7 @@ def main() -> int:
     tr = [(a, b) for a, b, y in allp if y <= CUT]
     te = [(a, b) for a, b, y in allp if y > CUT]
 
-    dev = "cuda" if torch.cuda.is_available() else "cpu"
+    dev = "cuda" if __import__("torch").cuda.is_available() else "cpu"  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     blocks = {k: [idx_of[f] for f in v] for k, v in fam_map.items()}
     print(f"rows {X.shape[0]}  features {X.shape[1]}  towers {len(blocks)}  device {dev}")
     print(f"pairs {len(allp)}  train(target<= {CUT}) {len(tr)}  test {len(te)}")

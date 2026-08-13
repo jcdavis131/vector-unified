@@ -29,7 +29,7 @@ from train_unified import UnifiedTrunk, load_matrix, SPORTS, UCACHE, DATA, SEED
 from eval_unified import load_model, encode_all
 from acquire_forbes import norm_name
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 
 
 def main() -> int:
