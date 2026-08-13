@@ -1,0 +1,221 @@
+{
+  "dataset": "equities_bench_v1",
+  "rows": 4831,
+  "entities": 500,
+  "entities_with_prices": 499,
+  "time_range": [
+    2015,
+    2024
+  ],
+  "features": {
+    "count": 85,
+    "source": "repo git blob pipeline/data/train_matrix_real.npz (02d107b4f01cb6ecfab8ee0b162d440f42638eae, sha256 60a82d4503e2d698bef4060b1ecb4f817ecd607d3c0cb557b42af1930ed5a6f8); SEC EDGAR XBRL fundamentals + per-fiscal-year-end market/valuation features (verified point-in-time vs independent Yahoo daily history, Spearman 1.000 on RET_12M/RET_6M/VOL_252D/PE)",
+    "dropped_snapshot_features": [
+      {
+        "name": "CASH_CONVERSION_CYCLE",
+        "family": "efficiency",
+        "const_frac": 1.0
+      },
+      {
+        "name": "NEO_COUNT",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_AGE",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_TENURE",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_FOUNDER_FLAG",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_EQUITY_PCT",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_PAY_RATIO",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "BOARD_INDEP_PCT",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "BOARD_SIZE",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "INSIDER_OWN_PCT",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_PAY_VS_SECTOR",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "NEO_TURNOVER",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CEO_DUALITY",
+        "family": "management_neo",
+        "const_frac": 1.0
+      },
+      {
+        "name": "INST_PCT",
+        "family": "ownership",
+        "const_frac": 1.0
+      },
+      {
+        "name": "INST_DELTA_QOQ",
+        "family": "ownership",
+        "const_frac": 1.0
+      },
+      {
+        "name": "INSIDER_NET_12M",
+        "family": "ownership",
+        "const_frac": 1.0
+      },
+      {
+        "name": "FLOAT_PCT",
+        "family": "ownership",
+        "const_frac": 1.0
+      },
+      {
+        "name": "TOP10_INST_CONC",
+        "family": "ownership",
+        "const_frac": 1.0
+      },
+      {
+        "name": "SHORT_INTEREST_PCT",
+        "family": "ownership",
+        "const_frac": 1.0
+      },
+      {
+        "name": "MDA_LENGTH",
+        "family": "disclosure_text",
+        "const_frac": 1.0
+      },
+      {
+        "name": "MDA_SENTIMENT",
+        "family": "disclosure_text",
+        "const_frac": 1.0
+      },
+      {
+        "name": "RISK_FACTOR_COUNT",
+        "family": "disclosure_text",
+        "const_frac": 1.0
+      },
+      {
+        "name": "RISK_CHANGE_YOY",
+        "family": "disclosure_text",
+        "const_frac": 1.0
+      },
+      {
+        "name": "FOG_INDEX_PROXY",
+        "family": "disclosure_text",
+        "const_frac": 1.0
+      },
+      {
+        "name": "TONE_UNCERTAINTY",
+        "family": "disclosure_text",
+        "const_frac": 1.0
+      },
+      {
+        "name": "SECTOR_REL_RET_12M",
+        "family": "sector_context",
+        "const_frac": 1.0
+      },
+      {
+        "name": "SECTOR_CONCENTRATION",
+        "family": "sector_context",
+        "const_frac": 1.0
+      },
+      {
+        "name": "SECTOR_BETA",
+        "family": "sector_context",
+        "const_frac": 1.0
+      },
+      {
+        "name": "CREDIT_SPREAD_PROXY",
+        "family": "macro_regime",
+        "const_frac": 1.0
+      },
+      {
+        "name": "EARN_SURPRISE_STREAK",
+        "family": "form",
+        "const_frac": 1.0
+      },
+      {
+        "name": "GUIDANCE_RAISE_FLAG",
+        "family": "form",
+        "const_frac": 1.0
+      },
+      {
+        "name": "EPS_REVISION_UP_PCT",
+        "family": "form",
+        "const_frac": 1.0
+      },
+      {
+        "name": "ACCIDENT_DISCLOSURE",
+        "family": "form",
+        "const_frac": 1.0
+      }
+    ]
+  },
+  "labels": {
+    "anchor": "first trading day >= July 1 of fiscal_year+1",
+    "horizon_trading_days": 126,
+    "price_source": "Yahoo Finance v8 chart API daily adjclose (bench/fetch_prices.py)",
+    "forward_return": {
+      "construction": "adjclose[t+126]/adjclose[t] - 1",
+      "observed": 4788
+    },
+    "forward_realized_vol": {
+      "construction": "std(daily simple returns over (t, t+126]) * sqrt(252)",
+      "observed": 4788
+    },
+    "drawdown_exceedance": {
+      "construction": "continuous forward_max_drawdown stored; binarized at benchmark time as (dd <= train-split median dd); train split only",
+      "observed": 4788
+    }
+  },
+  "split": {
+    "kind": "temporal on fiscal year",
+    "mtnn_train_years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020
+    ],
+    "mtnn_val_year": 2021,
+    "harness_train": "fy <= 2021",
+    "test": "fy >= 2022",
+    "purge_note": "latest train label window ends ~Jan 2023 (fy2021: anchor Jul 2022 + 126 tdays); earliest test anchor is Jul 2023 - no overlap"
+  },
+  "leakage_rules": "features as-of fiscal-year-end (verified); labels strictly after the July 1 fy+1 anchor; snapshot features dropped by const-across-years audit; preprocessing (impute/standardize) fit on harness-train rows only inside run_benchmark.py",
+  "exchange_notes": {
+    "X": "RAW (unscaled) point-in-time features; impute/standardize on train rows only (bench/run_benchmark.py standardize_train_only shows the exact procedure)",
+    "y_drawdown_exceedance": "binarized at dd <= -0.1470 (median forward max drawdown over fy<=2021 labeled rows)",
+    "splits": "train_idx = fy 2015-2020 (gradient rows), val_idx = fy 2021 (early stop / model selection), test_idx = fy 2022-2024; harness train = train+val",
+    "time_id": "fiscal year (int); entity_id indexes entity_names (tickers)",
+    "benchmark_result": "baseline wins all 3 targets \u2014 see vector-equities bench/benchmark_report.json (schema 1.1)"
+  }
+}

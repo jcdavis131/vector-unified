@@ -1,0 +1,777 @@
+{
+  "schema_version": "1.1",
+  "domain": "unified",
+  "primary_task_type": "prediction",
+  "description": "The shared-embedding transfer test. Does one MTNN embedding, trained with its heads on the OTHER domains, still carry signal for a target in a domain it was NOT primarily trained to predict?",
+  "aggregate": {
+    "targets_total": 2,
+    "targets_scored": 2,
+    "targets_spec_only": 0,
+    "targets_errored": 0,
+    "targets_judged": 2,
+    "mtnn_target_wins": 0,
+    "baseline_target_wins": 2,
+    "primary_metric_verdicts": {
+      "transfer_forward_return": false,
+      "transfer_next_season_per": false
+    },
+    "headline": "baseline wins all 2 judged target(s) on their primary metric",
+    "built": "2026-08-10T01:56:15"
+  },
+  "targets": [
+    {
+      "target": {
+        "name": "transfer_forward_return",
+        "kind": "regression",
+        "horizon": "1m",
+        "split": "temporal",
+        "primary_metric": "spearman_ic",
+        "status": "scored"
+      },
+      "note": "",
+      "scorecard": {
+        "schema_version": "1.0",
+        "domain": "unified",
+        "task": "unified::transfer_forward_return",
+        "task_type": "prediction",
+        "split": "temporal",
+        "seed": 42,
+        "k_values": [
+          1,
+          5,
+          10
+        ],
+        "summary": {
+          "metrics_judged": 4,
+          "mtnn_wins": 0,
+          "baseline_wins": 4,
+          "headline": "baseline wins all 4 judged metric(s) — this domain is simple",
+          "built": "2026-08-10T01:56:00",
+          "n_train": 3297,
+          "n_test": 1491
+        },
+        "methods": [
+          {
+            "name": "dummy_mean",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.0,
+              "mae": 0.162071,
+              "rmse": 0.28127,
+              "r2": -1e-06
+            },
+            "note": ""
+          },
+          {
+            "name": "persistence",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.040075,
+              "mae": 0.218804,
+              "rmse": 0.361544,
+              "r2": -0.65225
+            },
+            "note": ""
+          },
+          {
+            "name": "ridge",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.144842,
+              "mae": 0.215655,
+              "rmse": 0.313553,
+              "r2": -0.242726
+            },
+            "note": ""
+          },
+          {
+            "name": "pca_ridge(n=16)",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.148097,
+              "mae": 0.158353,
+              "rmse": 0.277543,
+              "r2": 0.026321
+            },
+            "note": ""
+          },
+          {
+            "name": "knn(k=10)",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.123054,
+              "mae": 0.164473,
+              "rmse": 0.285041,
+              "r2": -0.026998
+            },
+            "note": ""
+          },
+          {
+            "name": "hist_gbm",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.047694,
+              "mae": 0.178014,
+              "rmse": 0.283815,
+              "r2": -0.01818
+            },
+            "note": ""
+          },
+          {
+            "name": "mlp",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.059485,
+              "mae": 0.245293,
+              "rmse": 0.370416,
+              "r2": -0.734336
+            },
+            "note": ""
+          },
+          {
+            "name": "pca16_whiten_ridge",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.160674,
+              "mae": 0.15903,
+              "rmse": 0.278817,
+              "r2": 0.017366
+            },
+            "note": ""
+          },
+          {
+            "name": "persistence_current_per",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "skipped",
+            "metrics": {},
+            "note": "only applicable to the hoops-derived task"
+          },
+          {
+            "name": "mtnn",
+            "kind": "prediction",
+            "is_mtnn": true,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.067133,
+              "mae": 0.163214,
+              "rmse": 0.282483,
+              "r2": -0.008642
+            },
+            "note": ""
+          }
+        ],
+        "metrics": {
+          "spearman_ic": {
+            "higher_is_better": true,
+            "ranking": [
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 0.160674
+              },
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 0.148097
+              },
+              {
+                "method": "ridge",
+                "value": 0.144842
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 0.123054
+              },
+              {
+                "method": "mtnn",
+                "value": 0.067133
+              },
+              {
+                "method": "mlp",
+                "value": 0.059485
+              },
+              {
+                "method": "hist_gbm",
+                "value": 0.047694
+              },
+              {
+                "method": "persistence",
+                "value": 0.040075
+              },
+              {
+                "method": "dummy_mean",
+                "value": 0.0
+              }
+            ],
+            "best_method": "pca16_whiten_ridge",
+            "best_baseline": "pca16_whiten_ridge",
+            "best_baseline_value": 0.160674,
+            "mtnn_value": 0.067133,
+            "mtnn_delta": -0.093541,
+            "mtnn_beats_best_baseline": false
+          },
+          "mae": {
+            "higher_is_better": false,
+            "ranking": [
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 0.158353
+              },
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 0.15903
+              },
+              {
+                "method": "dummy_mean",
+                "value": 0.162071
+              },
+              {
+                "method": "mtnn",
+                "value": 0.163214
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 0.164473
+              },
+              {
+                "method": "hist_gbm",
+                "value": 0.178014
+              },
+              {
+                "method": "ridge",
+                "value": 0.215655
+              },
+              {
+                "method": "persistence",
+                "value": 0.218804
+              },
+              {
+                "method": "mlp",
+                "value": 0.245293
+              }
+            ],
+            "best_method": "pca_ridge(n=16)",
+            "best_baseline": "pca_ridge(n=16)",
+            "best_baseline_value": 0.158353,
+            "mtnn_value": 0.163214,
+            "mtnn_delta": -0.004861,
+            "mtnn_beats_best_baseline": false
+          },
+          "rmse": {
+            "higher_is_better": false,
+            "ranking": [
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 0.277543
+              },
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 0.278817
+              },
+              {
+                "method": "dummy_mean",
+                "value": 0.28127
+              },
+              {
+                "method": "mtnn",
+                "value": 0.282483
+              },
+              {
+                "method": "hist_gbm",
+                "value": 0.283815
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 0.285041
+              },
+              {
+                "method": "ridge",
+                "value": 0.313553
+              },
+              {
+                "method": "persistence",
+                "value": 0.361544
+              },
+              {
+                "method": "mlp",
+                "value": 0.370416
+              }
+            ],
+            "best_method": "pca_ridge(n=16)",
+            "best_baseline": "pca_ridge(n=16)",
+            "best_baseline_value": 0.277543,
+            "mtnn_value": 0.282483,
+            "mtnn_delta": -0.004939,
+            "mtnn_beats_best_baseline": false
+          },
+          "r2": {
+            "higher_is_better": true,
+            "ranking": [
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 0.026321
+              },
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 0.017366
+              },
+              {
+                "method": "dummy_mean",
+                "value": -1e-06
+              },
+              {
+                "method": "mtnn",
+                "value": -0.008642
+              },
+              {
+                "method": "hist_gbm",
+                "value": -0.01818
+              },
+              {
+                "method": "knn(k=10)",
+                "value": -0.026998
+              },
+              {
+                "method": "ridge",
+                "value": -0.242726
+              },
+              {
+                "method": "persistence",
+                "value": -0.65225
+              },
+              {
+                "method": "mlp",
+                "value": -0.734336
+              }
+            ],
+            "best_method": "pca_ridge(n=16)",
+            "best_baseline": "pca_ridge(n=16)",
+            "best_baseline_value": 0.026321,
+            "mtnn_value": -0.008642,
+            "mtnn_delta": -0.034963,
+            "mtnn_beats_best_baseline": false
+          }
+        },
+        "notes": {
+          "target": "transfer_forward_return",
+          "kind": "regression",
+          "horizon": "1m",
+          "primary_metric": "spearman_ic",
+          "construction": "Target identical to equities.forward_return (same leakage-safe temporal construction). Features = frozen unified embedding whose heads never saw equities. Probe = linear head fit on train rows only. This is the held-out-domain transfer measurement.",
+          "held_out_domain": "equities",
+          "owner_target": "forward_return",
+          "rows_labeled": "4788",
+          "embedding_trained_on": "hoops,gridiron,realty,pitch",
+          "embedding_best_epoch": "289",
+          "data": "REAL sibling-lane exchange datasets (bench/data/exchange/*/datasheet.json)",
+          "probe": "frozen 32-d embedding + Ridge(alpha=1.0) fit on the harness train side only"
+        }
+      }
+    },
+    {
+      "target": {
+        "name": "transfer_next_season_per",
+        "kind": "regression",
+        "horizon": "next_season",
+        "split": "temporal",
+        "primary_metric": "spearman_ic",
+        "status": "scored"
+      },
+      "note": "",
+      "scorecard": {
+        "schema_version": "1.0",
+        "domain": "unified",
+        "task": "unified::transfer_next_season_per",
+        "task_type": "prediction",
+        "split": "temporal",
+        "seed": 7,
+        "k_values": [
+          1,
+          5,
+          10
+        ],
+        "summary": {
+          "metrics_judged": 4,
+          "mtnn_wins": 0,
+          "baseline_wins": 4,
+          "headline": "baseline wins all 4 judged metric(s) — this domain is simple",
+          "built": "2026-08-10T01:56:15",
+          "n_train": 9661,
+          "n_test": 396
+        },
+        "methods": [
+          {
+            "name": "dummy_mean",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.0,
+              "mae": 3.482099,
+              "rmse": 4.522042,
+              "r2": -0.014071
+            },
+            "note": ""
+          },
+          {
+            "name": "persistence",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.71119,
+              "mae": 2.305656,
+              "rmse": 3.026416,
+              "r2": 0.545791
+            },
+            "note": ""
+          },
+          {
+            "name": "ridge",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.779299,
+              "mae": 2.035003,
+              "rmse": 2.61834,
+              "r2": 0.660022
+            },
+            "note": ""
+          },
+          {
+            "name": "pca_ridge(n=16)",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.779414,
+              "mae": 2.059191,
+              "rmse": 2.627958,
+              "r2": 0.65752
+            },
+            "note": ""
+          },
+          {
+            "name": "knn(k=10)",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.752379,
+              "mae": 2.09447,
+              "rmse": 2.675477,
+              "r2": 0.645022
+            },
+            "note": ""
+          },
+          {
+            "name": "hist_gbm",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.770809,
+              "mae": 2.044063,
+              "rmse": 2.614008,
+              "r2": 0.661146
+            },
+            "note": ""
+          },
+          {
+            "name": "mlp",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.742785,
+              "mae": 2.235265,
+              "rmse": 2.884314,
+              "r2": 0.587443
+            },
+            "note": ""
+          },
+          {
+            "name": "pca16_whiten_ridge",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.779997,
+              "mae": 2.123018,
+              "rmse": 2.666878,
+              "r2": 0.6473
+            },
+            "note": ""
+          },
+          {
+            "name": "persistence_current_per",
+            "kind": "prediction",
+            "is_mtnn": false,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.766118,
+              "mae": 2.230303,
+              "rmse": 2.942616,
+              "r2": 0.570596
+            },
+            "note": ""
+          },
+          {
+            "name": "mtnn",
+            "kind": "prediction",
+            "is_mtnn": true,
+            "status": "ok",
+            "metrics": {
+              "spearman_ic": 0.632798,
+              "mae": 2.648663,
+              "rmse": 3.480683,
+              "r2": 0.399203
+            },
+            "note": ""
+          }
+        ],
+        "metrics": {
+          "spearman_ic": {
+            "higher_is_better": true,
+            "ranking": [
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 0.779997
+              },
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 0.779414
+              },
+              {
+                "method": "ridge",
+                "value": 0.779299
+              },
+              {
+                "method": "hist_gbm",
+                "value": 0.770809
+              },
+              {
+                "method": "persistence_current_per",
+                "value": 0.766118
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 0.752379
+              },
+              {
+                "method": "mlp",
+                "value": 0.742785
+              },
+              {
+                "method": "persistence",
+                "value": 0.71119
+              },
+              {
+                "method": "mtnn",
+                "value": 0.632798
+              },
+              {
+                "method": "dummy_mean",
+                "value": 0.0
+              }
+            ],
+            "best_method": "pca16_whiten_ridge",
+            "best_baseline": "pca16_whiten_ridge",
+            "best_baseline_value": 0.779997,
+            "mtnn_value": 0.632798,
+            "mtnn_delta": -0.1472,
+            "mtnn_beats_best_baseline": false
+          },
+          "mae": {
+            "higher_is_better": false,
+            "ranking": [
+              {
+                "method": "ridge",
+                "value": 2.035003
+              },
+              {
+                "method": "hist_gbm",
+                "value": 2.044063
+              },
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 2.059191
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 2.09447
+              },
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 2.123018
+              },
+              {
+                "method": "persistence_current_per",
+                "value": 2.230303
+              },
+              {
+                "method": "mlp",
+                "value": 2.235265
+              },
+              {
+                "method": "persistence",
+                "value": 2.305656
+              },
+              {
+                "method": "mtnn",
+                "value": 2.648663
+              },
+              {
+                "method": "dummy_mean",
+                "value": 3.482099
+              }
+            ],
+            "best_method": "ridge",
+            "best_baseline": "ridge",
+            "best_baseline_value": 2.035003,
+            "mtnn_value": 2.648663,
+            "mtnn_delta": -0.61366,
+            "mtnn_beats_best_baseline": false
+          },
+          "rmse": {
+            "higher_is_better": false,
+            "ranking": [
+              {
+                "method": "hist_gbm",
+                "value": 2.614008
+              },
+              {
+                "method": "ridge",
+                "value": 2.61834
+              },
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 2.627958
+              },
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 2.666878
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 2.675477
+              },
+              {
+                "method": "mlp",
+                "value": 2.884314
+              },
+              {
+                "method": "persistence_current_per",
+                "value": 2.942616
+              },
+              {
+                "method": "persistence",
+                "value": 3.026416
+              },
+              {
+                "method": "mtnn",
+                "value": 3.480683
+              },
+              {
+                "method": "dummy_mean",
+                "value": 4.522042
+              }
+            ],
+            "best_method": "hist_gbm",
+            "best_baseline": "hist_gbm",
+            "best_baseline_value": 2.614008,
+            "mtnn_value": 3.480683,
+            "mtnn_delta": -0.866674,
+            "mtnn_beats_best_baseline": false
+          },
+          "r2": {
+            "higher_is_better": true,
+            "ranking": [
+              {
+                "method": "hist_gbm",
+                "value": 0.661146
+              },
+              {
+                "method": "ridge",
+                "value": 0.660022
+              },
+              {
+                "method": "pca_ridge(n=16)",
+                "value": 0.65752
+              },
+              {
+                "method": "pca16_whiten_ridge",
+                "value": 0.6473
+              },
+              {
+                "method": "knn(k=10)",
+                "value": 0.645022
+              },
+              {
+                "method": "mlp",
+                "value": 0.587443
+              },
+              {
+                "method": "persistence_current_per",
+                "value": 0.570596
+              },
+              {
+                "method": "persistence",
+                "value": 0.545791
+              },
+              {
+                "method": "mtnn",
+                "value": 0.399203
+              },
+              {
+                "method": "dummy_mean",
+                "value": -0.014071
+              }
+            ],
+            "best_method": "hist_gbm",
+            "best_baseline": "hist_gbm",
+            "best_baseline_value": 0.661146,
+            "mtnn_value": 0.399203,
+            "mtnn_delta": -0.261943,
+            "mtnn_beats_best_baseline": false
+          }
+        },
+        "notes": {
+          "target": "transfer_next_season_per",
+          "kind": "regression",
+          "horizon": "next_season",
+          "primary_metric": "spearman_ic",
+          "construction": "Target identical to hoops.next_season_per. Features = frozen unified embedding whose heads never saw hoops. Linear probe on train rows only; hoops' temporal split reused.",
+          "held_out_domain": "hoops",
+          "owner_target": "next_season_per",
+          "rows_labeled": "10057",
+          "embedding_trained_on": "gridiron,equities,realty,pitch",
+          "embedding_best_epoch": "170",
+          "data": "REAL sibling-lane exchange datasets (bench/data/exchange/*/datasheet.json)",
+          "probe": "frozen 32-d embedding + Ridge(alpha=1.0) fit on the harness train side only"
+        }
+      }
+    }
+  ],
+  "notes": {
+    "transfer_probe": "TRANSFER PROBE: freeze the unified MTNN's shared embedding, hold out one domain entirely from head training, then fit ONLY a fresh linear head on the held-out domain's target using the frozen embedding as features. The MTNN 'rung' is this frozen-embedding + linear-probe result; the baseline gauntlet runs on the held-out domain's raw features. A win means the shared representation transferred; a loss means it did not. The held-out domain's own leakage-safe split (temporal) is reused unchanged, so transfer is measured on genuinely future rows.",
+    "embedding_training": "{\"transfer_forward_return\": {\"trained_on\": [\"hoops\", \"gridiron\", \"realty\", \"pitch\"], \"heads\": [\"gridiron::next_game_fpts\", \"gridiron::next_game_tds\", \"gridiron::next_game_yards\", \"hoops::next_season_ast\", \"hoops::next_season_bpm\", \"hoops::next_season_per\", \"hoops::next_season_pts\", \"hoops::next_season_reb\", \"hoops::next_season_win_shares\", \"pitch::next_window_goal_contribution\", \"pitch::next_window_minutes\", \"realty::above_market_appreciation\", \"realty::next_year_price_change\", \"realty::three_year_price_change\"], \"best_epoch\": 289, \"epochs_run\": 300, \"best_val_loss\": 0.789017, \"params_total\": 7790, \"wall_seconds\": 27.7}, \"transfer_next_season_per\": {\"trained_on\": [\"gridiron\", \"equities\", \"realty\", \"pitch\"], \"heads\": [\"equities::drawdown_exceedance\", \"equities::forward_realized_vol\", \"equities::forward_return\", \"gridiron::next_game_fpts\", \"gridiron::next_game_tds\", \"gridiron::next_game_yards\", \"pitch::next_window_goal_contribution\", \"pitch::next_window_minutes\", \"realty::above_market_appreciation\", \"realty::next_year_price_change\", \"realty::three_year_price_change\"], \"best_epoch\": 170, \"epochs_run\": 210, \"best_val_loss\": 0.968948, \"params_total\": 7691, \"wall_seconds\": 14.5}}",
+    "protocol": "MTNN rung = frozen cross-domain embedding (trained without the held-out domain) + linear probe on the held-out harness train side; baselines run on the held-out domain's raw harness features with the owner lane's exact task construction."
+  }
+}
