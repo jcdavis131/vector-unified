@@ -1,5 +1,25 @@
 # The alignment objective does not cause gridiron's regression
 
+> ⚠️ **PARTIALLY SUPERSEDED, same day.** The first claim below — that alignment
+> is not the cause — still stands on 6 seeds. The *second* claim, that the cause
+> is encoder drift under `--enc-lr`, is now in doubt and should not be acted on.
+>
+> Two things broke it. The `--enc-lr` screen moves the **wrong way**: 1e-5 gives
+> gridiron +0.1502, 3e-6 gives **+0.1850**. Lowering the rate at which encoders
+> move should shrink a drift term. And the training log shows gridiron falling
+> 0.9775 → 0.725 after a **single warmup epoch**, while pitch does not move at
+> all (0.9609 → 0.963). No encoder moves 0.25 of kNN accuracy in one epoch at
+> 1e-5.
+>
+> The live hypothesis is that G1's two halves are not the same object. The
+> baseline is a **stored** embedding (`M["E"][s]`, `train_stage2.py:243`); the
+> live number is **recomputed** from the encoder checkpoint
+> (`encode_full_numpy`, `:68`). If those disagree before training, the offset is
+> baked into every G1 verdict this model has reported.
+>
+> `pipeline/probe_g1_baseline.py` is the measurement that settles it. Run it
+> first.
+
 > **Status:** measured 2026-08-14, 6 seeds, alignment terms at zero
 > **Verdict:** **gridiron's G1 failure is not bought by sport-invariance.** With
 > SupCon, the GRL adversary and CORAL all switched off, gridiron still loses
