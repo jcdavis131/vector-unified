@@ -157,9 +157,29 @@ is bought out of gridiron — the regression is *invariant to the alignment
 objective*, which points instead at the other thing Stage 2 does: unfreezing the
 encoders (`--enc-lr 1e-5`) and projecting through the adapter.
 
-The discriminating run: alignment terms at zero (`--w-task 0 --w-sport 0`, no
-CORAL) with the encoders still unfrozen. If gridiron still drops ~0.147, the
-alignment objective is exonerated and the adapter path owns it.
+The discriminating run: alignment terms at zero with the encoders still
+unfrozen. If gridiron still drops ~0.147, the alignment objective is exonerated
+and the adapter path owns it.
+
+```bash
+python pipeline/seed_panel_g2.py \
+    --stage2-extra="--w-sup 0 --w-sport 0 --grl-lambda 0" \
+    --compare-to 0.6540 --compare-sd 0.0064
+```
+
+**An earlier draft of this section named `--w-task 0 --w-sport 0`, and that arm
+would not have answered the question.** `w_task` multiplies the native and
+position task heads (`train_stage2.py:284`) — it is the role-*preservation*
+term, the thing holding role structure up. Zeroing it makes gridiron regress for
+a reason that has nothing to do with what is being tested. The correct arm keeps
+`--w-task` at its default 2.0 and zeroes the four alignment terms instead:
+SupCon, the GRL sport adversary, and both CORAL terms (already 0 by default).
+
+SupCon needed a flag to be one of them. It entered the loss at a hardcoded 1.0
+on every folding epoch, and the only way to remove it was `--warmup >= --epochs`
+— which stops folding entirely, and with it `best_g2` tracking, the best-state
+save, and the verdict block this run exists to read. `--w-sup` now exists,
+default 1.0, term still computed and logged at zero weight.
 
 And a spec/code mismatch worth an operator's decision. The handoff asks for G1
 *"joint >= baseline 2/3"*, but the code requires all three:
