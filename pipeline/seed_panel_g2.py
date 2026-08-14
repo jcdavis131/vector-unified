@@ -38,13 +38,18 @@ PAT = {
 }
 
 
-def run_seed(seed: int, epochs1: int, epochs2: int) -> dict:
+def run_seed(seed: int, epochs1: int, epochs2: int, extra: str = "") -> dict:
     cmd = [
         sys.executable, str(RUNNER), "vector-unified",
         "--entry", "pipeline/train_stage2.py",
         "--prepare", f"python -u pipeline/train_unified.py --epochs {epochs1} --seed {seed}",
         "--", "--seed", str(seed), "--epochs", str(epochs2),
     ]
+    # Stage-2 variant flags. Kept OUT of the prepare step on purpose: stage 1 is
+    # identical across arms, so a difference in G2 is attributable to stage 2
+    # alone rather than to a trunk that started somewhere else.
+    if extra:
+        cmd += extra.split()
     p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = (p.stdout or "") + (p.stderr or "")
     if p.returncode != 0:
@@ -62,15 +67,23 @@ def main() -> int:
     ap.add_argument("--seeds", type=int, nargs="+", default=[5, 7, 13, 21, 42, 99])
     ap.add_argument("--epochs1", type=int, default=40)
     ap.add_argument("--epochs2", type=int, default=30)
+    ap.add_argument("--stage2-extra", default="",
+                    help='variant flags for stage 2, quoted, e.g. "--w-coral-centroid 0.5"')
+    ap.add_argument("--compare-to", type=float, default=None,
+                    help="baseline mean to compare against; prints the delta against the "
+                         "baseline's own seed sd rather than eyeballing two tables")
+    ap.add_argument("--compare-sd", type=float, default=None)
     a = ap.parse_args()
 
     print(f"seeds {a.seeds}   stage1 {a.epochs1}ep   stage2 {a.epochs2}ep", flush=True)
+    if a.stage2_extra:
+        print(f"stage2 variant: {a.stage2_extra}", flush=True)
     print(f"{'seed':>5} {'best_g2':>9} {'best_ep':>8} {'rank@best':>10} {'shippable':>10}",
           flush=True)
 
     rows = []
     for s in a.seeds:
-        r = run_seed(s, a.epochs1, a.epochs2)
+        r = run_seed(s, a.epochs1, a.epochs2, a.stage2_extra)
         if not r.get("ok"):
             print(f"{s:>5}  FAILED: {r.get('note')}", flush=True)
             continue
@@ -94,8 +107,24 @@ def main() -> int:
         m2, sd2 = statistics.fmean(rk), (statistics.stdev(rk) if len(rk) > 1 else 0.0)
         print(f"rank@best    n={len(rk)}  mean {m2:.2f}  sd {sd2:.2f}  "
               f"floor 12.0 -> {sum(1 for v in rk if v >= 12.0)}/{len(rk)} clear it")
+
+    # Judged against the BASELINE's own spread, not this arm's. A variant that
+    # happens to be tightly clustered would otherwise look decisive on its own
+    # sd, which says nothing about whether it moved the mean.
+    if g2 and a.compare_to is not None:
+        m = statistics.fmean(g2)
+        delta = m - a.compare_to                      # G2 is lower-is-better
+        bar_sd = a.compare_sd if a.compare_sd else 0.0
+        print(f"\nvs baseline  {a.compare_to:.4f} -> {m:.4f}   delta {delta:+.4f} "
+              f"(negative is better)")
+        if bar_sd:
+            print(f"             baseline seed sd {bar_sd:.4f}  ->  "
+                  + ("BETTER, clears the baseline's own noise" if delta < -bar_sd
+                     else "WORSE by more than seed noise" if delta > bar_sd
+                     else "INSIDE seed noise; not an improvement"))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
