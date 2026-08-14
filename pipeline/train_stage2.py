@@ -193,7 +193,16 @@ def main():
     # train_stage2.py` with no arguments would still reproduce the un-climbed
     # 0.7795 model, and the next person to run this file would silently start
     # from the bottom of a hill that has already been climbed twice.
-    ap.add_argument("--grl-lambda-target", type=float, default=0.5)
+    #
+    # UNDER TEST 2026-08-14: 0.5 -> 1.0. The 0.5 arm was measured against the
+    # centroid keep and cleared it by 3.9x its spread, so the term works; what
+    # is unknown is where it saturates or starts charging G1 for the invariance.
+    # Two of today's arms make the question sharp in opposite directions --
+    # --w-coral 0.5 improved G2 AND lifted two floors, while --w-sup 0.5 bought
+    # G2 out of gridiron and was discarded. GRL is adversarial, which puts it
+    # closer to the second shape, so the floors are the thing to watch here
+    # rather than the headline.
+    ap.add_argument("--grl-lambda-target", type=float, default=1.0)
     ap.add_argument("--warmup", type=int, default=5)
     ap.add_argument("--rank-floor", type=float, default=12.0)
     ap.add_argument("--revert-threshold", type=float, default=0.02)
