@@ -145,6 +145,13 @@ def main():
     ap.add_argument("--enc-lr", type=float, default=1e-5)
     ap.add_argument("--trunk-lr", type=float, default=1e-3)
     ap.add_argument("--w-task", type=float, default=2.0)
+    # SupCon was the one alignment term with no weight of its own -- it entered the
+    # loss at a hardcoded 1.0 whenever folding was on. That made "run this with the
+    # alignment objective switched off" impossible to express: the only lever was
+    # --warmup >= --epochs, which stops folding entirely, and then best_g2 is never
+    # updated, no best state is saved and the verdict block does not print. Default
+    # 1.0, so an unflagged run is byte-for-byte the previous behaviour.
+    ap.add_argument("--w-sup", type=float, default=1.0)
     ap.add_argument("--w-sport", type=float, default=0.3)
     ap.add_argument("--grl-lambda", type=float, default=0.05)
     ap.add_argument("--grl-ramp", type=int, default=10)
@@ -287,7 +294,7 @@ def main():
             if folding:
                 l_sup = supcon_loss(z, arch, sid, model.log_temp)
                 l_sport = sport_clf_loss(z, sid, lam)
-                loss = loss + l_sup + args.w_sport * l_sport
+                loss = loss + args.w_sup * l_sup + args.w_sport * l_sport
             loss.backward()
             opt.step()
             ep["sup"] += float(l_sup); ep["task"] += float(l_task); ep["sport"] += float(l_sport)
