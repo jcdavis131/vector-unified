@@ -204,6 +204,18 @@ python pipeline/seed_panel_g2.py \
     --compare-to 0.6856 --compare-sd 0.0081
 ```
 
-Untried and cheap at ~4 min/seed: `--w-coral` (covariance) alongside the
-centroid, and pushing `--grl-lambda-target` past 0.5 to find where G2 stops
-moving or G1 starts paying.
+Both are **defaults now** — `--w-coral-centroid 0.5` and `--grl-lambda-target
+0.5` — so the commands above reproduce their arms only against a checkout from
+before that change. Confirmed on seeds 5/7/13 after folding: 0.6590, 0.6585,
+0.6595, identical to the same seeds in the stacked arm.
+
+**The follow-up is in `G1_DISCRIMINATING_2026-08-14.md`, and it answers this
+section's open question.** G1 measures encoder drift and nothing else, so the
+gridiron regression is `--enc-lr 1e-5` rather than anything the alignment
+objective does — a result that also shows the default alignment recipe was
+*hurting* G2 and costing 3.6 effective rank. The next arm is the `--enc-lr`
+tradeoff curve, not another alignment weight.
+
+Still untried and cheap at ~4 min/seed: `--w-coral` (covariance) alongside the
+centroid, and lowering `--w-sup`, which the discriminating run implicates as the
+term working against invariance.
