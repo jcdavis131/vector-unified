@@ -161,14 +161,21 @@ def main():
     #   --w-coral-centroid   1st moment: pull per-sport centroids together (on z)
     # The second is the one G2 can see: its probe reads z, and a sport whose cloud is
     # merely SHAPED like the others is still trivially decodable from where it sits.
-    # UNDER TEST 2026-08-14. The centroid term (1st moment) is a measured keep;
-    # this is the 2nd moment, and it acts on raw h rather than z, so the two are
-    # not redundant -- matching where the clouds SIT is a different operation
-    # from matching their SHAPE. The G2 probe reads z and can only see the
-    # first directly, but a covariance mismatch in h is still a sport cue the
-    # trunk can propagate. Committed as a default rather than passed as a flag
-    # so that a DISCARD verdict's `git reset --hard HEAD~1` removes exactly the
-    # change that was tested; see herdmux gpu/HILLCLIMB.md.
+    # DEFAULT 0.5 as of 2026-08-14. KEPT on a 6-seed panel: G2 0.6540 +/- 0.0065
+    # -> 0.6426 +/- 0.0061, a delta of 0.0115 against an acceptance bar of
+    # 0.0065, with all six seeds improving and no floor regressing.
+    #
+    # The centroid term (1st moment, on z) was already a keep; this is the 2nd
+    # moment, on raw h. Not redundant with it: where a cloud SITS and what SHAPE
+    # it has are different properties, and although the G2 probe reads z and
+    # sees position directly, a covariance mismatch in h is still a sport cue
+    # the trunk carries forward. The file's original note said stage 2 had no
+    # coral term at all; both halves are now on and both were measured.
+    #
+    # Notably it also LIFTED two floors while improving the headline -- hoops
+    # role 0.0998 -> 0.1009, pitch 0.0058 -> 0.0065 -- where --w-sup 0.5, tried
+    # the same day, bought G2 by spending gridiron. Aligning covariance is not
+    # the same trade as weakening the contrastive term.
     ap.add_argument("--w-coral", type=float, default=0.5)
     # DEFAULT 0.5 as of 2026-08-14. Measured over 6 seeds against the 0.0 arm:
     # G2 0.7795 +/- 0.0146 -> 0.6856 +/- 0.0081, every seed improved, and the
