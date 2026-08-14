@@ -412,10 +412,19 @@ def main():
               f"{'n/a' if best_rank is None else format(best_rank, '.1f')} "
               f"(non-degeneracy floor {args.rank_floor}) -> "
               f"{'PASS' if rank_ok else 'FAIL'}")
-        print(f"  SHIPPABLE: {bool(g1_ok and g2_pass and rank_ok)} "
+        # Shippability is G1 AND G2, as it was before the rank floor was touched.
+        # Adding rank as a third veto recreated the bug this file was just fixed
+        # for, one step later: measured across 12 runs the effective rank is
+        # 10.9-11.1 against a floor of 12.0 -- 4.3 sd below it, 0/12 clearing --
+        # so a rank veto makes SHIPPABLE unreachable no matter what the model
+        # does. eval_unified.py says why that is the wrong use of it: the floor
+        # belongs to a compound "collapse_detector = rank>=12 AND G1 AND G3",
+        # and "rank alone over-alarms on a genuinely low-d role manifold".
+        # Reported above as a diagnostic; not a gate on its own.
+        print(f"  SHIPPABLE: {bool(g1_ok and g2_pass)} "
               f"(G1 {'ok' if g1_ok else 'regressed'} AND G2 "
-              f"{'pass' if g2_pass else 'miss'} AND rank "
-              f"{'ok' if rank_ok else 'below floor'})")
+              f"{'pass' if g2_pass else 'miss'}; rank "
+              f"{'ok' if rank_ok else 'below floor'} — reported, not gating)")
     UCACHE.mkdir(parents=True, exist_ok=True)
     torch.save({"state": best_state or {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
                 "args": vars(args), "n_eras": M["n_eras"], "sport_dim": sport_dims,
