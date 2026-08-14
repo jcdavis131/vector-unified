@@ -3,6 +3,17 @@
 
     python pipeline/seed_panel_g2.py --seeds 5 7 13 21 42 99
 
+    # a stage-2 variant, judged against the baseline's own spread
+    python pipeline/seed_panel_g2.py \\
+        --stage2-extra="--w-coral-centroid 0.5" --compare-to 0.7795 --compare-sd 0.0146
+
+PASSING --stage2-extra: its value starts with a dash, so argparse will not accept
+it after a space -- use the `=` form, and quote it, because the value also
+contains one. Launching detached from PowerShell needs the whole command as ONE
+quoted string; an -ArgumentList array splits on the inner space and argparse then
+reports `unrecognized arguments: 0.5`. Both mistakes were made here before this
+note existed.
+
 audit_promotion_gates.py records that this model "has never been run at a second
 seed" and that its G2 gate "passes by exactly zero: effective_rank 12.0 against
 rank_nondeg_floor 12 ... with one run there is no way to tell" whether the floor
