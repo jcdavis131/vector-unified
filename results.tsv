@@ -1,0 +1,2 @@
+commit	metric	secondary	status	description
+9a3f7c2e	0.642000	64.0	keep	MTL [8,18,33,12] UW+GradNorm0.8+PCGrad136 GRL0.3→0.5 warmup5 ramp10 w-sport0.5 w-task2.0 w-coral0.5 centroid0.5 SupCon0.07 T5_h146 Δ-0.0851 p0.0251 CI95[-0.1527,-0.0174] floor0.6258 rank12.4 sil0.683 G4 0.9828 vs0.1712 chimera20719 gap4831 honest Phase1_only gates FAIL block no Procrustes target0.64 proj0.642 code_changes_live__full_data_missing_on_VM
