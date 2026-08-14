@@ -1,4 +1,4 @@
-﻿"""Vector Unified — Stage 2 training (unfrozen encoder alignment).
+"""Vector Unified — Stage 2 training (unfrozen encoder alignment).
 
 Stage 1 proved (p19) that G2 sport-invariance is structurally blocked while the
 three per-sport encoders are frozen: their native dim footprint (48/32/24) is a
