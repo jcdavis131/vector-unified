@@ -233,8 +233,42 @@ def main():
         {"params": list(model.parameters()), "lr": args.trunk_lr},
     ], weight_decay=1e-4)
 
-    # ---- Stage 0 baselines (frozen encoder e_s) ----
-    print("\n=== Stage 0 baselines (frozen e_s) ===")
+    # ---- Stage 0 baselines: the LIVE encoder, before the first optimiser step ----
+    #
+    # This used to read `M["E"][s]` -- the STORED per-sport embedding off the
+    # unified matrix -- while G1 itself reads `live[sport].encode_full_numpy()`.
+    # Those are different objects, and G1 = baseline - live was therefore
+    # comparing two artifacts rather than measuring what stage 2 did.
+    #
+    # Measured 2026-08-14 by probe_g1_baseline.py, with NO training step taken:
+    #
+    #     sport      stored      live     delta        cos
+    #     hoops      0.8408    0.7992   +0.0416      0.010
+    #     gridiron   0.9775    0.7249   +0.2526      0.692
+    #     pitch      0.9609    0.9609   +0.0000      1.000
+    #
+    # unified_matrix.npz is dated 2026-07-31. pitch's checkpoint predates it and
+    # matches exactly, cosine 1.000. gridiron's was retrained 2026-08-06 and
+    # hoops' on 2026-08-14, and both stored blocks are stale -- hoops' so stale
+    # that its cosine against the live encoder is 0.010, essentially orthogonal
+    # (a different basis that happens to be a comparably good representation,
+    # which is why its kNN only differs by 0.042).
+    #
+    # The consequence was a gate that could not be passed and a diagnosis that
+    # kept coming back wrong. gridiron's reported role_drop of +0.1502 is SMALLER
+    # than the +0.2526 offset baked in before training: measured like for like,
+    # stage 2 takes gridiron from 0.7249 to 0.8273, an IMPROVEMENT of +0.102. The
+    # --enc-lr screen reads the same way and is monotone across four points --
+    # 1e-5/3e-6/1e-6/3e-7 give +0.150/+0.185/+0.219/+0.243 -- because encoder
+    # learning was REPAIRING the gap, not causing it, and pitch (nothing to
+    # repair) sat flat at -0.006..-0.002 throughout.
+    #
+    # This is a correction to the instrument, NOT a relaxation of the gate. The
+    # threshold is untouched at --revert-threshold. The stored-vs-live delta is
+    # still computed and still reported, because artifact staleness is a real
+    # problem worth seeing -- it is just not the same problem as stage 2
+    # damaging an encoder, and one number cannot carry both.
+    print("\n=== Stage 0 baselines (live encoder, pre-step) ===")
     baselines = {}
     sid_np = M["sport_id"].cpu().numpy()
     native_np = M["native"].cpu().numpy()
@@ -242,14 +276,22 @@ def main():
     posm_np = M["pos_mask"].cpu().numpy()
     for s, sport in enumerate(SPORTS):
         idx = np.where(sid_np == s)[0]
+        e_live0 = live_e_s_numpy(live, device, sport)
         e_froz = M["E"][s].cpu().numpy()
+        has_pos = bool(posm_np[idx].any())
         baselines[sport] = {
             "n": int(len(idx)),
-            "role_knn5": knn5_acc(e_froz, native_np[idx]),
-            "pos_knn5": knn5_acc(e_froz, pos_np[idx], posm_np[idx]) if posm_np[idx].any() else None,
+            "role_knn5": knn5_acc(e_live0, native_np[idx]),
+            "pos_knn5": knn5_acc(e_live0, pos_np[idx], posm_np[idx]) if has_pos else None,
+            # Diagnostic only. Never enters the verdict.
+            "stored_role_knn5": knn5_acc(e_froz, native_np[idx]),
+            "stored_pos_knn5": knn5_acc(e_froz, pos_np[idx], posm_np[idx]) if has_pos else None,
         }
-        print(f"  {sport:9s} role={baselines[sport]['role_knn5']:.4f} "
-              f"pos={baselines[sport]['pos_knn5']}")
+        b = baselines[sport]
+        drift = b["stored_role_knn5"] - b["role_knn5"]
+        flag = "  <- STORED EMBEDDING IS STALE" if abs(drift) > 0.02 else ""
+        print(f"  {sport:9s} role={b['role_knn5']:.4f} pos={b['pos_knn5']}"
+              f"   (stored {b['stored_role_knn5']:.4f}, delta {drift:+.4f}){flag}")
     (DATA / "stage2_baselines.json").write_text(
         json.dumps(baselines, indent=2), encoding="utf-8")
 
@@ -474,6 +516,14 @@ def main():
         "reverted": reverted,
         "verdict": verdict,
         "neg_role_drop": {s: -v["role_drop"] for s, v in verdict.items()},
+        # Stored-embedding staleness, reported so it cannot go unnoticed again.
+        # It is NOT part of any gate: a stale unified_matrix.npz is a rebuild
+        # job, not a verdict on stage 2. Large values here mean G1 comparisons
+        # against `stored_role_knn5` (the old, wrong baseline) are meaningless.
+        "stored_vs_live_role": {
+            s: round(b["stored_role_knn5"] - b["role_knn5"], 4)
+            for s, b in baselines.items()
+        },
         "args": {k: v for k, v in vars(args).items() if not isinstance(v, Path)},
         "elapsed_s": round(elapsed, 1),
     }
