@@ -162,10 +162,23 @@ def main():
     # The second is the one G2 can see: its probe reads z, and a sport whose cloud is
     # merely SHAPED like the others is still trivially decodable from where it sits.
     ap.add_argument("--w-coral", type=float, default=0.0)
-    ap.add_argument("--w-coral-centroid", type=float, default=0.0)
+    # DEFAULT 0.5 as of 2026-08-14. Measured over 6 seeds against the 0.0 arm:
+    # G2 0.7795 +/- 0.0146 -> 0.6856 +/- 0.0081, every seed improved, and the
+    # gate went 0/6 to 6/6. See docs/CORAL_CENTROID_2026-08-14.md.
+    ap.add_argument("--w-coral-centroid", type=float, default=0.5)
     # Ramp lambda from --grl-lambda TO this rather than 0 -> --grl-lambda. None keeps the
     # original schedule exactly.
-    ap.add_argument("--grl-lambda-target", type=float, default=None)
+    #
+    # DEFAULT 0.5 as of 2026-08-14, stacked on the centroid term and judged
+    # against THAT arm's spread rather than the original baseline: 0.6856 +/-
+    # 0.0081 -> 0.6540 +/- 0.0064, again 6/6 seeds improving.
+    #
+    # These two are defaults rather than flags on purpose. A keep that lives
+    # only in a --stage2-extra string in a doc is not a keep: `python
+    # train_stage2.py` with no arguments would still reproduce the un-climbed
+    # 0.7795 model, and the next person to run this file would silently start
+    # from the bottom of a hill that has already been climbed twice.
+    ap.add_argument("--grl-lambda-target", type=float, default=0.5)
     ap.add_argument("--warmup", type=int, default=5)
     ap.add_argument("--rank-floor", type=float, default=12.0)
     ap.add_argument("--revert-threshold", type=float, default=0.02)
@@ -440,6 +453,34 @@ def main():
                 "enc_states": enc_states},
                UCACHE / "unified_stage2_best.pt")
     (DATA / "stage2_history.json").write_text(json.dumps(history, indent=2), encoding="utf-8")
+    # The gated quantities as a structured artifact, not just as a printed line.
+    # herdmux/gpu/metrics.py can read either, and says why it prefers this one:
+    # a stdout regex is one logging tweak away from silently parsing the wrong
+    # number, and floors have to travel WITH the headline or a change that lifts
+    # G2 while destroying one sport's role structure reads as an improvement.
+    # `role_drop` is negated on the way out for the same reason the gridiron MAE
+    # is: floors are compared higher-is-better everywhere, so a floor break
+    # always means the same thing regardless of which direction the underlying
+    # quantity improves in.
+    report = {
+        "best_g2": best_g2,
+        "best_epoch": best_epoch,
+        "best_rank": best_rank,
+        "rank_floor": args.rank_floor,
+        "g2_bar": None,
+        "g1_ok": None,
+        "g2_pass": None,
+        "shippable": None,
+        "reverted": reverted,
+        "verdict": verdict,
+        "neg_role_drop": {s: -v["role_drop"] for s, v in verdict.items()},
+        "args": {k: v for k, v in vars(args).items() if not isinstance(v, Path)},
+        "elapsed_s": round(elapsed, 1),
+    }
+    if best_g1 is not None:
+        report.update({"g2_bar": float(_majority + 0.10), "g1_ok": bool(g1_ok),
+                       "g2_pass": bool(g2_pass), "shippable": bool(g1_ok and g2_pass)})
+    (DATA / "stage2_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"\nDone {args.epochs} epochs in {elapsed:.0f}s. best_epoch={best_epoch} "
           f"best_g2={best_g2:.4f} reverted={reverted}")
     print(f"saved unified_stage2_best.pt + stage2_history.json")
