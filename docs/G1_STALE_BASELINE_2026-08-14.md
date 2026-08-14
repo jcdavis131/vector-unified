@@ -112,6 +112,34 @@ The stored embedding is still scored as `stored_role_knn5`, still printed with a
 real problem. It is just not a verdict on stage 2, and one number could not
 carry both.
 
+## The repo already knew this, for a different quantity
+
+`eval_unified.py:92-108` states the rule in capitals:
+
+> *"THE ONE PLACE THIS RULE LIVES. Seven modules call `encode_all()`, which uses
+> the FROZEN cached per-sport outputs in `M["E"]`. That is correct for Stage 1
+> and WRONG for Stage 2, whose premise is that the encoders were unfrozen and
+> drifted."*
+
+That was written about **z** — the trunk output — and fixed by centralising it
+in `load_and_encode()`. The identical defect in **e_s**, the per-sport encoder
+baseline, was never covered by it. Three call sites, three different answers:
+
+| file | how it builds `e_s` | correct? |
+|---|---|---|
+| `stage2_eval.py:62` | `live[s].encode_full_numpy(device)` | yes |
+| `train_stage2.py:243` | `M["E"][s]` | **no** — fixed here |
+| `eval_unified.py:166` | `M["E"][s]` | **no** — still open |
+
+So `native_knn5_e_s` and `pos_knn5_e_s` in `eval_unified.py` carry the same
+staleness for any Stage 2 checkpoint, by the repo's own argument.
+
+**Not changed here, deliberately.** That file is the evaluation harness and the
+scale every historical number was recorded on; moving it silently would rescale
+the record rather than improve anything, which is the failure the program doc
+names. It needs its own decision and its own re-measurement. Flagged rather than
+fixed.
+
 ## What survives unchanged
 
 - **The G2 arc, 0.7795 → 0.6856 → 0.6540.** Every arm shared this same broken
