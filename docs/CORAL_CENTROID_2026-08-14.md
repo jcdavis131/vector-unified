@@ -96,13 +96,94 @@ it is a *design* question, not a tuning one.
   belongs to a compound `collapse_detector = rank>=12 AND G1 AND G3`, and *"rank
   alone over-alarms on a genuinely low-d role manifold"*.
 
+## Stacking GRL on top: a second keep
+
+`--grl-lambda-target 0.5` added to the centroid term, judged against the CORAL
+keep's own spread rather than the original baseline — one change from the new
+hill, not two from the old one.
+
+```
+seed   +centroid   +centroid+GRL   delta
+   5      0.6894          0.6590  -0.0304
+   7      0.6846          0.6585  -0.0261
+  13      0.6856          0.6595  -0.0261
+  21      0.6708          0.6429  -0.0279
+  42      0.6885          0.6511  -0.0374
+  99      0.6950          0.6532  -0.0418
+
+centroid       n=6  mean 0.6856  sd 0.0081
+centroid+GRL   n=6  mean 0.6540  sd 0.0064   -0.0316 = 3.9x the keep's sd
+```
+
+Every seed improved again, and dispersion tightened a third time
+(0.0146 -> 0.0081 -> 0.0064). The two mechanisms compound rather than compete,
+which was not obvious: CORAL pulls sport clouds together, GRL trains the trunk
+to defeat a sport probe, and they could have fought.
+
+**The whole arc:**
+
+```
+baseline        0.7795 +/- 0.0146   gate 0/6
++ centroid      0.6856 +/- 0.0081   gate 6/6    -0.0938
++ GRL 0.5       0.6540 +/- 0.0064   gate 6/6    -0.1255 total = 8.6x the original sd
+majority floor  0.6258
+```
+
+0.6540 sits **0.028 above the theoretical floor** — a perfectly sport-invariant z
+gives the probe nothing but the class prior, which is 0.6258. Most of the
+available distance has been taken.
+
+It also lands in the handoff's stated target band. `ALIENWARE_HANDOFFS.md:66`
+asks for *"sport_acc 0.6851 -> 0.64-0.65 near floor 0.6258"*, and line 37 records
+a projection of *"G2 0.642 predicted delta -0.043"*. The mechanisms it named were
+right and its predicted magnitude was close. What it had wrong was the starting
+point: it recorded 0.6851 as the current state, and the measured baseline is
+0.7795.
+
+## The one gate left, and a rule the code and the spec disagree about
+
+G1 still fails, still on gridiron alone, and — measured across all 15 runs with a
+verdict block, spanning three configurations and a G2 range of 0.6585 to 0.8009:
+
+```
+gridiron role_drop   +0.1437 .. +0.1549     (range 0.011)
+hoops    role_drop   -0.0436 .. -0.0605     (improves)
+pitch    role_drop   -0.0041 .. -0.0082     (improves)
+```
+
+**Gridiron's loss does not move with sport-invariance.** The lowest-G2 run loses
+0.1502; the highest loses 0.1455. That refutes the natural theory that invariance
+is bought out of gridiron — the regression is *invariant to the alignment
+objective*, which points instead at the other thing Stage 2 does: unfreezing the
+encoders (`--enc-lr 1e-5`) and projecting through the adapter.
+
+The discriminating run: alignment terms at zero (`--w-task 0 --w-sport 0`, no
+CORAL) with the encoders still unfrozen. If gridiron still drops ~0.147, the
+alignment objective is exonerated and the adapter path owns it.
+
+And a spec/code mismatch worth an operator's decision. The handoff asks for G1
+*"joint >= baseline 2/3"*, but the code requires all three:
+
+```python
+g1_ok = all(v["role_ok"] and v["pos_ok"] for v in verdict.values())
+```
+
+The current runs are exactly 2/3 — hoops and pitch both improve. Under the
+spec they pass; under the code they fail. The code is the stricter reading and it
+has NOT been relaxed here: loosening a gate so a result can pass is the failure
+mode this whole measurement exists to avoid, and this handoff has now been wrong
+on five separate figures.
+
 ## Reproduce
 
 ```bash
 python pipeline/seed_panel_g2.py \
     --stage2-extra="--w-coral-centroid 0.5" --compare-to 0.7795 --compare-sd 0.0146
+python pipeline/seed_panel_g2.py \
+    --stage2-extra="--w-coral-centroid 0.5 --grl-lambda-target 0.5" \
+    --compare-to 0.6856 --compare-sd 0.0081
 ```
 
-Not yet tried, and cheap now that a run is ~4 minutes per seed: `--w-coral`
-(covariance) alongside the centroid term, and `--grl-lambda-target 0.5` which the
-handoff proposes.
+Untried and cheap at ~4 min/seed: `--w-coral` (covariance) alongside the
+centroid, and pushing `--grl-lambda-target` past 0.5 to find where G2 stops
+moving or G1 starts paying.
