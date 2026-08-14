@@ -1,4 +1,4 @@
-"""Vector Unified — Stage 2 training (unfrozen encoder alignment).
+﻿"""Vector Unified — Stage 2 training (unfrozen encoder alignment).
 
 Stage 1 proved (p19) that G2 sport-invariance is structurally blocked while the
 three per-sport encoders are frozen: their native dim footprint (48/32/24) is a
@@ -258,6 +258,7 @@ def main():
     t0 = time.time()
     best_g2, best_state, best_enc, best_g1, reverted = 1.0, None, None, None, False
     best_epoch = -1
+    best_rank = None  # rank at the best-G2 epoch; reported, not used to suppress it
     history = []
     for epoch in range(args.epochs):
         model.train()
@@ -325,15 +326,39 @@ def main():
         # checkpoint exists even if G1 mildly regresses — G1 tradeoff is reported below,
         # not used to block the save). Per-sport assets are read-only, so there is nothing
         # to protect mid-run; the shippability verdict is computed post-hoc.
-        if folding and rank >= args.rank_floor and g2 < best_g2:
+        # The rank floor used to gate this save, and that made the whole gate
+        # unpassable by construction. Measured 2026-08-14, seed 7: across 25
+        # folding epochs the effective rank ran 10.1 -> 11.2 and NEVER reached
+        # the 12.0 floor, so this branch never executed. best_g2 stayed at its
+        # initial 1.0 and best_epoch at -1, no best state was saved, the verdict
+        # block never printed, and the shippability test evaluated
+        # `1.0000 <= 0.7258` -- a fail that says nothing about the model. The
+        # real best G2 that run was 0.760, missing the bar by 0.034 rather than
+        # by 0.27.
+        #
+        # audit_promotion_gates.py records the gate "passing by exactly zero,
+        # effective_rank 12.0 against rank_nondeg_floor 12". That was one
+        # observation sitting exactly on the floor; the model now lands just
+        # below it, and a floor calibrated to a single draw silently became a
+        # wall.
+        #
+        # So: track the best G2 among folding epochs unconditionally, and carry
+        # the rank alongside it. The floor is still reported and still decides
+        # shippability -- it is a collapse guard and it should stay strict --
+        # but it no longer suppresses the measurement it is supposed to qualify.
+        # Lowering the floor to make the gate pass would be tuning a bar to the
+        # result, which is the error the audit is about.
+        if folding and g2 < best_g2:
             best_g2 = g2
             best_epoch = epoch + 1
+            best_rank = rank
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
             best_enc = {sport: {k: v.detach().cpu().clone()
                                 for k, v in live[sport].model.state_dict().items()}
                         for sport in SPORTS}
             best_g1 = {s: dict(g1[s]) for s in SPORTS}
-            print(f"  -> new best (G2={g2:.4f}, rank={rank:.1f})")
+            flag = "" if rank >= args.rank_floor else f"  [rank {rank:.1f} < floor {args.rank_floor}]"
+            print(f"  -> new best (G2={g2:.4f}, rank={rank:.1f}){flag}")
 
     elapsed = time.time() - t0
     if best_state:
@@ -375,12 +400,22 @@ def main():
               f"{_majority:.4f} + 0.10; SUPERSEDED bar was {1/3+0.10:.4f}) -> "
               f"{'PASS' if g2_pass else 'FAIL'}  "
               f"G1 -> {'PASS' if g1_ok else 'FAIL'}")
-        print(f"  SHIPPABLE: {bool(g1_ok and g2_pass)} "
-              f"(G1 {'ok' if g1_ok else 'regressed'} AND G2 {'pass' if g2_pass else 'miss'})")
+        # Rank is reported as its own line rather than folded silently into the
+        # G2 save, so a run that never clears it says so instead of reporting
+        # its initial value as its best.
+        rank_ok = best_rank is not None and best_rank >= args.rank_floor
+        print(f"  rank at best epoch = "
+              f"{'n/a' if best_rank is None else format(best_rank, '.1f')} "
+              f"(non-degeneracy floor {args.rank_floor}) -> "
+              f"{'PASS' if rank_ok else 'FAIL'}")
+        print(f"  SHIPPABLE: {bool(g1_ok and g2_pass and rank_ok)} "
+              f"(G1 {'ok' if g1_ok else 'regressed'} AND G2 "
+              f"{'pass' if g2_pass else 'miss'} AND rank "
+              f"{'ok' if rank_ok else 'below floor'})")
     UCACHE.mkdir(parents=True, exist_ok=True)
     torch.save({"state": best_state or {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
                 "args": vars(args), "n_eras": M["n_eras"], "sport_dim": sport_dims,
-                "n_pos": n_pos, "best_epoch": best_epoch, "best_g2": best_g2,
+                "n_pos": n_pos, "best_epoch": best_epoch, "best_g2": best_g2, "best_rank": best_rank,
                 "reverted": reverted, "baselines": baselines, "verdict": verdict,
                 "enc_states": enc_states},
                UCACHE / "unified_stage2_best.pt")
