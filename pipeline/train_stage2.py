@@ -161,7 +161,15 @@ def main():
     #   --w-coral-centroid   1st moment: pull per-sport centroids together (on z)
     # The second is the one G2 can see: its probe reads z, and a sport whose cloud is
     # merely SHAPED like the others is still trivially decodable from where it sits.
-    ap.add_argument("--w-coral", type=float, default=0.0)
+    # UNDER TEST 2026-08-14. The centroid term (1st moment) is a measured keep;
+    # this is the 2nd moment, and it acts on raw h rather than z, so the two are
+    # not redundant -- matching where the clouds SIT is a different operation
+    # from matching their SHAPE. The G2 probe reads z and can only see the
+    # first directly, but a covariance mismatch in h is still a sport cue the
+    # trunk can propagate. Committed as a default rather than passed as a flag
+    # so that a DISCARD verdict's `git reset --hard HEAD~1` removes exactly the
+    # change that was tested; see herdmux gpu/HILLCLIMB.md.
+    ap.add_argument("--w-coral", type=float, default=0.5)
     # DEFAULT 0.5 as of 2026-08-14. Measured over 6 seeds against the 0.0 arm:
     # G2 0.7795 +/- 0.0146 -> 0.6856 +/- 0.0081, every seed improved, and the
     # gate went 0/6 to 6/6. See docs/CORAL_CENTROID_2026-08-14.md.
