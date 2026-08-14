@@ -48,6 +48,14 @@ PAT = {
     "rank_at_best": re.compile(r"rank at best epoch =\s*([0-9.]+)"),
 }
 
+# The per-sport verdict block, printed by train_stage2.py:398-402 as
+#   hoops     role_drop=-0.0598  pos_drop=+0.0132  [OK]
+# G2 is the headline, but G1 is what actually gates SHIPPABLE, and a variant can
+# move G2 while quietly paying for it in one sport's role structure. Reading the
+# mean alone would hide that, so every arm now reports both.
+VERDICT = re.compile(r"^\s+(\w+)\s+role_drop=([+-][0-9.]+)\s+pos_drop=([+-][0-9.]+)",
+                     re.MULTILINE)
+
 
 def run_seed(seed: int, epochs1: int, epochs2: int, extra: str = "") -> dict:
     cmd = [
@@ -69,6 +77,12 @@ def run_seed(seed: int, epochs1: int, epochs2: int, extra: str = "") -> dict:
     for k, rx in PAT.items():
         hits = rx.findall(out)
         got[k] = hits[-1] if hits else None
+    # Last block only: a re-run inside the same container would print two.
+    hits = VERDICT.findall(out)
+    seen: dict[str, tuple[float, float]] = {}
+    for sport, role, pos in hits:
+        seen[sport] = (float(role), float(pos))
+    got["verdict"] = seen
     return got
 
 
@@ -118,6 +132,22 @@ def main() -> int:
         m2, sd2 = statistics.fmean(rk), (statistics.stdev(rk) if len(rk) > 1 else 0.0)
         print(f"rank@best    n={len(rk)}  mean {m2:.2f}  sd {sd2:.2f}  "
               f"floor 12.0 -> {sum(1 for v in rk if v >= 12.0)}/{len(rk)} clear it")
+
+    # G1, per sport. Positive role_drop is a regression; the revert threshold is
+    # 0.02, so a sport whose mean sits above that is the one failing the gate.
+    sports = sorted({s for r in rows for s in (r.get("verdict") or {})})
+    if sports:
+        print(f"\n{'sport':<10} {'role_drop':>18} {'pos_drop':>18}   G1")
+        for sport in sports:
+            rd = [r["verdict"][sport][0] for r in rows if sport in (r.get("verdict") or {})]
+            pd = [r["verdict"][sport][1] for r in rows if sport in (r.get("verdict") or {})]
+            rm = statistics.fmean(rd)
+            rs = statistics.stdev(rd) if len(rd) > 1 else 0.0
+            pm = statistics.fmean(pd)
+            ps = statistics.stdev(pd) if len(pd) > 1 else 0.0
+            ok = sum(1 for v, w in zip(rd, pd) if v <= 0.02 and w <= 0.02)
+            print(f"{sport:<10} {rm:>+9.4f} +/- {rs:.4f} {pm:>+9.4f} +/- {ps:.4f}   "
+                  f"{ok}/{len(rd)} pass")
 
     # Judged against the BASELINE's own spread, not this arm's. A variant that
     # happens to be tightly clustered would otherwise look decisive on its own
