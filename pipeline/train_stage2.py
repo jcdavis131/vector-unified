@@ -14,7 +14,11 @@ Differences from train_unified.py (Stage 1):
   * Per-epoch G1 ENCODER non-regression gate: kNN-5 role+position on the live e_s
     per sport vs Stage 0 (frozen) baselines. Any sport dropping > --revert-threshold
     (0.02) triggers auto-revert to the last-good checkpoint and stops.
-  * Checkpoint by lowest G2 sport-acc subject to G1 holding + rank >= floor.
+  * Checkpoint by lowest G2 sport-acc among folding epochs. The rank floor is
+    reported and still decides shippability, but it no longer gates the SAVE --
+    gating the save on it made the whole thing unpassable, because folding rank
+    runs 10.1-11.2 and never reaches the 12.0 floor, so best_g2 stayed at its
+    initial 1.0 and the verdict evaluated 1.0000 <= 0.7258 forever.
   * Per-sport assets stay READ-ONLY: we load state_dicts, never write back.
 """
 
