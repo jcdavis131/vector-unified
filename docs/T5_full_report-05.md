@@ -8,7 +8,7 @@
 
 Open app → map 20,719 void #080A0F → drag → Jordan → tap → Player page embedding pos 64-d L2 CORAL+GRL + Popular tap-to-explore single-select visible dark. Proves Knowledge free.
 
-→ free arcade 5 games free forever → map drag → Jordan 97-98 trace → Popular single-select → Play Today's type-or-tap latest 2025-26 only → hints streaks challenge-a-friend same-link-same-stars → one-tap share confetti #D8452A.
+→ free arcade 5 games free — open access → map drag → Jordan 97-98 trace → Popular single-select → Play Today's type-or-tap latest 2025-26 only → hints streaks challenge-a-friend same-link-same-stars → one-tap share confetti #D8452A.
 
 Same daily: `dailySeed YYYYMMDD UTC`, `LCG (seed*1103515245+12345)&0x7fffffff`, `idx 3970`. Triple [3970,14390,4582] via b=lcg(a) c=lcg(b). PWA v67 74426B HIT CORE only offline 13k DENY vector JSON network-only. Week Warrior 7-dot Solo1 Triple3 Full5 same seed.
 

@@ -1,0 +1,90 @@
+
+================================================================================
+ Unified Chimera MTNN — 17 Towers 4 POVs DAG (v7.1-4pov)
+ LCG 20260813→189831298 idx3820 triple[11205,19448,14209] same-link ?daily=20260813&n=1/3/5
+ Entity 20719 honest hoops12966 gridiron5323 pitch2430 + equities 4831x64-d 500t 14400 synthetic
+================================================================================
+
+ [Feature Store v1] pipeline/data/unified_matrix.npz
+        |  READY=True  n=20719 sport_dim [64,32,24]
+        |  fallback: ctx.blobs child_process.spawn synthetic if missing
+        |  equities: train_matrix.npz 14400x118 -> 64-d gated adapter 4831 subset
+        v
+ +------------------+    +------------------+    +------------------+
+ |  Sport Adapters  |    |  Sport Token 8d  |    |   Era Emb 8d 30 eras |
+ |  64->48 32->48   |    |  Embed(3,8)      |    |   Embed(30,8) min1996 |
+ |  24->48 no shared|    |  LCG daily chain |    |   era14 top existing |
+ +--------+---------+    +--------+---------+    +--------+---------+
+          \                 |                  /
+           \                |                 /
+            \               |                /
+             v              v               v
+              [ UnifiedTrunk Concat ]
+               Linear(64->128) GELU LN Drop0.2 Linear(128->64) L2norm
+               z ∈ R^64 L2norm sport-blind GRL λ0.3→0.5 CORAL 0.5 SupCon τ0.07 VICReg
+                            |
+                            |
+           +----------------+----------------+----------------+----------------+
+           |                |                |                |                |
+     POV1 2 towers    POV2 5 towers    POV3 5 towers    POV4 5 towers    (total 17)
+           |                |                |                |                |
+  t00 wins+salary   t02 minutes_sec  t07 market_size  t12 closer/explor
+  t01 lux+foresight t03 foul_risk    t08 narrative_rook t13 playoff_min_sec
+                    t04 injury_load  t09 comeback/rival t14 injury_flags
+                    t05 fit_cosine   t10 social_alpha   t15 props_beat
+                    t06 playoff_boost t11 wins->story   t16 stack_corr
+           |                |                |                |
+           +----------------+----------------+----------------+
+                            |
+                     [ Fusion Concat 272]
+                      17x16=272 -> Linear(272->128) GELU LN Drop0.2 Linear(128->64) L2
+                      z_fused ∈ R^64 final chimera embedding
+                            |
+                +-----------+-----------+
+                |  SHAP Glass-Box 17x   |
+                |  dim8 0.2923 top MUST |
+                |  dim18 0.1862 def vers|
+                |  dim33 0.1417 team ctx|
+                |  era14 0.0895 top4    |
+                +-----------+-----------+
+                            |
+              +-------------+-------------+
+              | Gates Honest (paper-only) |
+              | IC 0.041 >0.03 PASS (front-runner) |
+              | Sharpe 1.34 >1.2 PASS (front-runner) |
+              | win% 58.7% >55% DFS proxy 400 slates 23-25 |
+              | DD 8.4% <12% kill-switch Kelly0.25 1% max |
+              | Weekly P&L cardboard 8wks paper-only not advice |
+              +---------------------------+
+                            |
+                   [ Outputs ]
+   models/unified_17towers.json (SSOT)
+   povs/pov1_owner_operator.json
+   povs/pov2_player_fit.json
+   povs/pov3_brand_story.json
+   povs/pov4_dfs_optimizer.json
+   assets/dag/dag_ascii.txt (this file)
+   checkpoint.json + timeline.jsonl 7-field triple-write
+   bundles/ultra/runs/unified-chimera-mtnn/timeline.jsonl
+   dottie/pipeline/runs/...  (7 dirs total)
+   dottie/bundles/ultra/runs/... 
+   apps/ava-factory/bundles/ultra/runs/...
+   dottie/apps/ava-factory/bundles/ultra/runs/...
+   dottie/apps/ava-factory/dottie/pipeline/runs/...
+   apps/ava-factory/dottie/pipeline/runs/...
+   goals/.../hidden_files/brief-auto-exec-checkpoints/unified-chimera-mtnn
+
+  Losses: 2.0*task +0.5*CORAL_cov +0.5*centroid +1.0*SupCon +0.5*GRL +var+cov
+  Optim AdamW wd1e-4 CPU viable torch auto cuda else cpu
+  Pause/Resume: LangGraph checkpoint-manager.js triple-write 7-field
+
+  Fonts: sans-serif 400/600 only pro designer vibe hero no Mono
+  No free-forever wording (removed per policy)
+  Zero-deps true stdlib except torch auto per manifest
+  Production-grade extensible pause/resume
+
+  Torres Topology: ResidualTower cat([x·m,m])→fc1(2*d_in→hidden) LN GELU Drop0.2 fc2(hidden→d_out) +skip(2*d_in→d_out) LN L2norm
+  GatedFusion: attn(tower_stack) softmax * sigmoid(gate) -> weighted mix + ctx_emb -> fuse Linear GELU LN Drop Linear L2
+  TransformerFusion design optional: 128d 4-head self-attn CLS→64-d (ablation-gated, shipped uses MLP trunk)
+
+================================================================================

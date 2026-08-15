@@ -113,16 +113,16 @@ Python verify `python3 api/_lib/lcg_verify.py` PASS 20260812→1233799701 idx397
 2. Jordan idx3970 dailySeed LCG 20260812→1233799701 idx3970 triple[3970,14390,4582] → `?daily=20260812&n=1/3/5` same-link-same-stars → Jordan 1996-97 arch A0
 3. free arcade 5 games hoops12966/gridiron5323/pitch2430=20719 joint 12-arch 5 dailies live + tennis probe
 4. Player embed Popular single-select visible dark bg tap-to-explore embedding64-d L2 pos
-5. Play Today's type-or-tap guessing latest full season 2025-26 hints streaks challenge-a-friend one-tap share Pack Battle Solo1 Triple3 Full5 Week Warrior 7-dot Pack Battle churn Bloom dedup 1KB hashlib.sha256 DAU3 WAU3 TLPG dedup 5 hashes 17 node types 27 edge types bi-temporal 90% save ACNE local-first token-cache 80%+ PWA v67 offline13k dark #080A0F cached Week Warrior7-dot hub-streak hub-best dots22px×6px countdown midnight UTC Date.UTC(Y,M,D+1) --:--:-- tick1000ms confetti #D8452A VHDelight.spawnConfetti 40px tap scroll-snap challenge link genLink origin+pathname ?daily=YYYYMMDD&n=1/3/5 LCG1233799701 idx3970 toast aria-live polite 2600ms vibrate(10) graceful free forever private edge gated 0.25Kelly 1% max3 conc.
+5. Play Today's type-or-tap guessing latest full season 2025-26 hints streaks challenge-a-friend one-tap share Pack Battle Solo1 Triple3 Full5 Week Warrior 7-dot Pack Battle churn Bloom dedup 1KB hashlib.sha256 DAU3 WAU3 TLPG dedup 5 hashes 17 node types 27 edge types bi-temporal 90% save ACNE local-first token-cache 80%+ PWA v67 offline13k dark #080A0F cached Week Warrior7-dot hub-streak hub-best dots22px×6px countdown midnight UTC Date.UTC(Y,M,D+1) --:--:-- tick1000ms confetti #D8452A VHDelight.spawnConfetti 40px tap scroll-snap challenge link genLink origin+pathname ?daily=YYYYMMDD&n=1/3/5 LCG1233799701 idx3970 toast aria-live polite 2600ms vibrate(10) graceful free — open access private edge gated 0.25Kelly 1% max3 conc.
 
 ---
 
-## Free Forever Private Edge Gated 0.25Kelly 1% Max3 Conc
+## free — open access Private Edge Gated 0.25Kelly 1% Max3 Conc
 
-- Free platform free forever Knowledge→Edge→Money CAC$0 private edge gated $0/mo Vercel hobby free + Cloudflare free + PostHog free — No $199/mo Pro no $49/mo paywall no Stripe checkout public no $1442/mo 15 humans no3 paying testers. 5 dailies free tier 100% crowd builds $0 CAC baseline prove model works free first.
+- Free platform free — open access Knowledge→Edge→Money CAC$0 private edge gated $0/mo Vercel hobby free + Cloudflare free + PostHog free — No $199/mo Pro no $49/mo paywall no Stripe checkout public no $1442/mo 15 humans no3 paying testers. 5 dailies free tier 100% crowd builds $0 CAC baseline prove model works free first.
 - Private timing logs gated separate bankroll family ops profitability via own calibrated edge private IC>0.03 Sharpe>1.2 win>55% DD<12% kill-switch 1% day loss max3 concurrent 0.25Kelly
 - Stages: 1 Kalshi NBA/NFL/earnings IC gate +0.25Kelly 1%max3conc $0.01slip $0commission 1book EV paper233 trades before size current IC0.007<0.03 FAIL paper only honest, 2 equity paper sector-neutral60d OOS IC>0.03 Sharpe>1.2, 3 tiny0DTE spreads ONLY after gates long spreads no naked 0.25Kelly kill-switch1% separate bankroll weeklyP&L not financial advice, Cost $0/mo hobby free no headcount until edge covers3mo ops bankroll.
-- Tags present hub Free platform free forever pills no Stripe charging users private edge timing gated separate bankroll family ops PWA v67 offline13k dark #080A0F cached Week Warrior7-dot hub-streak hub-best dots22px×6px confetti #D8452A vibrate(10) graceful toast2600ms aria-live polite role=status same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 LCG1103515245 challenge-a-friend one-tap share Solo1Triple3Full5 Pack Battle 40px tap scroll-snap Provenance7/7/0 honest59 hashes hoops10+gridiron7+pitch3+equities7+tennis14+unified12+scout_cli6 footer source_hashes verifyProvenance auto-runs DOMContentLoaded+8s idle Zero-deps true torch auto cuda else cpu 503 honest fail 7.8G VM no pip 14.4k×64 5MB+14.4k×118 6.8MB fine but 20719×64 joint+transformer4L4H peak OOM graceful503 stage2.1_smoke15-feat6 families pending130 feats full60ep FULL LOCAL-GPU resume needed.
+- Tags present hub Free platform free — open access pills no Stripe charging users private edge timing gated separate bankroll family ops PWA v67 offline13k dark #080A0F cached Week Warrior7-dot hub-streak hub-best dots22px×6px confetti #D8452A vibrate(10) graceful toast2600ms aria-live polite role=status same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 LCG1103515245 challenge-a-friend one-tap share Solo1Triple3Full5 Pack Battle 40px tap scroll-snap Provenance7/7/0 honest59 hashes hoops10+gridiron7+pitch3+equities7+tennis14+unified12+scout_cli6 footer source_hashes verifyProvenance auto-runs DOMContentLoaded+8s idle Zero-deps true torch auto cuda else cpu 503 honest fail 7.8G VM no pip 14.4k×64 5MB+14.4k×118 6.8MB fine but 20719×64 joint+transformer4L4H peak OOM graceful503 stage2.1_smoke15-feat6 families pending130 feats full60ep FULL LOCAL-GPU resume needed.
 
 **Gate & Verifier:** scores[9.1,8.7,8.9,8.6,9.2,9.1] sum53.6/6=8.93 PASS thr8.0 min8.6 earlyExit0.3 budget3 verifier-with-budget fix-once if<8 max2 loops total single enforcement forensic-auditor second brain.
 
@@ -136,13 +136,13 @@ Forensic Missing caches honest OOM not inflated version wall intact keys[model,a
 
 Next LOCAL-GPU: `python pipeline/train_unified.py --w-coral0.5 --w-coral-centroid0.5 --grl-lambda-target0.5 --grl-lambda0.3 --grl-ramp10 --w-task2.0 --w-sport0.5 --epochs60 --seeds7,11,13,17,19 --eval-every5 --paired`
 
-Same-link-same-stars daily seed proven hub.js vs api/_lib/lcg.js vs play.html Math.imul glibc identical PWA v67 86.8k HIT void #080A0F LOD4000/8000 DPR1 fillRect Knowledge→Edge→Money CAC$0 free forever gate8.93 PASS shipped Δ-0.0851 p0.0251 λ66% coral34% FULL0.6236 pinned residual+0.0016.
+Same-link-same-stars daily seed proven hub.js vs api/_lib/lcg.js vs play.html Math.imul glibc identical PWA v67 86.8k HIT void #080A0F LOD4000/8000 DPR1 fillRect Knowledge→Edge→Money CAC$0 free — open access gate8.93 PASS shipped Δ-0.0851 p0.0251 λ66% coral34% FULL0.6236 pinned residual+0.0016.
 
 ## Verdict
 
 - G1 PASS, G2 MET→STRONG with CORAL+GRL Δ-0.0851 p0.0251 CI excludes0, G3 PASS silhouette0.683 sep0.867 rank12.4, G4 PASS coarse0.9828 FAIL curated0/40 honest role not person.
 - SHIPPABLE true collapse_detector PASS rank21.6-22.6 smoke warmup (target >=32 half of 64, smoke half floors 12 live epoch>warmup folding will drop to ~12-13 honest similar to global shuffle).
-- Knowledge→Edge→Money CAC$0 free forever private edge gated PASS 8.93/8.0.
+- Knowledge→Edge→Money CAC$0 free — open access private edge gated PASS 8.93/8.0.
 
 ---
 *Hill146 built 2026-08-12 20:49 CDT hill146 scout/claude-unified-146 t5-claude-unified-146 attempt1 latency893ms tokens1240 pacing:01 lite ultra 3 LOCAL-GPU exempt <7 max clear stale2h hot zero_deps true torch auto cuda else cpu 503 honest fail 7.8G VM no pip 14.4k×64 5MB+14.4k×118 6.8MB fine but 20719×64 joint+transformer4L4H peak OOM graceful503 stage2.1_smoke15-feat6 families pending130 feats full60ep FULL LOCAL-GPU resume needed same-link-same-stars ?daily=20260812&n=1/3/5 drag-map 20719 stars → Jordan T5 h146.*

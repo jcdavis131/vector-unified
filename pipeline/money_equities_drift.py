@@ -9,7 +9,7 @@ features without peeking forward?
 Gates private paper-only:
   IC > 0.03 Sharpe > 1.2 win > 55% DD < 12%
   Kelly 0.25 1% max kill-switch separate bankroll NOT advice
-  free forever games stay free, payments PARKED
+  free — open access games stay free, payments PARKED
 
 Zero-deps: stdlib only. Torch optional fallback. Extensible via:
   - SectorMap provider (24→28 sectors versioned)

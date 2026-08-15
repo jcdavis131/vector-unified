@@ -402,7 +402,7 @@ If <8.0 fix once (seed order before model line50 vs line56, or w-task2.5 if G1 d
 
 ## 9. Free Platform × Private Edge — H132 Packaging
 
-**Free forever:** no $199 owner desk, no $49 props, no API, no $1,442/mo 15 humans, no 3 testers, no Stripe. Cost $0/mo Vercel hobby + Cloudflare + PostHog 74426B HIT async 2026-08-06. Same models 20,719 joint stars `void #080A0F` 7-dot confetti `#D8452A` 13k shell offline. LCG deterministic same-link-same-stars proves daily fairness — onboarding `arxiviq.com/starter` SOTA starter Dottie live with G2 contrastive — no billing, no onboarding tricks.
+**free — open access:** no $199 owner desk, no $49 props, no API, no $1,442/mo 15 humans, no 3 testers, no Stripe. Cost $0/mo Vercel hobby + Cloudflare + PostHog 74426B HIT async 2026-08-06. Same models 20,719 joint stars `void #080A0F` 7-dot confetti `#D8452A` 13k shell offline. LCG deterministic same-link-same-stars proves daily fairness — onboarding `arxiviq.com/starter` SOTA starter Dottie live with G2 contrastive — no billing, no onboarding tricks.
 
 **If can't tell MJ 96-97 from role player everyday, can't tell earnings beat.** 12,966 hoops / 4,831 FYs / 633 WC + 5323 gridiron / 2430 pitch — humans play free, we see weak spots instantly. Distinct insights = role geometry + gap closure private.
 

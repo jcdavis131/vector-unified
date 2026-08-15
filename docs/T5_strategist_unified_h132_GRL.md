@@ -259,7 +259,7 @@ If <8.0 fix once (seed order before model line50 vs line56, or w-task2.5 if G1 d
 
 ## 7. Free Platform × Private Edge — Knowledge→Edge→Money
 
-Free forever no $199 owner desk no $49 props no API no $1,442/mo 15 humans no 3 testers no Stripe. Cost $0/mo Vercel hobby + Cloudflare + PostHog. Same models 20,719 joint stars 74426B HIT void #080A0F 7-dot confetti #D8452A 13k shell offline. LCG deterministic same-link-same-stars proves daily fairness.
+free — open access no $199 owner desk no $49 props no API no $1,442/mo 15 humans no 3 testers no Stripe. Cost $0/mo Vercel hobby + Cloudflare + PostHog. Same models 20,719 joint stars 74426B HIT void #080A0F 7-dot confetti #D8452A 13k shell offline. LCG deterministic same-link-same-stars proves daily fairness.
 
 If can't tell MJ 96-97 from role player everyday, can't tell earnings beat. 12,966 hoops / 4,831 FYs / 633 WC — humans play free, we see weak spots instantly. Distinct insights = role geometry + gap closure private.
 

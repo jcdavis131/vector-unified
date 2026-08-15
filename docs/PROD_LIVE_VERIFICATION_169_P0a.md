@@ -222,7 +222,7 @@ Verification economics: `budget3 threshold8.0 earlyExit0.3 single-point verifier
 
 **Flags:**
 
-- `free_forever: true` — games free forever, no paywall
+- `free_forever: true` — games free — open access, no paywall
 - `private_secure: true` — dev-only localhost 127.0.0.1:8787, bearer timingSafeEqual, HMAC 90s
 - `dev_only: true` — never expose publicly per AGENTS.md dev-only shim rule
 - `zero_deps: true` — stdlib only, allow acne:./src, torch auto cuda else cpu honest fallback

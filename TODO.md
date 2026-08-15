@@ -38,3 +38,5 @@ _Last sync: 2026-08-13 21:12 CT — zero-deps true stdlib only_
 - Zero-deps true — stdlib only, no pip/torch, ACNE optional local `dottie/rl/` canonical
 - LCG daily: seed=YYYYMMDD Math.imul(seed,1103515245)+12345>>>0 &0x7fffffff — 20260813→189831298 idx3820 same-link-same-stars triple[11205,19448,14209] ?daily=20260813&n=1/3/5
 - House rule v5 Prime: every cron / lane logs even no-change → 7-field timeline.jsonl nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass
+
+<!-- auto-exec sync 2026-08-14T18:04Z evening-wrap-aug-14-2026 from SSOT active-tasks.md 15 active 7 DONE 6 open -->

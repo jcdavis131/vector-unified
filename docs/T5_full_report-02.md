@@ -1,10 +1,10 @@
-# T5 :01 Lite — Synthesist+Builder — Full Chain Free Forever
+# T5 :01 Lite — Synthesist+Builder — Full Chain free — open access
 
 **Date:** 2026-08-12 18:27 CDT / `20260812` LCG `1233799701` idx `3970` triple `[3970,14390,4582]` 
 **PWA:** v67 74426B HIT void #080A0F offline13k 20 CORE DENY9 Week Warrior 7-dot
 **Chain:** drag-map→Jordan→free arcade 5 games→player embed Popular single-select→Play Today's 2025-26 hints streaks challenge-a-friend `?daily=20260812&n=1/3/5` LCG idx3970
 **Zero-deps:** true `{"zero_deps":true,"allow":"acne:./src"}` torch auto cuda else cpu no pip
-**Verdict:** Knowledge→Edge→Money $0 CAC free forever 100% private edge gated PASS 8.9/8.0
+**Verdict:** Knowledge→Edge→Money $0 CAC free — open access 100% private edge gated PASS 8.9/8.0
 
 ## TL;DR Everyday Chain
 
@@ -135,7 +135,7 @@ Profitability via own calibrated edge private — not paywall:
 2. Stage2 equity paper sector-neutral only no size until 60d OOS IC>0.03 Sharpe>1.2 win>55% DD<12%
 3. Stage3 tiny 0DTE spreads ONLY after gates long spreads no naked 0.25 Kelly kill-switch 1% day loss separate bankroll weekly P&L not financial advice
 
-Cost $0/mo Vercel hobby free + Cloudflare free + PostHog free. No headcount until edge covers 3mo family ops bankroll $2k MRR? NOT — free forever covers 3mo edge.
+Cost $0/mo Vercel hobby free + Cloudflare free + PostHog free. No headcount until edge covers 3mo family ops bankroll $2k MRR? NOT — free — open access covers 3mo edge.
 
 Risk guardrails: 1% day kill-switch, separate bankroll, no naked options, weekly P&L email, not financial advice, honest fail if IC<0.01.
 

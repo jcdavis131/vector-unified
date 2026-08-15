@@ -1,11 +1,11 @@
-# T5 h132 :01 Lite — Builder-2 + Synthesist Full Chain Free Forever
+# T5 h132 :01 Lite — Builder-2 + Synthesist Full Chain free — open access
 
 **Date:** 2026-08-12 19:47 CDT / `20260812` LCG `1233799701` idx `3970` triple `[3970,14390,4582]` five `[3970,14390,4582,13307,8695]`
 **Hill:** 132 epic builder-2 + synthesist DAG7 4.2K
 **PWA:** v67 86800B HIT (86.8k HIT) 118311B raw inline self-contained <100k gz void #080A0F LOD4000/8000 DPR1 fillRect
 **Chain:** drag-map 20,719 void #080A0F → Jordan idx3970 → free arcade 5 games Solo1/Triple3/Full5 Week Warrior 7-dot Pack Battle churn Bloom dedup 1KB hashlib.sha256
 **Zero-deps:** true `{"zero_deps":true,"allow":"acne:./src"}` torch auto cuda else cpu stdlib only no pip
-**Verdict:** Knowledge→Edge→Money CAC$0 free forever private edge gated PASS 8.93/8.0 Δ-0.0851 p0.0251 λ66% coral34% FULL0.6236 residual+0.0016 pinned
+**Verdict:** Knowledge→Edge→Money CAC$0 free — open access private edge gated PASS 8.93/8.0 Δ-0.0851 p0.0251 λ66% coral34% FULL0.6236 residual+0.0016 pinned
 
 ## Artifacts Gate — vector-hub/index.html 118k inline self-contained <100k no external fetch PWA v67 86.8k HIT void #080A0F LOD4000/8000 DPR1 fillRect
 
@@ -32,7 +32,7 @@ Open / → hero-void drag-map 20,719 stars #080A0F LOD4000/8000 DPR1 fillRect 84
 → Week Warrior 7-dot hub-streak hub-best localStorage dots ●●●○○○○ 22px×6px countdown midnight UTC Date.UTC(Y,M,D+1) --:--:-- tick1000ms
 → Pack Battle Solo1 Triple3 Full5 Copy daily link toast aria-live polite 2600ms vibrate(10) graceful confetti #D8452A VHDelight.spawnConfetti 40px tap scroll-snap challenge link genLink origin+pathname ?daily=YYYYMMDD&n=1/3/5 LCG1233799701 idx3970
 → Bloom dedup churn 1KB hashlib.sha256 DAU3 WAU3 TLPG dedup 5 hashes 17 node types 27 edge types bi-temporal 90% save ACNE local-first token-cache 80%+
-→ Free forever Knowledge→Edge→Money CAC$0 private edge gated
+→ free — open access Knowledge→Edge→Money CAC$0 private edge gated
 ```
 
 ## LCG Identical — hub.js vs api/_lib/lcg.js vs play.html vs Python PASS
@@ -68,13 +68,13 @@ Hoops v6 192-d smoke MAE0.2313±0.0076 RMSE0.3262 R2 0.8934 vs SOTA0.2085 FAIL n
 
 Equities 14.4k×118 6.79MB train_matrix 14400×64 3.7MB embedding CQS0.7017→0.809 epoch0 IC0.007 Sharpe? would-beat but gate IC>0.01 AND Sharpe>1.0 fail honest paper only
 
-## Gate & Free Forever — 8.93 PASS thr8.0 min8.6 Budget2 Loops Single Enforce Knowledge→Edge→Money CAC$0 private edge gated Pacing :01 triple-write
+## Gate & free — open access — 8.93 PASS thr8.0 min8.6 Budget2 Loops Single Enforce Knowledge→Edge→Money CAC$0 private edge gated Pacing :01 triple-write
 
 Gate calc scores[9.1,8.7,8.9,8.6,9.2,9.1] sum53.6/6=8.93 PASS thr8.0 min8.6 earlyExit0.3 budget3 verifier-with-budget fix-once if<8 max2 loops total single enforcement forensic-auditor second brain
 
 Papers Zep9.1 TLPG 17node 27edge 90% save KaLM9.3 MTEB72.32 Bloom9.2 m8192 k7 SupCon9.0 τ0.07 sep0.867 CORAL8.6 λ0.3→0.5 Δ+0.0593 target0.64 honest floor CLS+RoPE8.9 19tokens 192/6=32 VICReg9.2
 
-Free Platform Free Forever Knowledge→Edge→Money CAC$0 private edge gated $0/mo Vercel hobby free + Cloudflare free + PostHog free
+Free Platform free — open access Knowledge→Edge→Money CAC$0 private edge gated $0/mo Vercel hobby free + Cloudflare free + PostHog free
 
 - No $199/mo Pro no $49/mo paywall no Stripe checkout public no $1442/mo 15 humans no3 paying testers
 - 5 dailies free tier 100% crowd builds $0 CAC baseline prove model works free first
@@ -82,7 +82,7 @@ Free Platform Free Forever Knowledge→Edge→Money CAC$0 private edge gated $0/
 - Stages:1 Kalshi NBA/NFL/earnings IC gate +0.25Kelly 1%max3conc $0.01slip $0commission 1book EV paper233 trades before size current IC0.007<0.03 FAIL paper only honest,2 equity paper sector-neutral60d OOS IC>0.03 Sharpe>1.2,3 tiny0DTE spreads ONLY after gates long spreads no naked 0.25Kelly kill-switch1% separate bankroll weeklyP&L not financial advice
 - Cost $0/mo hobby free no headcount until edge covers3mo ops bankroll
 
-Tags present hub Free platform free forever pills no Stripe charging users private edge timing gated separate bankroll family ops PWA v67 offline13k dark #080A0F cached Week Warrior7-dot hub-streak hub-best dots22px×6px confetti #D8452A vibrate(10) graceful toast2600ms aria-live polite role=status same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 LCG1103515245 challenge-a-friend one-tap share Solo1Triple3Full5 Pack Battle 40px tap scroll-snap Provenance7/7/0 honest59 hashes hoops10+gridiron7+pitch3+equities7+tennis14+unified12+scout_cli6 footer source_hashes verifyProvenance auto-runs DOMContentLoaded+8s idle Zero-deps true torch auto cuda else cpu 503 honest fail 7.8G VM no pip 14.4k×64 5MB+14.4k×118 6.8MB fine but 20719×64 joint+transformer4L4H peak OOM graceful503 stage2.1_smoke15-feat6 families pending130 feats full60ep FULL LOCAL-GPU resume needed
+Tags present hub Free platform free — open access pills no Stripe charging users private edge timing gated separate bankroll family ops PWA v67 offline13k dark #080A0F cached Week Warrior7-dot hub-streak hub-best dots22px×6px confetti #D8452A vibrate(10) graceful toast2600ms aria-live polite role=status same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 LCG1103515245 challenge-a-friend one-tap share Solo1Triple3Full5 Pack Battle 40px tap scroll-snap Provenance7/7/0 honest59 hashes hoops10+gridiron7+pitch3+equities7+tennis14+unified12+scout_cli6 footer source_hashes verifyProvenance auto-runs DOMContentLoaded+8s idle Zero-deps true torch auto cuda else cpu 503 honest fail 7.8G VM no pip 14.4k×64 5MB+14.4k×118 6.8MB fine but 20719×64 joint+transformer4L4H peak OOM graceful503 stage2.1_smoke15-feat6 families pending130 feats full60ep FULL LOCAL-GPU resume needed
 
 Pacing :01 lite ultra PacingFilter max3/4 conf0.82 faster hillclimb_backoff all-lanes-busy-guard.js1653B :05 faster :01 ultra3 LOCAL-GPU exempt<7 max clear stale2h hot non-GPU max5 exempt3 LOCAL-GPU total9 triple-write 7-field mandatory nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass Loc1 bundles/ultra/runs/dag-h132/timeline.jsonl attempt1 latency893 tokens1240 n1-intent-decompose PASS NONE Loc2 dottie/bundles/ultra/runs/dag-h132/timeline.jsonl same Loc3 apps/ava-factory/bundles/ultra/runs/dag-h132/timeline.jsonl same even no-change logged checkpoint-manager mandatory Mission Log workspace/.scout/missions/<id>/timeline.jsonl pause/resume days later Board Poll3m self_improvement_board_poll.json scans active-tasks.md+7COORDINATION.md self-improve/blocker/fix/lesson/stuck/failed diffs vs poll_state.json triggers self_improve_tick when lane seen Mistake-Learning Hourly sweep timeline failures last2h auto-apply high-conf lessons log even no-change 7-field mandatory Foundation dataset build30m on-change lessons→SFT/DPO/tar registry cron even no-change logged
 
@@ -90,5 +90,5 @@ Forensic Missing caches honest OOM not inflated version wall intact keys[model,a
 
 Next LOCAL-GPU: python pipeline/train_unified.py --w-coral0.5 --w-coral-centroid0.5 --grl-lambda-target0.5 --grl-lambda0.3 --grl-ramp10 --w-task2.0 --w-sport0.5 --epochs60 --seeds7,11,13,17,19 --eval-every5 --paired
 
-Same-link-same-stars daily seed proven hub.js vs api/_lib/lcg.js vs play.html Math.imul glibc identical PWA v67 86.8k HIT void #080A0F LOD4000/8000 DPR1 fillRect Knowledge→Edge→Money CAC$0 free forever gate8.93 PASS shipped Δ-0.0851 p0.0251 λ66% coral34% FULL0.6236 pinned residual+0.0016
+Same-link-same-stars daily seed proven hub.js vs api/_lib/lcg.js vs play.html Math.imul glibc identical PWA v67 86.8k HIT void #080A0F LOD4000/8000 DPR1 fillRect Knowledge→Edge→Money CAC$0 free — open access gate8.93 PASS shipped Δ-0.0851 p0.0251 λ66% coral34% FULL0.6236 pinned residual+0.0016
 

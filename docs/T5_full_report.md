@@ -78,15 +78,15 @@ L3 builder-equities-unified transformer dim64 14.4k 60ep epoch0 smoke promising 
 
 L4 synthesist+audit+critic gate 8.0 thr8.0 earlyExit0.3 budget3 verifier-with-budget fix-once if <8 max2 loops total single enforcement forensic-auditor second brain distilled reasoning optimizer traces→nano GRPO GRPO torch not in Hatch honest.
 
-## Free forever × Private edge money
+## free — open access × Private edge money
 
-Same models three ways flywheel games free → $0 CAC fastest $1k 10 users? NOT — free forever no $199 owner desk no $49 props no API no $1,442/mo 15 humans no 3 paying testers no Stripe. Profitability private 3 lanes:
+Same models three ways flywheel games free → $0 CAC fastest $1k 10 users? NOT — free — open access no $199 owner desk no $49 props no API no $1,442/mo 15 humans no 3 paying testers no Stripe. Profitability private 3 lanes:
 
 - Stage1 Kalshi NBA/NFL/earnings edge detector IC gate + Kelly 0.25 paper tape 233 trades 1% max per trade 3 concurrent max $0.01 slippage $0 commission conservative 1 book EV $8k/yr/strategy.
 - Stage2 equity directional paper sector-neutral earnings move only no size until 60+ days OOS IC>0.03 Sharpe>1.2 win>55% DD<12%.
 - Stage3 tiny 0DTE spreads ONLY after gates long spreads only no naked 0.25 Kelly kill-switch 1% day loss separate bankroll (family ops ≠ trading) no Martingale weekly P&L email not financial advice.
 
-Cost $0/mo Vercel hobby free + Cloudflare free + PostHog free. No headcount until edge covers 3mo family ops bankroll $2k MRR? NOT — free forever covers 3mo edge.
+Cost $0/mo Vercel hobby free + Cloudflare free + PostHog free. No headcount until edge covers 3mo family ops bankroll $2k MRR? NOT — free — open access covers 3mo edge.
 
 Risk guardrails: 1% day kill-switch, separate bankroll, no naked options, weekly P&L email, not financial advice, honest fail if IC<0.01.
 
