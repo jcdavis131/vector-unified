@@ -192,6 +192,77 @@ NOT_GENERATED = {
     "archetype_map.json", "sector_map.json",
 }
 
+# --------------------------------------------------------------------------
+# Cross-repo data inputs.
+#
+# Everything above compares an artifact against SCRIPTS in pipeline/. That is
+# the whole model, and it has a hole: `unified_matrix.npz` is not built from
+# this repo's code alone, it is built from the three sibling encoder
+# CHECKPOINTS. When one of those is retrained, no script in pipeline/ changes
+# mtime, so nothing here noticed — and nothing did, for weeks.
+#
+# What that cost, measured 2026-08-14 (docs/G1_STALE_BASELINE_2026-08-14.md):
+# `train_stage2.py` computed G1 as `stored − live`, reading the stored half out
+# of this matrix and recomputing the live half from the current checkpoint.
+# gridiron's encoder was retrained 2026-08-06, after the 2026-07-31 matrix, so
+# the two halves differed by +0.2526 BEFORE the first optimiser step. The gate
+# reported FAIL for its entire life, and `SHIPPABLE: False` with it. pitch was
+# the control that proved it: the only sport whose checkpoint predates the
+# matrix, and the only one with delta exactly 0.0000 and cosine 1.000.
+#
+# The baseline is fixed and no longer reads the stored half, so this check is
+# not what makes G1 correct. It is what makes the next instance of this loud
+# instead of silent, for the seven other modules that still read `M["E"]`
+# through `encode_all()`.
+CROSS_REPO_INPUTS: dict[str, list[tuple[str, str]]] = {
+    "unified_matrix.npz": [
+        ("vector-hoops",    "pipeline/data/mtnn_best.pt"),
+        ("vector-gridiron", "pipeline/data/mtnn_best.pt"),
+        ("vector-pitch",    "pipeline/data/pitch_mtnn.pt"),
+    ],
+}
+
+
+def check_cross_repo(problems: list[str]) -> list[tuple[str, str, float]]:
+    """Compare cached matrices against the sibling checkpoints they were built from.
+
+    Reports the newest offending input rather than all of them: the fix is one
+    rebuild either way, and naming every stale sibling buries the instruction.
+    """
+    rows: list[tuple[str, str, float]] = []
+    estate = ROOT.parent
+    for name, inputs in sorted(CROSS_REPO_INPUTS.items()):
+        art = ROOT / "pipeline" / "data" / name
+        if not art.exists():
+            rows.append((name, "MISSING", 0.0))
+            continue
+        a_t = art.stat().st_mtime
+        newest, newest_src, seen = 0.0, "", 0
+        for repo, rel in inputs:
+            sp = estate / repo / rel
+            if not sp.exists():
+                # Not a problem to report: a sibling repo may simply not be
+                # checked out on this machine, and that is not staleness.
+                continue
+            seen += 1
+            if sp.stat().st_mtime > newest:
+                newest, newest_src = sp.stat().st_mtime, f"{repo}/{rel}"
+        if not seen:
+            rows.append((name, "no-inputs", 0.0))
+            continue
+        if newest > a_t:
+            hours = (newest - a_t) / 3600.0
+            rows.append((name, "STALE", hours))
+            problems.append(
+                f"CROSS-REPO {name} is {hours:.1f}h older than {newest_src}, an encoder "
+                f"checkpoint it was built from — every module reading M[\"E\"] is reading a "
+                f"superseded embedding. Rebuild with `python pipeline/build_unified_matrix.py` "
+                f"(an operator action: seven modules read this)")
+        else:
+            rows.append((name, "fresh", 0.0))
+    return rows
+
+
 SYMBOL_DEPS = ROOT / "data" / "symbol_dep_registry.json"
 
 
@@ -288,6 +359,8 @@ def main() -> int:
                 f"artifact)")
         else:
             rows.append(("assets/" + name, "fresh", 0.0))
+
+    rows.extend(check_cross_repo(problems))
 
     declared = set(PRODUCED_BY) | NOT_GENERATED
     on_disk = {p.name for p in DATA.glob("*.json")}
