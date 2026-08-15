@@ -194,14 +194,23 @@ def main():
     # 0.7795 model, and the next person to run this file would silently start
     # from the bottom of a hill that has already been climbed twice.
     #
-    # UNDER TEST 2026-08-14: 0.5 -> 1.0. The 0.5 arm was measured against the
-    # centroid keep and cleared it by 3.9x its spread, so the term works; what
-    # is unknown is where it saturates or starts charging G1 for the invariance.
-    # Two of today's arms make the question sharp in opposite directions --
-    # --w-coral 0.5 improved G2 AND lifted two floors, while --w-sup 0.5 bought
-    # G2 out of gridiron and was discarded. GRL is adversarial, which puts it
-    # closer to the second shape, so the floors are the thing to watch here
-    # rather than the headline.
+    # DEFAULT 1.0 as of 2026-08-14. KEPT on a 6-seed panel in host mode
+    # (protocol 6da99b5ef967): G2 0.6421 +/- 0.0062 -> 0.6300 +/- 0.0019, a
+    # delta of 0.0121 against an acceptance bar of 0.0062, with every seed
+    # improving and no floor regressing.
+    #
+    # The floors were the thing to watch, and they were close. GRL is
+    # adversarial, so this arm had the shape of --w-sup 0.5, which bought G2 out
+    # of gridiron and was discarded. Mid-panel it looked like it might go the
+    # same way: seed 21 broke the hoops floor on its own (0.0956 against a
+    # 0.0989 threshold) and pitch's running mean sat below its threshold through
+    # five seeds. Seed 99 brought pitch back to exactly its baseline 0.0065 and
+    # every floor mean cleared. A per-seed breach is not a verdict; the mean is.
+    #
+    # Dispersion collapsed 0.0062 -> 0.0019, the sharpest tightening of the four
+    # arms tried. 0.6300 sits 0.0042 above the majority-class floor of 0.6258,
+    # which is the theoretical limit -- a perfectly sport-invariant z gives the
+    # probe nothing but the class prior. There is very little left to take.
     ap.add_argument("--grl-lambda-target", type=float, default=1.0)
     ap.add_argument("--warmup", type=int, default=5)
     ap.add_argument("--rank-floor", type=float, default=12.0)
