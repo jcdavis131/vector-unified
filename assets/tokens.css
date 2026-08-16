@@ -62,7 +62,7 @@
   --radius-pill:9999px;
   /* shadows — soft japandi 2.5px tactile not brutalist — was 3px mapped to 2.5px for softer feel */
   --shadow-soft: 0 1px 0 #1E1E1E0e, 0 6px 18px #1E1E1E10;
-  --shadow-book: 2.5px 2.5px 0 #1E1E1E, 0 2px 8px #1E1E1E10;
+    --shadow-book: 3px 3px 0 #1E1E1E;
   --shadow-cabinet: 2.5px 2.5px 0 #1E1E1E, 0 8px 22px #1E1E1E14;
   --shadow-paper: 1.2px 1.2px 0 #1E1E1E, inset 0 1px 0 #fff;
   /* wood grain texture via CSS gradients — tactile spines softer feel */

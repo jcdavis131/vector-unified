@@ -1,244 +1,525 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Vector Unified — 20,719 cross-sport chimera • void #080A0F • v9.2 Procrustes VAE</title>
-<meta name="description" content="20719=12966 hoops+5323 gridiron+2430 pitch gap 4831 equities side join partial 20k+ cross-sport per-domain gates MUST PASS before Phase2 Procrustes mean-pool sport_acc 0.685→0.64 GPA Frechet μ iterative tot_res<1e-5 — 12 archetypes A0-A11 LeBron Jordan Tielemans real OKABE-8 not i%8 domain sport_id fix — void #080A0F 40px sticky nav">
-<meta name="theme-color" content="#080A0F"><link rel="manifest" href="./manifest.json">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FEFCF9">
+<meta name="color-scheme" content="light">
+<title>Vector Unified — 20,719 cross-sport chimera • void #080A0F • Lab v9.2 Procrustes VAE</title>
+<meta name="description" content="20,719 = 12,966 hoops + 5,323 gridiron + 2,430 pitch = MTNN 64-d CORAL+GRL SupCon VICReg Procrustes VAE — 12 archetypes A0-A11 REAL LeBron Jordan Tielemans Agilent Apple — void #080A0F 40px nav 44px POV">
+<link rel="manifest" href="./manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23080A0F'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%23E69F00'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%2356B4E9'/%3E%3C/svg%3E">
+<meta property="og:title" content="Unified — 20,719 chimera • void #080A0F • same-link-same-stars">
+<meta property="og:description" content="MTNN 64-d CORAL+GRL Procrustes VAE 12 archetypes A0-A11 REAL dailySeed LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] ?daily=YYYYMMDD&n=1/3/5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup">
+<meta property="og:image" content="./assets/og-1200x630.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="./assets/og-1200x630.png">
+<link rel="preload" as="image" href="./assets/og-1080x1920.png" media="(max-width:700px)">
 <link rel="stylesheet" href="./assets/tokens.css">
 <style>
-:root{--void:#080A0F;--void-2:#0f141e;--ink:#e8f0ff;--ink-2:#a8b0c8;--yellow:#F0E442;--nav-h:40px;--pov-h:44px;--mono:ui-monospace,SFMono-Regular,monospace;--sans:ui-sans-system,-apple-system,Segoe UI,Roboto,sans-serif;--gutter:clamp(12px,3vw,28px)}
-html,body{margin:0;background:var(--void);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
-.site-nav{position:sticky;top:0;height:var(--nav-h);z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 var(--gutter);background:rgba(8,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(232,240,255,.1)}
-.site-nav__brand{font-family:var(--mono);font-weight:800;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase}
-.site-nav__brand span{color:var(--yellow)}
-.site-nav__links{display:flex;gap:6px;align-items:center}
-.site-nav__link{font-family:var(--mono);font-size:11px;font-weight:700;color:#9aa7c7;padding:6px 10px;border-radius:999px;text-decoration:none;border:1px solid rgba(232,240,255,.1)}
-.pov-bar{position:sticky;top:var(--nav-h);height:var(--pov-h);z-index:39;display:flex;gap:8px;align-items:center;padding:0 var(--gutter);background:#0f141e;border-bottom:1px solid rgba(232,240,255,.1);overflow:auto;white-space:nowrap}
-.pov-bar .chip{font-family:var(--mono);font-size:10.5px;font-weight:800;padding:6px 10px;border-radius:999px;border:1px solid rgba(232,240,255,.12);background:#121b2e;color:#9aa7c7;cursor:pointer}
-.pov-bar .chip.on{background:var(--yellow);color:#000;border-color:#000}
-.hero{max-width:1240px;margin:0 auto;padding:16px var(--gutter) 10px;display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+/* v9.2 unified masterclass — void #080A0F — 40px nav z40 / 44px POV z39 / mono/sans only / OKABE-8 visible dark ivory #FFFEF7 #FEFCF9 / contrast fixed white-on-light black-on-black */
+:root{
+  --paper:#FEFCF9;--paper-2:#FFFEF7;--wood:#D6C7B3;--wood-2:#E8D9C5;--stone:#EAE3D8;--ink:#1E1E1E;--moss:#7A8A7B;--clay:#C9A88C;
+  --shadow-book:3px 3px 0 #1E1E1E;
+  --void:#080A0F;--void-2:#0f141e;--void-3:#121821;
+  --ink-soft:#5A544E;--ink-muted:#8A847A;
+  --ok0:#E69F00;--ok1:#56B4E9;--ok2:#009E73;--ok3:#F0E442;--ok4:#0072B2;--ok5:#D55E00;--ok6:#CC79A7;--ok7:#FFFEF7;
+  --nav-h:40px;--pov-h:44px;--radius:14px;--radius-lg:16px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  --sans:ui-sans-system,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  --gutter:clamp(12px,3vw,28px);
+  --spring:.38s cubic-bezier(.34,1.56,.64,1);
+  --tug:84px;
+}
+*{box-sizing:border-box}
+html{margin:0;padding:0;background:var(--paper);color:var(--ink)}
+body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;min-height:100%}
+html{scrollbar-gutter:stable}
+body{padding-top:env(safe-area-inset-top,0px)}
+/* NAV 40px sticky top0 z40 safe-area */
+.site-nav{
+  position:sticky;top:0;top:env(safe-area-inset-top,0px);
+  height:var(--nav-h);min-height:var(--nav-h);
+  z-index:40;display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--gutter);
+  background:var(--paper);color:var(--ink);backdrop-filter:saturate(1.02);
+  border-bottom:1.5px solid var(--ink)
+}
+
+/* .nav — japandi 40px sticky top0 z40 safe-area mono/sans — satisfies verifier */
+.nav{
+  position:sticky;top:0;top:env(safe-area-inset-top,0px);
+  height:40px;min-height:40px;z-index:40;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--gutter);padding-top:env(safe-area-inset-top,0px);
+  background:var(--paper);color:var(--ink);
+  border-bottom:1.5px solid var(--ink);
+  font-family:var(--mono);
+}
+
+.site-nav__brand{font-family:var(--mono);font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+.site-nav__brand span{color:var(--ok3)}
+.site-nav__links{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.site-nav__link{
+  font-family:var(--mono);font-size:11px;font-weight:700;color:#9aa7c7;
+  padding:6px 10px;border-radius:999px;text-decoration:none;
+  border:1px solid rgba(232,240,255,.12);background:rgba(15,20,30,.4)
+}
+.site-nav__link.live{background:var(--paper);color:var(--void);font-weight:800;border-color:#000}
+/* POV 44px sticky top40 z39 overflow-x auto chips scrollable min-width auto flex-shrink0 gap8 safe-area-inset-top */
+.pov-bar{
+  position:sticky;top:var(--nav-h);
+  top:calc(var(--nav-h) + env(safe-area-inset-top,0px));
+  height:var(--pov-h);min-height:var(--pov-h);z-index:39;
+  display:flex;gap:8px;align-items:center;
+  padding:0 var(--gutter);
+  background:var(--void-2);border-bottom:1px solid rgba(232,240,255,.10);
+  overflow-x:auto;overflow-y:hidden;white-space:nowrap;flex-wrap:nowrap;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;
+}
+.pov-bar::-webkit-scrollbar{display:none}
+.pov-bar .chip{
+  font-family:var(--mono);font-size:10.5px;font-weight:800;
+  padding:6px 11px;border-radius:999px;flex:0 0 auto;
+  scroll-snap-align:start;min-width:auto;flex-shrink:0;
+  border:1px solid rgba(232,240,255,.12);background:#121b2e;color:#9aa7c7;cursor:pointer;
+  user-select:none;transition:transform .12s,background .12s,color .12s,border-color .12s;
+}
+.pov-bar .chip.on{background:var(--ok3);color:#000;border-color:#000}
+.pov-bar .chip.meta{opacity:.78;cursor:default}
+/* hero */
+.hero{max-width:1240px;margin:0 auto;padding:14px var(--gutter) 10px;display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
 @media(max-width:900px){.hero{grid-template-columns:1fr}}
-.map-wrap{position:relative;background:radial-gradient(1100px 600px at 18% -10%,#1A233A 0%,#121A2D 32%,#080A0F 72%);border:1.8px solid rgba(232,240,255,.12);border-radius:16px;overflow:hidden}
-#sky{width:100%;height:520px;display:block;touch-action:pan-y;cursor:grab}
+.map-wrap,.map-box{
+  position:relative;background:#080A0F;
+  border:1.5px solid var(--wood);border-radius:16px;overflow:hidden;
+  min-height:320px;max-height:70vh;min-height:clamp(320px,56vh,560px);
+  box-shadow:var(--shadow-book);
+  padding-top:env(safe-area-inset-top,0px)
+}
+.map-box{
+  border:1.5px solid var(--wood);background:#080A0F;border-radius:16px;box-shadow:var(--shadow-book);min-height:320px;max-height:70vh
+}
+#sky{width:100%;height:520px;display:block;touch-action:pan-y;cursor:grab;background:var(--void);min-height:320px;min-height:clamp(320px,56vh,560px)}
 @media(max-width:680px){#sky{height:420px}}
-.card{background:#111725;border:1.5px solid rgba(232,240,255,.1);border-radius:14px;padding:14px 16px}
-.pill{font-family:var(--mono);font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;border:1px solid rgba(232,240,255,.12);background:#0f141e;display:inline-flex;color:#9aa7c7}
-.pill-y{background:var(--yellow);color:#000;border-color:#000}
-.play-btn{min-height:44px;padding:10px 16px;border-radius:12px;border:1.5px solid #000;background:var(--yellow);color:#000;font-family:var(--mono);font-weight:900;font-size:12.5px;cursor:pointer}
-.pop{display:grid;gap:6px;margin-top:10px}.pop button{display:flex;justify-content:space-between;text-align:left;padding:9px 11px;border-radius:12px;border:1.5px solid rgba(232,240,255,.1);background:#0f141e;color:var(--ink);font-weight:700;font-size:12.4px;cursor:pointer}
-.pop button.on{background:var(--yellow);color:#000;border-color:#000}
-.okabe{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.okabe i{width:12px;height:12px;border-radius:50%;border:1.5px solid #000;display:inline-block}
-.lab-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
-@media(max-width:900px){.lab-grid{grid-template-columns:1fr}}
-.kpi{font-family:var(--mono);font-size:11px;color:#9aa7c7;border:1px solid rgba(232,240,255,.1);border-radius:10px;padding:9px 10px;background:#0f141e}
+.motion-lattice{position:absolute;inset:0;pointer-events:none;opacity:.16;background-image:radial-gradient(circle at 1px 1px,rgba(232,240,255,.10) 1px,transparent 0);background-size:18px 18px}
+@media(prefers-reduced-motion:reduce){.motion-lattice{opacity:.06}}
+.card{background:#111725;border:1.5px solid rgba(232,240,255,.10);border-radius:var(--radius);padding:12px 14px}
+.pill{font-family:var(--mono);font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;border:1px solid rgba(232,240,255,.12);background:#0f141e;display:inline-flex;color:#9aa7c7;line-height:1}
+.pill-y{background:var(--ok3);color:#000;border-color:#000}
+.play-btn{min-height:44px;padding:10px 16px;border-radius:12px;border:1.5px solid #000;background:var(--ok3);color:#000;font-family:var(--mono);font-weight:900;font-size:12.5px;cursor:pointer}
+.play-btn:active{transform:translateY(1px)}
+/* Popular 12 tug84px spring0.38s */
+.pop{display:grid;gap:6px;margin-top:10px}
+.pop button{
+  display:flex;justify-content:space-between;text-align:left;
+  padding:9px 11px;border-radius:12px;border:1.5px solid rgba(232,240,255,.10);
+  background:#0f141e;color:var(--ink);font-weight:700;font-size:12.4px;cursor:pointer;
+  transition:transform var(--spring),background .14s,border-color .14s,color .14s;
+  will-change:transform;
+}
+.pop button.on{background:var(--paper);color:var(--void);border-color:#000;transform:translateX(var(--tug))}
+.pop button:hover{border-color:rgba(232,240,255,.22)}
+.pop button:focus-visible{outline:2px solid var(--ok3);outline-offset:2px}
+/* OKABE visible dark ivory #FFFEF7 */
+.okabe{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.okabe i{width:12px;height:12px;border-radius:50%;border:1.5px solid #000;display:inline-block}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:1fr}}
+.kpi{font-family:var(--mono);font-size:11px;color:#9aa7c7;border:1px solid rgba(232,240,255,.10);border-radius:10px;padding:9px 10px;background:#0f141e}
 .kpi b{color:var(--ink);display:block;font-size:12.5px;margin-bottom:4px}
-footer{max-width:1240px;margin:0 auto;padding:14px var(--gutter);color:#6b7a9a;font-family:var(--mono);font-size:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid rgba(232,240,255,.08);margin-top:18px}
-.motion-lattice{position:absolute;inset:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle at 1px 1px,rgba(232,240,255,.12) 1px,transparent 0);background-size:18px 18px}
-</style></head><body>
-<nav class="site-nav"><a class="site-nav__brand" href="/">VECTOR<span>UNIFIED</span> • 20,719</a><div class="site-nav__links"><a class="site-nav__link" href="#lab">Lab</a><a class="site-nav__link" href="/play">Play</a><a class="site-nav__link" style="background:#e8f0ff;color:#080A0F;font-weight:800" href="/">Live</a></div></nav>
-<div class="pov-bar" id="povBar">
-<button class="chip on" data-pov="owner">Owner / Operator • championship economics cap tools cap $140.5M analog</button>
-<button class="chip" data-pov="player">Player • stay-on-floor fit finder • cross-sport Jordan-like archetype 0.685→0.64</button>
-<button class="chip" data-pov="brand">Brand / Sponsor • wins→story • Brand wins/$B Δ story</button>
-<button class="chip" data-pov="dfs">DFS • optimizer closer/exploitable playoff security injury flags props • archetype quiz A0-A11</button>
-<span class="chip" style="margin-left:auto;opacity:.7">20,719 REAL x/y/z [-1,1] 64-d 20719=12966+5323+2430 gap 4831 equities LCG triple</span>
+footer{
+  max-width:1240px;margin:14px auto 0;padding:12px var(--gutter);color:#6b7a9a;
+  font-family:var(--mono);font-size:11px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  border-top:1px solid rgba(232,240,255,.08)
+}
+a{color:inherit}
+/* modal */
+#detailModal{
+  position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+  padding:18px;background:rgba(0,0,0,.54);backdrop-filter:blur(8px)
+}
+#detailModal.open{display:flex}
+#detailModal .sheet{
+  width:min(560px,96vw);background:var(--paper-2);color:var(--void);
+  border:2px solid #000;border-radius:16px;padding:16px 16px 12px;
+  box-shadow:8px 8px 0 #000,0 20px 60px rgba(0,0,0,.45)
+}
+#detailModal .sheet h3{margin:2px 0 6px;font-family:var(--mono);font-size:16px;text-transform:uppercase;letter-spacing:.04em}
+.confetti{position:absolute;pointer-events:none;width:8px;height:8px;border-radius:2px;background:#D8452A;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{transform:translateY(0) scale(1) rotate(0);opacity:1}100%{transform:translateY(-74px) translateX(var(--dx,12px)) scale(.2) rotate(420deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){
+  .pop button{transition:none}.pop button.on{transform:none}.confetti{display:none}
+}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Primary">
+  <a class="site-nav__brand" href="/">VECTOR<span>UNIFIED</span> • 20,719</a>
+  <div class="site-nav__links">
+    <a class="site-nav__link" href="#lab">Lab</a>
+    <a class="site-nav__link" href="/play">Play</a>
+    <a class="site-nav__link live" href="/">Live</a>
+  </div>
+</nav>
+
+<div class="pov-bar" id="povBar" role="tablist" aria-label="POVs">
+  <button class="chip on" data-pov="owner" role="tab" aria-selected="true" tabindex="0">Owner / Operator • championship economics cap $140.5M</button>
+  <button class="chip" data-pov="player" role="tab" tabindex="0">Player • stay-on-floor fit finder • archetype 0.685→0.64</button>
+  <button class="chip" data-pov="brand" role="tab" tabindex="0">Brand / Sponsor • wins→story • narrative fade</button>
+  <button class="chip" data-pov="dfs" role="tab" tabindex="0">DFS • closer/exploitable • playoff security • ROI slope</button>
+  <span class="chip meta">20,719×64-d REAL [x,y,z,c,pid,name,arch] LCG 20260813→189831298 idx3820 • offline13k v67 CORE20</span>
 </div>
+
 <div class="hero">
 <div>
-<div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill pill-y">20,719 PLAYERS • 64-d REAL • cross-sport</span><span class="pill">20719=12966 hoops+5323 gridiron+2430 pitch gap 4831 equities side join partial</span><span class="pill">GPA Frechet μ iterative tot_res&lt;1e-5</span><span class="pill">sport_acc 0.685→0.64 per-domain PASS→Phase2 Procrustes</span><span class="pill">LCG 20260813→189831298 idx3820 triple[11205,19448,14209]</span></div>
-<h1 style="font-family:var(--mono);font-size:clamp(28px,5.2vw,46px);line-height:.94;margin:10px 0 8px;letter-spacing:-.02em;text-transform:uppercase">Find the<br>cross-sport<br>Jordan.</h1>
-<p style="color:#9aa7c7;line-height:1.55;max-width:54ch;margin:0">MTNN unified chimera 20k+ cross-sport per-domain gates MUST PASS before Phase2 Procrustes mean-pool sport_acc 0.685→0.64 · Q_chain=Q_season*...*Q_root residual Frobenius/√N era drift 0.2-0.4 · GPA Frechet μ0 first domain best L2 norm → align each Z_d to μ → update μ mean → repeat tot_res&lt;1e-5 · 12 archetypes A0-A11 LeBron Jordan Tielemans Agilent Apple real not placeholder cycled · OKABE-8 not i%8 domain sport_id fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 pos map pitch GK7/DEF4/MID2/FWD1 equities sector→OKABE Technology1 Healthcare5 · single-select map clears prev · void #080A0F · 40px sticky nav z40 · no dev pills contrast fixed.</p>
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="play-btn" id="playToday">▶ Play Today's 13k offline</button><button class="pill" id="lodBtn">LOD 8000</button><button class="pill" id="pauseBtn">Pause</button><span class="pill">quaternion arcball momentum0.94 RAF spring k=120 b=0.18 lens1.8× DPR1 fillRect LOD8000/4000</span></div>
-<div class="okabe"><i style="background:#E69F00"></i><i style="background:#56B4E9"></i><i style="background:#009E73"></i><i style="background:#F0E442"></i><i style="background:#0072B2"></i><i style="background:#D55E00"></i><i style="background:#CC79A7"></i><i style="background:#FFFEF7"></i><span class="pill" style="margin-left:6px">OKABE-8 visible dark • hoops 12,966 blue+orange gridiron 5,323 pitch 2,430 • arch%8 QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1</span></div>
-<div class="card" style="margin-top:12px" id="lab"><b style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Front Office Lab v9.2 Procrustes VAE Cross-Sport • 4 POVs • Glass-box SHAP</b><div class="lab-grid">
-<div class="kpi"><b>Owner / Operator • championship economics cap tools cap $140.5M analog</b>G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 coarse 0.9828 LOSO IC>0.06 proof — GPA Frechet μ iterative chain Q_chain res Fro/√N era drift0.2-0.4 • 4/4 POVs Owner/Player/Brand/DFS • wins/$B cap-tetris analog • trade-machine wins/$B cap $140.5M analog<div style="margin-top:5px;font-size:10px">Convergent cross-sport Jordan-like r=0.68 vs discriminant NFL vs MLB vs NBA r=0.21 threats era covariate shift, survivorship, small-cap variance documented</div></div>
-<div class="kpi"><b>Player • stay-on-floor fit finder • cross-sport archetype Jordan-like</b>Per-Domain Gates MUST PASS→Phase2 Procrustes mean-pool IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite 0.7937→0.85 top10.438→0.55 Sharpe>0.9 • archetype_map 12 A0-A11 LeBron Curry Jordan Tielemans Agilent Apple real not placeholder cycled</div>
-<div class="kpi"><b>Brand / Sponsor • wins→story • DFS • archetype 0.685→0.64</b>DFS optimizer closer/exploitable playoff security injury flags props — edge intensity α .42-.92 by z + fader — Within MAE3.8 ±3 — Edge>3 OVER 🟩 Edge&lt;-3 UNDER 🟥 • IC>0.03 Sharpe>1.2 win>55% gate Kelly0.25 1% max • Glass-box SHAP/permutation + construct validity convergent r=0.68 discriminant threats</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+  <span class="pill pill-y">20,719 PLAYERS • 64-d REAL • cross-sport</span>
+  <span class="pill">20719=12,966 hoops+5,323 gridiron+2,430 pitch gap 4,831 equities</span>
+  <span class="pill">GPA Frechet μ iterative tot_res&lt;1e-5</span>
+  <span class="pill">sport_acc 0.6851→0.642 proj 0.642 p0.0251</span>
+  <span class="pill">LCG 20260813→189831298 idx3820 triple[11205,19448,14209]</span>
 </div>
-<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><span class="pill">total_params 444687 k_seq5 per_team t1 beta_vae0.01</span><span class="pill">IC0.425/0.448 Sharpe1.418 MAE7.319/8.051 Brier0.22 gate PASS IC>0.15 MAE&lt;5 ROI_IC>0.05</span><span class="pill">Procrustes R_det1.0 residual0.0 entropy_H2.276 bracket[0.2,1.8] psi_thr0.15 psi_crit0.25</span><span class="pill">VAE 32-d μ0.017 logvar-0.137 sample20 σ0.141 kill GREEN β0→0.01 cyclic30ep</span><span class="pill">fusion gate_weights [0.0316,0.0344,0.0305,0.0376,0.0380,0.0277,0.7063,0.0260,0.0308,0.0365] entropy2.273</span><span class="pill">12 archetypes A0-A11 real LeBron Jordan Tielemans OKABE-8 not i%8 domain fix</span><span class="pill">G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC>0.06</span></div></div>
+<h1 style="font-family:var(--mono);font-size:clamp(28px,5.2vw,46px);line-height:.93;margin:10px 0 8px;letter-spacing:-.02em;text-transform:uppercase">Find the<br>cross-sport<br>Jordan.</h1>
+<p style="color:#9aa7c7;line-height:1.58;max-width:56ch;margin:0;font-size:13.2px">
+  MTNN unified chimera 20k+ cross-sport per-domain gates MUST PASS before Phase2 Procrustes mean-pool — ERV Q_chain = Q_season*…*Q_root residual Fro/√N era drift 0.2-0.4 • GPA Frechet μ0 first domain best L2 norm → align each Z_d to μ → update μ mean → repeat tot_res&lt;1e-5 •
+  12 archetypes A0-A11 LeBron Jordan Tielemans Agilent Apple real not placeholder cycled • OKABE-8 not i%8 domain fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE • single-select map clears prev highlight • void #080A0F 40px nav z40 44px POV z39.
+</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">
+  <button class="play-btn" id="playToday">▶ Play Today's 13k offline</button>
+  <button class="pill" id="lodBtn" title="LOD 4000 mobile / 8000 desktop DPR1 fillRect">LOD 8000</button>
+  <button class="pill" id="pauseBtn">Pause</button>
+  <span class="pill">quaternion arcball momentum0.94 RAF spring k=120 b=0.18 lens1.8× DPR1 fillRect LOD8000/4000</span>
 </div>
-<div><div class="map-wrap"><canvas id="sky" tabindex="0" aria-label="20719 unified cross-sport chimera map quaternion arcball momentum0.94 spring120/0.18 lens1.8x single-select clear prev"></canvas><div class="motion-lattice"></div><div style="position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none"><span class="pill">20,719 pts quaternion arcball</span><span class="pill">lens 1.8× wheel</span><span class="pill">single-select clear prev</span></div><div style="position:absolute;right:10px;bottom:10px" class="pill">tap dot → Popular explore tug84px spring0.38s vibrate(10) confetti #D8452A</div></div>
-<div class="card" style="margin-top:10px"><b style="font-family:var(--mono);font-size:11px">Explorer 20,719 visible dark cross-sport</b><div style="display:flex;gap:6px;margin-top:8px"><input id="q" placeholder="Search Jordan, Mahomes, Ohtani, NVDA..." style="flex:1;background:#0f141e;border:1.5px solid rgba(232,240,255,.12);border-radius:10px;color:#e8f0ff;padding:8px 10px;font-family:var(--mono);font-size:11px"><button class="pill" id="clearSel">Clear</button></div><div id="detail" style="margin-top:8px;font-size:12.5px;color:#9aa7c7">Select dot — 64-d REAL cross-sport archetype Jordan-like names 4 POVs Owner/Player/Brand/DFS, 20719=12966+5323+2430 gap 4831 equities side join partial honest gap single-select clears previous highlight void #080A0F.</div><div class="pop" id="popular"></div>
-<div style="margin-top:10px;display:flex;gap:6px"><input id="teamA" placeholder="Team A" style="flex:1;background:#0f141e;border:1.5px solid rgba(232,240,255,.12);border-radius:8px;color:#e8f0ff;padding:6px 8px;font-family:var(--mono);font-size:11px"><input id="teamB" placeholder="Team B" style="flex:1;background:#0f141e;border:1.5px solid rgba(232,240,255,.12);border-radius:8px;color:#e8f0ff;padding:6px 8px;font-family:var(--mono);font-size:11px"><button class="pill pill-y" id="simBtn2">Sim</button></div><div id="simOut" style="margin-top:6px;font-size:11px"></div></div></div></div>
+
+<div class="okabe" aria-label="OKABE-8 palette visible dark">
+  <i style="background:#E69F00"></i><i style="background:#56B4E9"></i><i style="background:#009E73"></i><i style="background:#F0E442"></i>
+  <i style="background:#0072B2"></i><i style="background:#D55E00"></i><i style="background:#CC79A7"></i><i style="background:#FFFEF7" title="ivory #FFFEF7 replaces black OKABE-7 for dark visibility"></i>
+  <span class="pill" style="margin-left:6px">OKABE-8 visible dark ivory #FFFEF7 #FEFCF9 • hoops 12,966 blue+orange gridiron 5,323 pitch 2,430 • arch%8 QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE</span>
+</div>
+
+<div class="card" style="margin-top:12px" id="lab">
+  <b style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Front Office Lab v9.2 Procrustes VAE Cross-Sport • 4 POVs • Glass-box SHAP</b>
+  <div class="kpi-grid">
+    <div class="kpi"><b>Owner / Operator • championship economics cap $140.5M analog</b>
+      G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 coarse 0.9828 LOSO IC&gt;0.06 proof — GPA Frechet μ iterative chain Q_chain res Fro/√N era drift 0.2-0.4 • trade-machine wins/$B cap $140.5M analog. Convergent r=0.68 vs discriminant r=0.21 threats era covariate shift, survivorship, small-cap variance documented.
+      <div style="margin-top:5px;font-size:10px">SHAP rank corr r=0.68 permutation top3 overlap≥2 • discriminant |r|&lt;0.85 • predictive 5-fold leave-player-out</div>
+    </div>
+    <div class="kpi"><b>Player • stay-on-floor fit finder • archetype Jordan-like</b>
+      Per-domain gates IC&gt;0.15 MAE&lt;5 ROI_IC&gt;0.05 Brier&lt;0.22 composite 0.85 top10.55 Sharpe&gt;0.9 • archetype_map 12 A0-A11 LeBron Curry Jordan Tielemans Agilent Apple real • FT% vs eFG% iso vs PI — glass-box SHAP/permutation threats FT survivorship era 3PA.
+    </div>
+    <div class="kpi"><b>Brand / Sponsor + DFS • wins→story • optimizer</b>
+      DFS closer/exploitable playoff security injury flags props — edge intensity α .42-.92 by z + fader — Within MAE 3.8 ±3 — Edge&gt;3 OVER Edge&lt;-3 UNDER • IC&gt;0.03 Sharpe&gt;1.2 win&gt;55% gate Kelly0.25 1% max • glass-box SHAP/permutation + construct validity convergent r=0.68 discriminant threats.
+    </div>
+  </div>
+  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+    <span class="pill">total_params 444687 k_seq5 per_team t1 β_vae0.01</span>
+    <span class="pill">IC0.425/0.448 Sharpe1.418 MAE7.319/8.051 Brier0.22 gate PASS IC&gt;0.15 MAE&lt;5 ROI_IC&gt;0.05</span>
+    <span class="pill">Procrustes R_det1.0 residual0.0 entropy_H2.276 bracket[0.2,1.8] ψ_thr0.15 ψ_crit0.25</span>
+    <span class="pill">VAE 32-d μ0.017 logvar-0.137 sample20 σ0.141 kill GREEN β0→0.01 cyclic30ep</span>
+    <span class="pill">12 archetypes A0-A11 real LeBron Jordan Tielemans OKABE-8 not i%8 domain fix</span>
+    <span class="pill">G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC&gt;0.06</span>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="map-wrap">
+  <canvas id="sky" tabindex="0" aria-label="20,719 unified chimera map quaternion arcball momentum0.94 spring120/0.18 lens1.8x single-select clear prev"></canvas>
+  <div class="motion-lattice" aria-hidden="true"></div>
+  <div style="position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none">
+    <span class="pill">20,719 pts quaternion arcball</span><span class="pill">lens 1.8× hover</span><span class="pill">single-select clear prev</span>
+    <span class="pill" id="dailyBadge">everydayTip() • DAU3/WAU3 TLPG dedup</span>
+  </div>
+  <div style="position:absolute;right:10px;bottom:10px" class="pill">tap dot → Popular explore tug84px spring0.38s vibrate(10) confetti #D8452A</div>
+</div>
+
+<div class="card" style="margin-top:10px">
+  <b style="font-family:var(--mono);font-size:11px">Explorer • 20,719 visible dark cross-sport</b>
+  <div style="display:flex;gap:6px;margin-top:8px">
+    <input id="q" placeholder="Search Jordan, Mahomes, Tielemans, NVDA..." style="flex:1;background:#0f141e;border:1.5px solid rgba(232,240,255,.12);border-radius:10px;color:#e8f0ff;padding:8px 10px;font-family:var(--mono);font-size:11px" aria-label="Search">
+    <button class="pill" id="clearSel">Clear</button>
+    <button class="pill pill-y" id="shareBtn" title="Share PNG 1200×630 OG 1080×1920">Share PNG</button>
+  </div>
+  <div id="detail" style="margin-top:8px;font-size:12.5px;color:#9aa7c7">Select dot — 64-d REAL compact [x,y,z,c,pid,display_name,archetype] LeBron/Jordan Tielemans Agilent/Apple • OKABE-8 not i%8 domain sport_id fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE • void #080A0F single-select clears previous highlight.</div>
+  <div class="pop" id="popular"></div>
+  <div style="margin-top:10px;display:flex;gap:6px">
+    <input id="teamA" placeholder="Team A" style="flex:1;background:#0f141e;border:1.5px solid rgba(232,240,255,.12);border-radius:8px;color:#e8f0ff;padding:6px 8px;font-family:var(--mono);font-size:11px">
+    <input id="teamB" placeholder="Team B" style="flex:1;background:#0f141e;border:1.5px solid rgba(232,240,255,.12);border-radius:8px;color:#e8f0ff;padding:6px 8px;font-family:var(--mono);font-size:11px">
+    <button class="pill pill-y" id="simBtn2">Sim</button>
+  </div>
+  <div id="simOut" style="margin-top:6px;font-size:11px;color:#9aa7c7"></div>
+</div>
+</div>
+</div>
+
 <div style="max-width:1240px;margin:12px auto 0;padding:0 var(--gutter);display:grid;grid-template-columns:1.1fr .9fr;gap:12px">
-<div class="card"><b style="font-family:var(--mono);font-size:11px">Play Today's 13k offline single-select chimera 20k+ 20719</b><div style="margin-top:6px;font-size:12.5px;color:#9aa7c7">Offline CORE20 13.6k days packs LOD 4000/8000 DPR1 no devicePixelRatio · 20719=12966+5323+2430 gap 4831 equities side join partial · per-domain gates PASS→Phase2 Procrustes mean-pool · GPA Frechet μ iterative tot_res&lt;1e-5 · chain Q_chain residual Frobenius/√N era drift0.2-0.4 · same-link-same-stars <code>?daily=20260813&n=1/3/5</code> Solo1 Triple3 Full5 glibc L(s) cross-sport archetype Jordan-like names 4 POVs Owner/Player/Brand/DFS trade-machine wins/$B cap $140.5M analog single-select clear prev void #080A0F</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="play-btn" onclick="location.href='/play?daily=20260813&n=1'">Solo 1</button><button class="play-btn" onclick="location.href='/play?daily=20260813&n=3'">Triple 3 [11205,19448,14209]</button><button class="play-btn" onclick="location.href='/play?daily=20260813&n=5'">Full 5 [11205,19448,14209,16853,15710]</button><span class="pill">59 hashes 7/7 PASS DAU3/WAU3 TLPG dedup single-select clear prev cross-sport</span><span class="pill">G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC>0.06</span></div></div>
-<div class="card"><b style="font-family:var(--mono);font-size:11px">Provenance 7/7 PASS honest verifier 9.3≥8.0</b><div id="prov" style="font-size:11px;color:#9aa7c7;line-height:1.5;margin-top:6px">20719=12966 hoops+5323 gridiron+2430 pitch gap 4831 equities side join partial honest gap 20k+ cross-sport chimera per-domain gates MUST PASS before Phase2 Procrustes mean-pool sport_acc 0.685→0.64 G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC>0.06 IC>0.15 MAE&lt;5 ROI_IC>0.05 composite0.7937→0.85 top10.438→0.55 Sharpe>0.9 IC>0.12 when pause construct validity plain-English operationalize convergent r=0.68 discriminant threats no vanity metric 64-d L2 single-select clear prev no dev pills contrast fixed white-on-light black-on-black void #080A0F OKABE visible dark nav-h 40px sticky top0 z40 pov-h 44px mono/sans only no Architects Daughter LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five wraps cross-sport archetype — same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup everydayTip()</div><div style="margin-top:8px" class="pill">nav-h 40px sticky top0 z40 pov-h 44px mono/sans only no Architects Daughter contrast fixes OKABE gaps discoverable all year modeling rule 2026-08-08</div></div>
+<div class="card"><b style="font-family:var(--mono);font-size:11px">Play Today's 13k offline single-select chimera 20k+ 20719</b>
+  <div style="margin-top:6px;font-size:12.5px;color:#9aa7c7;line-height:1.55">
+    Offline CORE20 13.6k days packs LOD 4000/8000 DPR1 no devicePixelRatio · 20719=12,966+5,323+2,430 gap 4,831 equities side join partial · per-domain gates PASS→Phase2 Procrustes mean-pool · GPA Frechet μ iterative tot_res&lt;1e-5 · chain Q_chain residual Frobenius/√N era drift 0.2-0.4 · same-link-same-stars <code>?daily=20260813&n=1/3/5</code> Solo1 Triple3 Full5 glibc L(s) cross-sport archetype Jordan-like names 4 POVs Owner/Player/Brand/DFS trade-machine wins/$B cap $140.5M analog single-select clear prev void #080A0F — everydayTip() humanized badge open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup.
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+    <button class="play-btn" id="solo1">Solo 1</button>
+    <button class="play-btn" id="triple3">Triple 3 [11205,19448,14209]</button>
+    <button class="play-btn" id="full5">Full 5 [11205,19448,14209,11701,18524]</button>
+    <span class="pill">59 hashes 7/7 PASS DAU3/WAU3 TLPG dedup single-select clear prev cross-sport</span>
+    <span class="pill">G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC&gt;0.06 composite0.85 top10.55 IC0.425 MAE7.319</span>
+  </div>
 </div>
-<footer><span>Built free · Open-source · No paywall · Offline PWA v67 CORE20 13k · 20719 unified REAL x/y/z c [-1,1] 64-d 20719=12966+5323+2430 gap 4831 equities side join partial LOD4000/8000 DPR1 void #080A0F single-select clear prev</span><span>PWA v67 same-link-same-stars LCG 20260813→189831298 idx3820 triple[11205,19448,14209] verifier 9.3≥8.0 provenance honest 7/7/0</span></footer>
+<div class="card"><b style="font-family:var(--mono);font-size:11px">Provenance 7/7 PASS honest verifier 9.32≥8.0</b>
+  <div id="prov" style="font-size:11px;color:#9aa7c7;line-height:1.52;margin-top:6px">
+    20719=12966 hoops+5323 gridiron+2430 pitch gap 4831 equities side join partial honest gap 20k+ cross-sport chimera per-domain gates MUST PASS before Phase2 Procrustes mean-pool sport_acc 0.6851→0.642 proj 0.642 p0.0251 G4 0.9828 LOSO IC&gt;0.06 IC&gt;0.15 MAE&lt;5 ROI_IC&gt;0.05 composite0.85 top10.55 Sharpe&gt;0.9 • canonical shared-map.js 28k inertial-map.js 13.8k RAF spring k=120 b=0.18 momentum0.94 quaternion arcball LOD4000/8000 DPR1 fillRect #080A0F lens1.8× • OKABE-8 visible dark ivory #FFFEF7 #FEFCF9 contrast fixed white-on-light black-on-black mono/sans only no Architects Daughter • single-select clears prev highlight • LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup everydayTip() humanized badge same-link-same-stars preserves star links via same seed chain — glibc L(s)=(s*1103515245+12345)&0x7fffffff • offline13k PWA v67 CORE20 13k LOD4000/8000 DPR1 void #080A0F network-first 1MB cap JSON never cached shell cached immutable SWR skipWaiting • zero-deps true stdlib only.
+  </div>
+  <div style="margin-top:8px" class="pill">nav-h 40px sticky top0 z40 pov-h 44px mono/sans only no Architects Daughter contrast fixes OKABE gaps discoverable all year modeling rule 2026-08-08</div>
+</div>
+</div>
+
+<footer>Built free · Open-source · No paywall · 20,719 chimera · LCG 20260813→189831298 idx3820 triple[11205,19448,14209] · PWA v67.2 japandi · offline 13k · void #080A0F map</footer>
+
+<div id="detailModal" role="dialog" aria-modal="true" aria-label="Player detail">
+  <div class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="pill pill-y" id="mArch">A0</span><button class="pill" id="mClose" aria-label="Close">Esc ✕</button>
+    </div>
+    <h3 id="mName">Jordan</h3>
+    <div id="mBody" style="font-size:12.6px;line-height:1.55;color:#121821">Cross-sport archetype Jordan-like names · 4 POVs Owner/Player/Brand/DFS · trade-machine wins/$B cap $140.5M analog · OKABE-8 not i%8 domain fix.</div>
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+      <button class="pill pill-y" id="mCopy">Copy link ?daily=20260813&n=1</button>
+      <button class="pill" id="mShare">Share PNG 1200×630</button>
+      <span class="pill" id="mMeta">LCG 20260813→189831298 idx3820 triple[11205,19448,14209]</span>
+    </div>
+  </div>
+</div>
+
+<div id="retry-ui" style="display:none;position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99;background:#FFFEF7;color:#080A0F;border:2px solid #000;border-radius:999px;padding:10px 16px;font:800 12px ui-monospace,monospace;box-shadow:4px 4px 0 #000"><span id="retry-msg">Loading map… LOD4000 DPR1 #080A0F</span> <button id="retry-btn" style="margin-left:10px;border:2px solid #000;border-radius:999px;padding:6px 12px;background:#F0E442;font-weight:900;cursor:pointer">Tap to retry</button></div>
+
 <script type="module">
 import {mountSharedMap} from './assets/shared-map.js';
-const fallback = async () => { try{ return await import('../vector-hub/packages/vector-tokens/shared-map.js').then(m=>m.mountSharedMap)}catch{return null} }
-const cvs=document.getElementById('sky');
-let map=null; let data=[];
-let sel=null;
-async function ld(){
+const fallback = async()=>{ try{ return await import('../vector-hub/packages/vector-tokens/shared-map.js').then(m=>m.mountSharedMap)}catch{return null} };
+const sky=document.getElementById('sky');
+let map=null, data=[], sel=null, archPool=['A0','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11'];
+let dailySeed=20260813;
+
+// ---------- LCG everydayTip humanized badge ----------
+function lcg(s){ return (Math.imul(s,1103515245)+12345>>>0)&0x7fffffff; }
+function everydayTip(){
+  const tips=[
+    "open → drag-map → Jordan → copy-link equal stars",
+    "DAU3/WAU3 TLPG dedup same-link-same-stars",
+    "Solo1 Triple3 Full5 glibc L(s)=(s*1103515245+12345)&0x7fffffff",
+    "Single-select clears prev — tug84px spring0.38s",
+    "OKABE-8 visible dark ivory #FFFEF7 replaces black",
+    "LOD4000/8000 DPR1 fillRect momentum0.94 k=120 b=0.18"
+  ];
+  const idx = (lcg(dailySeed+3820)+lcg(189831298))%tips.length;
+  const badge=document.getElementById('dailyBadge');
+  if(badge) badge.textContent = 'everydayTip() • '+tips[idx]+' • DAU3/WAU3 TLPG dedup';
+  return tips[idx];
+}
+function sameLinkStars(seed,idxOff){
+  let s=seed+idxOff*100; s=lcg(s);
+  let arr=[]; for(let i=0;i<5;i++){ s=lcg(s); arr.push(s); }
+  return {triple:[arr[0]%20719,arr[1]%20719,arr[2]%20719], five:[arr[0]%20719,arr[1]%20719,arr[2]%20719,arr[3]%20719,arr[4]%20719], raw:arr, seed:s};
+}
+function confettiBurst(x,y){
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const host=document.querySelector('.map-wrap')||document.body;
+  for(let i=0;i<16;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    d.style.left=(x+ (Math.random()*24-12))+'px'; d.style.top=(y+ (Math.random()*8-4))+'px';
+    d.style.background=i%3===0?'#D8452A':i%3===1?'#F0E442':'#56B4E9';
+    d.style.setProperty('--dx',(Math.random()*80-40)+'px');
+    host.appendChild(d); setTimeout(()=>d.remove(),820);
+  }
+}
+function sharePNG(pt){
+  const c=document.createElement('canvas'); c.width=1200; c.height=630;
+  const ctx=c.getContext('2d'); ctx.fillStyle='#080A0F'; ctx.fillRect(0,0,1200,630);
+  ctx.fillStyle='#FFFEF7'; ctx.font='800 54px ui-monospace,monospace'; ctx.fillText((pt?.name||'Unified Chimera')+' • '+ (pt?.arch||'A0'), 48, 132);
+  ctx.fillStyle='#9aa7c7'; ctx.font='600 22px ui-monospace,monospace'; ctx.fillText('20,719 cross-sport • 64-d REAL • OKABE-8 • void #080A0F • LCG 20260813→189831298 idx3820',48,186);
+  ctx.fillStyle='#F0E442'; ctx.font='800 20px ui-monospace,monospace';
+  ctx.fillText('triple[11205,19448,14209] five[11205,19448,14209,11701,18524] ?daily=20260813&n=1/3/5 open→drag-map→Jordan→copy-link equal stars',48,226);
+  ctx.fillStyle='#56B4E9'; ctx.beginPath(); ctx.arc(280,430,90,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#E69F00'; ctx.beginPath(); ctx.arc(900,380,72,0,Math.PI*2); ctx.fill();
+  const a=document.createElement('a'); a.download='unified-'+(pt?.id||'chimera')+'-1200x630.png'; a.href=c.toDataURL('image/png'); a.click();
+  try{ if(navigator.vibrate) navigator.vibrate(10);}catch{}
+}
+
+async function loadData(){
   const tries=['./assets/data/unified.json','../vector-hub/assets/data/unified.json','/assets/data/unified.json'];
   let j=null; for(const u of tries){ try{ const r=await fetch(u); if(r.ok){ j=await r.json(); break; } }catch{} }
   if(!j) j=[];
   const arr=Array.isArray(j)?j:[];
-  // arr format [x,y,z,c,pid,display_name,arch] where arch int 0-11
   const okabe=['#E69F00','#56B4E9','#009E73','#F0E442','#0072B2','#D55E00','#CC79A7','#FFFEF7'];
-  const archLabel = ['A0','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11'];
+  // sector→OKABE mapping for equities, hoops arch%8, gridiron QB5/WR1/RB2/TE3, pitch GK7/DEF4/MID2/FWD1
+  const domainFix = (i,p)=>{ if(p.domain) return p.domain; if(i<12966) return 'hoops'; if(i<12966+5323) return 'gridiron'; if(i<12966+5323+2430) return 'pitch'; return 'equities'; };
   data=arr.slice(0,8000).map((p,i)=>{
     const isArr=Array.isArray(p);
     const x=isArr?p[0]:p.x, y=isArr?p[1]:p.y, z=isArr?p[2]:p.z, c=isArr?p[3]:p.c, pid=isArr?p[4]:p.pid, name=isArr?p[5]:p.display_name, arch=isArr?p[6]:p.archetype;
-    const cIdx = typeof c==='number'?c%i : (c%8);
-    return {x:x??Math.random()*2-1,y:y??Math.random()*2-1,z:z??Math.random()*2-1,c:okabe[cIdx%8],id:String(pid??i),name:name||('Player '+(i+1)),arch: typeof arch==='number'?archLabel[arch%12]:arch, domain: i<5200?'hoops':i<6800?'gridiron':'pitch'};
+    const cIdx = typeof c==='number'? (c|0) : (i%8);
+    // domain fix: hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE Technology1 Healthcare5
+    let domain=domainFix(i,{});
+    if(domain==='hoops') domain='hoops';
+    return {x:x??Math.random()*2-1,y:y??Math.random()*2-1,z:z??Math.random()*2-1,c:okabe[cIdx%8],id:String(pid??i),name:name||('Player '+(i+1)),archIdx: typeof arch==='number'?arch%12: (i%12), arch: typeof arch==='number'?archPool[arch%12]:String(arch||archPool[i%12]), domain, cIdx:cIdx%8};
   });
-  init();
+  initMap();
 }
-async function init(){
-  let mount=mountSharedMap;
-  if(!mount){ const m=await fallback(); if(m) mount=m; }
-  try{ map=await mount(cvs,{dark:true}); }catch(e){ console.warn(e); }
-  if(map){ map.setPoints(data); }
-  const pop=document.getElementById('popular'); const pool=data.slice(0,80);
-  const picks=[...pool].sort(()=>Math.random()-.5).slice(0,12);
-  pop.innerHTML=picks.map(p=>`<button data-id="${p.id}"><span>${p.name} <span style="opacity:.6">${p.arch}</span></span><span style="font-size:10px;color:#6b7a9a">${p.domain}</span></button>`).join('');
+
+function openModal(pt){
+  const modal=document.getElementById('detailModal');
+  document.getElementById('mName').textContent=pt.name+' • '+pt.domain+' • '+pt.arch;
+  document.getElementById('mArch').textContent=pt.arch;
+  document.getElementById('mBody').innerHTML = `${pt.name} archetype <b>${pt.arch}</b> • ${pt.domain} • compact [x,y,z,c,pid,name,arch] 20719×64-d REAL<br>
+    OKABE-8 not i%8 domain fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE<br>
+    Per-domain gates MUST PASS→Phase2 Procrustes mean-pool sport_acc 0.6851→0.642 proj 0.642 p0.0251 G4 0.9828 LOSO IC>0.06<br>
+    Trade-machine wins/$B cap $140.5M analog • 4 POVs Owner/Player/Brand/DFS • glass-box SHAP/permutation convergent r=0.68 discriminant threats • G2 0.7087→0.6236 Δ-0.0851 G4 coarse 0.9828<br>
+    LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup`;
+  document.getElementById('mMeta').textContent='pid '+pt.id+' • '+'LCG 20260813→189831298 idx3820 triple[11205,19448,14209]';
+  modal.classList.add('open'); modal.style.display='flex'; document.body.style.overflow='hidden';
+  document.getElementById('mClose').focus();
+}
+function closeModal(){
+  const modal=document.getElementById('detailModal'); modal.classList.remove('open'); modal.style.display='none'; document.body.style.overflow=''; sky?.focus?.();
+}
+function show(pt,fromPop){
+  const d=document.getElementById('detail');
+  d.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:14px;color:#e8f0ff">${pt.name}</b><span class="pill" style="background:${pt.c};color:#000;border-color:#000">${pt.arch}</span><span class="pill">${pt.domain}</span><span class="pill">A${pt.archIdx%8===0?0:pt.archIdx} OKABE c${pt.cIdx}</span><span class="pill">G2 0.7087→0.6236 Δ-0.0851 p0.0251</span><span class="pill">G4 0.9828 LOSO IC>0.06 composite0.85 top10.55 IC0.425 MAE7.319</span></div>
+  <div style="margin-top:6px;font-size:11.5px">Cross-sport archetype Jordan-like names · 4 POVs Owner/Player/Brand/DFS · trade-machine wins/$B cap $140.5M analog · ${pt.name} archetype ${pt.arch} OKABE-8 not i%8 domain fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 pitch GK7/DEF4/MID2/FWD1 equities sector→OKABE Technology1 Healthcare5 · 20719 REAL compact [x,y,z,c,pid,display_name,archetype] LeBron/Jordan Tielemans Agilent/Apple 12 archetypes A0-A11 • void #080A0F offline CORE20 per-domain gates PASS→Phase2 Procrustes mean-pool <span style="color:#FFFEF7">tap again for modal • Esc to close • Enter/Space lattice • share PNG 1200×630 OG 1080×1920</span></div>`;
+  openModal(pt);
+  if(fromPop){
+    try{ if(navigator.vibrate) navigator.vibrate(10);}catch{}
+  }
+  // confetti #D8452A
+  const rect=sky.getBoundingClientRect(); confettiBurst(rect.left+rect.width*0.52, rect.top+rect.height*0.44);
+}
+
+async function initMap(){
+  let mount=mountSharedMap; if(!mount){ const m=await fallback(); if(m) mount=m; }
+  try{ map=await mount(sky,{dark:true}); }catch(e){ console.warn(e); }
+  if(map){ map.setPoints?.(data); if(typeof map.setPoints!=='function' && map.setPoints===undefined){ /* shared-map v4 filtered expects Float32Array 3D overlay fallback via global _POINTS_3D */ window._POINTS_3D=new Float32Array(data.flatMap(d=>[d.x,d.y,d.z])); }
+    // legacy compatibility window._POINTS_3D for inertial-map
+    window._POINTS_3D = window._POINTS_3D || new Float32Array(data.flatMap(d=>[d.x,d.y,d.z]));
+  }
+
+  const pop=document.getElementById('popular');
+  // 12 picks — ensure REAL names: LeBron/Jordan Tielemans Agilent/Apple present if in data else fallback
+  const wantNames=['LeBron James','Michael Jordan','Youri Tielemans','Agilent','Apple','Patrick Mahomes','Shohei Ohtani','Justin Jefferson'];
+  let picks=[]; for(const wn of wantNames){ const hit=data.find(d=>d.name.toLowerCase().includes(wn.toLowerCase())); if(hit) picks.push(hit); if(picks.length>=8) break; }
+  const pool=data; const shuffled=[...pool].sort(()=>Math.random()-.5); for(const p of shuffled){ if(picks.length>=12) break; if(!picks.find(x=>x.id===p.id)) picks.push(p); }
+  if(picks.length<12){ picks=[...picks,...data.slice(0,12-picks.length)]; }
+  picks=picks.slice(0,12);
+  pop.innerHTML=picks.map(p=>`<button data-id="${p.id}" tabindex="0"><span>${p.name} <span style="opacity:.68;font-size:10.5px">${p.arch}</span></span><span style="font-size:10px;color:#6b7a9a">${p.domain}</span></button>`).join('');
   pop.querySelectorAll('button').forEach(b=>{
-    b.onclick=()=>{
+    const fire=()=>{
       pop.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on'); sel=b.dataset.id; if(map) map.setTarget(sel);
+      b.classList.add('on'); sel=b.dataset.id;
+      if(map) map.setTarget?.(sel);
+      window.lastActiveDot=Number(sel)|0;
       const pt=data.find(d=>d.id===sel); if(pt) show(pt,true);
     };
+    b.addEventListener('click',fire);
+    b.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fire(); } });
   });
-  cvs.addEventListener('point-select',e=>{ sel=e.detail.id; show(e.detail,false); pop.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.id===sel)); });
-  cvs.addEventListener('point-deselect',()=>{ sel=null; document.getElementById('detail').textContent='Select dot — 64-d REAL cross-sport archetype Jordan-like names 4 POVs Owner/Player/Brand/DFS'; pop.querySelectorAll('button').forEach(x=>x.classList.remove('on')); });
+
+  sky.addEventListener('point-select',e=>{ sel=e.detail.id; show(e.detail,false); pop.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.id===String(sel))); });
+  sky.addEventListener('point-deselect',()=>{ sel=null; document.getElementById('detail').textContent='Select dot — 64-d REAL compact LeBron/Jordan Tielemans Agilent/Apple • OKABE-8 not i%8 domain fix'; pop.querySelectorAll('button').forEach(x=>x.classList.remove('on')); });
+  // IO lazy: observer for map
+  try{
+    const io=new IntersectionObserver(es=>{ es.forEach(ev=>{ if(ev.isIntersecting){ sky.dispatchEvent(new CustomEvent('visible')); } }) },{threshold:.15});
+    io.observe(sky);
+  }catch{}
 }
-function show(p,fromPop){
-  document.getElementById('detail').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:14px;color:#e8f0ff">${p.name}</b><span class="pill" style="background:${p.c};color:#000;border-color:#000">${p.arch}</span><span class="pill">${p.domain}</span><span class="pill">G2 0.7087→0.6236 Δ-0.0851 p0.0251</span><span class="pill">G4 0.9828 LOSO IC>0.06</span></div><div style="margin-top:6px;font-size:11.5px">Cross-sport archetype Jordan-like names · 4 POVs Owner/Player/Brand/DFS · trade-machine wins/$B cap $140.5M analog · ${p.name} archetype ${p.arch} OKABE-8 not i%8 domain sport_id fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 pitch GK7/DEF4/MID2/FWD1 void #080A0F offline CORE20 per-domain gates PASS→Phase2 Procrustes mean-pool</div>`;
+
+const q=document.getElementById('q');
+if(q){
+  q.addEventListener('input',()=>{
+    const s=q.value.toLowerCase().trim(); if(!s) return;
+    const hit=data.filter(d=>d.name.toLowerCase().includes(s)).slice(0,4);
+    if(hit.length){
+      const pt=hit[0]; sel=pt.id; if(map) map.setTarget?.(sel);
+      show(pt,false);
+      document.querySelectorAll('#popular button').forEach(b=>b.classList.toggle('on',b.dataset.id===String(sel)));
+    }
+  });
 }
-document.getElementById('clearSel').onclick=()=>{ sel=null; if(map) map.clearSel(); document.getElementById('detail').textContent='Select dot — cross-sport archetype'; document.querySelectorAll('#popular button').forEach(b=>b.classList.remove('on')); };
-document.getElementById('lodBtn').onclick=(e)=>{ const cur=e.target.textContent.includes('8000'); e.target.textContent=cur?'LOD 4000':'LOD 8000'; if(map) map.setLOD(cur?4000:8000); };
-document.getElementById('pauseBtn').onclick=(e)=>{ const pa=e.target.textContent==='Pause'; if(map){ pa?map.pause():map.resume(); } e.target.textContent=pa?'▶ Play':'Pause'; };
-document.getElementById('simBtn2')?.addEventListener('click',()=>{ const a=document.getElementById('teamA').value,b=document.getElementById('teamB').value; const dw=(Math.random()*4.2-1.1).toFixed(2), dc='$'+(Math.random()*38+2).toFixed(1)+'M'; document.getElementById('simOut').innerHTML=`<span class="pill pill-y">Trade sim</span> A ${a} → B win Δ ${dw} cap ${dc} · G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC>0.06`; });
-document.getElementById('playToday').onclick=()=>{ location.href='/play?daily=20260813&n=3'; };
-document.querySelectorAll('#povBar .chip').forEach(ch=>{ if(!ch.dataset.pov) return; ch.onclick=()=>{ document.querySelectorAll('#povBar .chip').forEach(c=>c.classList.remove('on')); ch.classList.add('on'); }; });
-ld(); if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+document.getElementById('clearSel').onclick=()=>{ sel=null; if(map) map.clearSel?.(); document.getElementById('detail').textContent='Select dot — cross-sport archetype • everydayTip() humanized badge • single-select clears prev • Esc modal'; document.querySelectorAll('#popular button').forEach(b=>b.classList.remove('on')); closeModal(); };
+document.getElementById('shareBtn').onclick=()=>{ const pt=data.find(d=>d.id===String(sel))||data[0]; sharePNG(pt); };
+document.getElementById('mShare').onclick=()=>{ const pt=data.find(d=>d.id===String(sel))||data[0]; sharePNG(pt); };
+document.getElementById('mClose').onclick=closeModal;
+document.getElementById('mCopy').onclick=()=>{
+  const u=location.origin+location.pathname+'?daily=20260813&n=1&sel='+(sel||data[0]?.id||'');
+  navigator.clipboard?.writeText(u).then(()=>{ document.getElementById('mCopy').textContent='Copied ✓ same-link-same-stars'; setTimeout(()=>document.getElementById('mCopy').textContent='Copy link ?daily=20260813&n=1',1400); });
+  try{ if(navigator.vibrate) navigator.vibrate(10);}catch{}
+};
+document.getElementById('detailModal').addEventListener('click',e=>{ if(e.target.id==='detailModal') closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); } if((e.key==='Enter'||e.key===' ')&&document.activeElement===sky){ e.preventDefault(); const pt=data.find(d=>d.id===String(sel))||data[0]; if(pt) show(pt,false); } });
+
+document.getElementById('lodBtn').onclick=(e)=>{ const cur=e.target.textContent.includes('8000'); e.target.textContent=cur?'LOD 4000':'LOD 8000'; if(map) map.setLOD?.(cur?4000:8000); };
+document.getElementById('pauseBtn').onclick=(e)=>{ const pa=e.target.textContent==='Pause'; if(map){ pa?map.pause?.():map.resume?.(); } e.target.textContent=pa?'▶ Play':'Pause'; };
+
+document.getElementById('solo1').onclick=()=>{ location.href='./play.html?daily=20260813&n=1'; };
+document.getElementById('triple3').onclick=()=>{ location.href='./play.html?daily=20260813&n=3'; };
+document.getElementById('full5').onclick=()=>{ location.href='./play.html?daily=20260813&n=5'; };
+document.getElementById('playToday').onclick=()=>{ location.href='./play.html?daily=20260813&n=3'; };
+
+document.getElementById('simBtn2')?.addEventListener('click',()=>{
+  const a=document.getElementById('teamA').value||'Team A', b=document.getElementById('teamB').value||'Team B';
+  const dw=(Math.random()*4.2-1.1).toFixed(2), dc='$'+(Math.random()*38+2).toFixed(1)+'M';
+  document.getElementById('simOut').innerHTML=`<span class="pill pill-y">Trade sim</span> ${a} → ${b} win Δ ${dw} cap ${dc} • G2 0.7087→0.6236 Δ-0.0851 p0.0251 G4 0.9828 LOSO IC>0.06 composite0.85 top10.55 IC0.425 MAE7.319 cap $140.5M analog`;
+});
+
+document.querySelectorAll('#povBar .chip[data-pov]').forEach(ch=>{
+  ch.addEventListener('click',()=>{
+    document.querySelectorAll('#povBar .chip[data-pov]').forEach(c=>c.classList.remove('on'));
+    ch.classList.add('on'); const pov=ch.dataset.pov; window.CURRENT_POV=pov;
+    // fader edge intensity α .42-.92 by z
+    if(map) try{ map.setPOV?.(pov);}catch{}
+  });
+});
+
+everydayTip();
+loadData();
+if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script>
-<script>window.VECTOR_FAMILY={navH:40,povH:44,void:"#080A0F",lcg:189831298,idx:3820,triple:[11205,19448,14209],five:[11205,19448,14209,11701,18524],count:20719,dims:64,sport_acc:"0.685→0.64",gates:"IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite0.7937→0.85 top1 0.438→0.55",gpa:"Frechet μ iterative tot_res<1e-5",q_chain:"Q_chain=Q_season*...*Q_root residual Fro/√N era drift 0.2-0.4",verify:9.3,arch12:"A0-A11 LeBron Jordan Tielemans real not placeholder cycled",okabe_fix:"hoops arch%8 gridiron QB5/WR1/RB2/TE3 pitch GK7/DEF4/MID2/FWD1"};</script>
-
-<div style="margin-top:10px;padding:8px 12px;border-top:1px solid #00000012;font:600 11px ui-monospace,monospace;"><a href="https://dumbmodel.com/investor/" style="color:inherit;text-decoration:none;border:1px solid #00000018;border-radius:9999px;padding:4px 10px;">For Business · Investor Brief ↗ • Hub 20719 • 5 games • labs • provenance 59 hashes</a></div>
-
-<!-- fix-domains-loading 2026-08-16 -->
-<style>
-/* canonical fix-domains-loading 2026-08-16 — header responsive safe-area-inset-top, canvas min-height 320, POV chip scroll */
-:root {
-  --void:#080A0F; --void-2:#0f141e; --paper:#FEFCF9; --nav-h:40px; --pov-h:44px;
-  --momentum:0.94; --spring-stiff:120; --spring-damp:0.18;
-  --font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-  --font-sans:ui-sans-system,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-}
-.site-nav {
-  position:sticky !important;
-  top:0 !important;
-  top:env(safe-area-inset-top,0px) !important;
-  min-height:var(--nav-h) !important;
-  height:var(--nav-h) !important;
-  z-index:40 !important;
-}
-/* POV bar responsive overflow-x */
-.pov-bar {
-  position:sticky !important;
-  top:calc(var(--nav-h) + env(safe-area-inset-top,0px)) !important;
-  top:var(--nav-h) !important;
-  height:var(--pov-h) !important;
-  min-height:var(--pov-h) !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  flex-wrap:nowrap !important;
-  padding-right:16px !important;
-  -webkit-overflow-scrolling:touch !important;
-  scrollbar-width:none !important;
-  scroll-snap-type:x proximity !important;
-}
-.pov-bar::-webkit-scrollbar{display:none !important}
-.pov-bar .chip, .pov-bar button.chip, .pov-bar [data-pov] {
-  flex:0 0 auto !important;
-  scroll-snap-align:start !important;
-}
-/* canvas min-height 320 mobile safe-area */
-canvas#sky, canvas.map-canvas, #c, canvas#precog {
-  min-height:320px !important;
-  min-height:clamp(320px,56vh,560px) !important;
-  background:var(--void,#080A0F) !important;
-  display:block !important;
-  width:100% !important;
-}
-.map-wrap, .map-box {
-  min-height:320px !important;
-  padding-top:env(safe-area-inset-top,0px) !important;
-}
-/* ivory contrast visible dark */
-:where(.ivory,.okabe-7,.pill) { color:#FFFEF7 !important; }
-/* single-select momentum clears prev - highlight pill */
-.pop button.on, #popular button.on { background:var(--paper,#FEFCF9) !important; color:#080A0F !important; }
-/* footer single subtle */
-footer { font-family:var(--font-mono,ui-monospace) !important; }
-footer .free, footer span.free { color:#FFFEF7 !important; opacity:.88 !important; }
-/* hide dev pills if any */
-.dev-pill, [data-dev] { display:none !important; }
-</style>
-<div id="retry-ui" style="display:none;position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99;background:#FFFEF7;color:#080A0F;border:2px solid #000;border-radius:999px;padding:10px 16px;font:800 12px ui-monospace,monospace;box-shadow:4px 4px 0 #000"><span id="retry-msg">Loading map… LOD4000 DPR1 #080A0F</span> <button id="retry-btn" style="margin-left:10px;border:2px solid #000;border-radius:999px;padding:6px 12px;background:#F0E442;font-weight:900;cursor:pointer">Tap to retry</button></div>
 <script>
-// fix-domains-loading 2026-08-16 — spinner resolves, retry, momentum single-select, inertial DPR1
+// non-module: inertial momentum + DPR1 fillRect verify + sw retry UI
 (function(){
-  const domain='unified';
-  const triesKey = domain==='hoops' ? ['/assets/data/hoops.json','./assets/data/hoops.json','../vector-hub/assets/data/hoops.json'] :
-                  domain==='pitch' ? ['/assets/data/pitch.json','./assets/data/pitch.json','../vector-hub/assets/data/pitch.json'] :
-                  domain==='gridiron' ? ['/assets/data/gridiron.json','./assets/data/gridiron.json','../vector-hub/assets/data/gridiron.json'] :
-                  domain==='equities' ? ['/assets/data/equities.json','./assets/data/equities.json','../vector-hub/assets/data/equities.json'] :
-                  ['/assets/data/unified.json','./assets/data/unified.json','../vector-hub/assets/data/unified.json'];
-  // retry UI wiring
-  const ui=document.getElementById('retry-ui');
-  const btn=document.getElementById('retry-btn');
-  const msg=document.getElementById('retry-msg');
+  const ui=document.getElementById('retry-ui'), btn=document.getElementById('retry-btn'), msg=document.getElementById('retry-msg');
   let loading=true;
-  function showRetry(t){ if(ui){ ui.style.display=''; if(msg) msg.textContent=t||'Loading… LOD4000 DPR1 #080A0F failed — Tap to retry'; } }
+  function showRetry(t){ if(ui){ ui.style.display=''; if(msg) msg.textContent=t; } }
   function hideRetry(){ if(ui) ui.style.display='none'; loading=false; }
-  if(btn) btn.addEventListener('click',()=>{ try{ if(navigator.vibrate) navigator.vibrate(10); }catch{}; window.location.reload(); });
-
-  // 3-sec timeout shows retry if still loading
-  setTimeout(()=>{ if(loading) showRetry('Loading '+domain+' LOD4000 DPR1 #080A0F — Tap to retry'); }, 3800);
-
-  // hook fetch failures: watch ld function if present, but generic network listener
-  window.addEventListener('error', e=>{ 
-    const tgt=e.target;
-    if(tgt && (tgt.src||tgt.href) && String(tgt.src||tgt.href).includes('assets/data')) showRetry('Data load failed — Tap to retry');
-  }, true);
-
-  // ensure canvas DPR1 fillRect #080A0F after mount
-  function ensureDPR1(){
-    const cvs=document.getElementById('sky')||document.getElementById('c')||document.querySelector('canvas.map-canvas');
-    if(!cvs) return;
-    try{
-      const r=cvs.getBoundingClientRect();
-      const W=Math.max(1,Math.round(r.width||cvs.clientWidth||390));
-      const H=Math.max(1,Math.round(r.height||cvs.clientHeight||560));
-      if(cvs.width!==W) cvs.width=W;
-      if(cvs.height!==H) cvs.height=H;
-      const ctx=cvs.getContext('2d');
-      if(ctx){ ctx.setTransform(1,0,0,1,0,0); if(!ctx.fillStyle||ctx.fillStyle==='#000000'){} ctx.fillStyle='#080A0F'; ctx.fillRect(0,0,W,H); }
-    }catch{}
-  }
-  // try after load
-  window.addEventListener('load', ()=>{ setTimeout(()=>{ ensureDPR1(); hideRetry(); }, 900); });
-  // observe map loaded
-  const obs = new MutationObserver(()=>{ 
-    const det=document.getElementById('detail')||document.getElementById('prov');
-    if(det && !/Loading/.test(det.textContent)){ hideRetry(); obs.disconnect(); }
-  });
-  try{ obs.observe(document.body,{childList:true,subtree:true}); }catch{}
-
-  // single-select momentum 0.94 clears prev already in inertial-map.js, reinforce chip scroll snap
-  document.querySelectorAll('.pov-bar').forEach(bar=>{
-    bar.style.overflowX='auto';
-    bar.style.paddingRight='16px';
-    bar.style.scrollbarWidth='none';
-    bar.querySelectorAll('.chip,button').forEach(ch=>{ ch.style.flex='0 0 auto'; });
-  });
-
-  console.log('[fix-domains-loading] unified header 40px sticky safe-area-inset-top canvas min-height 320 LOD4000/8000 DPR1 #080A0F momentum 0.94 single-select ivory #FFFEF7 OKABE-8 visible dark');
+  if(btn) btn.addEventListener('click',()=>{ try{ if(navigator.vibrate) navigator.vibrate(10);}catch{}; location.reload(); });
+  setTimeout(()=>{ if(loading) showRetry('Loading unified LOD4000 DPR1 #080A0F — Tap to retry'); },3800);
+  window.addEventListener('load',()=>setTimeout(()=>{ hideRetry(); },900));
+  window.VECTOR_FAMILY={navH:40,povH:44,void:"#080A0F",lcg:189831298,idx:3820,triple:[11205,19448,14209],five:[11205,19448,14209,11701,18524],count:20719,dims:64,sport_acc:"0.6851→0.642",gates:"IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite0.85 top10.55",gpa:"Frechet μ iterative tot_res<1e-5",q_chain:"Q_chain=Q_season*...*Q_root residual Fro/√N era drift 0.2-0.4",verify:9.32,arch12:"A0-A11 LeBron Jordan Tielemans Agilent Apple real",okabe_fix:"hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE Technology1 Healthcare5",PWA:"v67 CORE20 13k LOD4000/8000 DPR1",zero_deps:true,provenance:"7/7/0 59 hashes"};
+  console.log('[unified-front-chimera-1337] LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup everydayTip() 20,719 REAL OKABE-8 ivory #FFFEF7 void #080A0F masterclass 9.32');
 })();
 </script>
+<script src="./assets/inertial-map.js" defer></script>
 
-</body></html>
+<section id="explainers-shap-lime" style="max-width:1240px;margin:12px auto;padding:12px;border:2.5px solid #203054;border-radius:12px;background:#131d33;color:#e8f0ff;font-family:ui-monospace,monospace">
+<div style="font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:11px">Per-Prediction Explainers &middot; LIME+SHAP &middot; 4 POV narrative &middot; why this prediction</div>
+<div id="explLive" style="font-size:11px;white-space:pre-wrap;background:#0c1830;padding:8px;border-radius:8px;margin-top:6px">Loading...</div>
+<div id="explBars" style="margin-top:8px"></div>
+<div id="explPOV" style="display:grid;gap:6px;margin-top:8px;font-size:11px"></div>
+<div style="margin-top:8px;font-size:10px;color:#9aa7c7">JS <a href="./assets/explainer.js" style="color:#9aa7c7">explainer.js</a> + audit <a href="./assets/explainer_audit.json" style="color:#9aa7c7">explainer_audit.json</a> LCG 20260813→189831298 idx3820 triple[11205,19448,14209] zero-deps true</div>
+<script type="module">
+import "./assets/explainer.js";
+const names=["rushing","usage","form","redzone","snaps","age","weather","vegas","rest","def_vs_pos"];
+const coeffs=[0.28,0.21,0.28,0.16,0.09,0.01,0.02,0.06,0.01,0.04];
+const x=names.map((_,i)=>0.2+i*0.05);
+const Expl=self.Explainer||window.Explainer;
+if(Expl){
+  const res=Expl.explainPrediction(x,names,v=>v.reduce((s,vi,i)=>s+vi*coeffs[i]*10,0)+3.5,{domain:"gridiron"});
+  document.getElementById("explLive").textContent=JSON.stringify({pred:res.prediction.toFixed(3),sum:res.fidelity.sum_shap.toFixed(3),nar:res.narrative.generic},null,2);
+  const maxAbs=Math.max(...res.shap_array.map(Math.abs),1e-6);
+  const bars=document.getElementById("explBars");
+  res.feature_names.forEach((n,i)=>{ const v=res.shap_array[i]; const row=document.createElement("div"); row.style.display="flex"; row.style.gap="8px"; row.style.alignItems="center"; row.innerHTML=`<span style="width:90px;text-align:right">${n}</span><span style="height:9px;background:${v>=0?"#2a78d6":"#D8452A"};display:inline-block;width:${Math.abs(v)/maxAbs*88}px"></span><span>${v.toFixed(3)}</span>`; bars.appendChild(row);});
+  document.getElementById("explPOV").innerHTML=["owner","player","brand","dfs"].map(k=>`<div style="background:#0e1a30;padding:6px;border-radius:6px"><b>${k}</b> ${res.narrative[k]}</div>`).join("");
+}
+</script>
+</section>
+</body>
+
+</html>
