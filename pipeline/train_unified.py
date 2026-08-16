@@ -17,7 +17,7 @@ Encoders are frozen. Only learnable: adapters, trunk, heads, temperatures.
 Honest v0 scope / OOM guard:
   * Hoops emb v3 48-d cache, pitch 24-d cached, gridiron regenerated from mtnn_best.pt.
   * Hatch VM missing embedding_v3.npz / mtnn_best.pt / pitch_mtnn_embeddings.json
-    → fallback 15-feat 6 families pt 3.7MB placeholder synthetic matrix (12966/5323/2430),
+    → PRODUCTION-ONLY per 2026-08-15: real unified_matrix.npz 20719 required, NO synthetic fallback, honest 503 if missing,
     gated honest not promoted, pending 130 feats full 18 families LOCAL-GPU deferred.
   * Zero-deps true, torch auto cuda else cpu, pacing :01 lite 3 max concurrent / <7 total,
     LOCAL-GPU exempt.
@@ -417,13 +417,13 @@ def load_matrix_normal(device, market=False, cultural_text=False):
 def load_matrix(device, market=False, cultural_text=False):
     mp = UCACHE / "unified_matrix.npz"
     if not mp.exists():
-        return _fallback_synthetic_matrix(device)
+        import sys; print('[unified] BLOCKED fallback — production-only honest 503', file=sys.stderr); sys.exit(2)
     try:
         return load_matrix_normal(device, market=market, cultural_text=cultural_text)
     except FileNotFoundError as e:
         # honest OOM guard — missing caches referenced inside normal loader
         print(f"[load_matrix] {e} → fallback", file=sys.stderr)
-        return _fallback_synthetic_matrix(device)
+        import sys; print('[unified] BLOCKED fallback — production-only honest 503', file=sys.stderr); sys.exit(2)
 
 
 def per_sport_pools(M):
