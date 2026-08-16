@@ -8,7 +8,7 @@
    - LCG 20260813→189831298 idx3820 triple[11205,19448,14209] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5
    - provenance 7/7/0 59 hashes — zero-deps true stdlib only
 */
-const CACHE_NAME = 'vector-unified-v67-offline13k';
+const CACHE_NAME = 'dumbmodel-v67.2-unified-japandi-33';
 const CORE = [
 '/',
 '/index.html',
