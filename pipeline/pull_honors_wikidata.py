@@ -28,9 +28,8 @@ import sys
 from collections import defaultdict
 
 import requests
-
-from resolve_names import MARKET
 from match_names import match_external
+from resolve_names import MARKET
 
 UA = "VectorUnifiedResearch/0.1 (athlete market/cultural signal research; local build)"
 ENDPOINT = "https://query.wikidata.org/sparql"
@@ -45,21 +44,88 @@ SPORT_Q_REV = {v: k for k, v in SPORT_Q.items()}
 
 # ---- award prestige tiers (schema §2) ----
 TIERS = [
-    (0.85, ["mvp", "most valuable player", "dpoy", "defensive player of the year",
-            "finals mvp", "ballon d'or", "the best", "fifa best", "golden ball",
-            "kopa trophy", "yashin trophy", "super bowl mvp", "finals most valuable"]),
-    (0.50, ["all-nba first", "all-nba 1st", "first-team all-nba", "all-pro first",
-            "first-team all-pro", "fifpro", "fifpro world xi", "uefa team of the year",
-            "uefa toty", "team of the year"]),
-    (0.30, ["all-star", "all star", "pro bowl", "team of the tournament",
-            "all-star team", "world cup all-star", "tournament team"]),
-    (0.20, ["rookie of the year", "roy", "golden boy", "young player",
-            "young player of the", "most improved", "mip", "sixth man", "6th man",
-            "comeback player"]),
-    (0.40, ["championship", "champion", "nba championship", "super bowl champion",
-            "world cup winner", "world cup champion", "league title", "continental",
-            "cup winner", "trophy winner", "golden boot", "top scorer", "assist leader",
-            "scoring champion", "gold medal", "silver medal", "bronze medal"]),
+    (
+        0.85,
+        [
+            "mvp",
+            "most valuable player",
+            "dpoy",
+            "defensive player of the year",
+            "finals mvp",
+            "ballon d'or",
+            "the best",
+            "fifa best",
+            "golden ball",
+            "kopa trophy",
+            "yashin trophy",
+            "super bowl mvp",
+            "finals most valuable",
+        ],
+    ),
+    (
+        0.50,
+        [
+            "all-nba first",
+            "all-nba 1st",
+            "first-team all-nba",
+            "all-pro first",
+            "first-team all-pro",
+            "fifpro",
+            "fifpro world xi",
+            "uefa team of the year",
+            "uefa toty",
+            "team of the year",
+        ],
+    ),
+    (
+        0.30,
+        [
+            "all-star",
+            "all star",
+            "pro bowl",
+            "team of the tournament",
+            "all-star team",
+            "world cup all-star",
+            "tournament team",
+        ],
+    ),
+    (
+        0.20,
+        [
+            "rookie of the year",
+            "roy",
+            "golden boy",
+            "young player",
+            "young player of the",
+            "most improved",
+            "mip",
+            "sixth man",
+            "6th man",
+            "comeback player",
+        ],
+    ),
+    (
+        0.40,
+        [
+            "championship",
+            "champion",
+            "nba championship",
+            "super bowl champion",
+            "world cup winner",
+            "world cup champion",
+            "league title",
+            "continental",
+            "cup winner",
+            "trophy winner",
+            "golden boot",
+            "top scorer",
+            "assist leader",
+            "scoring champion",
+            "gold medal",
+            "silver medal",
+            "bronze medal",
+        ],
+    ),
 ]
 
 
@@ -77,14 +143,17 @@ def prestige_score(tiers: list[float]) -> float:
         return 0.0
     prod = 1.0
     for t in tiers:
-        prod *= (1.0 - t)
+        prod *= 1.0 - t
     return round(1.0 - prod, 4)
 
 
 def run_query(q: str):
-    r = requests.get(ENDPOINT, params={"query": q, "format": "json"},
-                     headers={"User-Agent": UA, "Accept": "application/sparql-results+json"},
-                     timeout=120)
+    r = requests.get(
+        ENDPOINT,
+        params={"query": q, "format": "json"},
+        headers={"User-Agent": UA, "Accept": "application/sparql-results+json"},
+        timeout=120,
+    )
     r.raise_for_status()
     return r.json()["results"]["bindings"]
 
@@ -123,7 +192,7 @@ def main():
     MARKET.mkdir(parents=True, exist_ok=True)
     idx = json.loads((MARKET / "name_index.json").read_text(encoding="utf-8"))
 
-    honors: dict[str, dict] = {}   # qid -> {name, sport, country, birthyear, awards:[{label, when, tier}]}
+    honors: dict[str, dict] = {}  # qid -> {name, sport, country, birthyear, awards:[{label, when, tier}]}
     handles: dict[str, dict] = {}  # qid -> {name, sport, twitter, facebook}
     n_uncat = 0
 
@@ -139,9 +208,13 @@ def main():
             if not qidu:
                 continue
             if qidu not in honors:
-                honors[qidu] = {"name": val(b, "itemLabel") or "", "sport_unified": sport,
-                                "country": val(b, "countryLabel"), "birthyear": None,
-                                "awards": []}
+                honors[qidu] = {
+                    "name": val(b, "itemLabel") or "",
+                    "sport_unified": sport,
+                    "country": val(b, "countryLabel"),
+                    "birthyear": None,
+                    "awards": [],
+                }
             if val(b, "birthYear"):
                 try:
                     honors[qidu]["birthyear"] = int(val(b, "birthYear"))
@@ -170,38 +243,49 @@ def main():
             if not qidu:
                 continue
             if qidu not in handles:
-                handles[qidu] = {"name": val(b, "itemLabel") or "", "sport_unified": sport,
-                                 "twitter": None, "facebook": None}
+                handles[qidu] = {
+                    "name": val(b, "itemLabel") or "",
+                    "sport_unified": sport,
+                    "twitter": None,
+                    "facebook": None,
+                }
             if val(b, "tw"):
                 handles[qidu]["twitter"] = val(b, "tw")
             if val(b, "fb"):
                 handles[qidu]["facebook"] = val(b, "fb")
-        print(f"  handles: {len(rows)} rows, {len([q for q in handles if handles[q]['sport_unified']==sport])} athletes")
+        print(
+            f"  handles: {len(rows)} rows, {len([q for q in handles if handles[q]['sport_unified']==sport])} athletes"
+        )
 
     # REFUSE TO OVERWRITE ON A SILENTLY EMPTY SPORT. A wrong sport QID returns 0 rows and
     # a healthy query for a sport with no award-holders would too — but the second case
     # does not exist for these three leagues, so 0 means the query is broken. Writing
     # anyway is what let a comune in Piedmont stand in for the NFL across two artifacts
     # and a derived one, until 7.12 measured the hole from the far end.
-    empty = [sp for sp in SPORT_Q
-             if not any(v["sport_unified"] == sp for v in honors.values())
-             or not any(v["sport_unified"] == sp for v in handles.values())]
+    empty = [
+        sp
+        for sp in SPORT_Q
+        if not any(v["sport_unified"] == sp for v in honors.values())
+        or not any(v["sport_unified"] == sp for v in handles.values())
+    ]
     if empty:
         raise SystemExit(
             f"REFUSING TO WRITE: no rows for {', '.join(empty)}. Check the sport QID in "
             f"SPORT_Q ({', '.join(f'{k}={v}' for k, v in SPORT_Q.items())}) — a QID that "
-            f"is not a sport returns an empty result set, not an error.")
+            f"is not a sport returns an empty result set, not an error."
+        )
 
     # write raw honors + handles
-    (MARKET / "honors_wikidata.json").write_text(
-        json.dumps(honors, indent=2, ensure_ascii=False), encoding="utf-8")
-    (MARKET / "social_handles.json").write_text(
-        json.dumps(handles, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\nraw: {len(honors)} athletes-with-awards, {len(handles)} athletes-with-handles "
-          f"(uncategorized awards: {n_uncat})")
+    (MARKET / "honors_wikidata.json").write_text(json.dumps(honors, indent=2, ensure_ascii=False), encoding="utf-8")
+    (MARKET / "social_handles.json").write_text(json.dumps(handles, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(
+        f"\nraw: {len(honors)} athletes-with-awards, {len(handles)} athletes-with-handles "
+        f"(uncategorized awards: {n_uncat})"
+    )
 
     # match to native players + compute AWARD_PRESTIGE / AWARD_RECENT
     import datetime
+
     this_year = datetime.date.today().year
     prestige = {}
     tiers_used = defaultdict(int)
@@ -213,8 +297,9 @@ def main():
             continue
         aw = h["awards"]
         career_tiers = [a["tier"] for a in aw if a["tier"] is not None]
-        recent_tiers = [a["tier"] for a in aw if a["tier"] is not None
-                        and a["year"] is not None and a["year"] >= this_year - 2]
+        recent_tiers = [
+            a["tier"] for a in aw if a["tier"] is not None and a["year"] is not None and a["year"] >= this_year - 2
+        ]
         for t in career_tiers:
             tiers_used[t] += 1
         prestige[pid] = {
@@ -229,8 +314,7 @@ def main():
             "awards": aw,
             "match_tier": tier,
         }
-    (MARKET / "award_prestige.json").write_text(
-        json.dumps(prestige, indent=2, ensure_ascii=False), encoding="utf-8")
+    (MARKET / "award_prestige.json").write_text(json.dumps(prestige, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"\nmatched to native: {len(prestige)} players (match tiers: {dict(match_tiers)})")
     print(f"tier weights used (career): { {str(k): v for k, v in tiers_used.items()} }")

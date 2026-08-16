@@ -164,7 +164,7 @@ def q_archetype(rows: list[dict], dropped: dict) -> None:
     for _ in range(SHUFFLES):
         rng.shuffle(labels)
         g: dict[str, list[float]] = defaultdict(list)
-        for a, v in zip(labels, vals):
+        for a, v in zip(labels, vals, strict=False):
             g[a].append(v)
         m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
         if len(m) >= 2:
@@ -215,7 +215,7 @@ def q_roster_mix() -> None:
 
     pts = []
     for oid, archs in roster.items():
-        if len(archs) < 8:            # a roster, not a fragment
+        if len(archs) < 8:  # a roster, not a fragment
             continue
         net = (orgs[oid].get("features") or {}).get("NET_RATING")
         if net is None:
@@ -250,8 +250,7 @@ def q_roster_mix() -> None:
     lo = statistics.mean([y for x, y in pts if x <= statistics.quantiles(xs, n=4)[0]])
     hi = statistics.mean([y for x, y in pts if x >= statistics.quantiles(xs, n=4)[2]])
     print(f"    HHI range        : {min(xs):.3f} .. {max(xs):.3f}")
-    print(f"    mean NET_RATING  : most-diverse quartile {lo:+.2f}   "
-          f"most-concentrated quartile {hi:+.2f}")
+    print(f"    mean NET_RATING  : most-diverse quartile {lo:+.2f}   " f"most-concentrated quartile {hi:+.2f}")
     print(f"    pearson r        : {r:+.3f}")
     print(f"    shuffle p95 |r|  : {null_p95:.3f}   ({SHUFFLES} permutations, seed {SEED})")
     if abs(r) > null_p95:
@@ -325,8 +324,7 @@ def q_salary_concentration(sport: str = "hoops") -> None:
         return
 
     caps = sorted(
-        (o["attrs"]["capacity"] for o in orgs.values()
-         if o["sport"] == sport and (o.get("attrs") or {}).get("capacity"))
+        o["attrs"]["capacity"] for o in orgs.values() if o["sport"] == sport and (o.get("attrs") or {}).get("capacity")
     )
 
     def cap_pct(c: int) -> float:
@@ -365,18 +363,13 @@ def q_salary_concentration(sport: str = "hoops") -> None:
     r = statistics.correlation(xs, ys)
     rng = random.Random(SEED)
     shuffled = list(ys)
-    null = [
-        abs(statistics.correlation(xs, shuffled))
-        for _ in range(SHUFFLES)
-        if not rng.shuffle(shuffled)
-    ]
+    null = [abs(statistics.correlation(xs, shuffled)) for _ in range(SHUFFLES) if not rng.shuffle(shuffled)]
     p95 = sorted(null)[int(0.95 * len(null))]
 
     q = statistics.quantiles(xs, n=4)
     small = statistics.mean([y for x, y in pts if x <= q[0]])
     big = statistics.mean([y for x, y in pts if x >= q[2]])
-    print(f"    salary HHI       : smallest-venue quartile {small:.4f}   "
-          f"largest {big:.4f}")
+    print(f"    salary HHI       : smallest-venue quartile {small:.4f}   " f"largest {big:.4f}")
     print(f"    pearson r        : {r:+.3f}")
     print(f"    shuffle p95 |r|  : {p95:.3f}   ({SHUFFLES} permutations, seed {SEED})")
     if abs(r) > p95:
@@ -441,7 +434,7 @@ def q_league_style() -> None:
         ds = []
         for c, counts in by_c.items():
             n = sum(counts.values())
-            if n < 100:            # a league sample, not a handful of players
+            if n < 100:  # a league sample, not a handful of players
                 continue
             ds.append(sum(abs(counts.get(a, 0) / n - gdist.get(a, 0)) for a in gdist))
         return statistics.mean(ds) if ds else 0.0
@@ -453,11 +446,10 @@ def q_league_style() -> None:
     null = []
     for _ in range(SHUFFLES):
         rng.shuffle(countries)
-        null.append(mean_l1(list(zip(countries, archs))))
+        null.append(mean_l1(list(zip(countries, archs, strict=False))))
     p95 = sorted(null)[int(0.95 * len(null))]
 
-    kept = {c for c in set(c for c, _ in pairs)
-            if sum(1 for x, _ in pairs if x == c) >= 100}
+    kept = {c for c in set(c for c, _ in pairs) if sum(1 for x, _ in pairs if x == c) >= 100}
     print(f"    countries with n>=100 : {len(kept)}  {sorted(kept)[:6]}")
     print(f"    observed mean L1      : {observed:.4f}")
     print(f"    shuffle p95           : {p95:.4f}   ({SHUFFLES} permutations, seed {SEED})")
@@ -552,7 +544,7 @@ def q_archetype_pay(sport: str = "hoops") -> None:
     for _ in range(SHUFFLES):
         rng.shuffle(labels)
         g: dict[str, list[float]] = defaultdict(list)
-        for a, v in zip(labels, vals):
+        for a, v in zip(labels, vals, strict=False):
             g[a].append(v)
         m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
         if len(m) >= 2:
@@ -661,7 +653,7 @@ def q_pay_within_usage_band() -> None:
         for _ in range(SHUFFLES):
             rng.shuffle(labels)
             g: dict[str, list[float]] = defaultdict(list)
-            for a, v in zip(labels, vals):
+            for a, v in zip(labels, vals, strict=False):
                 g[a].append(v)
             m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
             if len(m) >= 2:
@@ -669,8 +661,10 @@ def q_pay_within_usage_band() -> None:
         p95 = sorted(null)[int(0.95 * len(null))] if null else 0.0
         ok = observed > p95
         cleared += ok
-        print(f"    {label:22} n={len(band):5}  spread {100 * observed:5.2f}pp  "
-              f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}")
+        print(
+            f"    {label:22} n={len(band):5}  spread {100 * observed:5.2f}pp  "
+            f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}"
+        )
 
     print()
     if cleared == len(bands):
@@ -793,7 +787,7 @@ def q_pay_within_quality_band() -> None:
         for _ in range(SHUFFLES):
             rng.shuffle(labels)
             g: dict[str, list[float]] = defaultdict(list)
-            for a, v in zip(labels, vals):
+            for a, v in zip(labels, vals, strict=False):
                 g[a].append(v)
             m = [statistics.mean(v) for v in g.values() if len(v) >= 30]
             if len(m) >= 2:
@@ -801,8 +795,10 @@ def q_pay_within_quality_band() -> None:
         p95 = sorted(null)[int(0.95 * len(null))] if null else 0.0
         ok = observed > p95
         cleared += ok
-        print(f"    {label:26} n={len(band):5}  spread {100 * observed:5.2f}pp  "
-              f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}")
+        print(
+            f"    {label:26} n={len(band):5}  spread {100 * observed:5.2f}pp  "
+            f"p95 {100 * p95:5.2f}  {'CLEARS' if ok else 'no'}"
+        )
 
     # WHICH roles carry the premium, and whether the ordering survives quality. A role that
     # is top-paid at EVERY quality level is a genuine premium; one that only leads in the
@@ -815,8 +811,7 @@ def q_pay_within_quality_band() -> None:
         hdr = "    " + f"{'archetype':10}" + "".join(f"{lbl.split()[0]:>12}" for lbl in rank_by_band)
         print(hdr)
         overall = {
-            a: statistics.mean([mean_by_band[b][a] for b in rank_by_band if a in mean_by_band[b]])
-            for a in common
+            a: statistics.mean([mean_by_band[b][a] for b in rank_by_band if a in mean_by_band[b]]) for a in common
         }
         for a in sorted(overall, key=lambda x: -overall[x]):
             row = f"    {a:10}"
@@ -834,8 +829,10 @@ def q_pay_within_quality_band() -> None:
             print("    a role premium that holds at every level of measured impact.")
         else:
             _lab = arch_labels()
-            print("    top-paid role is NOT stable across bands: "
-                  + ", ".join(f"{t} ({_lab.get(t,'?')})" for t in sorted(tops)))
+            print(
+                "    top-paid role is NOT stable across bands: "
+                + ", ".join(f"{t} ({_lab.get(t,'?')})" for t in sorted(tops))
+            )
             print("    The premium ordering is quality-dependent, not a fixed role effect:")
             print("    which role commands the most pay DEPENDS on the quality band.")
         if len(bots) == 1:
@@ -884,15 +881,13 @@ def positive_control() -> bool:
     r = statistics.correlation(xs, ys)
     rng = random.Random(SEED)
     shuffled = list(ys)
-    null = [
-        abs(statistics.correlation(xs, shuffled))
-        for _ in range(SHUFFLES)
-        if not rng.shuffle(shuffled)
-    ]
+    null = [abs(statistics.correlation(xs, shuffled)) for _ in range(SHUFFLES) if not rng.shuffle(shuffled)]
     p95 = sorted(null)[int(0.95 * len(null))]
     ok = abs(r) > p95
-    print(f"CONTROL  WIN_PCT vs NET_RATING  n={len(pts)}  r={r:+.3f}  "
-          f"shuffle p95 |r|={p95:.3f}  ->  {'PASS' if ok else 'FAIL'}")
+    print(
+        f"CONTROL  WIN_PCT vs NET_RATING  n={len(pts)}  r={r:+.3f}  "
+        f"shuffle p95 |r|={p95:.3f}  ->  {'PASS' if ok else 'FAIL'}"
+    )
     if not ok:
         print("  The machinery cannot detect a relationship that must exist.")
         print("  Treat every 'no finding' below as unproven, not as a negative result.")
@@ -938,12 +933,14 @@ def q_company_archetype() -> None:
     doc = json.loads(ORGS.read_text(encoding="utf-8"))
     orgs = {o["org_id"]: o for o in doc["orgs"]}
 
-    named_keys = {e["org_key"] for e in comp["edges"]
-                  if e["rel"] == "named_after" and e.get("org_key")}
+    named_keys = {e["org_key"] for e in comp["edges"] if e["rel"] == "named_after" and e.get("org_key")}
     probed_keys = {e["org_key"] for e in comp["edges"] if e.get("org_key")}
 
-    arch_of = {(norm_name(p["name"]), p["sport"], str(p["season"])): str(p["cross_arch"])
-               for p in players if p.get("cross_arch") is not None}
+    arch_of = {
+        (norm_name(p["name"]), p["sport"], str(p["season"])): str(p["cross_arch"])
+        for p in players
+        if p.get("cross_arch") is not None
+    }
 
     # org key -> archetype counts, aggregated across seasons
     per_org: dict[tuple, dict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -966,7 +963,7 @@ def q_company_archetype() -> None:
     MIN_ORGS = 8
     by_sport: dict[str, list[tuple[bool, dict[str, int]]]] = defaultdict(list)
     for (sport, key), counts in per_org.items():
-        if sum(counts.values()) >= 5:      # an org with a real roster, not a stub
+        if sum(counts.values()) >= 5:  # an org with a real roster, not a stub
             by_sport[sport].append((key in named_keys, counts))
 
     def l1(group: list[tuple[bool, dict[str, int]]]) -> float | None:
@@ -974,6 +971,7 @@ def q_company_archetype() -> None:
         no = [c for f, c in group if not f]
         if len(yes) < MIN_ORGS or len(no) < MIN_ORGS:
             return None
+
         def dist(cs):
             tot: dict[str, int] = defaultdict(int)
             for c in cs:
@@ -981,6 +979,7 @@ def q_company_archetype() -> None:
                     tot[a] += n
             s = sum(tot.values())
             return {a: n / s for a, n in tot.items()}
+
         dy, dn = dist(yes), dist(no)
         keys = set(dy) | set(dn)
         return sum(abs(dy.get(k, 0.0) - dn.get(k, 0.0)) for k in keys)
@@ -992,8 +991,10 @@ def q_company_archetype() -> None:
         yes = sum(1 for f, _ in group if f)
         obs = l1(group)
         if obs is None:
-            print(f"    {sport:9} orgs {len(group):3} (named {yes:3}, other {len(group)-yes:3})"
-                  f"  UNDERPOWERED — need >={MIN_ORGS} on both sides. Not a null.")
+            print(
+                f"    {sport:9} orgs {len(group):3} (named {yes:3}, other {len(group)-yes:3})"
+                f"  UNDERPOWERED — need >={MIN_ORGS} on both sides. Not a null."
+            )
             continue
         flags = [f for f, _ in group]
         counts = [c for _, c in group]
@@ -1004,8 +1005,10 @@ def q_company_archetype() -> None:
         null.sort()
         p95 = null[int(0.95 * len(null))]
         verdict = "DIFFERS" if obs > p95 else "no finding"
-        print(f"    {sport:9} orgs {len(group):3} (named {yes:3}, other {len(group)-yes:3})"
-              f"  L1 {obs:.3f}  shuffle p95 {p95:.3f}  -> {verdict}")
+        print(
+            f"    {sport:9} orgs {len(group):3} (named {yes:3}, other {len(group)-yes:3})"
+            f"  L1 {obs:.3f}  shuffle p95 {p95:.3f}  -> {verdict}"
+        )
         reported += 1
 
     # THE STRUCTURAL FACT IS THE OUTPUT HERE, not the test. Printing per-sport rates
@@ -1074,8 +1077,11 @@ def q_company_sector() -> None:
             for k in co_by_label.get(lab, {}).get("orgs", []):
                 sec_of_key[k].add(sec)
 
-    arch_of = {(norm_name(p["name"]), p["sport"], str(p["season"])): str(p["cross_arch"])
-               for p in players if p.get("cross_arch") is not None}
+    arch_of = {
+        (norm_name(p["name"]), p["sport"], str(p["season"])): str(p["cross_arch"])
+        for p in players
+        if p.get("cross_arch") is not None
+    }
     per_org: dict[tuple, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for e in doc["edges"]:
         oid = e.get("org_id")
@@ -1090,8 +1096,7 @@ def q_company_sector() -> None:
             per_org[(o["sport"], key)][a] += 1
 
     print("\nQ9  Within sport, does archetype mix differ by the SECTOR of the company?")
-    print(f"    orgs with >=1 non-holding sector: {len(sec_of_key)}"
-          f"   with archetyped players: {len(per_org)}")
+    print(f"    orgs with >=1 non-holding sector: {len(sec_of_key)}" f"   with archetyped players: {len(per_org)}")
     print("    unit = ORG. sports_holdings excluded (a club owning itself is not a sponsor).\n")
 
     MIN_ORGS_PER_SECTOR = 3
@@ -1105,8 +1110,10 @@ def q_company_sector() -> None:
                 bysec[sec].append(per_org[(sp, k)])
         usable = {s: v for s, v in bysec.items() if len(v) >= MIN_ORGS_PER_SECTOR}
         if len(usable) < MIN_SECTORS:
-            print(f"    {sport:9} orgs {len(keys):3}   sectors with >={MIN_ORGS_PER_SECTOR} "
-                  f"orgs: {len(usable)}  UNDERPOWERED — need >={MIN_SECTORS}. Not a null.")
+            print(
+                f"    {sport:9} orgs {len(keys):3}   sectors with >={MIN_ORGS_PER_SECTOR} "
+                f"orgs: {len(usable)}  UNDERPOWERED — need >={MIN_SECTORS}. Not a null."
+            )
             continue
 
         def dist(cs):
@@ -1122,8 +1129,7 @@ def q_company_sector() -> None:
             ds = []
             for v in groups.values():
                 d = dist(v)
-                ds.append(sum(abs(d.get(a, 0.0) - glob.get(a, 0.0))
-                              for a in set(d) | set(glob)))
+                ds.append(sum(abs(d.get(a, 0.0) - glob.get(a, 0.0)) for a in set(d) | set(glob)))
             return sum(ds) / len(ds) if ds else 0.0
 
         obs = mean_l1(usable)
@@ -1143,8 +1149,10 @@ def q_company_sector() -> None:
         null.sort()
         p95 = null[int(0.95 * len(null))]
         verdict = "DIFFERS" if obs > p95 else "no finding"
-        print(f"    {sport:9} orgs {len(keys):3}   sectors used {len(usable):2}"
-              f"   mean L1 {obs:.3f}  shuffle p95 {p95:.3f}  -> {verdict}")
+        print(
+            f"    {sport:9} orgs {len(keys):3}   sectors used {len(usable):2}"
+            f"   mean L1 {obs:.3f}  shuffle p95 {p95:.3f}  -> {verdict}"
+        )
 
     print(f"\n    ({SHUFFLES} permutations, seed {SEED}; sector labels shuffled WITHIN sport)")
     print("\n    THE CEILING IS LEAGUE STRUCTURE, NOT DATA. 30 NBA teams and 32 NFL")
@@ -1158,9 +1166,22 @@ def q_company_sector() -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--q", default="all",
-                    choices=["all", "archetype", "roster", "salary", "league", "pay", "band",
-                             "quality", "company", "sector"])
+    ap.add_argument(
+        "--q",
+        default="all",
+        choices=[
+            "all",
+            "archetype",
+            "roster",
+            "salary",
+            "league",
+            "pay",
+            "band",
+            "quality",
+            "company",
+            "sector",
+        ],
+    )
     args = ap.parse_args()
 
     positive_control()

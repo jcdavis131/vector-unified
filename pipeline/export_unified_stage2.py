@@ -24,13 +24,12 @@ import sys
 
 import numpy as np
 import torch
-from sklearn.decomposition import PCA
-
-from load_encoders import SPORTS, ROOT, UCACHE, load_all
-from load_live_encoders import load_live
-from train_unified import load_matrix, UnifiedTrunk
-from train_stage2 import full_z
 from _torch_safe import safe_torch_load
+from load_encoders import ROOT, SPORTS, UCACHE, load_all
+from load_live_encoders import load_live
+from sklearn.decomposition import PCA
+from train_stage2 import full_z
+from train_unified import UnifiedTrunk, load_matrix
 
 DATA = ROOT / "data"
 ASSETS = ROOT / "assets"
@@ -42,13 +41,18 @@ def load_stage2_model(device):
     ck = safe_torch_load(UCACHE / "unified_stage2_best.pt", map_location=device)
     a = ck["args"]
     model = UnifiedTrunk(
-        sport_dims=ck["sport_dim"], n_seasons_era=ck["n_eras"],
-        d_adapter=a["d_adapter"], d_sport_tok=a["d_sport_tok"], d_emb=a["d_emb"], n_arch=8,
+        sport_dims=ck["sport_dim"],
+        n_seasons_era=ck["n_eras"],
+        d_adapter=a["d_adapter"],
+        d_sport_tok=a["d_sport_tok"],
+        d_emb=a["d_emb"],
+        n_arch=8,
         # train_stage2.py's argparse has no --dropout (warm-starts the Stage 1
         # trunk architecture as-is); the value is inert anyway once .eval() is
         # called below, so a safe default matching train_unified.py's own
         # default is fine.
-        n_pos=ck["n_pos"], dropout=a.get("dropout", 0.2),
+        n_pos=ck["n_pos"],
+        dropout=a.get("dropout", 0.2),
         shared_adapter=a.get("shared_adapter", False),
         market_heads=a.get("market", False),
         cultural_text=a.get("cultural_text", False),
@@ -61,7 +65,9 @@ def load_stage2_model(device):
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     M = load_matrix(device)
     model, ck = load_stage2_model(device)
 
@@ -96,25 +102,28 @@ def main():
     players = []
     for i in range(len(sid)):
         r = recs[i]
-        players.append({
-            "sport": SPORTS[int(sid[i])],
-            "player_id": str(r["player_id"]),
-            "name": str(r["name"]),
-            "season": r["season"],
-            "pos": str(r["pos"]),
-            "team": str(r.get("team", "")),
-            "native_cluster": int(native[i]),
-            "cross_arch": ARCH_NAMES[int(arch[i])],
-            "e": [round(float(v), 5) for v in z[i]],
-            "x": round(float(xyz[i, 0]), 5),
-            "y": round(float(xyz[i, 1]), 5),
-            "z": round(float(xyz[i, 2]), 5),
-        })
+        players.append(
+            {
+                "sport": SPORTS[int(sid[i])],
+                "player_id": str(r["player_id"]),
+                "name": str(r["name"]),
+                "season": r["season"],
+                "pos": str(r["pos"]),
+                "team": str(r.get("team", "")),
+                "native_cluster": int(native[i]),
+                "cross_arch": ARCH_NAMES[int(arch[i])],
+                "e": [round(float(v), 5) for v in z[i]],
+                "x": round(float(xyz[i, 0]), 5),
+                "y": round(float(xyz[i, 1]), 5),
+                "z": round(float(xyz[i, 2]), 5),
+            }
+        )
 
     counts = {SPORTS[s]: int((sid == s).sum()) for s in range(3)}
     for s in range(3):
-        assert counts[SPORTS[s]] == _meta["coverage"][SPORTS[s]], \
-            f"{SPORTS[s]} count mismatch {counts[SPORTS[s]]} vs meta {_meta['coverage'][SPORTS[s]]}"
+        assert (
+            counts[SPORTS[s]] == _meta["coverage"][SPORTS[s]]
+        ), f"{SPORTS[s]} count mismatch {counts[SPORTS[s]]} vs meta {_meta['coverage'][SPORTS[s]]}"
 
     verdict = ck.get("verdict", {})
 
@@ -140,8 +149,10 @@ def main():
                 verdict[_sp]["pos_joint_z"] = _row.get("joint_z")
                 _patched += 1
         if _patched:
-            _pos_source = (f"data/g1_position_probe.json — measured with the fixed "
-                           f"knn5_acc over {_patched} sports, NOT the checkpoint's value")
+            _pos_source = (
+                f"data/g1_position_probe.json — measured with the fixed "
+                f"knn5_acc over {_patched} sports, NOT the checkpoint's value"
+            )
     print(f"  G1 pos_drop source: {_pos_source}")
     # G2's target lives in the SHIPPED asset, so a wrong one is read by every downstream
     # consumer. 0.433 was `1/3 + 0.10`, which assumed balanced sports. They are 12,966 /
@@ -153,12 +164,12 @@ def main():
     majority = float(np.bincount(sid_np).max()) / len(sid_np)
     g2_target = round(majority + 0.10, 4)
     g2_acc = ck.get("best_g2")
-    g2_status = ("met" if (g2_acc is not None and g2_acc <= g2_target)
-                 else "not_met" if g2_acc is not None else "unknown")
+    g2_status = (
+        "met" if (g2_acc is not None and g2_acc <= g2_target) else "not_met" if g2_acc is not None else "unknown"
+    )
     out = {
         "built": "2026-07-30",
-        "model": "UnifiedTrunk Stage 2.1 (unfrozen encoder alignment, best_epoch="
-                  f"{ck.get('best_epoch')})",
+        "model": "UnifiedTrunk Stage 2.1 (unfrozen encoder alignment, best_epoch=" f"{ck.get('best_epoch')})",
         "d_emb": int(z.shape[1]),
         "n_players": int(z.shape[0]),
         "normalization": "per-sport encoders (drifted, unfrozen in Stage 2) -> shared trunk (adapter+era) -> 64-d L2; cross-sport archetype contrastive (SupCon) + task + GRL",
@@ -178,25 +189,41 @@ def main():
             "NEGATIVE means the joint space recovers position better. Measured: hoops "
             "-0.0526 (0.7385 -> 0.7911), gridiron 0.0000 (0.9991, already at ceiling), "
             "pitch +0.0021 (0.8930 -> 0.8909). The gate passes, and now it passes on "
-            "evidence: a globally shuffled z drops +0.5493 / +0.6920 / +0.5617."),
+            "evidence: a globally shuffled z drops +0.5493 / +0.6920 / +0.5617."
+        ),
         "g2_sport_acc": g2_acc,
         "g2_target": g2_target,
         "g2_majority_baseline": round(majority, 4),
         "g2_delta_vs_majority": (round(g2_acc - majority, 4) if g2_acc is not None else None),
         "g2_status": g2_status,
-        "g2_note": ("Target is majority + 0.10. The previous 0.433 came from `1/3 + 0.10` "
-                    "and was unreachable on these class sizes. `met` here means 'within 10 "
-                    "points of the achievable floor', which is a weak bar — quote "
-                    "g2_delta_vs_majority, not the status."),
-        "sports": [{"id": s, "name": SPORTS[s], "d_native": int(all_sport[SPORTS[s]]["E"].shape[1]),
-                    "n": counts[SPORTS[s]]} for s in range(3)],
-        "archetypes": [{"id": a["id"], "label": a["label"], "description": a["description"]}
-                       for a in taxonomy],
-        "axes": [{"pc": f"PC{k+1}", "name": f"joint role axis {k+1}",
-                  "note": "PCA of the cross-sport embedding; cross-sport role axis, interpretation deferred"}
-                 for k in range(3)],
-        "proj": {"W": [[round(float(v), 6) for v in row] for row in W],
-                 "explained_variance": [round(float(v), 4) for v in pca.explained_variance_ratio_]},
+        "g2_note": (
+            "Target is majority + 0.10. The previous 0.433 came from `1/3 + 0.10` "
+            "and was unreachable on these class sizes. `met` here means 'within 10 "
+            "points of the achievable floor', which is a weak bar — quote "
+            "g2_delta_vs_majority, not the status."
+        ),
+        "sports": [
+            {
+                "id": s,
+                "name": SPORTS[s],
+                "d_native": int(all_sport[SPORTS[s]]["E"].shape[1]),
+                "n": counts[SPORTS[s]],
+            }
+            for s in range(3)
+        ],
+        "archetypes": [{"id": a["id"], "label": a["label"], "description": a["description"]} for a in taxonomy],
+        "axes": [
+            {
+                "pc": f"PC{k+1}",
+                "name": f"joint role axis {k+1}",
+                "note": "PCA of the cross-sport embedding; cross-sport role axis, interpretation deferred",
+            }
+            for k in range(3)
+        ],
+        "proj": {
+            "W": [[round(float(v), 6) for v in row] for row in W],
+            "explained_variance": [round(float(v), 4) for v in pca.explained_variance_ratio_],
+        },
         "players": players,
     }
     ASSETS.mkdir(parents=True, exist_ok=True)
@@ -204,10 +231,14 @@ def main():
 
     print(f"exported assets/unified.json (STAGE 2.1)  players={len(players)}  d_emb={out['d_emb']}")
     print(f"per-sport: {counts}")
-    print(f"G2 sport_acc={g2_acc}  target<={g2_target} (majority {majority:.4f} + 0.10)  "
-          f"delta_vs_majority={out['g2_delta_vs_majority']}  status={g2_status}")
-    print(f"PCA(3) explained variance: {out['proj']['explained_variance']} (sum {sum(out['proj']['explained_variance']):.3f})")
-    print("norms: min={:.5f} max={:.5f} (all ~1.0)".format(float(norms.min()), float(norms.max())))
+    print(
+        f"G2 sport_acc={g2_acc}  target<={g2_target} (majority {majority:.4f} + 0.10)  "
+        f"delta_vs_majority={out['g2_delta_vs_majority']}  status={g2_status}"
+    )
+    print(
+        f"PCA(3) explained variance: {out['proj']['explained_variance']} (sum {sum(out['proj']['explained_variance']):.3f})"
+    )
+    print(f"norms: min={float(norms.min()):.5f} max={float(norms.max()):.5f} (all ~1.0)")
     print("asserts PASS: no NaN, norms=1.0, per-sport counts match meta")
     return 0
 

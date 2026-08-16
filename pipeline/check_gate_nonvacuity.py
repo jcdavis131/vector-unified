@@ -68,9 +68,9 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import eval_unified as EV  # noqa: E402
-from eval_unified import g4_hit_rate, g4_random_baseline  # noqa: E402
-from load_encoders import SPORTS  # noqa: E402
+import eval_unified as EV
+from eval_unified import g4_hit_rate, g4_random_baseline
+from load_encoders import SPORTS
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "gate_nonvacuity.json"
@@ -99,19 +99,22 @@ def gate_verdicts(z: np.ndarray, M) -> dict:
     g1_e = {sp: v["native_knn5_e_s"] for sp, v in g1.items()}
     g1_pass = all(
         z_v is not None and e_v is not None and z_v >= e_v - 0.02
-        for z_v, e_v in zip(g1_z.values(), g1_e.values(), strict=True))
+        for z_v, e_v in zip(g1_z.values(), g1_e.values(), strict=True)
+    )
     g2 = EV.g2_sport_invariance(z, M)
     g3 = EV.g3_silhouette(z, M)
     g4h = g4_hit_rate(z, M)
     return {
-        "G1_native_knn5_z": {k: (round(v, 4) if v is not None else None)
-                             for k, v in g1_z.items()},
+        "G1_native_knn5_z": {k: (round(v, 4) if v is not None else None) for k, v in g1_z.items()},
         "G1_pass": bool(g1_pass),
-        "G2_sport_acc": g2["sport_acc"], "G2_effective_rank": g2["effective_rank"],
-        "G3_silhouette": g3["silhouette"], "G3_silhouette_pass": g3["silhouette_pass"],
+        "G2_sport_acc": g2["sport_acc"],
+        "G2_effective_rank": g2["effective_rank"],
+        "G3_silhouette": g3["silhouette"],
+        "G3_silhouette_pass": g3["silhouette_pass"],
         "G3_within_cos": g3["within_arch_cross_sport_cos"],
         "G3_between_cos": g3["between_arch_cross_sport_cos"],
-        "G3_separation": g3["separation"], "G3_separation_pass": g3["separation_pass"],
+        "G3_separation": g3["separation"],
+        "G3_separation_pass": g3["separation_pass"],
         "G4_hit_rate": round(g4h, 4),
         "G4_pass": bool(g4h >= 0.60),
     }
@@ -150,13 +153,19 @@ def sport_pair_mix(M, rng_seed: int = SEED) -> dict:
     w, b = frac(within), frac(between)
     keys = sorted(set(w) | set(b))
     drift = max((abs(w.get(k, 0.0) - b.get(k, 0.0)) for k in keys), default=0.0)
-    return {"within_arch_pairs": w, "between_arch_pairs": b,
-            "n_within": sum(within.values()), "n_between": sum(between.values()),
-            "max_composition_gap_pct_points": round(drift, 1),
-            "note": ("If the two samples draw different sport-pair mixes, part of G3's "
-                     "separation is a sport-pair effect rather than an archetype effect. "
-                     "This does not say how much — it says whether the confound is "
-                     "present and how large the imbalance is.")}
+    return {
+        "within_arch_pairs": w,
+        "between_arch_pairs": b,
+        "n_within": sum(within.values()),
+        "n_between": sum(between.values()),
+        "max_composition_gap_pct_points": round(drift, 1),
+        "note": (
+            "If the two samples draw different sport-pair mixes, part of G3's "
+            "separation is a sport-pair effect rather than an archetype effect. "
+            "This does not say how much — it says whether the confound is "
+            "present and how large the imbalance is."
+        ),
+    }
 
 
 def main() -> int:
@@ -174,6 +183,7 @@ def main() -> int:
     device = torch.device("cpu")
     model, _ck = EV.load_model(device, args.ckpt)
     from train_unified import load_matrix
+
     M = load_matrix(device)
 
     # WHICH ENCODERS. EV.encode_all uses the FROZEN cached per-sport outputs in M["E"].
@@ -190,6 +200,7 @@ def main() -> int:
     if "enc_states" in _ck:
         from load_live_encoders import load_live
         from train_stage2 import full_z
+
         live = load_live(device)
         for sport in live:
             live[sport].model.load_state_dict(_ck["enc_states"][sport])
@@ -222,11 +233,13 @@ def main() -> int:
         "lift_over_uniform": round(real["G2_sport_acc"] - 1.0 / 3.0, 4),
         "lift_over_majority": round(real["G2_sport_acc"] - majority, 4),
         "global_shuffle_acc": null_results["global_shuffle"]["G2_sport_acc"],
-        "verdict": ("eval_unified.py's `chance` is WRONG for this problem. A 3-class "
-                    "accuracy is only comparable to 1/3 when the classes are balanced, "
-                    "and these are 62.6 / 25.7 / 11.7. global_shuffle scoring the "
-                    "majority share exactly is the confirmation. Sport leakage should be "
-                    "quoted against 0.6258."),
+        "verdict": (
+            "eval_unified.py's `chance` is WRONG for this problem. A 3-class "
+            "accuracy is only comparable to 1/3 when the classes are balanced, "
+            "and these are 62.6 / 25.7 / 11.7. global_shuffle scoring the "
+            "majority share exactly is the confirmation. Sport leakage should be "
+            "quoted against 0.6258."
+        ),
     }
 
     # ---- permutation-calibrated threshold for G3 separation ----------------------
@@ -251,15 +264,21 @@ def main() -> int:
         "null_separation_max": round(perm_seps[-1], 4),
         "real_separation": real["G3_separation"],
         "passes_calibrated_threshold": bool(real["G3_separation"] > p95),
-        "note": ("Replaces `within > between` with `within - between > 95th percentile of "
-                 "the within-sport-shuffle null`. The real value clears it by orders of "
-                 "magnitude, so the FINDING was never in doubt — only the test was."),
+        "note": (
+            "Replaces `within > between` with `within - between > 95th percentile of "
+            "the within-sport-shuffle null`. The real value clears it by orders of "
+            "magnitude, so the FINDING was never in doubt — only the test was."
+        ),
     }
 
     # A gate is VACUOUS if it still passes when the structure it names is destroyed.
     vacuous: list[str] = []
-    for gate, key in (("G1", "G1_pass"), ("G3_silhouette", "G3_silhouette_pass"),
-                      ("G3_separation", "G3_separation_pass"), ("G4", "G4_pass")):
+    for gate, key in (
+        ("G1", "G1_pass"),
+        ("G3_silhouette", "G3_silhouette_pass"),
+        ("G3_separation", "G3_separation_pass"),
+        ("G4", "G4_pass"),
+    ):
         if not real[key]:
             continue
         survivors = [n for n, r in null_results.items() if r[key]]
@@ -270,10 +289,13 @@ def main() -> int:
                 f"{calibrated['null_separation_max']:+.4f}). The real separation "
                 f"{real['G3_separation']:+.4f} clears the null 95th percentile "
                 f"{calibrated['null_separation_p95']:+.4f}, so the finding stands and the "
-                f"TEST must be replaced with the calibrated one.")
+                f"TEST must be replaced with the calibrated one."
+            )
         elif "within_sport_shuffle" in survivors:
-            vacuous.append(f"{gate} passes on within_sport_shuffle — archetype labels were "
-                           f"randomised inside each sport and it did not notice")
+            vacuous.append(
+                f"{gate} passes on within_sport_shuffle — archetype labels were "
+                f"randomised inside each sport and it did not notice"
+            )
         elif survivors:
             vacuous.append(f"{gate} passes on {', '.join(survivors)}")
 
@@ -289,29 +311,35 @@ def main() -> int:
             "real_hit_rate": real["G4_hit_rate"],
             "lift_over_random": round(real["G4_hit_rate"] - g4_base, 4),
             "stated_bar": 0.60,
-            "note": ("G4's 0.60 bar was stated without a baseline. The honest null is the "
-                     "chance that a random other-sport row shares the archetype, which is "
-                     f"{g4_base:.4f} given the 0.249/0.235/0.192/0.148/0.113/0.063 "
-                     "archetype mix — so 0.60 is a real bar here, unlike G2's 1/3."),
+            "note": (
+                "G4's 0.60 bar was stated without a baseline. The honest null is the "
+                "chance that a random other-sport row shares the archetype, which is "
+                f"{g4_base:.4f} given the 0.249/0.235/0.192/0.148/0.113/0.063 "
+                "archetype mix — so 0.60 is a real bar here, unlike G2's 1/3."
+            ),
         },
         "g3_separation_calibrated": calibrated,
         "vacuous_gates": vacuous,
         "decision_rule": (
             "A gate that PASSES on within_sport_shuffle is not measuring what it claims "
             "and its historical PASS must be withdrawn until it is redefined. Fixed "
-            "before the first run."),
+            "before the first run."
+        ),
         "note_rank": (
             "G2's effective_rank is NOT testable by these nulls and its green must not be "
             "read as earned. Rank is a function of the singular values and a row "
             "permutation leaves the Gram spectrum untouched — global_shuffle and "
             "within_sport_shuffle both score 12.4, exactly the real value. Only "
             "random_gaussian moves it, and it moves it UP to 64.0, so a high rank is not "
-            "evidence of quality either. rank_nondeg_pass detects collapse, nothing more."),
-        "note_G2": ("G2 has no pass/fail here on purpose — it is a leakage measure, not a "
-                    "quality gate, and a null SHOULD drive sport accuracy toward the FLOOR. "
-                    "Its value under each null is a sanity check on the nulls themselves: "
-                    f"if global_shuffle does not collapse sport accuracy toward the majority "
-                    f"share ({majority:.4f}), the null is not doing its job."),
+            "evidence of quality either. rank_nondeg_pass detects collapse, nothing more."
+        ),
+        "note_G2": (
+            "G2 has no pass/fail here on purpose — it is a leakage measure, not a "
+            "quality gate, and a null SHOULD drive sport accuracy toward the FLOOR. "
+            "Its value under each null is a sanity check on the nulls themselves: "
+            f"if global_shuffle does not collapse sport accuracy toward the majority "
+            f"share ({majority:.4f}), the null is not doing its job."
+        ),
         # THE CRITERION WAS WRONG IN THIS FILE'S OWN NOTE, and it was the error this same
         # file corrects 100 lines above. `g2_baseline_correction` states that
         # eval_unified.py's `chance = 1/3` is wrong because the sports are 12,966/5,323/
@@ -329,9 +357,11 @@ def main() -> int:
             "abs_gap": round(abs(null_results["global_shuffle"]["G2_sport_acc"] - majority), 4),
             "tolerance": 0.02,
             "pass": bool(abs(null_results["global_shuffle"]["G2_sport_acc"] - majority) <= 0.02),
-            "why": ("A null that does NOT land at the majority share means the shuffle left "
-                    "sport signal behind, which would invalidate every other null in this "
-                    "file. Chance for this problem is the class prior, not 1/K."),
+            "why": (
+                "A null that does NOT land at the majority share means the shuffle left "
+                "sport signal behind, which would invalidate every other null in this "
+                "file. Chance for this problem is the class prior, not 1/K."
+            ),
         },
         "seed": SEED,
         "z_source": z_source,
@@ -339,35 +369,47 @@ def main() -> int:
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     rows = [("REAL", real), *null_results.items()]
-    print(f"{'variant':<22} {'G1':>5} {'G2acc':>7} {'rank':>6} {'sil':>8} {'within':>8} "
-          f"{'between':>8} {'sep':>8} {'G4':>7}")
+    print(
+        f"{'variant':<22} {'G1':>5} {'G2acc':>7} {'rank':>6} {'sil':>8} {'within':>8} "
+        f"{'between':>8} {'sep':>8} {'G4':>7}"
+    )
     for name, r in rows:
-        print(f"{name:<22} {str(r['G1_pass']):>5} {r['G2_sport_acc']:>7.3f} "
-              f"{r['G2_effective_rank']:>6.1f} {r['G3_silhouette']:>8.4f} "
-              f"{r['G3_within_cos']:>8.4f} {r['G3_between_cos']:>8.4f} "
-              f"{r['G3_separation']:>+8.4f} {r['G4_hit_rate']:>7.4f}")
+        print(
+            f"{name:<22} {r['G1_pass']!s:>5} {r['G2_sport_acc']:>7.3f} "
+            f"{r['G2_effective_rank']:>6.1f} {r['G3_silhouette']:>8.4f} "
+            f"{r['G3_within_cos']:>8.4f} {r['G3_between_cos']:>8.4f} "
+            f"{r['G3_separation']:>+8.4f} {r['G4_hit_rate']:>7.4f}"
+        )
 
     b = g2_baseline
     print()
-    print(f"G2 baseline: eval_unified says chance={b['reported_chance_in_eval_unified']}, "
-          f"majority class is {b['majority_class_share']} "
-          f"({', '.join(f'{k} {v}' for k, v in b['class_counts'].items())})")
-    print(f"{'':13}real acc {b['real_sport_acc']}  ->  lift over uniform "
-          f"{b['lift_over_uniform']:+.4f}, over MAJORITY {b['lift_over_majority']:+.4f}"
-          f"   (global_shuffle lands at {b['global_shuffle_acc']})")
+    print(
+        f"G2 baseline: eval_unified says chance={b['reported_chance_in_eval_unified']}, "
+        f"majority class is {b['majority_class_share']} "
+        f"({', '.join(f'{k} {v}' for k, v in b['class_counts'].items())})"
+    )
+    print(
+        f"{'':13}real acc {b['real_sport_acc']}  ->  lift over uniform "
+        f"{b['lift_over_uniform']:+.4f}, over MAJORITY {b['lift_over_majority']:+.4f}"
+        f"   (global_shuffle lands at {b['global_shuffle_acc']})"
+    )
     gb = report["g4_baseline"]
     print()
-    print(f"G4 baseline: random other-sport archetype match = "
-          f"{gb['random_cross_sport_arch_match']:.4f}; real {gb['real_hit_rate']:.4f} "
-          f"= lift {gb['lift_over_random']:+.4f} (stated bar {gb['stated_bar']})")
+    print(
+        f"G4 baseline: random other-sport archetype match = "
+        f"{gb['random_cross_sport_arch_match']:.4f}; real {gb['real_hit_rate']:.4f} "
+        f"= lift {gb['lift_over_random']:+.4f} (stated bar {gb['stated_bar']})"
+    )
     print(f"{'':13}every null lands on the baseline, which validates both at once")
 
     k = calibrated
     print()
-    print(f"G3 separation: real {k['real_separation']:+.4f}  vs null p95 "
-          f"{k['null_separation_p95']:+.4f} / max {k['null_separation_max']:+.4f} "
-          f"over {k['perm_reps']} shuffles -> "
-          f"{'CLEARS' if k['passes_calibrated_threshold'] else 'FAILS'} calibrated threshold")
+    print(
+        f"G3 separation: real {k['real_separation']:+.4f}  vs null p95 "
+        f"{k['null_separation_p95']:+.4f} / max {k['null_separation_max']:+.4f} "
+        f"over {k['perm_reps']} shuffles -> "
+        f"{'CLEARS' if k['passes_calibrated_threshold'] else 'FAILS'} calibrated threshold"
+    )
 
     c = report["g3_sport_pair_confound"]
     print(f"\nG3 sport-pair mix   within-arch {c['within_arch_pairs']}")

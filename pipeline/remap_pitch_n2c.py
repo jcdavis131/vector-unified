@@ -1,4 +1,5 @@
 """Rematch pitch native_to_cross after e_p reclustering (pos_dist L1, 1-1)."""
+
 from __future__ import annotations
 
 import json
@@ -20,9 +21,7 @@ def main() -> int:
     old = json.loads((BAK / "native_clusters.json").read_text(encoding="utf-8"))
     new = json.loads((DATA / "native_clusters.json").read_text(encoding="utf-8"))
     amap = json.loads((DATA / "archetype_map.json").read_text(encoding="utf-8"))
-    old_map = json.loads((BAK / "archetype_map.json").read_text(encoding="utf-8"))[
-        "native_to_cross"
-    ]["pitch"]
+    old_map = json.loads((BAK / "archetype_map.json").read_text(encoding="utf-8"))["native_to_cross"]["pitch"]
 
     O, N = old["pitch"], new["pitch"]
     print("OLD pitch:")
@@ -45,10 +44,7 @@ def main() -> int:
             continue
         remap[i] = j
         used.add(j)
-        print(
-            f"new c{i} -> old c{j} cost={c:.3f} "
-            f"n_new={N[i]['n']} n_old={O[j]['n']}"
-        )
+        print(f"new c{i} -> old c{j} cost={c:.3f} " f"n_new={N[i]['n']} n_old={O[j]['n']}")
 
     new_map = {str(ni): old_map[str(oj)] for ni, oj in sorted(remap.items())}
     print("new pitch native_to_cross", new_map)
@@ -63,9 +59,7 @@ def main() -> int:
         "2026-07-11: rematched size-sorted pitch k-means clusters to prior "
         "native_to_cross via pos_dist L1 after e_p SupCon promotion"
     )
-    (DATA / "archetype_map.json").write_text(
-        json.dumps(amap, indent=2), encoding="utf-8"
-    )
+    (DATA / "archetype_map.json").write_text(json.dumps(amap, indent=2), encoding="utf-8")
     print("wrote archetype_map.json")
     return 0
 

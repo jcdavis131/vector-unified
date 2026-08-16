@@ -65,8 +65,15 @@ __all__ = [
 
 def __getattr__(name: str):
     """Lazily expose torch-dependent members without importing torch at load."""
-    if name in ("model", "HAS_TORCH", "MTNN", "MaskedResidualTower",
-                "AttentionGatedFusion", "MultiTaskHeads", "build_mtnn"):
+    if name in (
+        "model",
+        "HAS_TORCH",
+        "MTNN",
+        "MaskedResidualTower",
+        "AttentionGatedFusion",
+        "MultiTaskHeads",
+        "build_mtnn",
+    ):
         import importlib
 
         # Use import_module (not `from . import model`) so we don't re-enter

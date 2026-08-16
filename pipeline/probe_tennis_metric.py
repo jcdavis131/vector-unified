@@ -97,9 +97,11 @@ def main() -> int:
     # and shot candidates for a 5.3-sigma retrieval gain. Whether a learned map helps over
     # the RICHER set is a different question and the one that decides if an MTNN is
     # warranted. Copying this file to ask it would leave two metric tests to keep in sync.
-    ap.add_argument("--enriched", action="store_true",
-                    help="use the 16 + the 12 candidates from "
-                         "probe_tennis_candidate_features.py")
+    ap.add_argument(
+        "--enriched",
+        action="store_true",
+        help="use the 16 + the 12 candidates from " "probe_tennis_candidate_features.py",
+    )
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -115,15 +117,18 @@ def main() -> int:
 
     tours = np.array([m["tour"] for m in meta])
     idx = {(m["player"], m["year"], m["tour"]): i for i, m in enumerate(meta)}
-    pairs = [(i, idx[(m["player"], m["year"] + 1, m["tour"])], m["year"] + 1)
-             for i, m in enumerate(meta)
-             if (m["player"], m["year"] + 1, m["tour"]) in idx]
+    pairs = [
+        (i, idx[(m["player"], m["year"] + 1, m["tour"])], m["year"] + 1)
+        for i, m in enumerate(meta)
+        if (m["player"], m["year"] + 1, m["tour"]) in idx
+    ]
     tr = [(a_, b) for a_, b, y in pairs if y <= CUT]
     te = [(a_, b) for a_, b, y in pairs if y > CUT]
 
     if args.enriched:
         # Built by the same code that measured them, imported not duplicated.
         from probe_tennis_candidate_features import CANDIDATES, build
+
         cand = build()
         keys = [(m["player"], m["year"], m["tour"]) for m in meta]
         C = np.full((len(keys), len(CANDIDATES)), np.nan)
@@ -159,41 +164,56 @@ def main() -> int:
 
     g = np.array(got)
     lift = g.mean() - base
-    print(f"\n  learned mean {g.mean():.4f}  sd {g.std(ddof=1):.4f}  "
-          f"range {g.max()-g.min():.4f}")
+    print(f"\n  learned mean {g.mean():.4f}  sd {g.std(ddof=1):.4f}  " f"range {g.max()-g.min():.4f}")
     print(f"  lift over raw cosine {lift:+.4f}")
     beats = int((g > base).sum())
     print(f"  seeds beating the baseline: {beats}/{len(SEEDS)}")
 
     nfeat = X.shape[1]
-    verdict = (f"A LEARNED MAP HELPS over {nfeat} features — an MTNN is worth building and "
-               f"must beat THIS, not the raw baseline"
-               if lift > 0.01 and beats == len(SEEDS) else
-               f"NO — a learned linear metric does not improve on raw cosine over these "
-               f"{nfeat} features, so a deeper model over the same {nfeat} is a poor bet")
+    verdict = (
+        f"A LEARNED MAP HELPS over {nfeat} features — an MTNN is worth building and "
+        f"must beat THIS, not the raw baseline"
+        if lift > 0.01 and beats == len(SEEDS)
+        else f"NO — a learned linear metric does not improve on raw cosine over these "
+        f"{nfeat} features, so a deeper model over the same {nfeat} is a poor bet"
+    )
     print(f"\n  verdict: {verdict}")
 
-    (OUT_ENR if args.enriched else OUT).write_text(json.dumps({
-        "feature_set": ("16 + 12 candidates" if args.enriched else "the original 16"),
-        "question": ("Can a learned linear metric beat raw cosine at retrieving a tennis "
-                     f"player's adjacent year (recall@{K}, within tour)?"),
-        "why_before_an_mtnn": (
-            "16 features into a 64-d embedding is expansion, not compression. If the "
-            "smallest learned thing that could help does not, a deeper model over the same "
-            "16 features is unlikely to, and this costs seconds instead of a training run."),
-        "split": f"TEMPORAL — train on target year <= {CUT}, evaluate strictly after",
-        "retrieval_scope": ("candidates are the FULL same-tour corpus, not just test years; "
-                            "restricting to test years would shrink the haystack and "
-                            "inflate recall"),
-        "baseline_raw_cosine": round(float(base), 4),
-        "learned_per_seed": [round(float(x), 4) for x in got],
-        "learned_mean": round(float(g.mean()), 4),
-        "learned_sd": round(float(g.std(ddof=1)), 4),
-        "lift": round(float(lift), 4),
-        "seeds_beating_baseline": f"{beats}/{len(SEEDS)}",
-        "n_pairs": len(pairs), "n_train": len(tr), "n_test": len(te),
-        "verdict": verdict,
-    }, indent=2) + "\n", encoding="utf-8")
+    (OUT_ENR if args.enriched else OUT).write_text(
+        json.dumps(
+            {
+                "feature_set": ("16 + 12 candidates" if args.enriched else "the original 16"),
+                "question": (
+                    "Can a learned linear metric beat raw cosine at retrieving a tennis "
+                    f"player's adjacent year (recall@{K}, within tour)?"
+                ),
+                "why_before_an_mtnn": (
+                    "16 features into a 64-d embedding is expansion, not compression. If the "
+                    "smallest learned thing that could help does not, a deeper model over the same "
+                    "16 features is unlikely to, and this costs seconds instead of a training run."
+                ),
+                "split": f"TEMPORAL — train on target year <= {CUT}, evaluate strictly after",
+                "retrieval_scope": (
+                    "candidates are the FULL same-tour corpus, not just test years; "
+                    "restricting to test years would shrink the haystack and "
+                    "inflate recall"
+                ),
+                "baseline_raw_cosine": round(float(base), 4),
+                "learned_per_seed": [round(float(x), 4) for x in got],
+                "learned_mean": round(float(g.mean()), 4),
+                "learned_sd": round(float(g.std(ddof=1)), 4),
+                "lift": round(float(lift), 4),
+                "seeds_beating_baseline": f"{beats}/{len(SEEDS)}",
+                "n_pairs": len(pairs),
+                "n_train": len(tr),
+                "n_test": len(te),
+                "verdict": verdict,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"\nwrote {OUT_ENR if args.enriched else OUT}")
     if args.check and not te:
         return 1

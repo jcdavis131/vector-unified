@@ -55,8 +55,14 @@ ESTATE = ROOT.parent
 # The sibling repos whose files the site is allowed to cite. A citation into anything else
 # is a mistake worth failing on rather than rewriting into a plausible-looking relative path.
 REPOS = (
-    "vector-unified", "vector-hoops", "vector-gridiron", "vector-pitch",
-    "vector-equities", "vector-tennis", "vector-hub", "vector-golf",
+    "vector-unified",
+    "vector-hoops",
+    "vector-gridiron",
+    "vector-pitch",
+    "vector-equities",
+    "vector-tennis",
+    "vector-hub",
+    "vector-golf",
 )
 
 # Any drive-letter or UNC path. Deliberately broad: the rule is "no machine-local path in

@@ -58,7 +58,7 @@ OUT = ROOT / "data" / "tennis_coverage.json"
 BASE = "http://www.tennis-data.co.uk"
 UA = "vector-unified/0.1 (personal research; contact via github)"
 YEARS = range(2013, 2027)
-SLEEP = 1.5                      # polite pacing; this is one person's static file host
+SLEEP = 1.5  # polite pacing; this is one person's static file host
 DISALLOWED_PREFIXES = ("/stuff/",) + tuple(f"/{y}/" for y in range(2000, 2006))
 
 NS = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
@@ -81,7 +81,7 @@ def path_for(year: int, women: bool) -> Path:
 
 def fetch(year: int, women: bool) -> tuple[bool, str]:
     u = url_for(year, women)
-    tail = u[len(BASE):]
+    tail = u[len(BASE) :]
     if any(tail.startswith(p) for p in DISALLOWED_PREFIXES):
         return False, f"robots.txt disallows {tail} — not fetched"
     p = path_for(year, women)
@@ -89,7 +89,7 @@ def fetch(year: int, women: bool) -> tuple[bool, str]:
         return True, "cached"
     try:
         r = requests.get(u, headers={"User-Agent": UA}, timeout=120)
-    except Exception as e:                                        # noqa: BLE001
+    except Exception as e:
         return False, f"error {str(e)[:60]}"
     if r.status_code != 200 or not r.content.startswith(b"PK"):
         return False, f"HTTP {r.status_code}, {len(r.content)}B"
@@ -166,10 +166,11 @@ def main() -> int:
                 note = "cached" if ok else "absent"
             else:
                 ok, note = fetch(y, women)
-            seasons.append({"year": y, "tour": "wta" if women else "atp",
-                            "ok": ok, "note": note})
-            print(f"  {y}{'w' if women else ' '} {'wta' if women else 'atp'}  {note}",
-                  flush=True)
+            seasons.append({"year": y, "tour": "wta" if women else "atp", "ok": ok, "note": note})
+            print(
+                f"  {y}{'w' if women else ' '} {'wta' if women else 'atp'}  {note}",
+                flush=True,
+            )
 
     per_season = []
     col_present: collections.Counter = collections.Counter()
@@ -183,7 +184,7 @@ def main() -> int:
         p = path_for(s["year"], s["tour"] == "wta")
         try:
             hdr, body = read_sheet(p)
-        except Exception as e:                                    # noqa: BLE001
+        except Exception as e:
             per_season.append({**s, "error": str(e)[:80]})
             continue
         idx = {c: i for i, c in enumerate(hdr)}
@@ -205,20 +206,28 @@ def main() -> int:
                 surfaces[str(r[idx["Surface"]]).strip()] += 1
         if "Location" in idx:
             locations |= {str(r[idx["Location"]]).strip() for r in body}
-        per_season.append({**s, "rows": n, "cols": len(hdr),
-                           "rows_with_full_prior": pri,
-                           "rows_with_closing_odds": mkt})
+        per_season.append(
+            {
+                **s,
+                "rows": n,
+                "cols": len(hdr),
+                "rows_with_full_prior": pri,
+                "rows_with_closing_odds": mkt,
+            }
+        )
 
     got = [s for s in per_season if s.get("rows")]
     report = {
         "source": f"{BASE} — free per-season xlsx, no key (see the 7.9 no-paid-API rule)",
         "robots_respected": (
             "Disallow list is /stuff/ and /2000/-/2005/. Every year fetched is 2013+, and "
-            "DISALLOWED_PREFIXES encodes the rule so widening the range trips it."),
+            "DISALLOWED_PREFIXES encodes the rule so widening the range trips it."
+        ),
         "sackmann_note": (
             "JeffSackmann/tennis_atp and tennis_wta 404 on main and master; "
             "api.github.com/users/JeffSackmann reports public_repos=1. The canonical free "
-            "tennis corpus is no longer published. Measured 2026-08-03."),
+            "tennis corpus is no longer published. Measured 2026-08-03."
+        ),
         "seasons_requested": len(seasons),
         "seasons_present": len(got),
         "total_matches": total_rows,
@@ -226,7 +235,8 @@ def main() -> int:
         "pct_with_ranking_prior": round(100.0 * have_prior / max(total_rows, 1), 1),
         "rows_with_closing_odds": have_market,
         "pct_with_closing_odds": round(100.0 * have_market / max(total_rows, 1), 1),
-        "prior_cols": list(PRIOR_COLS), "market_cols": list(MARKET_COLS),
+        "prior_cols": list(PRIOR_COLS),
+        "market_cols": list(MARKET_COLS),
         "context_cols_present_in_n_seasons": {c: col_present.get(c, 0) for c in CONTEXT_COLS},
         "distinct_locations": len(locations),
         "surface_mix": dict(surfaces.most_common()),
@@ -235,16 +245,15 @@ def main() -> int:
             "No model, no axis, no join to the unified corpus. This answers one question — "
             "does the free tennis corpus carry a usable pre-match prior and enough context "
             "columns to be worth a tower — and it answers it before anything is built on "
-            "the answer."),
+            "the answer."
+        ),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     print(f"\nseasons {len(got)}/{len(seasons)}   matches {total_rows}")
-    print(f"ranking prior (WRank/LRank/WPts/LPts all present): {have_prior} "
-          f"({report['pct_with_ranking_prior']}%)")
-    print(f"closing odds  (AvgW/AvgL present)                : {have_market} "
-          f"({report['pct_with_closing_odds']}%)")
+    print(f"ranking prior (WRank/LRank/WPts/LPts all present): {have_prior} " f"({report['pct_with_ranking_prior']}%)")
+    print(f"closing odds  (AvgW/AvgL present)                : {have_market} " f"({report['pct_with_closing_odds']}%)")
     print(f"distinct locations {len(locations)}   surfaces {dict(surfaces.most_common(5))}")
     print(f"\nwrote {OUT}")
     return 0

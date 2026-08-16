@@ -91,12 +91,15 @@ def main() -> int:
     if not BIOS.exists():
         raise SystemExit(f"missing {BIOS} -- run acquire_wikipedia_bios.py first")
     bios = json.loads(BIOS.read_text(encoding="utf-8"))
-    candidates = [(k, v) for k, v in bios["players"].items()
-                  if v.get("status") == "ok" and v.get("wiki_title")]
+    candidates = [(k, v) for k, v in bios["players"].items() if v.get("status") == "ok" and v.get("wiki_title")]
     print(f"{len(candidates)} resolved players available for pageview lookup")
 
-    out = {"built": None, "source": "wikimedia pageviews REST API (no key)",
-           "window": [START, _end_month()], "players": {}}
+    out = {
+        "built": None,
+        "source": "wikimedia pageviews REST API (no key)",
+        "window": [START, _end_month()],
+        "players": {},
+    }
     if OUT.exists() and not args.refresh:
         out = json.loads(OUT.read_text(encoding="utf-8"))
         out["window"] = [START, _end_month()]
@@ -119,8 +122,10 @@ def main() -> int:
         if by_year:
             ok += 1
         if (i + 1) % 25 == 0 or i == len(todo) - 1:
-            print(f"  [{i+1}/{len(todo)}] {title}: {len(by_year)} years, "
-                  f"total={sum(by_year.values()):,}", flush=True)
+            print(
+                f"  [{i+1}/{len(todo)}] {title}: {len(by_year)} years, " f"total={sum(by_year.values()):,}",
+                flush=True,
+            )
             OUT.write_text(json.dumps(out, indent=1), encoding="utf-8")
         time.sleep(args.sleep)
 

@@ -51,15 +51,27 @@ SEED = 20260803
 # Prior specifications, recorded rather than recomputed. These are what was reported at the
 # time; they are kept here so the instability is visible without re-deriving it.
 PRIOR = [
-    {"spec": 1, "label": "unmatched constructs (impact vs fantasy PPR)",
-     "gridiron": 0.4236, "hoops": 0.2598, "gap": 0.1638,
-     "ci_excludes_zero": True,
-     "why_superseded": "not a comparison — the same formula over two different quantities"},
-    {"spec": 2, "label": "matched VOR, hoops read the raw per-100 cache",
-     "gridiron": 0.3950, "hoops": 0.4534, "gap": -0.0584,
-     "ci_excludes_zero": False,
-     "why_superseded": ("bypassed vector-hoops' schedule-aware minutes gate; per-100 rates "
-                        "explode for low-minute players (572 raw vs 484 eligible in 2023-24)")},
+    {
+        "spec": 1,
+        "label": "unmatched constructs (impact vs fantasy PPR)",
+        "gridiron": 0.4236,
+        "hoops": 0.2598,
+        "gap": 0.1638,
+        "ci_excludes_zero": True,
+        "why_superseded": "not a comparison — the same formula over two different quantities",
+    },
+    {
+        "spec": 2,
+        "label": "matched VOR, hoops read the raw per-100 cache",
+        "gridiron": 0.3950,
+        "hoops": 0.4534,
+        "gap": -0.0584,
+        "ci_excludes_zero": False,
+        "why_superseded": (
+            "bypassed vector-hoops' schedule-aware minutes gate; per-100 rates "
+            "explode for low-minute players (572 raw vs 484 eligible in 2023-24)"
+        ),
+    },
 ]
 
 
@@ -117,14 +129,19 @@ def main() -> int:
     dlo, dhi = ci(gaps)
     excludes = not (dlo <= 0.0 <= dhi)
 
-    live = {"spec": 3, "label": "matched VOR + vector-hoops eligibility gate",
-            "gridiron": round(rg, 4), "hoops": round(rh, 4),
-            "gap": round(rg - rh, 4),
-            "gridiron_ci95": [round(glo, 4), round(ghi, 4)],
-            "hoops_ci95": [round(hlo, 4), round(hhi, 4)],
-            "gap_ci95": [round(dlo, 4), round(dhi, 4)],
-            "ci_excludes_zero": excludes,
-            "n_gridiron": len(grows), "n_hoops": len(hrows)}
+    live = {
+        "spec": 3,
+        "label": "matched VOR + vector-hoops eligibility gate",
+        "gridiron": round(rg, 4),
+        "hoops": round(rh, 4),
+        "gap": round(rg - rh, 4),
+        "gridiron_ci95": [round(glo, 4), round(ghi, 4)],
+        "hoops_ci95": [round(hlo, 4), round(hhi, 4)],
+        "gap_ci95": [round(dlo, 4), round(dhi, 4)],
+        "ci_excludes_zero": excludes,
+        "n_gridiron": len(grows),
+        "n_hoops": len(hrows),
+    }
 
     signs = {1 if s["gap"] > 0 else -1 for s in PRIOR} | {1 if live["gap"] > 0 else -1}
     report = {
@@ -133,26 +150,31 @@ def main() -> int:
         "prior_specifications": PRIOR,
         "sign_changed_across_specifications": len(signs) > 1,
         "spread_of_point_estimates": round(
-            max([s["gap"] for s in PRIOR] + [live["gap"]])
-            - min([s["gap"] for s in PRIOR] + [live["gap"]]), 4),
+            max([s["gap"] for s in PRIOR] + [live["gap"]]) - min([s["gap"] for s in PRIOR] + [live["gap"]]),
+            4,
+        ),
         "width_of_current_ci": round(dhi - dlo, 4),
         "verdict": (
             "NOT REPORTABLE AS A SPORT DIFFERENCE. The point estimate has moved across the "
             "sign boundary under three defensible specifications. Spec 3 is the best of "
             "them and its CI excludes zero, but the spread of point estimates across "
             "specifications is of the same order as the sampling CI, and the CI cannot see "
-            "specification variance. The instability IS the result."),
+            "specification variance. The instability IS the result."
+        ),
         "what_would_settle_it": (
             "A pre-registered specification chosen before seeing any of the three answers, "
             "plus a third and fourth sport. With one binary comparison and a menu of "
-            "analyst choices, any desired sign is reachable."),
+            "analyst choices, any desired sign is reachable."
+        ),
         "known_asymmetry_kept_deliberately": (
             "expect_log uses MAX_PICK 262 for gridiron and 60 for hoops. That is a real "
             "structural difference between the drafts, declared as a constant rather than "
             "hidden in the method — but it does mean the two expectation scales are not "
             "the same function, only the same FORM. A correlation is invariant to a "
-            "monotone linear rescale, not to a different log denominator."),
-        "seed": SEED, "reps": args.reps,
+            "monotone linear rescale, not to a different log denominator."
+        ),
+        "seed": SEED,
+        "reps": args.reps,
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -162,13 +184,19 @@ def main() -> int:
 
     print(f"{'spec':<38} {'grid':>8} {'hoops':>8} {'gap':>8}  CI")
     for s in PRIOR:
-        print(f"{s['label'][:38]:<38} {s['gridiron']:>+8.4f} {s['hoops']:>+8.4f} "
-              f"{s['gap']:>+8.4f}  {'excl 0' if s['ci_excludes_zero'] else 'spans 0'}  PRIOR")
-    print(f"{live['label'][:38]:<38} {rg:>+8.4f} {rh:>+8.4f} {live['gap']:>+8.4f}  "
-          f"[{dlo:+.4f}, {dhi:+.4f}] {'excl 0' if excludes else 'spans 0'}  LIVE")
+        print(
+            f"{s['label'][:38]:<38} {s['gridiron']:>+8.4f} {s['hoops']:>+8.4f} "
+            f"{s['gap']:>+8.4f}  {'excl 0' if s['ci_excludes_zero'] else 'spans 0'}  PRIOR"
+        )
+    print(
+        f"{live['label'][:38]:<38} {rg:>+8.4f} {rh:>+8.4f} {live['gap']:>+8.4f}  "
+        f"[{dlo:+.4f}, {dhi:+.4f}] {'excl 0' if excludes else 'spans 0'}  LIVE"
+    )
     print(f"\nn: gridiron {len(grows)}  hoops {len(hrows)}   reps {args.reps}   seed {SEED}")
-    print(f"point estimates span {report['spread_of_point_estimates']:.4f}; "
-          f"current CI is {report['width_of_current_ci']:.4f} wide")
+    print(
+        f"point estimates span {report['spread_of_point_estimates']:.4f}; "
+        f"current CI is {report['width_of_current_ci']:.4f} wide"
+    )
     print(f"\n{report['verdict']}")
     print(f"\nwrote {OUT}")
     return 0

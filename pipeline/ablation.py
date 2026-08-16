@@ -31,25 +31,48 @@ import sys
 import numpy as np
 import torch
 import torch.nn.functional as F
-
-from load_encoders import SPORTS, ROOT
-from train_unified import (UnifiedTrunk, GRL, load_matrix, per_sport_pools, gather_batch,
-                           supcon_loss, coral_loss, var_loss, cov_loss,
-                           SEED)
-from eval_unified import (g1_per_sport, encode_all, g2_sport_invariance,
-                          g3_silhouette, g4_hit_rate, g4_random_baseline)
+from eval_unified import (
+    encode_all,
+    g1_per_sport,
+    g2_sport_invariance,
+    g3_silhouette,
+    g4_hit_rate,
+    g4_random_baseline,
+)
+from load_encoders import ROOT, SPORTS
+from train_unified import (
+    GRL,
+    SEED,
+    UnifiedTrunk,
+    coral_loss,
+    cov_loss,
+    gather_batch,
+    load_matrix,
+    per_sport_pools,
+    supcon_loss,
+    var_loss,
+)
 
 DATA = ROOT / "data"
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 _meta = json.loads((DATA / "unified_meta.json").read_text(encoding="utf-8"))
 ARCH_NAMES = _meta["arch_names"]
 
 
 def train_config(M, cfg, epochs=30, warmup=5, seed=SEED):
     n_pos = [int(_meta["n_pos"][s]) for s in SPORTS]
-    model = UnifiedTrunk(sport_dims=[int(_meta["sport_dim"][s]) for s in SPORTS],
-                         n_seasons_era=M["n_eras"], d_adapter=48, d_sport_tok=0,
-                         d_emb=64, n_arch=8, n_pos=n_pos, dropout=0.2).to(DEVICE)
+    model = UnifiedTrunk(
+        sport_dims=[int(_meta["sport_dim"][s]) for s in SPORTS],
+        n_seasons_era=M["n_eras"],
+        d_adapter=48,
+        d_sport_tok=0,
+        d_emb=64,
+        n_arch=8,
+        n_pos=n_pos,
+        dropout=0.2,
+    ).to(DEVICE)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     pools = per_sport_pools(M)
     q = 86
@@ -108,8 +131,9 @@ def train_config(M, cfg, epochs=30, warmup=5, seed=SEED):
 
 def gates(z, M):
     g1 = g1_per_sport(z, M)
-    g1_pass = all(d["native_knn5_z"] >= d["native_knn5_e_s"] - 0.02
-                  for d in g1.values() if d["native_knn5_e_s"] is not None)
+    g1_pass = all(
+        d["native_knn5_z"] >= d["native_knn5_e_s"] - 0.02 for d in g1.values() if d["native_knn5_e_s"] is not None
+    )
     # G2/G3/G4 IMPORTED, not re-derived. This block previously carried its own
     # LogisticRegression, its own silhouette, and its own cross-sport-NN loop — the last
     # of which SAMPLED 4,000 rows for speed, so the ablation table's G4 column was never
@@ -119,21 +143,67 @@ def gates(z, M):
     g2 = g2_sport_invariance(z, M)
     g3 = g3_silhouette(z, M)
     g4 = g4_hit_rate(z, M)
-    return {"G1_pass": g1_pass, "G1_hoops_z": round(g1["hoops"]["native_knn5_z"], 3),
-            "G2_sport_acc": g2["sport_acc"],
-            "G2_delta_vs_majority": g2["delta_vs_majority"],
-            "G2_rank": g2["effective_rank"],
-            "G3_sil": g3["silhouette"], "G4_hit": round(g4, 3),
-            "G4_baseline": round(g4_random_baseline(M), 4)}
+    return {
+        "G1_pass": g1_pass,
+        "G1_hoops_z": round(g1["hoops"]["native_knn5_z"], 3),
+        "G2_sport_acc": g2["sport_acc"],
+        "G2_delta_vs_majority": g2["delta_vs_majority"],
+        "G2_rank": g2["effective_rank"],
+        "G3_sil": g3["silhouette"],
+        "G4_hit": round(g4, 3),
+        "G4_baseline": round(g4_random_baseline(M), 4),
+    }
 
 
 CONFIGS = {
-    "full":       {"use_sup": True,  "use_coral": True,  "use_vicreg": True,  "grl_lambda": 0.05, "w_var": 1.0, "w_cov": 1.0},
-    "no_supcon":  {"use_sup": False, "use_coral": True,  "use_vicreg": True,  "grl_lambda": 0.05, "w_var": 1.0, "w_cov": 1.0},
-    "no_coral":   {"use_sup": True,  "use_coral": False, "use_vicreg": True,  "grl_lambda": 0.05, "w_var": 1.0, "w_cov": 1.0},
-    "no_grl":     {"use_sup": True,  "use_coral": True,  "use_vicreg": True,  "grl_lambda": 0.0,  "w_var": 1.0, "w_cov": 1.0},
-    "no_vicreg":  {"use_sup": True,  "use_coral": True,  "use_vicreg": False, "grl_lambda": 0.05, "w_var": 0.0, "w_cov": 0.0},
-    "task_only":  {"use_sup": False, "use_coral": False, "use_vicreg": False, "grl_lambda": 0.0,  "w_var": 0.0, "w_cov": 0.0},
+    "full": {
+        "use_sup": True,
+        "use_coral": True,
+        "use_vicreg": True,
+        "grl_lambda": 0.05,
+        "w_var": 1.0,
+        "w_cov": 1.0,
+    },
+    "no_supcon": {
+        "use_sup": False,
+        "use_coral": True,
+        "use_vicreg": True,
+        "grl_lambda": 0.05,
+        "w_var": 1.0,
+        "w_cov": 1.0,
+    },
+    "no_coral": {
+        "use_sup": True,
+        "use_coral": False,
+        "use_vicreg": True,
+        "grl_lambda": 0.05,
+        "w_var": 1.0,
+        "w_cov": 1.0,
+    },
+    "no_grl": {
+        "use_sup": True,
+        "use_coral": True,
+        "use_vicreg": True,
+        "grl_lambda": 0.0,
+        "w_var": 1.0,
+        "w_cov": 1.0,
+    },
+    "no_vicreg": {
+        "use_sup": True,
+        "use_coral": True,
+        "use_vicreg": False,
+        "grl_lambda": 0.05,
+        "w_var": 0.0,
+        "w_cov": 0.0,
+    },
+    "task_only": {
+        "use_sup": False,
+        "use_coral": False,
+        "use_vicreg": False,
+        "grl_lambda": 0.0,
+        "w_var": 0.0,
+        "w_cov": 0.0,
+    },
 }
 
 
@@ -142,15 +212,25 @@ METRICS = ("G2_sport_acc", "G2_rank", "G3_sil", "G4_hit")
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--seeds", type=int, default=1,
-                    help="repeats per config; >1 puts an error bar on every delta")
-    ap.add_argument("--configs", default="",
-                    help="comma-separated subset (always includes `full`, the reference). "
-                         "Exists so an undecided loss can be re-run at high seed count "
-                         "without paying for the four already settled.")
-    ap.add_argument("--out", default="ablation_report.json",
-                    help="report filename under data/; use a distinct name for a targeted "
-                         "subset run so it does not overwrite the full table")
+    ap.add_argument(
+        "--seeds",
+        type=int,
+        default=1,
+        help="repeats per config; >1 puts an error bar on every delta",
+    )
+    ap.add_argument(
+        "--configs",
+        default="",
+        help="comma-separated subset (always includes `full`, the reference). "
+        "Exists so an undecided loss can be re-run at high seed count "
+        "without paying for the four already settled.",
+    )
+    ap.add_argument(
+        "--out",
+        default="ablation_report.json",
+        help="report filename under data/; use a distinct name for a targeted "
+        "subset run so it does not overwrite the full table",
+    )
     args = ap.parse_args()
     if args.configs:
         want = {c.strip() for c in args.configs.split(",") if c.strip()} | {"full"}
@@ -168,11 +248,17 @@ def main():
     runs: dict[str, list[dict]] = {name: [] for name in CONFIGS}
     for si, sd in enumerate(seeds):
         for name, cfg in CONFIGS.items():
-            print(f"--- training {name} (seed {sd}, {si + 1}/{len(seeds)}) ---", flush=True)
+            print(
+                f"--- training {name} (seed {sd}, {si + 1}/{len(seeds)}) ---",
+                flush=True,
+            )
             g = gates(encode_all(train_config(M, cfg, seed=sd), M, DEVICE), M)
             runs[name].append(g)
-            print(f"   {name:10s} G2_acc={g['G2_sport_acc']} rank={g['G2_rank']} "
-                  f"G3_sil={g['G3_sil']} G4_hit={g['G4_hit']}", flush=True)
+            print(
+                f"   {name:10s} G2_acc={g['G2_sport_acc']} rank={g['G2_rank']} "
+                f"G3_sil={g['G3_sil']} G4_hit={g['G4_hit']}",
+                flush=True,
+            )
 
     def agg(name, key):
         v = [r[key] for r in runs[name]]
@@ -183,14 +269,14 @@ def main():
         r = {k: round(agg(name, k)[0], 4) for k in METRICS}
         r.update({k + "_sd": round(agg(name, k)[1], 4) for k in METRICS})
         r["G1_pass"] = all(x["G1_pass"] for x in runs[name])
-        r["G2_delta_vs_majority"] = round(
-            statistics.mean(x["G2_delta_vs_majority"] for x in runs[name]), 4)
+        r["G2_delta_vs_majority"] = round(statistics.mean(x["G2_delta_vs_majority"] for x in runs[name]), 4)
         r["G4_baseline"] = runs[name][0]["G4_baseline"]
         r["n_seeds"] = len(seeds)
         results[name] = r
     (DATA / args.out).write_text(
         json.dumps({"seeds": seeds, "configs": results, "runs": runs}, indent=2),
-        encoding="utf-8")
+        encoding="utf-8",
+    )
     print("\n=== Ablation summary (each loss earns its keep if dropping it worsens its target gate) ===")
     # Baselines printed BESIDE the columns, not left for the reader to remember. A G4 of
     # 0.105 is not merely "low" — it is BELOW the 0.1712 chance of a random other-sport
@@ -198,15 +284,21 @@ def main():
     # the bare number never said it. Same for G2: the floor is the majority share, not 0.
     g4b = results["full"]["G4_baseline"]
     majority = results["full"]["G2_sport_acc"] - results["full"]["G2_delta_vs_majority"]
-    print(f"  baselines: G2 majority-class {majority:.4f} (floor, lower is better)   "
-          f"G4 random {g4b:.4f} (higher is better)")
-    print(f"{'config':10s} {'G1':4s} {'G2acc':>7s} {'dMaj':>7s} {'rank':>5s} {'G3sil':>6s} "
-          f"{'G4hit':>6s} {'vs rand':>8s}")
+    print(
+        f"  baselines: G2 majority-class {majority:.4f} (floor, lower is better)   "
+        f"G4 random {g4b:.4f} (higher is better)"
+    )
+    print(
+        f"{'config':10s} {'G1':4s} {'G2acc':>7s} {'dMaj':>7s} {'rank':>5s} {'G3sil':>6s} "
+        f"{'G4hit':>6s} {'vs rand':>8s}"
+    )
     for name, g in results.items():
         below = " BELOW" if g["G4_hit"] < g4b else ""
-        print(f"{name:10s} {'PASS' if g['G1_pass'] else 'FAIL':4s} {g['G2_sport_acc']:>7} "
-              f"{g['G2_delta_vs_majority']:>+7.4f} {g['G2_rank']:>5} {g['G3_sil']:>6} "
-              f"{g['G4_hit']:>6} {g['G4_hit'] - g4b:>+8.4f}{below}")
+        print(
+            f"{name:10s} {'PASS' if g['G1_pass'] else 'FAIL':4s} {g['G2_sport_acc']:>7} "
+            f"{g['G2_delta_vs_majority']:>+7.4f} {g['G2_rank']:>5} {g['G3_sil']:>6} "
+            f"{g['G4_hit']:>6} {g['G4_hit'] - g4b:>+8.4f}{below}"
+        )
     # PRE-REGISTERED, and it is the whole point of --seeds. With one run per config a
     # delta of 0.003 and a delta of zero are the same observation, and the 1-seed table
     # kept CORAL and VICReg on moves of 0.001-0.003. A loss earns its keep only if
@@ -224,11 +316,14 @@ def main():
     # does work.
     print("\nEarns-its-keep verdict (vs full, PAIRED by seed, |mean diff| > 2x sd-of-mean):")
     if len(seeds) < 2:
-        print("  NOT DECIDABLE — one seed per config, so no noise floor was measured. "
-              "Re-run with --seeds 3.")
+        print("  NOT DECIDABLE — one seed per config, so no noise floor was measured. " "Re-run with --seeds 3.")
     for name in [c for c in CONFIGS if c != "full"]:
         parts = []
-        for k, label in (("G3_sil", "dG3"), ("G4_hit", "dG4"), ("G2_sport_acc", "dG2sport")):
+        for k, label in (
+            ("G3_sil", "dG3"),
+            ("G4_hit", "dG4"),
+            ("G2_sport_acc", "dG2sport"),
+        ):
             diffs = [x[k] - f[k] for x, f in zip(runs[name], runs["full"], strict=True)]
             mean_d = statistics.mean(diffs)
             if len(diffs) > 1:
@@ -240,8 +335,10 @@ def main():
             parts.append(f"{label}={mean_d:+.3f}(sem {sem:.3f}){tag}[{n_pos}/{len(diffs)}+]")
         print(f"  drop {name:10s}: " + "  ".join(parts))
     print("  * exceeds 2x sd-of-mean of the PER-SEED differences   ns = not distinguishable")
-    print("  [k/n+] = how many seeds moved in the same direction; a real effect should be "
-          "consistent,\n  not just large on average.")
+    print(
+        "  [k/n+] = how many seeds moved in the same direction; a real effect should be "
+        "consistent,\n  not just large on average."
+    )
     return 0
 
 

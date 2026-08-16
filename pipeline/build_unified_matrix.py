@@ -27,12 +27,10 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
 
 import numpy as np
-
-from load_encoders import load_all, SPORT_DIM, SPORT_ID, ROOT, UCACHE
-from archetype_map import native_labels, CROSS_ARCH_IDS
+from archetype_map import CROSS_ARCH_IDS, native_labels
+from load_encoders import ROOT, SPORT_DIM, SPORT_ID, UCACHE, load_all
 
 DATA = ROOT / "data"
 ARCH_IDX = {a: i for i, a in enumerate(CROSS_ARCH_IDS)}  # A0->0 ... A11->6
@@ -64,9 +62,14 @@ def main():
     n2c = amap["native_to_cross"]
 
     all_sport = load_all(verbose=False)
-    sport_ids = []; player_idx = []; years = []
-    arch_ids = []; native_clusters = []; meta = []
-    pos_ids = []; pos_masks = []
+    sport_ids = []
+    player_idx = []
+    years = []
+    arch_ids = []
+    native_clusters = []
+    meta = []
+    pos_ids = []
+    pos_masks = []
 
     E_per = {}
     for sport in ("hoops", "gridiron", "pitch"):
@@ -100,11 +103,19 @@ def main():
             native_clusters.append(nc)
             pos_ids.append(pid)
             pos_masks.append(1 if pid >= 0 else 0)
-            meta.append({
-                "sport": sport, "player_id": r["player_id"], "name": r["name"],
-                "season": r["season"], "year": y, "pos": r["pos"], "team": r.get("team", ""),
-                "native_cluster": nc, "cross_arch": cross,
-            })
+            meta.append(
+                {
+                    "sport": sport,
+                    "player_id": r["player_id"],
+                    "name": r["name"],
+                    "season": r["season"],
+                    "year": y,
+                    "pos": r["pos"],
+                    "team": r.get("team", ""),
+                    "native_cluster": nc,
+                    "cross_arch": cross,
+                }
+            )
 
     sport_ids = np.array(sport_ids, dtype=np.int64)
     player_idx = np.array(player_idx, dtype=np.int64)
@@ -118,15 +129,17 @@ def main():
     bad = years_arr < 0
     if bad.any():
         raise ValueError(f"{int(bad.sum())} rows with unparseable year")
-    min_year = int(years_arr.min()); max_year = int(years_arr.max())
+    min_year = int(years_arr.min())
+    max_year = int(years_arr.max())
     era_id = years_arr - min_year
     n_eras = int(max_year - min_year) + 1
 
     # ---- assertions (validate-gate) ----
     N = len(sport_ids)
     assert N == sum(E_per[s].shape[0] for s in E_per), "row count mismatch"
-    assert not np.isnan(arch_ids).any() and (arch_ids >= 0).all(), \
-        f"arch_id has -1/NaN: {(arch_ids < 0).sum()} rows unmapped (v0 expects 0)"
+    assert (
+        not np.isnan(arch_ids).any() and (arch_ids >= 0).all()
+    ), f"arch_id has -1/NaN: {(arch_ids < 0).sum()} rows unmapped (v0 expects 0)"
     for s, E in E_per.items():
         norms = np.linalg.norm(E, axis=1)
         assert np.allclose(norms, 1.0, atol=1e-5), f"{s} not L2-normalized"
@@ -139,31 +152,51 @@ def main():
         E_hoops=E_per["hoops"].astype(np.float32),
         E_gridiron=E_per["gridiron"].astype(np.float32),
         E_pitch=E_per["pitch"].astype(np.float32),
-        sport_id=sport_ids, player_idx=player_idx, era_id=era_id,
-        arch_id=arch_ids, native_cluster=native_clusters,
-        pos_id=pos_ids, pos_mask=pos_masks,
+        sport_id=sport_ids,
+        player_idx=player_idx,
+        era_id=era_id,
+        arch_id=arch_ids,
+        native_cluster=native_clusters,
+        pos_id=pos_ids,
+        pos_mask=pos_masks,
         sport_dim=np.array([SPORT_DIM[s] for s in ("hoops", "gridiron", "pitch")], dtype=np.int64),
-        n_sports=np.int64(3), n_eras=np.int64(n_eras), min_year=np.int64(min_year),
+        n_sports=np.int64(3),
+        n_eras=np.int64(n_eras),
+        min_year=np.int64(min_year),
         arch_names=np.array(CROSS_ARCH_IDS, dtype=object),
     )
-    (DATA / "unified_meta.json").write_text(json.dumps({
-        "n_rows": N, "coverage": cov, "n_eras": n_eras, "min_year": min_year,
-        "max_year": max_year, "arch_names": CROSS_ARCH_IDS,
-        "arch_counts": {CROSS_ARCH_IDS[i]: int((arch_ids == i).sum()) for i in range(len(CROSS_ARCH_IDS))},
-        "era_counts": {int(min_year + e): int((era_id == e).sum()) for e in range(n_eras)},
-        "sport_dim": SPORT_DIM, "n_pos": N_POS,
-        "pos_valid": {s: int(((pos_masks == 1) & (sport_ids == SPORT_ID[s])).sum()) for s in E_per},
-    }, indent=2), encoding="utf-8")
+    (DATA / "unified_meta.json").write_text(
+        json.dumps(
+            {
+                "n_rows": N,
+                "coverage": cov,
+                "n_eras": n_eras,
+                "min_year": min_year,
+                "max_year": max_year,
+                "arch_names": CROSS_ARCH_IDS,
+                "arch_counts": {CROSS_ARCH_IDS[i]: int((arch_ids == i).sum()) for i in range(len(CROSS_ARCH_IDS))},
+                "era_counts": {int(min_year + e): int((era_id == e).sum()) for e in range(n_eras)},
+                "sport_dim": SPORT_DIM,
+                "n_pos": N_POS,
+                "pos_valid": {s: int(((pos_masks == 1) & (sport_ids == SPORT_ID[s])).sum()) for s in E_per},
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
     print(f"unified_matrix.npz  N={N:,}  sports={cov}")
     print(f"  era {min_year}-{max_year} ({n_eras} bins)")
-    print(f"  arch counts: " + ", ".join(f"{CROSS_ARCH_IDS[i]}={int((arch_ids==i).sum())}"
-                                          for i in range(len(CROSS_ARCH_IDS))))
+    print(
+        "  arch counts: "
+        + ", ".join(f"{CROSS_ARCH_IDS[i]}={int((arch_ids==i).sum())}" for i in range(len(CROSS_ARCH_IDS)))
+    )
     per_sport_arch = {}
     for s in E_per:
         sid = SPORT_ID[s]
-        per_sport_arch[s] = {CROSS_ARCH_IDS[i]: int(((arch_ids == i) & (sport_ids == sid)).sum())
-                             for i in range(len(CROSS_ARCH_IDS))}
+        per_sport_arch[s] = {
+            CROSS_ARCH_IDS[i]: int(((arch_ids == i) & (sport_ids == sid)).sum()) for i in range(len(CROSS_ARCH_IDS))
+        }
     print("  per-sport arch coverage:")
     for s, d in per_sport_arch.items():
         print("    " + s + ": " + ", ".join(f"{k}={v}" for k, v in d.items() if v))

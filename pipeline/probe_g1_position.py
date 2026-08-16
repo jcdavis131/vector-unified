@@ -46,8 +46,8 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from eval_unified import knn5_acc  # noqa: E402
-from train_unified import SPORTS, load_matrix  # noqa: E402
+from eval_unified import knn5_acc
+from train_unified import SPORTS, load_matrix
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSET = ROOT / "assets" / "unified.json"
@@ -75,9 +75,11 @@ def main() -> int:
     players = json.loads(ASSET.read_text(encoding="utf-8"))["players"]
     Z = np.array([p.get("e") or p.get("emb") for p in players], dtype=np.float32)
     if Z.shape[0] != len(sid):
-        print(f"ROW MISMATCH: asset has {Z.shape[0]} players, matrix has {len(sid)}. "
-              f"Refusing — a positional join across a length mismatch is how a real number "
-              f"ends up describing the wrong player.")
+        print(
+            f"ROW MISMATCH: asset has {Z.shape[0]} players, matrix has {len(sid)}. "
+            f"Refusing — a positional join across a length mismatch is how a real number "
+            f"ends up describing the wrong player."
+        )
         return 2
 
     rows, regressions = {}, []
@@ -90,26 +92,39 @@ def main() -> int:
         joint = knn5_acc(Z[idx], pos[idx], posm[idx])
         drop = round(base - joint, 4)
         ok = drop <= REVERT_THRESHOLD
-        rows[sport] = {"n_rows": int(len(idx)), "n_labelled": int(posm[idx].sum()),
-                       "baseline_e_s": round(base, 4), "joint_z": round(joint, 4),
-                       "pos_drop": drop, "pos_ok": bool(ok)}
+        rows[sport] = {
+            "n_rows": int(len(idx)),
+            "n_labelled": int(posm[idx].sum()),
+            "baseline_e_s": round(base, 4),
+            "joint_z": round(joint, 4),
+            "pos_drop": drop,
+            "pos_ok": bool(ok),
+        }
         if not ok:
             regressions.append(f"{sport}: pos_drop {drop} exceeds {REVERT_THRESHOLD}")
-        print(f"  {sport:9} labelled={int(posm[idx].sum()):6}  e_s={base:.4f}  "
-              f"z={joint:.4f}  drop={drop:+.4f}  {'ok' if ok else 'REGRESSION'}")
+        print(
+            f"  {sport:9} labelled={int(posm[idx].sum()):6}  e_s={base:.4f}  "
+            f"z={joint:.4f}  drop={drop:+.4f}  {'ok' if ok else 'REGRESSION'}"
+        )
 
     report = {
-        "what": ("The G1 position arm, computed with the FIXED knn5_acc. It read pos_drop "
-                 "0.0 / pos_ok true for every sport from Phase 2 until 7.21 and meant "
-                 "nothing: pos_mask was used as an index, both arms scored exactly 1.0, so "
-                 "their difference was 0.0 by construction — on a shuffled embedding too."),
-        "convention": ("pos_drop = baseline(e_s) - joint(z), matching train_stage2.py:321. "
-                       "NEGATIVE means the joint embedding recovers position BETTER than "
-                       "the frozen per-sport encoder it was built from."),
-        "arms": ("baseline = frozen per-sport encoder from the cached unified_matrix.npz. "
-                 "joint = the SHIPPED z in assets/unified.json, not the in-training "
-                 "pos_knn5_live off the drifted encoders. This answers what the published "
-                 "artifact achieves."),
+        "what": (
+            "The G1 position arm, computed with the FIXED knn5_acc. It read pos_drop "
+            "0.0 / pos_ok true for every sport from Phase 2 until 7.21 and meant "
+            "nothing: pos_mask was used as an index, both arms scored exactly 1.0, so "
+            "their difference was 0.0 by construction — on a shuffled embedding too."
+        ),
+        "convention": (
+            "pos_drop = baseline(e_s) - joint(z), matching train_stage2.py:321. "
+            "NEGATIVE means the joint embedding recovers position BETTER than "
+            "the frozen per-sport encoder it was built from."
+        ),
+        "arms": (
+            "baseline = frozen per-sport encoder from the cached unified_matrix.npz. "
+            "joint = the SHIPPED z in assets/unified.json, not the in-training "
+            "pos_knn5_live off the drifted encoders. This answers what the published "
+            "artifact achieves."
+        ),
         "revert_threshold": REVERT_THRESHOLD,
         "per_sport": rows,
         "caveat_discrepancy_resolved": (
@@ -117,11 +132,14 @@ def main() -> int:
             "/ 0.999 gridiron / 0.88 pitch'. Those are the Z arm, confirmed here. The "
             "caveat rounds down by about a point on hoops (0.7911) and pitch (0.8909); "
             "gridiron matches. It is NOT quoting the baseline, which reads 0.7385 / 0.9991 "
-            "/ 0.8930."),
-        "verdict_note": ("The gate still passes, and that is the honest result — but it now "
-                         "passes on measured evidence rather than on a metric that could "
-                         "not fail. A check that could not fail was reported as passing for "
-                         "months; the finding is the vacuity, not the outcome."),
+            "/ 0.8930."
+        ),
+        "verdict_note": (
+            "The gate still passes, and that is the honest result — but it now "
+            "passes on measured evidence rather than on a metric that could "
+            "not fail. A check that could not fail was reported as passing for "
+            "months; the finding is the vacuity, not the outcome."
+        ),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"\nwrote {OUT}")

@@ -48,9 +48,14 @@ HUB = Path("C:/Users/jcdav/vector-hub/assets/data")
 
 
 def run(argv: list[str]) -> tuple[int, str]:
-    r = subprocess.run([sys.executable, str(PIPE / argv[0]), *argv[1:]],
-                       capture_output=True, text=True, encoding="utf-8",
-                       errors="replace", cwd=str(ROOT))
+    r = subprocess.run(
+        [sys.executable, str(PIPE / argv[0]), *argv[1:]],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        cwd=str(ROOT),
+    )
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
@@ -66,13 +71,15 @@ UNCOVERED_REASON = {
         "survives). The run is 43s, so the harness's clean/planted/restored triple adds "
         "~130s plus three 16 MB copies to every validate.py. Deferred on cost, not "
         "difficulty. Its artifact currently records vacuous_gates: [], so the arm has not "
-        "fired on live data either — this is a real gap, not a formality."),
+        "fired on live data either — this is a real gap, not a formality."
+    ),
     "check_guards_nonvacuous.py": (
         "CIRCULAR. This file IS the mutation harness; planting a defect in it means asking "
         "it to detect its own vacuity while running as the thing under test. Its own "
         "failure paths are exercised in practice instead — every guard that has ever "
         "regressed showed up as a FAIL row here, and its bugs this session (a lowercase-only "
-        "regex, a missing `import re`) surfaced by running it, not by mutating it."),
+        "regex, a missing `import re`) surfaced by running it, not by mutating it."
+    ),
 }
 
 
@@ -103,6 +110,7 @@ def patch_npz(path: Path, mutate) -> None:
     cannot survive the run.
     """
     import numpy as np
+
     with np.load(path, allow_pickle=True) as a:
         arrays = {k: a[k] for k in a.files}
     mutate(arrays)
@@ -133,7 +141,9 @@ def _contaminate_axis(doc):
 
 def _bump_mtime(path: Path) -> None:
     """Make a producer look newer than its artifact. Not a JSON edit — restored by mtime."""
-    import os, time
+    import os
+    import time
+
     t = time.time() + 7200
     os.utime(path, (t, t))
 
@@ -196,8 +206,7 @@ def _phantom_cited_field(doc):
     """
     ins = doc.get("insights") or []
     if len(ins) > 4:
-        ins[4]["source"] = ("pipeline/data/mtnn_report.json -> next_profile.val, "
-                            "totally_invented_field")
+        ins[4]["source"] = "pipeline/data/mtnn_report.json -> next_profile.val, " "totally_invented_field"
 
 
 def _wrong_cited_value(doc):
@@ -211,8 +220,7 @@ def _wrong_cited_value(doc):
     """
     ins = doc.get("insights") or []
     if ins and "persistence_r=0.4514" in (ins[0].get("source") or ""):
-        ins[0]["source"] = ins[0]["source"].replace("persistence_r=0.4514",
-                                                    "persistence_r=0.9999")
+        ins[0]["source"] = ins[0]["source"].replace("persistence_r=0.4514", "persistence_r=0.9999")
 
 
 def _carry_forward(doc):
@@ -233,7 +241,7 @@ def _carry_forward(doc):
         by_ticker.setdefault(p["ticker"], []).append(p)
     for rows in by_ticker.values():
         rows.sort(key=lambda r: int(r["year"]))
-        for prev, nxt in zip(rows, rows[1:]):
+        for prev, nxt in zip(rows, rows[1:], strict=False):
             nxt["skills"] = list(prev["skills"])
 
 
@@ -298,7 +306,7 @@ def _gridiron_ppr_carries_forward(doc):
             by_name.setdefault(p["name"], []).append(p)
     for rows in by_name.values():
         rows.sort(key=lambda x: int(x["season"]))
-        for prev, nxt in zip(rows, rows[1:]):
+        for prev, nxt in zip(rows, rows[1:], strict=False):
             nxt["ppg"]["ppr"] = prev["ppg"]["ppr"]
 
 
@@ -310,87 +318,134 @@ def _bad_qid(doc):
 
 
 MUTATIONS = [
-    ("hub_freshness/contract",
-     ["check_hub_freshness.py", "--check", "--offline"],
-     HUB / "tennis.json", _drop_field,
-     "a field model.js dereferences is missing — renders as a blank section, not an error"),
-    ("hub_freshness/answer_key",
-     ["check_hub_freshness.py", "--check", "--offline"],
-     HUB / "tennis.json", _flip_answer,
-     "a round marks the wrong side correct"),
-    ("superlatives/page_scoped",
-     ["check_superlatives.py", "--check"],
-     HUB / "equities.json", _false_superlative,
-     "'the closest call on this board' planted on the WIDEST round"),
-    ("artifact_freshness/producer_newer",
-     ["check_artifact_freshness.py", "--check"],
-     PIPE / "build_vor_draft_value.py", _bump_mtime,
-     "a producer script made newer than the artifact it writes",
-     "STALE   vor_draft_value.json"),
-    ("g1_position/row_mismatch",
-     ["probe_g1_position.py", "--check"],
-     ROOT / "assets" / "unified.json", lambda d: d["players"].pop(),
-     "asset and matrix row counts disagree — a positional join would describe the "
-     "wrong player", 2),
+    (
+        "hub_freshness/contract",
+        ["check_hub_freshness.py", "--check", "--offline"],
+        HUB / "tennis.json",
+        _drop_field,
+        "a field model.js dereferences is missing — renders as a blank section, not an error",
+    ),
+    (
+        "hub_freshness/answer_key",
+        ["check_hub_freshness.py", "--check", "--offline"],
+        HUB / "tennis.json",
+        _flip_answer,
+        "a round marks the wrong side correct",
+    ),
+    (
+        "superlatives/page_scoped",
+        ["check_superlatives.py", "--check"],
+        HUB / "equities.json",
+        _false_superlative,
+        "'the closest call on this board' planted on the WIDEST round",
+    ),
+    (
+        "artifact_freshness/producer_newer",
+        ["check_artifact_freshness.py", "--check"],
+        PIPE / "build_vor_draft_value.py",
+        _bump_mtime,
+        "a producer script made newer than the artifact it writes",
+        "STALE   vor_draft_value.json",
+    ),
+    (
+        "g1_position/row_mismatch",
+        ["probe_g1_position.py", "--check"],
+        ROOT / "assets" / "unified.json",
+        lambda d: d["players"].pop(),
+        "asset and matrix row counts disagree — a positional join would describe the " "wrong player",
+        2,
+    ),
     # The first version of this mutation edited data/superlative_registry.json and the
     # guard exited 0 — because check_wikidata_qids.py reads its EXPECT registry from its OWN
     # SOURCE. The test was wrong, not the guard. Mutate what the guard actually reads.
-    ("wikidata_qids/wrong_label",
-     ["check_wikidata_qids.py", "--check"],
-     PIPE / "check_wikidata_qids.py",
-     lambda _: _patch_text(PIPE / "check_wikidata_qids.py",
-                           '"Q19204627": "American football player"',
-                           '"Q19204627": "association football"'),
-     "a registered QID relabelled to the wrong entity"),
-    ("draft_value_invariants/I4_count_drift",
-     ["check_draft_value_invariants.py", "--check"],
-     ROOT / "data" / "qb_survivorship_probe.json", _break_invariant,
-     "a drafted count bumped by one — the probe and the value table now disagree "
-     "about who was drafted, from the same CSV"),
-    ("merged_careers/contamination",
-     ["check_merged_careers.py", "--check"],
-     ROOT / "data" / "direction_axis_hoops.json", _contaminate_axis,
-     "a known-merged career (jaren jackson) present in an axis artifact"),
-    ("hub_freshness/machine_local_path",
-     ["check_hub_freshness.py", "--check", "--offline"],
-     HUB / "tennis.json", _absolute_path,
-     "a laptop path published as the reader's provenance — the state the site shipped in "
-     "for 45 citations, under a heading promising where every number came from"),
-    ("cited_fields/phantom_field",
-     ["check_cited_fields.py", "--check"],
-     HUB / "equities.json", _phantom_cited_field,
-     "a page cites a field its source file does not contain, under any reading"),
-    ("cited_fields/wrong_value",
-     ["check_cited_fields.py", "--check"],
-     HUB / "hoops.json", _wrong_cited_value,
-     "a published number the cited artifact contradicts — the site's fine print says every "
-     "number is recomputable, and this is the first check that tests it"),
-    ("equities_forward/carry_forward",
-     ["build_equities_forward.py", "--check"],
-     Path("C:/Users/jcdav/vector-equities/assets/real_data.json"), _carry_forward,
-     "every company-year duplicated from its prior year — the gate that could not fail "
-     "under any input, registered as a check for three commits"),
-    ("hoops_forward/extras_carry_nothing",
-     ["build_hoops_forward.py", "--check"],
-     Path("C:/Users/jcdav/vector-hoops/assets/skills.json"), _skills_carry_no_signal,
-     "every skill column made a copy of the target — the extras can add nothing, so the "
-     "p >= 0.05 arm must fire"),
-    ("tennis_forward/extras_carry_nothing",
-     ["build_tennis_forward.py", "--check"],
-     ROOT / "pipeline" / "data" / "tennis_matrix.npz", _tennis_extras_are_nothing,
-     "every feature but rank zeroed in values and mask — the p >= 0.05 arm must fire, and "
-     "this closes the coverage gap the suite published about itself"),
-    ("gridiron_forward/carry_forward",
-     ["build_gridiron_forward.py", "--check"],
-     Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json"),
-     _gridiron_ppr_carries_forward,
-     "every player-season's PPR copied onto his next — persistence of 0.77-0.80 would be "
-     "measuring duplication and would still print as a finding about football"),
-    ("hub_freshness/unresolvable_root",
-     ["check_hub_freshness.py", "--check", "--offline"],
-     HUB / "tennis.json", _unknown_repo_root,
-     "a citation naming no known repo — must FAIL, because 'I cannot find this' is the "
-     "case where skipping is most tempting and most wrong"),
+    (
+        "wikidata_qids/wrong_label",
+        ["check_wikidata_qids.py", "--check"],
+        PIPE / "check_wikidata_qids.py",
+        lambda _: _patch_text(
+            PIPE / "check_wikidata_qids.py",
+            '"Q19204627": "American football player"',
+            '"Q19204627": "association football"',
+        ),
+        "a registered QID relabelled to the wrong entity",
+    ),
+    (
+        "draft_value_invariants/I4_count_drift",
+        ["check_draft_value_invariants.py", "--check"],
+        ROOT / "data" / "qb_survivorship_probe.json",
+        _break_invariant,
+        "a drafted count bumped by one — the probe and the value table now disagree "
+        "about who was drafted, from the same CSV",
+    ),
+    (
+        "merged_careers/contamination",
+        ["check_merged_careers.py", "--check"],
+        ROOT / "data" / "direction_axis_hoops.json",
+        _contaminate_axis,
+        "a known-merged career (jaren jackson) present in an axis artifact",
+    ),
+    (
+        "hub_freshness/machine_local_path",
+        ["check_hub_freshness.py", "--check", "--offline"],
+        HUB / "tennis.json",
+        _absolute_path,
+        "a laptop path published as the reader's provenance — the state the site shipped in "
+        "for 45 citations, under a heading promising where every number came from",
+    ),
+    (
+        "cited_fields/phantom_field",
+        ["check_cited_fields.py", "--check"],
+        HUB / "equities.json",
+        _phantom_cited_field,
+        "a page cites a field its source file does not contain, under any reading",
+    ),
+    (
+        "cited_fields/wrong_value",
+        ["check_cited_fields.py", "--check"],
+        HUB / "hoops.json",
+        _wrong_cited_value,
+        "a published number the cited artifact contradicts — the site's fine print says every "
+        "number is recomputable, and this is the first check that tests it",
+    ),
+    (
+        "equities_forward/carry_forward",
+        ["build_equities_forward.py", "--check"],
+        Path("C:/Users/jcdav/vector-equities/assets/real_data.json"),
+        _carry_forward,
+        "every company-year duplicated from its prior year — the gate that could not fail "
+        "under any input, registered as a check for three commits",
+    ),
+    (
+        "hoops_forward/extras_carry_nothing",
+        ["build_hoops_forward.py", "--check"],
+        Path("C:/Users/jcdav/vector-hoops/assets/skills.json"),
+        _skills_carry_no_signal,
+        "every skill column made a copy of the target — the extras can add nothing, so the " "p >= 0.05 arm must fire",
+    ),
+    (
+        "tennis_forward/extras_carry_nothing",
+        ["build_tennis_forward.py", "--check"],
+        ROOT / "pipeline" / "data" / "tennis_matrix.npz",
+        _tennis_extras_are_nothing,
+        "every feature but rank zeroed in values and mask — the p >= 0.05 arm must fire, and "
+        "this closes the coverage gap the suite published about itself",
+    ),
+    (
+        "gridiron_forward/carry_forward",
+        ["build_gridiron_forward.py", "--check"],
+        Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json"),
+        _gridiron_ppr_carries_forward,
+        "every player-season's PPR copied onto his next — persistence of 0.77-0.80 would be "
+        "measuring duplication and would still print as a finding about football",
+    ),
+    (
+        "hub_freshness/unresolvable_root",
+        ["check_hub_freshness.py", "--check", "--offline"],
+        HUB / "tennis.json",
+        _unknown_repo_root,
+        "a citation naming no known repo — must FAIL, because 'I cannot find this' is the "
+        "case where skipping is most tempting and most wrong",
+    ),
 ]
 
 
@@ -419,7 +474,7 @@ def main() -> int:
             if mutate is _bump_mtime:
                 _bump_mtime(target)
             elif target.suffix == ".py":
-                mutate(None)          # text mutation, applies itself
+                mutate(None)  # text mutation, applies itself
             elif target.suffix == ".npz":
                 patch_npz(target, mutate)
             else:
@@ -450,23 +505,27 @@ def main() -> int:
         else:
             why = []
             if isinstance(expect, str):
-                why.append(f"planted target {expect!r} "
-                           f"{'was already flagged clean' if expect in clean_out else 'never appeared'}")
+                why.append(
+                    f"planted target {expect!r} "
+                    f"{'was already flagged clean' if expect in clean_out else 'never appeared'}"
+                )
             elif clean != 0:
                 why.append(f"was already failing before the mutation (exit {clean})")
             if not isinstance(expect, str) and dirty != expect:
-                why.append(f"DID NOT NOTICE the planted defect "
-                           f"(exit {dirty}, wanted {expect})")
+                why.append(f"DID NOT NOTICE the planted defect " f"(exit {dirty}, wanted {expect})")
             if not isinstance(expect, str) and restored != 0:
                 why.append(f"still failing after restore (exit {restored}) — tree may be dirty")
             vacuous.append(f"{name}: {'; '.join(why)}")
-        print(f"  {'ok  ' if good else 'FAIL'}  {name:34} clean={clean} planted={dirty} "
-              f"restored={restored}   {what}")
+        print(
+            f"  {'ok  ' if good else 'FAIL'}  {name:34} clean={clean} planted={dirty} " f"restored={restored}   {what}"
+        )
 
     print(f"\n{ok}/{len(MUTATIONS)} guards rejected the defect they were shown.")
-    print("This proves each guard rejects THE DEFECT IT WAS SHOWN. It does not prove it "
-          "catches every defect of that class — the planted ones are the failures that "
-          "actually happened in this repo, which is evidence, not coverage.")
+    print(
+        "This proves each guard rejects THE DEFECT IT WAS SHOWN. It does not prove it "
+        "catches every defect of that class — the planted ones are the failures that "
+        "actually happened in this repo, which is evidence, not coverage."
+    )
 
     # ---- WHICH REGISTERED CHECKS HAVE NO MUTATION AT ALL -----------------------
     # The sentence above has been true and unquantified since this file was written, and
@@ -486,15 +545,20 @@ def main() -> int:
         registered = dict(re.findall(r'"([A-Za-z0-9_]+)":\s*\(\["([A-Za-z0-9_]+\.py)"', reg))
         mutated = {Path(argv[0]).name for _, argv, *_ in MUTATIONS}
         gaps = sorted(f"{k} ({v})" for k, v in registered.items() if v not in mutated)
-        print(f"\ncoverage: {len(registered) - len(gaps)}/{len(registered)} registered "
-              f"checks have at least one planted defect.")
+        print(
+            f"\ncoverage: {len(registered) - len(gaps)}/{len(registered)} registered "
+            f"checks have at least one planted defect."
+        )
         if gaps:
             print(f"  {len(gaps)} with NO mutation — never once seen to fail:")
             for g in gaps:
                 script = g.split("(")[-1].rstrip(")")
-                why = UNCOVERED_REASON.get(script, "no reason recorded — that is itself a "
-                                                   "gap, since an unexplained gap reads as "
-                                                   "neglect and cannot be argued with")
+                why = UNCOVERED_REASON.get(
+                    script,
+                    "no reason recorded — that is itself a "
+                    "gap, since an unexplained gap reads as "
+                    "neglect and cannot be argued with",
+                )
                 print(f"      {g}\n          {why}")
     except OSError as e:
         print(f"\ncoverage: could not read validate.py ({e}) — gap unknown, not zero")

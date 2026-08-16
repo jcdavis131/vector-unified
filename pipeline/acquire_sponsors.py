@@ -169,9 +169,7 @@ def acquire() -> dict:
         seen.add(k)
         deduped.append(e)
     for c in companies.values():
-        c["n_athletes"] = sum(
-            1 for e in deduped if e["company_qid"] == c["qid"]
-        )
+        c["n_athletes"] = sum(1 for e in deduped if e["company_qid"] == c["qid"])
     return {"companies": companies, "edges": deduped}
 
 
@@ -209,8 +207,11 @@ def measure_coverage(edges: list[dict]) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--offline", action="store_true",
-                    help="re-report from the cached pull instead of querying")
+    ap.add_argument(
+        "--offline",
+        action="store_true",
+        help="re-report from the cached pull instead of querying",
+    )
     args = ap.parse_args()
 
     if args.offline:
@@ -248,10 +249,11 @@ def main() -> int:
 
     print(f"\ncompanies : {len(companies)}")
     print(f"edges     : {len(edges)}")
-    print(f"\ncorpus    : {coverage['corpus_player_seasons']} player-seasons, "
-          f"{coverage['corpus_unique_athletes']} unique athletes")
-    print(f"matched   : {coverage['matched_unique_athletes']} "
-          f"({coverage['matched_pct']}% of unique athletes)")
+    print(
+        f"\ncorpus    : {coverage['corpus_player_seasons']} player-seasons, "
+        f"{coverage['corpus_unique_athletes']} unique athletes"
+    )
+    print(f"matched   : {coverage['matched_unique_athletes']} " f"({coverage['matched_pct']}% of unique athletes)")
     for sport, s in sorted(coverage["per_sport"].items()):
         print(f"  {sport:9} {s['with_sponsor']:5}/{s['unique_athletes']:5}  {s['pct']:5}%")
 

@@ -25,12 +25,12 @@ from __future__ import annotations
 
 import json
 import sys
+
 import numpy as np
 import torch
-
-from load_encoders import SPORTS, ROOT, load_all
+from eval_unified import g4_random_baseline, load_and_encode
+from load_encoders import ROOT, SPORTS, load_all
 from train_unified import load_matrix
-from eval_unified import load_and_encode, g4_random_baseline
 
 DATA = ROOT / "data"
 # index -> cross-sport archetype id, in the order build_unified_matrix assigned them
@@ -70,15 +70,24 @@ def named_panel(z, M, names_per_sport=4):
             for t in top:
                 i = ia[t]
                 r = recs[i]
-                panel.append({"sport": SPORTS[s], "name": r["name"], "pos": str(r["pos"]),
-                              "team": r.get("team", ""), "season": r["season"],
-                              "arch": ARCH_NAMES[int(arch[i])]})
+                panel.append(
+                    {
+                        "sport": SPORTS[s],
+                        "name": r["name"],
+                        "pos": str(r["pos"]),
+                        "team": r.get("team", ""),
+                        "season": r["season"],
+                        "arch": ARCH_NAMES[int(arch[i])],
+                    }
+                )
     return panel
 
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     M = load_matrix(device)
     # Shared contract: a Stage 2 checkpoint gets its DRIFTED encoders, not the frozen
     # cached ones. See eval_unified.load_and_encode.
@@ -110,12 +119,18 @@ def main():
     per_sport = {}
     for s in range(3):
         m = sid == s
-        per_sport[SPORTS[s]] = {"n": int(m.sum()), "hit_rate": float(hits[m].mean()),
-                                "mean_nn_cos": float(nn_sim[m].mean())}
+        per_sport[SPORTS[s]] = {
+            "n": int(m.sum()),
+            "hit_rate": float(hits[m].mean()),
+            "mean_nn_cos": float(nn_sim[m].mean()),
+        }
     per_arch = {}
     for a in np.unique(arch):
         m = arch == a
-        per_arch[ARCH_NAMES[int(a)]] = {"n": int(m.sum()), "hit_rate": float(hits[m].mean())}
+        per_arch[ARCH_NAMES[int(a)]] = {
+            "n": int(m.sum()),
+            "hit_rate": float(hits[m].mean()),
+        }
 
     panel = named_panel(z, M, names_per_sport=3)
     # attach each panelist's top-3 cross-sport NN
@@ -124,39 +139,62 @@ def main():
     np.fill_diagonal(sim_all, -np.inf)
     for p in panel:
         # find this panelist's row index by matching record fields
-        i = next((k for k, r in enumerate(recs)
-                  if r["name"] == p["name"] and r["season"] == p["season"] and SPORTS[sid[k]] == p["sport"]),
-                 None)
+        i = next(
+            (
+                k
+                for k, r in enumerate(recs)
+                if r["name"] == p["name"] and r["season"] == p["season"] and SPORTS[sid[k]] == p["sport"]
+            ),
+            None,
+        )
         if i is None:
             p["nn"] = []
             continue
         sims = sim_all[i].copy()
         sims[sid == sid[i]] = -np.inf  # other sports only
         top3 = np.argsort(-sims)[:3]
-        p["nn"] = [{"name": recs[j]["name"], "sport": SPORTS[int(sid[j])],
-                    "pos": str(recs[j]["pos"]), "team": recs[j].get("team", ""),
-                    "arch": ARCH_NAMES[int(arch[j])], "cos": float(sims[j])} for j in top3]
+        p["nn"] = [
+            {
+                "name": recs[j]["name"],
+                "sport": SPORTS[int(sid[j])],
+                "pos": str(recs[j]["pos"]),
+                "team": recs[j].get("team", ""),
+                "arch": ARCH_NAMES[int(arch[j])],
+                "cos": float(sims[j]),
+            }
+            for j in top3
+        ]
 
     report = {
         "model": model_label,
         "z_source": z_source,
-        "n_rows": int(z.shape[0]), "d_emb": int(z.shape[1]),
-        "G4_cross_sport_nn_role_coherence": {"hit_rate": round(g4, 4),
-                                             "random_baseline": round(g4_baseline, 4),
-                                             "lift_over_random": round(g4 - g4_baseline, 4),
-                                             "target": 0.60, "pass": bool(g4 >= 0.60),
-                                             "per_sport": {k: {kk: round(vv, 4) if isinstance(vv, float) else vv
-                                                               for kk, vv in v.items()} for k, v in per_sport.items()},
-                                             "per_arch": {k: {kk: round(vv, 4) if isinstance(vv, float) else vv
-                                                              for kk, vv in v.items()} for k, v in per_arch.items()}},
+        "n_rows": int(z.shape[0]),
+        "d_emb": int(z.shape[1]),
+        "G4_cross_sport_nn_role_coherence": {
+            "hit_rate": round(g4, 4),
+            "random_baseline": round(g4_baseline, 4),
+            "lift_over_random": round(g4 - g4_baseline, 4),
+            "target": 0.60,
+            "pass": bool(g4 >= 0.60),
+            "per_sport": {
+                k: {kk: round(vv, 4) if isinstance(vv, float) else vv for kk, vv in v.items()}
+                for k, v in per_sport.items()
+            },
+            "per_arch": {
+                k: {kk: round(vv, 4) if isinstance(vv, float) else vv for kk, vv in v.items()}
+                for k, v in per_arch.items()
+            },
+        },
         "panel": panel[:24],
     }
     (DATA / "analogy_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     print("=== Cross-sport analogy panel (G4) ===")
-    print(f"G4 cross-sport NN role-coherence: hit_rate={g4:.3f} "
-          f"vs random baseline {g4_baseline:.3f} (lift {g4 - g4_baseline:+.3f}), "
-          f"target 0.60 {'PASS' if g4 >= 0.60 else 'FAIL'}")
+    print(
+        f"G4 cross-sport NN role-coherence: hit_rate={g4:.3f} "
+        f"vs random baseline {g4_baseline:.3f} (lift {g4 - g4_baseline:+.3f}), "
+        f"target 0.60 {'PASS' if g4 >= 0.60 else 'FAIL'}"
+    )
     for s, d in per_sport.items():
         print(f"  {s:8s} n={d['n']:>5}  hit={d['hit_rate']:.3f}  mean_nn_cos={d['mean_nn_cos']:.3f}")
     print("\nPer-archetype hit-rate:")
@@ -164,8 +202,7 @@ def main():
         print(f"  {a}: n={d['n']:>5}  hit={d['hit_rate']:.3f}")
     print("\nNamed panel (top-3 cross-sport neighbours):")
     for p in panel[:24]:
-        nn_str = " | ".join(f"{n['name']}({n['sport'][:2]} {n['pos']}/{n['arch']}){n['cos']:.2f}"
-                            for n in p["nn"][:3])
+        nn_str = " | ".join(f"{n['name']}({n['sport'][:2]} {n['pos']}/{n['arch']}){n['cos']:.2f}" for n in p["nn"][:3])
         print(f"  [{p['sport'][:2]}] {p['name']:<22} {p['pos']}/{p['arch']}  ->  {nn_str}")
     return 0
 

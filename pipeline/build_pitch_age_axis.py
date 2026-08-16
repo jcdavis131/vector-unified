@@ -59,11 +59,11 @@ EMB = PITCH / "assets" / "pitch_mtnn_embeddings.json"
 AGES = ROOT / "data" / "pitch_expectation_sources.json"
 OUT = ROOT / "data" / "pitch_age_axis.json"
 
-MIN_FEATURES = 8        # of 16; below this a composite is a few rates, not a profile
-MIN_CELL = 12           # rows needed in a (context, pos) cell before z-scoring it
-MIN_AGE_CELL = 15       # rows needed in a position before fitting its age curve
+MIN_FEATURES = 8  # of 16; below this a composite is a few rates, not a profile
+MIN_CELL = 12  # rows needed in a (context, pos) cell before z-scoring it
+MIN_AGE_CELL = 15  # rows needed in a position before fitting its age curve
 TAIL_PCT = 20.0
-NEAR_ZERO = 0.05        # |corr| below this = age carries almost nothing
+NEAR_ZERO = 0.05  # |corr| below this = age carries almost nothing
 
 
 def main() -> int:
@@ -88,12 +88,13 @@ def main() -> int:
     if not (len(meta) == X.shape[0] == len(emb)):
         print(f"ROW COUNT MISMATCH: matrix {X.shape[0]}, meta {len(meta)}, emb {len(emb)}")
         return 2
-    bad = [i for i in range(len(meta))
-           if meta[i]["name"] != emb[i]["name"] or meta[i]["context"] != emb[i]["context"]]
+    bad = [i for i in range(len(meta)) if meta[i]["name"] != emb[i]["name"] or meta[i]["context"] != emb[i]["context"]]
     if bad:
-        print(f"ROW ALIGNMENT MISMATCH at {len(bad)} index/es, first: "
-              f"meta={meta[bad[0]]['name']!r}/{meta[bad[0]]['context']!r} vs "
-              f"emb={emb[bad[0]]['name']!r}/{emb[bad[0]]['context']!r}")
+        print(
+            f"ROW ALIGNMENT MISMATCH at {len(bad)} index/es, first: "
+            f"meta={meta[bad[0]]['name']!r}/{meta[bad[0]]['context']!r} vs "
+            f"emb={emb[bad[0]]['name']!r}/{emb[bad[0]]['context']!r}"
+        )
         return 2
 
     resolved = json.loads(AGES.read_text(encoding="utf-8"))["resolved"]
@@ -138,8 +139,15 @@ def main() -> int:
             cy = int(ctx[-7:-3]) if ctx[-7:-3].isdigit() else None
         if not (yr and cy):
             continue
-        rows.append({"name": m["name"], "context": ctx, "pos": m["pos"],
-                     "age": cy - yr, "delivery": round(delivery[i], 4)})
+        rows.append(
+            {
+                "name": m["name"],
+                "context": ctx,
+                "pos": m["pos"],
+                "age": cy - yr,
+                "delivery": round(delivery[i], 4),
+            }
+        )
 
     if len(rows) < 200:
         print(f"only {len(rows)} scorable rows — not assigning.")
@@ -156,7 +164,8 @@ def main() -> int:
             "valuation (draft slot); this measures standing against a DEVELOPMENTAL prior. "
             "7.9 established no free market prior exists for football. Comparing the two "
             "would repeat the construct mismatch that reversed the cross-sport draft "
-            "finding twice in 7.7b."),
+            "finding twice in 7.7b."
+        ),
         "rows_scorable": len(rows),
         "rows_total": len(meta),
         "pct_scorable": round(100.0 * len(rows) / len(meta), 1),
@@ -171,11 +180,13 @@ def main() -> int:
             f"|{NEAR_ZERO}| floor, so an age expectation carries almost no information "
             f"here. Labelling tails of this residual would be labelling the delivery "
             f"distribution again under a new name — the residual IS delivery when the "
-            f"predictor explains nothing. Reported rather than assigned.")
-        OUT.write_text(json.dumps({"report": report, "rows": rows}, indent=2,
-                                  ensure_ascii=False) + "\n", encoding="utf-8")
-        print(f"scorable {len(rows)}/{len(meta)} ({report['pct_scorable']}%)   "
-              f"corr(age, delivery) = {corr:+.4f}")
+            f"predictor explains nothing. Reported rather than assigned."
+        )
+        OUT.write_text(
+            json.dumps({"report": report, "rows": rows}, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        print(f"scorable {len(rows)}/{len(meta)} ({report['pct_scorable']}%)   " f"corr(age, delivery) = {corr:+.4f}")
         print(f"\n{report['verdict']}")
         print(f"\nwrote {OUT}")
         return 0
@@ -192,8 +203,13 @@ def main() -> int:
         d = np.array([r["delivery"] for r in grp], dtype=float)
         slope, intercept = np.polyfit(a, d, 1)
         for r, resid in zip(grp, d - (slope * a + intercept), strict=True):
-            scored.append({**r, "expected": round(float(slope * r["age"] + intercept), 4),
-                           "residual": round(float(resid), 4)})
+            scored.append(
+                {
+                    **r,
+                    "expected": round(float(slope * r["age"] + intercept), 4),
+                    "residual": round(float(resid), 4),
+                }
+            )
 
     # ---- TEAM-STRENGTH CONFOUND, measured before the axis is believed ---------
     # The first run's tails were not subtle: P0 read Neymar (Brazil), Wirtz (Germany),
@@ -217,24 +233,27 @@ def main() -> int:
             g["teammate_mean_delivery"] = round(loo, 4)
             loo_x.append(loo)
             loo_y.append(g["residual"])
-    corr_team = (statistics.correlation(loo_x, loo_y)
-                 if len(loo_x) > 2 and len(set(loo_x)) > 1 else float("nan"))
+    corr_team = statistics.correlation(loo_x, loo_y) if len(loo_x) > 2 and len(set(loo_x)) > 1 else float("nan")
     corr_age_only = corr
     report["team_strength_confound"] = {
         "n_pairs": len(loo_x),
-        "corr_residual_vs_teammate_mean": (None if corr_team != corr_team
-                                           else round(corr_team, 4)),
+        "corr_residual_vs_teammate_mean": (None if corr_team != corr_team else round(corr_team, 4)),
         "corr_age_vs_delivery_for_scale": round(corr_age_only, 4),
-        "note": ("Leave-one-out teammate mean delivery within (context, team) is a proxy "
-                 "for team strength. If the residual tracks it more strongly than age "
-                 "tracks delivery, P0/P1 is largely a team-quality ranking wearing an "
-                 "age-adjustment label, and the tails should be read that way."),
+        "note": (
+            "Leave-one-out teammate mean delivery within (context, team) is a proxy "
+            "for team strength. If the residual tracks it more strongly than age "
+            "tracks delivery, P0/P1 is largely a team-quality ranking wearing an "
+            "age-adjustment label, and the tails should be read that way."
+        ),
     }
     report["team_strength_confound"]["verdict"] = (
-        "UNMEASURED" if corr_team != corr_team else
-        "DOMINATES — the residual tracks team strength more strongly than age tracks "
-        "delivery. Read P0/P1 as team-quality-contaminated." if abs(corr_team) > abs(corr_age_only)
-        else "present but smaller than the age signal it is competing with")
+        "UNMEASURED"
+        if corr_team != corr_team
+        else "DOMINATES — the residual tracks team strength more strongly than age tracks "
+        "delivery. Read P0/P1 as team-quality-contaminated."
+        if abs(corr_team) > abs(corr_age_only)
+        else "present but smaller than the age signal it is competing with"
+    )
 
     # ---- CONTROL FOR IT, do not merely report it -----------------------------
     # corr(residual, teammate mean) = +0.263 against corr(age, delivery) = -0.167: the
@@ -251,9 +270,13 @@ def main() -> int:
     for pos, grp in by_pos2.items():
         if len(grp) < MIN_AGE_CELL:
             continue
-        A = np.column_stack([[r["age"] for r in grp],
-                             [r["teammate_mean_delivery"] for r in grp],
-                             np.ones(len(grp))])
+        A = np.column_stack(
+            [
+                [r["age"] for r in grp],
+                [r["teammate_mean_delivery"] for r in grp],
+                np.ones(len(grp)),
+            ]
+        )
         d = np.array([r["delivery"] for r in grp], dtype=float)
         beta, *_ = np.linalg.lstsq(A, d, rcond=None)
         for r, resid in zip(grp, d - A @ beta, strict=True):
@@ -264,10 +287,8 @@ def main() -> int:
         scored = controlled
         cx = [r["teammate_mean_delivery"] for r in scored]
         cy = [r["residual"] for r in scored]
-        after = (statistics.correlation(cx, cy)
-                 if len(set(cx)) > 1 else float("nan"))
-        report["team_strength_confound"]["corr_after_control"] = (
-            None if after != after else round(after, 4))
+        after = statistics.correlation(cx, cy) if len(set(cx)) > 1 else float("nan")
+        report["team_strength_confound"]["corr_after_control"] = None if after != after else round(after, 4)
         report["team_strength_confound"]["control_note"] = (
             f"Age and teammate-mean delivery are now fitted together per position. "
             f"corr(residual, teammate mean) fell from "
@@ -282,7 +303,8 @@ def main() -> int:
             f"control mattered is in the TAILS: before it, P1 was Iran and Peru players "
             f"almost exclusively; after it, P1 includes Lisandro Martinez (Argentina) and "
             f"Scamacca (Italy) — players who underperformed their age curve relative to "
-            f"their own strong teammates.")
+            f"their own strong teammates."
+        )
 
     res = sorted(r["residual"] for r in scored)
 
@@ -293,40 +315,62 @@ def main() -> int:
     for r in scored:
         pr = pct_rank(r["residual"])
         r["residual_pct"] = round(pr, 1)
-        r["axis"] = ("P0" if pr >= 100.0 - TAIL_PCT else "P1" if pr <= TAIL_PCT else None)
+        r["axis"] = "P0" if pr >= 100.0 - TAIL_PCT else "P1" if pr <= TAIL_PCT else None
         counts[r["axis"] or "unlabelled"] += 1
 
     ranked = sorted(scored, key=lambda r: -r["residual"])
-    report.update({
-        "verdict": "ASSIGNED",
-        "counts": dict(counts),
-        "tail_pct": TAIL_PCT,
-        "P0_examples": [{"name": r["name"], "age": r["age"], "pos": r["pos"],
-                         "context": r["context"], "delivery": r["delivery"],
-                         "expected": r["expected"], "residual": r["residual"]}
-                        for r in ranked if r["axis"] == "P0"][:8],
-        "P1_examples": [{"name": r["name"], "age": r["age"], "pos": r["pos"],
-                         "context": r["context"], "delivery": r["delivery"],
-                         "expected": r["expected"], "residual": r["residual"]}
-                        for r in reversed(ranked) if r["axis"] == "P1"][:8],
-    })
-    OUT.write_text(json.dumps({"report": report, "rows": scored}, indent=2,
-                              ensure_ascii=False) + "\n", encoding="utf-8")
+    report.update(
+        {
+            "verdict": "ASSIGNED",
+            "counts": dict(counts),
+            "tail_pct": TAIL_PCT,
+            "P0_examples": [
+                {
+                    "name": r["name"],
+                    "age": r["age"],
+                    "pos": r["pos"],
+                    "context": r["context"],
+                    "delivery": r["delivery"],
+                    "expected": r["expected"],
+                    "residual": r["residual"],
+                }
+                for r in ranked
+                if r["axis"] == "P0"
+            ][:8],
+            "P1_examples": [
+                {
+                    "name": r["name"],
+                    "age": r["age"],
+                    "pos": r["pos"],
+                    "context": r["context"],
+                    "delivery": r["delivery"],
+                    "expected": r["expected"],
+                    "residual": r["residual"],
+                }
+                for r in reversed(ranked)
+                if r["axis"] == "P1"
+            ][:8],
+        }
+    )
+    OUT.write_text(
+        json.dumps({"report": report, "rows": scored}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
-    print(f"scorable {len(rows)}/{len(meta)} ({report['pct_scorable']}%)   "
-          f"corr(age, delivery) = {corr:+.4f}   age {min(ages)}-{max(ages)}")
+    print(
+        f"scorable {len(rows)}/{len(meta)} ({report['pct_scorable']}%)   "
+        f"corr(age, delivery) = {corr:+.4f}   age {min(ages)}-{max(ages)}"
+    )
     print(f"P0 {counts['P0']}   P1 {counts['P1']}   unlabelled {counts['unlabelled']}\n")
     print("P0 — above the age curve:")
     for e in report["P0_examples"][:6]:
-        print(f"  {e['age']:>3}y {e['pos']:<4} {e['residual']:>+7.3f}  {e['name']} "
-              f"({e['context']})")
+        print(f"  {e['age']:>3}y {e['pos']:<4} {e['residual']:>+7.3f}  {e['name']} " f"({e['context']})")
     print("\nP1 — below the age curve:")
     for e in report["P1_examples"][:6]:
-        print(f"  {e['age']:>3}y {e['pos']:<4} {e['residual']:>+7.3f}  {e['name']} "
-              f"({e['context']})")
+        print(f"  {e['age']:>3}y {e['pos']:<4} {e['residual']:>+7.3f}  {e['name']} " f"({e['context']})")
     print(f"\nwrote {OUT}")
     return 0
 

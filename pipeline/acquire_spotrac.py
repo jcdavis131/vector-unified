@@ -42,13 +42,13 @@ BASE = "https://www.spotrac.com/nfl/rankings/player/_/year/{year}"
 # gridiron corpus era: unified era_counts jump from ~2015 -> scrape 2015-2025
 YEARS = list(range(2015, 2026))
 
-ROW_RE = re.compile(
-    r'<li class="list-group-item[^"]*"[^>]*>(.*?)</li>', re.DOTALL | re.IGNORECASE)
+ROW_RE = re.compile(r'<li class="list-group-item[^"]*"[^>]*>(.*?)</li>', re.DOTALL | re.IGNORECASE)
 LINK_RE = re.compile(
     r'href="https://www\.spotrac\.com/redirect/player/(\d+)"[^>]*>([^<]+)</a>',
-    re.IGNORECASE)
-SMALL_RE = re.compile(r'/>\s*([^<]+?)</small>', re.DOTALL)
-MONEY_RE = re.compile(r'\$([\d,]+)')
+    re.IGNORECASE,
+)
+SMALL_RE = re.compile(r"/>\s*([^<]+?)</small>", re.DOTALL)
+MONEY_RE = re.compile(r"\$([\d,]+)")
 RANK_RE = re.compile(r'width:65px;"[^>]*>\s*(\d+)\s*</div>', re.DOTALL)
 
 
@@ -76,11 +76,17 @@ def parse_year_html(html: str) -> list[dict]:
         cap_hit = int(money.group(1).replace(",", "")) if money else None
         rank_m = RANK_RE.search(block)
         rank = int(rank_m.group(1)) if rank_m else None
-        rows.append({
-            "rank": rank, "name": name, "norm": norm_name(name),
-            "spotrac_id": spotrac_id, "team": team, "pos": pos,
-            "cap_hit": cap_hit,
-        })
+        rows.append(
+            {
+                "rank": rank,
+                "name": name,
+                "norm": norm_name(name),
+                "spotrac_id": spotrac_id,
+                "team": team,
+                "pos": pos,
+                "cap_hit": cap_hit,
+            }
+        )
     return rows
 
 
@@ -124,14 +130,26 @@ def cross_ref(doc: dict) -> dict:
                 ym += 1
                 unique_matched.add(r["norm"])
                 if len(examples) < 10:
-                    examples.append({"year": int(year), "name": r["name"],
-                                     "team": r["team"], "pos": r["pos"],
-                                     "cap_hit": r["cap_hit"],
-                                     "unified_rows": len(idx[(r["norm"], "gridiron")])})
+                    examples.append(
+                        {
+                            "year": int(year),
+                            "name": r["name"],
+                            "team": r["team"],
+                            "pos": r["pos"],
+                            "cap_hit": r["cap_hit"],
+                            "unified_rows": len(idx[(r["norm"], "gridiron")]),
+                        }
+                    )
             elif r["cap_hit"] and r["cap_hit"] > 20_000_000 and len(unmatched_stars) < 15:
-                unmatched_stars.append({"year": int(year), "name": r["name"],
-                                        "team": r["team"], "pos": r["pos"],
-                                        "cap_hit": r["cap_hit"]})
+                unmatched_stars.append(
+                    {
+                        "year": int(year),
+                        "name": r["name"],
+                        "team": r["team"],
+                        "pos": r["pos"],
+                        "cap_hit": r["cap_hit"],
+                    }
+                )
         by_year[int(year)] = ym
     return {
         "unified_json": str(upath),
@@ -149,12 +167,13 @@ def cross_ref(doc: dict) -> dict:
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
-    ap.add_argument("--offline", action="store_true",
-                    help="parse only from cached HTML; skip missing years")
-    ap.add_argument("--refresh", action="store_true",
-                    help="re-fetch even if HTML cache exists")
-    ap.add_argument("--year", type=int, default=None,
-                    help="single year (debug)")
+    ap.add_argument(
+        "--offline",
+        action="store_true",
+        help="parse only from cached HTML; skip missing years",
+    )
+    ap.add_argument("--refresh", action="store_true", help="re-fetch even if HTML cache exists")
+    ap.add_argument("--year", type=int, default=None, help="single year (debug)")
     args = ap.parse_args()
     years = [args.year] if args.year else YEARS
 
@@ -174,7 +193,7 @@ def main() -> int:
             print(f"  {y}: {tag} {len(rows)} rows ({n_cap} with cap hit)")
             if fetched:
                 time.sleep(3.5)  # polite Spotrac throttle
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             print(f"  {y}: FAILED ({type(e).__name__}: {e})")
 
     doc = {
@@ -191,26 +210,27 @@ def main() -> int:
     print(f"\nsaved {out.name}: {doc['n_years']} years, {total} player-year records")
 
     cov = cross_ref(doc)
-    (DATA / "spotrac_coverage.json").write_text(
-        json.dumps(cov, indent=2, ensure_ascii=False), encoding="utf-8")
+    (DATA / "spotrac_coverage.json").write_text(json.dumps(cov, indent=2, ensure_ascii=False), encoding="utf-8")
     if cov.get("present"):
         print(f"\ncross-ref vs unified.json gridiron ({cov['gridiron_rows']} rows):")
-        print(f"  Spotrac cap-hit records matched: {cov['matched_records']}/"
-              f"{cov['spotrac_records_with_cap']}  "
-              f"({cov['unique_gridiron_athletes_matched']} unique athletes)")
+        print(
+            f"  Spotrac cap-hit records matched: {cov['matched_records']}/"
+            f"{cov['spotrac_records_with_cap']}  "
+            f"({cov['unique_gridiron_athletes_matched']} unique athletes)"
+        )
         print(f"  by year: {cov['by_year']}")
         print("  examples:")
         for e in cov["examples"][:6]:
-            print(f"    {e['year']} {e['name']:<22} {e['team']:>3} {e['pos']:<4} "
-                  f"cap=${e['cap_hit']:,}  unified_rows={e['unified_rows']}")
+            print(
+                f"    {e['year']} {e['name']:<22} {e['team']:>3} {e['pos']:<4} "
+                f"cap=${e['cap_hit']:,}  unified_rows={e['unified_rows']}"
+            )
         if cov["unmatched_high_cap_stars"]:
-            print(f"  unmatched high-cap (>=$20M) stars "
-                  f"(validation — should be in gridiron corpus):")
+            print("  unmatched high-cap (>=$20M) stars " "(validation — should be in gridiron corpus):")
             for u in cov["unmatched_high_cap_stars"][:8]:
-                print(f"    {u['year']} {u['name']:<22} {u['team']:>3} {u['pos']:<4} "
-                      f"cap=${u['cap_hit']:,}")
+                print(f"    {u['year']} {u['name']:<22} {u['team']:>3} {u['pos']:<4} " f"cap=${u['cap_hit']:,}")
     else:
-        print(f"unified.json not found (cross-ref skipped)")
+        print("unified.json not found (cross-ref skipped)")
     return 0
 
 

@@ -69,8 +69,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "data" / "tennis_entities.json"
 OUT = ROOT / "data" / "tennis_ranking_axis.json"
 
-MIN_MATCHES = 1          # one match IS a tournament result — losing round one is delivery
-MIN_TIER_CELL = 200      # rows before a tier gets its own dummy
+MIN_MATCHES = 1  # one match IS a tournament result — losing round one is delivery
+MIN_TIER_CELL = 200  # rows before a tier gets its own dummy
 TAIL_PCT = 20.0
 NEAR_ZERO = 0.05
 RANK_CAP = 500.0
@@ -84,9 +84,11 @@ def main() -> int:
     if not SRC.exists():
         print(f"missing {SRC} — run build_tennis_entities.py")
         return 2
-    rows = [r for r in json.loads(SRC.read_text(encoding="utf-8"))["entities"]
-            if r.get("entering_rank") and r.get("draw_progress") is not None
-            and r["matches"] >= MIN_MATCHES]
+    rows = [
+        r
+        for r in json.loads(SRC.read_text(encoding="utf-8"))["entities"]
+        if r.get("entering_rank") and r.get("draw_progress") is not None and r["matches"] >= MIN_MATCHES
+    ]
     if len(rows) < 500:
         print(f"only {len(rows)} usable rows — not assigning.")
         return 2
@@ -105,7 +107,8 @@ def main() -> int:
             "T0/T1 (draft slot, one-time pre-career valuation) or P0/P1 (age, developmental "
             "prior). A ranking is computed from results and carries persistence, so R0/R1 "
             "is over/under-performance against the player's OWN standing — a weaker claim. "
-            "7.7b's cross-sport finding reversed twice on exactly this kind of mismatch."),
+            "7.7b's cross-sport finding reversed twice on exactly this kind of mismatch."
+        ),
         "rows": len(rows),
         "corr_expect_vs_draw_progress": round(corr0, 4),
     }
@@ -114,23 +117,26 @@ def main() -> int:
         report["verdict"] = (
             f"NOT ASSIGNED. corr = {corr0:+.4f} is below the pre-registered |{NEAR_ZERO}| "
             f"floor, so entering rank carries almost nothing about tournament progress and "
-            f"the residual would just be draw_progress under a new name.")
-        OUT.write_text(json.dumps({"report": report, "rows": []}, indent=2,
-                                  ensure_ascii=False) + "\n", encoding="utf-8")
+            f"the residual would just be draw_progress under a new name."
+        )
+        OUT.write_text(
+            json.dumps({"report": report, "rows": []}, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
         print(f"rows {len(rows)}   corr {corr0:+.4f}\n{report['verdict']}")
         return 0
 
     # ---- controls: event tier dummies + opponent difficulty -------------------
-    tiers = [t for t, n in collections.Counter(r["series"] for r in rows).items()
-             if n >= MIN_TIER_CELL and t]
+    tiers = [t for t, n in collections.Counter(r["series"] for r in rows).items() if n >= MIN_TIER_CELL and t]
     tiers.sort()
     have_opp = [r for r in rows if r.get("opp_rank_median")]
-    endog = statistics.correlation([r["draw_progress"] for r in have_opp],
-                                   [r["opp_rank_median"] for r in have_opp])
+    endog = statistics.correlation([r["draw_progress"] for r in have_opp], [r["opp_rank_median"] for r in have_opp])
 
     use = have_opp
-    cols = [[r["expect"] for r in use],
-            [-math.log1p(min(float(r["opp_rank_median"]), RANK_CAP)) for r in use]]
+    cols = [
+        [r["expect"] for r in use],
+        [-math.log1p(min(float(r["opp_rank_median"]), RANK_CAP)) for r in use],
+    ]
     for t in tiers:
         cols.append([1.0 if r["series"] == t else 0.0 for r in use])
     A = np.column_stack(cols + [np.ones(len(use))])
@@ -138,8 +144,7 @@ def main() -> int:
     beta, *_ = np.linalg.lstsq(A, y, rcond=None)
     resid = y - A @ beta
 
-    after_opp = statistics.correlation([r["opp_rank_median"] for r in use],
-                                       list(resid))
+    after_opp = statistics.correlation([r["opp_rank_median"] for r in use], list(resid))
     for r, e, f in zip(use, resid, A @ beta, strict=True):
         r["expected_progress"] = round(float(f), 4)
         r["residual"] = round(float(e), 4)
@@ -157,57 +162,82 @@ def main() -> int:
         counts[r["axis"] or "unlabelled"] += 1
 
     ranked = sorted(use, key=lambda r: -r["residual"])
-    report.update({
-        "verdict": "ASSIGNED",
-        "rows_scored": len(use),
-        "tiers_controlled": tiers,
-        "counts": dict(counts),
-        "tail_pct": TAIL_PCT,
-        "opponent_endogeneity": {
-            "corr_draw_progress_vs_opp_rank_median": round(endog, 4),
-            "note": ("Measured before opp_rank_median was used as a control, because "
-                     "advancing further means meeting better players and regressing an "
-                     "outcome on itself is not a control. At -0.09 the two effects nearly "
-                     "cancel — a player who loses round one to the top seed faced a brutal "
-                     "opponent with zero progress — so it is mostly schedule. The residual "
-                     "endogeneity is real and is stated rather than hidden."),
-        },
-        "confound_after_control": {
-            "corr_residual_vs_opp_rank_median": round(after_opp, 4),
-            "note": ("NOT a tautology here, unlike the pitch axis. The fit uses "
-                     "-log1p(opp_rank_median); this correlation is measured against the "
-                     "RAW variable, so orthogonality-by-construction does not apply and "
-                     "the number carries information. -0.0921 -> -0.0316 is roughly two "
-                     "thirds of the confound removed, and the remainder is the "
-                     "nonlinearity between the raw rank and its log. Reported as a real "
-                     "residual rather than as the -0.0 a raw-on-raw fit would have "
-                     "produced and taught nothing."),
-        },
-        "R0_examples": [{"player": r["player"], "event": f"{r['tournament']} {r['year']}",
-                         "tour": r["tour"], "rank": r["entering_rank"],
-                         "progress": r["draw_progress"], "residual": r["residual"]}
-                        for r in ranked if r["axis"] == "R0"][:8],
-        "R1_examples": [{"player": r["player"], "event": f"{r['tournament']} {r['year']}",
-                         "tour": r["tour"], "rank": r["entering_rank"],
-                         "progress": r["draw_progress"], "residual": r["residual"]}
-                        for r in reversed(ranked) if r["axis"] == "R1"][:8],
-    })
-    OUT.write_text(json.dumps({"report": report, "rows": use}, indent=2,
-                              ensure_ascii=False) + "\n", encoding="utf-8")
+    report.update(
+        {
+            "verdict": "ASSIGNED",
+            "rows_scored": len(use),
+            "tiers_controlled": tiers,
+            "counts": dict(counts),
+            "tail_pct": TAIL_PCT,
+            "opponent_endogeneity": {
+                "corr_draw_progress_vs_opp_rank_median": round(endog, 4),
+                "note": (
+                    "Measured before opp_rank_median was used as a control, because "
+                    "advancing further means meeting better players and regressing an "
+                    "outcome on itself is not a control. At -0.09 the two effects nearly "
+                    "cancel — a player who loses round one to the top seed faced a brutal "
+                    "opponent with zero progress — so it is mostly schedule. The residual "
+                    "endogeneity is real and is stated rather than hidden."
+                ),
+            },
+            "confound_after_control": {
+                "corr_residual_vs_opp_rank_median": round(after_opp, 4),
+                "note": (
+                    "NOT a tautology here, unlike the pitch axis. The fit uses "
+                    "-log1p(opp_rank_median); this correlation is measured against the "
+                    "RAW variable, so orthogonality-by-construction does not apply and "
+                    "the number carries information. -0.0921 -> -0.0316 is roughly two "
+                    "thirds of the confound removed, and the remainder is the "
+                    "nonlinearity between the raw rank and its log. Reported as a real "
+                    "residual rather than as the -0.0 a raw-on-raw fit would have "
+                    "produced and taught nothing."
+                ),
+            },
+            "R0_examples": [
+                {
+                    "player": r["player"],
+                    "event": f"{r['tournament']} {r['year']}",
+                    "tour": r["tour"],
+                    "rank": r["entering_rank"],
+                    "progress": r["draw_progress"],
+                    "residual": r["residual"],
+                }
+                for r in ranked
+                if r["axis"] == "R0"
+            ][:8],
+            "R1_examples": [
+                {
+                    "player": r["player"],
+                    "event": f"{r['tournament']} {r['year']}",
+                    "tour": r["tour"],
+                    "rank": r["entering_rank"],
+                    "progress": r["draw_progress"],
+                    "residual": r["residual"],
+                }
+                for r in reversed(ranked)
+                if r["axis"] == "R1"
+            ][:8],
+        }
+    )
+    OUT.write_text(
+        json.dumps({"report": report, "rows": use}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     print(f"rows {len(rows)}  scored {len(use)}   corr(expect, progress) {corr0:+.4f}")
     print(f"tiers controlled: {tiers}")
-    print(f"opponent endogeneity {endog:+.4f}  ->  after control {after_opp:+.4f} "
-          f"(orthogonal by construction)")
+    print(f"opponent endogeneity {endog:+.4f}  ->  after control {after_opp:+.4f} " f"(orthogonal by construction)")
     print(f"R0 {counts['R0']}   R1 {counts['R1']}   unlabelled {counts['unlabelled']}\n")
     print("R0 — far above the fit:")
     for e in report["R0_examples"][:6]:
-        print(f"  rank {str(e['rank']):>5}  prog {e['progress']:.2f}  "
-              f"{e['residual']:+.3f}  {e['player']} ({e['event']})")
+        print(
+            f"  rank {e['rank']!s:>5}  prog {e['progress']:.2f}  " f"{e['residual']:+.3f}  {e['player']} ({e['event']})"
+        )
     print("\nR1 — far below the fit:")
     for e in report["R1_examples"][:6]:
-        print(f"  rank {str(e['rank']):>5}  prog {e['progress']:.2f}  "
-              f"{e['residual']:+.3f}  {e['player']} ({e['event']})")
+        print(
+            f"  rank {e['rank']!s:>5}  prog {e['progress']:.2f}  " f"{e['residual']:+.3f}  {e['player']} ({e['event']})"
+        )
     print(f"\nwrote {OUT}")
     return 0
 

@@ -44,16 +44,17 @@ CACHE = ROOT / "pipeline" / "cache"
 
 # (sport, award_key, wiki_title, tier, parser_kind)
 SOURCES = [
-    ("hoops", "nba_mvp",
-     "NBA_Most_Valuable_Player_Award", 1.0, "nba_mvp"),
-    ("gridiron", "ap_nfl_mvp",
-     "List_of_NFL_Most_Valuable_Player_awards", 1.0, "nfl_mvp"),
-    ("pitch", "ballon_dor",
-     "Ballon_d%27Or", 1.0, "ballon"),
-    ("pitch", "fifa_best",
-     "The_Best_FIFA_Men%27s_Player", 0.9, "fifa_best"),
-    ("pitch", "fifa_world_player",
-     "FIFA_World_Player_of_the_Year", 0.9, "fifa_wpoty"),
+    ("hoops", "nba_mvp", "NBA_Most_Valuable_Player_Award", 1.0, "nba_mvp"),
+    (
+        "gridiron",
+        "ap_nfl_mvp",
+        "List_of_NFL_Most_Valuable_Player_awards",
+        1.0,
+        "nfl_mvp",
+    ),
+    ("pitch", "ballon_dor", "Ballon_d%27Or", 1.0, "ballon"),
+    ("pitch", "fifa_best", "The_Best_FIFA_Men%27s_Player", 0.9, "fifa_best"),
+    ("pitch", "fifa_world_player", "FIFA_World_Player_of_the_Year", 0.9, "fifa_wpoty"),
 ]
 
 
@@ -100,8 +101,8 @@ class _Wikitable(HTMLParser):
 def _strip_player(cell: str) -> str:
     """'LeBron James^ (4)' / 'Peyton Manning*' -> clean name."""
     s = cell.strip()
-    s = re.sub(r"\s*[\^*†‡§].*$", "", s)          # footnote markers
-    s = re.sub(r"\s*\(\d+\)\s*$", "", s)           # (N) win count
+    s = re.sub(r"\s*[\^*†‡§].*$", "", s)  # footnote markers
+    s = re.sub(r"\s*\(\d+\)\s*$", "", s)  # (N) win count
     s = re.sub(r"\s+", " ", s).strip()
     return s
 
@@ -157,10 +158,16 @@ def parse_nfl_mvp(tables: list[list[list[str]]]) -> list[dict]:
         if "year" not in header[0] and not any("year" in h for h in header):
             continue
         # prefer AP column
-        ap_i = next((i for i, h in enumerate(header) if h.strip() in ("ap", "associated press")), None)
+        ap_i = next(
+            (i for i, h in enumerate(header) if h.strip() in ("ap", "associated press")),
+            None,
+        )
         if ap_i is None:
             # sometimes header is just "AP"
-            ap_i = next((i for i, h in enumerate(header) if "ap" == h.strip() or h.strip().startswith("ap ")), 1)
+            ap_i = next(
+                (i for i, h in enumerate(header) if "ap" == h.strip() or h.strip().startswith("ap ")),
+                1,
+            )
         yi = 0
         for row in tbl[1:]:
             if len(row) <= max(yi, ap_i):
@@ -217,8 +224,7 @@ PARSERS = {
 }
 
 
-def fetch_source(sport: str, award: str, title: str, tier: float, kind: str,
-                 refresh: bool) -> list[dict]:
+def fetch_source(sport: str, award: str, title: str, tier: float, kind: str, refresh: bool) -> list[dict]:
     cache = CACHE / f"awards_{award}.html"
     url = f"https://en.wikipedia.org/wiki/{title}?action=render"
     if cache.exists() and not refresh:
@@ -232,19 +238,32 @@ def fetch_source(sport: str, award: str, title: str, tier: float, kind: str,
     ext = _Wikitable()
     ext.feed(html)
     rows = PARSERS[kind](ext.tables)
-    return [{
-        "sport": sport, "award": award, "year": r["year"],
-        "name": r["name"], "norm": norm_name(r["name"]), "tier": tier,
-    } for r in rows], fetched
+    return [
+        {
+            "sport": sport,
+            "award": award,
+            "year": r["year"],
+            "name": r["name"],
+            "norm": norm_name(r["name"]),
+            "tier": tier,
+        }
+        for r in rows
+    ], fetched
 
 
 def build_prestige(winners: list[dict]) -> dict:
     """sport -> norm -> {name, wins, prestige, by_award}."""
     out: dict[str, dict[str, dict]] = defaultdict(dict)
     for w in winners:
-        slot = out[w["sport"]].setdefault(w["norm"], {
-            "name": w["name"], "wins": 0, "prestige": 0.0, "by_award": {},
-        })
+        slot = out[w["sport"]].setdefault(
+            w["norm"],
+            {
+                "name": w["name"],
+                "wins": 0,
+                "prestige": 0.0,
+                "by_award": {},
+            },
+        )
         slot["wins"] += 1
         slot["prestige"] = round(slot["prestige"] + w["tier"], 2)
         slot["by_award"][w["award"]] = slot["by_award"].get(w["award"], 0) + 1
@@ -260,19 +279,29 @@ def cross_ref(prestige: dict) -> dict:
     U = json.loads(upath.read_text(encoding="utf-8"))
     idx: dict[tuple[str, str], int] = {}
     for p in U["players"]:
-        idx[(norm_name(p["name"]), p["sport"])] = idx.get(
-            (norm_name(p["name"]), p["sport"]), 0) + 1
+        idx[(norm_name(p["name"]), p["sport"])] = idx.get((norm_name(p["name"]), p["sport"]), 0) + 1
     cov = {}
     for sport, athletes in prestige.items():
         matched = []
         missed = []
         for nn, rec in athletes.items():
             if (nn, sport) in idx:
-                matched.append({"name": rec["name"], "prestige": rec["prestige"],
-                                "wins": rec["wins"], "unified_rows": idx[(nn, sport)]})
+                matched.append(
+                    {
+                        "name": rec["name"],
+                        "prestige": rec["prestige"],
+                        "wins": rec["wins"],
+                        "unified_rows": idx[(nn, sport)],
+                    }
+                )
             else:
-                missed.append({"name": rec["name"], "prestige": rec["prestige"],
-                               "wins": rec["wins"]})
+                missed.append(
+                    {
+                        "name": rec["name"],
+                        "prestige": rec["prestige"],
+                        "wins": rec["wins"],
+                    }
+                )
         cov[sport] = {
             "n_award_winners": len(athletes),
             "matched": len(matched),
@@ -305,7 +334,7 @@ def main() -> int:
                 tag = "fetched" if fetched else "cached"
                 print(f"  {award:20s} [{sport:8s}] {tag}: {len(rows)} winners")
                 winners.extend(rows)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 print(f"  {award:20s} FAILED ({type(e).__name__}: {e})")
         # de-dupe identical (sport, award, year, norm) — FIFA Best + WPOTY can overlap eras
         seen = set()
@@ -319,31 +348,30 @@ def main() -> int:
         prestige = build_prestige(uniq)
         doc = {
             "built": time.strftime("%Y-%m-%d"),
-            "sources": [
-                {"sport": s, "award": a, "wiki": t, "tier": tr}
-                for s, a, t, tr, _ in SOURCES
-            ],
+            "sources": [{"sport": s, "award": a, "wiki": t, "tier": tr} for s, a, t, tr, _ in SOURCES],
             "n_winner_records": len(uniq),
             "winners": uniq,
             "prestige": prestige,
         }
         out_path.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"\nsaved awards.json: {len(uniq)} winner-records, "
-              f"{sum(len(v) for v in prestige.values())} unique athletes")
+        print(
+            f"\nsaved awards.json: {len(uniq)} winner-records, "
+            f"{sum(len(v) for v in prestige.values())} unique athletes"
+        )
 
     cov = cross_ref(doc["prestige"])
-    (DATA / "awards_coverage.json").write_text(
-        json.dumps(cov, indent=2, ensure_ascii=False), encoding="utf-8")
+    (DATA / "awards_coverage.json").write_text(json.dumps(cov, indent=2, ensure_ascii=False), encoding="utf-8")
     if cov.get("present"):
         print("\ncross-ref vs unified.json:")
         for sport, c in cov["by_sport"].items():
             print(f"  {sport:9s} matched {c['matched']}/{c['n_award_winners']} award-winners")
             for e in c["matched_examples"][:4]:
-                print(f"    {e['name']:<22} prestige={e['prestige']} wins={e['wins']} "
-                      f"rows={e['unified_rows']}")
+                print(f"    {e['name']:<22} prestige={e['prestige']} wins={e['wins']} " f"rows={e['unified_rows']}")
             if c["missed_examples"]:
-                print(f"    missed (not in corpus): "
-                      + ", ".join(f"{m['name']}({m['prestige']})" for m in c["missed_examples"][:4]))
+                print(
+                    "    missed (not in corpus): "
+                    + ", ".join(f"{m['name']}({m['prestige']})" for m in c["missed_examples"][:4])
+                )
     return 0
 
 

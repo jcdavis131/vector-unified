@@ -31,7 +31,7 @@ import sys
 import unicodedata
 from collections import defaultdict
 
-from load_encoders import load_all, ROOT
+from load_encoders import ROOT, load_all
 
 DATA = ROOT / "data"
 MARKET = DATA / "market"
@@ -80,13 +80,15 @@ def _verify_season_years(players: list[dict]) -> None:
                 bad.append(f"{p['sport']} {p['name']}: season {s!r} -> year {y}")
         derived = {season_year(s, p["sport"]) for s in p["seasons"]} - {None}
         if derived != set(p["season_years"]):
-            bad.append(f"{p['sport']} {p['name']}: season_years {sorted(p['season_years'])} "
-                       f"!= years derivable from its labels {sorted(derived)}")
+            bad.append(
+                f"{p['sport']} {p['name']}: season_years {sorted(p['season_years'])} "
+                f"!= years derivable from its labels {sorted(derived)}"
+            )
     if bad:
         raise SystemExit(
             f"REFUSING TO WRITE: {len(bad)} season_year value(s) do not match their own "
-            f"season label.\n  " + "\n  ".join(bad[:5])
-            + ("\n  ..." if len(bad) > 5 else ""))
+            f"season label.\n  " + "\n  ".join(bad[:5]) + ("\n  ..." if len(bad) > 5 else "")
+        )
 
 
 def season_year(season, sport: str):
@@ -116,7 +118,7 @@ def season_year(season, sport: str):
                 # is precisely the use that would have attached 1996 data to 2097.
                 end_i += start - (start % 100)
                 if end_i < start:
-                    end_i += 100        # "1999-00" -> 1900 -> 2000
+                    end_i += 100  # "1999-00" -> 1900 -> 2000
             return end_i
         return start
     if sport == "pitch":
@@ -202,19 +204,23 @@ def main():
         "by_canonical": {k: v for k, v in by_canonical.items()},
         "coverage": coverage,
         "schema_version": 1,
-        "note": ("name_norm + nationality + birthyear is the canonical join key. "
-                 "birthyear is None for all sports (bio-augment pull pending for "
-                 "hoops/gridiron via BBREF/PFR; pitch via Transfermarkt/Wikipedia). "
-                 "nationality present only for pitch (team=country). Ambiguous "
-                 "name-only matches must be left masked downstream (schema §4/§8)."),
+        "note": (
+            "name_norm + nationality + birthyear is the canonical join key. "
+            "birthyear is None for all sports (bio-augment pull pending for "
+            "hoops/gridiron via BBREF/PFR; pitch via Transfermarkt/Wikipedia). "
+            "nationality present only for pitch (team=country). Ambiguous "
+            "name-only matches must be left masked downstream (schema §4/§8)."
+        ),
     }
     (MARKET / "name_index.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     print(f"wrote {MARKET / 'name_index.json'}: {len(players)} players")
     for sport, c in coverage.items():
-        print(f"  {sport:9s} n={c['n_players']:5d}  nat={c['has_nationality']:5d}  "
-              f"birthyear={c['has_birthyear']:5d}  bio_augment_needed={c['bio_augment_needed']:5d}  "
-              f"ambiguous_name={c['ambiguous_name_only']:4d}")
+        print(
+            f"  {sport:9s} n={c['n_players']:5d}  nat={c['has_nationality']:5d}  "
+            f"birthyear={c['has_birthyear']:5d}  bio_augment_needed={c['bio_augment_needed']:5d}  "
+            f"ambiguous_name={c['ambiguous_name_only']:4d}"
+        )
     return 0
 
 

@@ -64,13 +64,14 @@ def main() -> int:
         return 2
 
     idx = {(m["player"], m["year"], m["tour"]): i for i, m in enumerate(meta)}
-    pairs = [(i, idx[(m["player"], m["year"] + 1, m["tour"])])
-             for i, m in enumerate(meta)
-             if (m["player"], m["year"] + 1, m["tour"]) in idx]
+    pairs = [
+        (i, idx[(m["player"], m["year"] + 1, m["tour"])])
+        for i, m in enumerate(meta)
+        if (m["player"], m["year"] + 1, m["tour"]) in idx
+    ]
     src = np.array([p for p, _ in pairs])
     dst = np.array([q for _, q in pairs])
-    print(f"{len(pairs)} adjacent-year pairs over {X.shape[0]} rows, "
-          f"{len(feats)} features\n")
+    print(f"{len(pairs)} adjacent-year pairs over {X.shape[0]} rows, " f"{len(feats)} features\n")
 
     rows = []
     for j, f in enumerate(feats):
@@ -78,38 +79,49 @@ def main() -> int:
         ok = (M[src, j] > 0) & (M[dst, j] > 0)
         n = int(ok.sum())
         if n < 50:
-            rows.append({"feature": f, "n_pairs": n, "autocorr": None,
-                         "note": "too few observed pairs"})
+            rows.append(
+                {
+                    "feature": f,
+                    "n_pairs": n,
+                    "autocorr": None,
+                    "note": "too few observed pairs",
+                }
+            )
             continue
         u, v = X[src[ok], j], X[dst[ok], j]
         r = float(np.corrcoef(u, v)[0, 1]) if u.std() > 0 and v.std() > 0 else float("nan")
-        rows.append({"feature": f, "n_pairs": n, "autocorr": round(r, 4),
-                     "sd_all_rows": round(float(X[M[:, j] > 0, j].std()), 4)})
+        rows.append(
+            {
+                "feature": f,
+                "n_pairs": n,
+                "autocorr": round(r, 4),
+                "sd_all_rows": round(float(X[M[:, j] > 0, j].std()), 4),
+            }
+        )
 
     rows.sort(key=lambda x: -(x["autocorr"] if x["autocorr"] is not None else -9))
     print(f"  {'feature':26} {'pairs':>6} {'autocorr':>9} {'sd':>8}")
     for r in rows:
         ac = "n/a" if r["autocorr"] is None else f"{r['autocorr']:.4f}"
         sd = r.get("sd_all_rows")
-        print(f"  {r['feature']:26} {r['n_pairs']:>6} {ac:>9} "
-              f"{('' if sd is None else f'{sd:.4f}'):>8}")
+        print(f"  {r['feature']:26} {r['n_pairs']:>6} {ac:>9} " f"{('' if sd is None else f'{sd:.4f}'):>8}")
 
     good = [r for r in rows if (r["autocorr"] or 0) >= 0.50]
     weak = [r for r in rows if r["autocorr"] is not None and r["autocorr"] < 0.25]
-    print(f"\n  autocorrelation >= 0.50 : {len(good)}  "
-          f"{[r['feature'] for r in good]}")
-    print(f"  autocorrelation <  0.25 : {len(weak)}  "
-          f"{[r['feature'] for r in weak]}")
+    print(f"\n  autocorrelation >= 0.50 : {len(good)}  " f"{[r['feature'] for r in good]}")
+    print(f"  autocorrelation <  0.25 : {len(weak)}  " f"{[r['feature'] for r in weak]}")
 
     rank = next((r for r in rows if r["feature"] == "ENTERING_RANK_LOG"), None)
     note = ""
     if rank and rank["autocorr"] is not None and rank["autocorr"] >= 0.50:
-        note = (f"ENTERING_RANK_LOG autocorrelates at {rank['autocorr']:.4f} yet retrieves "
-                f"at 0.0062, barely over the 0.0050 random floor. So HIGH AUTOCORRELATION "
-                f"IS NOT SUFFICIENT for identity: rank is stable within a player AND "
-                f"shared with hundreds of others at any moment, which makes it a poor "
-                f"discriminator. A useful feature needs to be stable AND rare — "
-                f"autocorrelation measures only the first half.")
+        note = (
+            f"ENTERING_RANK_LOG autocorrelates at {rank['autocorr']:.4f} yet retrieves "
+            f"at 0.0062, barely over the 0.0050 random floor. So HIGH AUTOCORRELATION "
+            f"IS NOT SUFFICIENT for identity: rank is stable within a player AND "
+            f"shared with hundreds of others at any moment, which makes it a poor "
+            f"discriminator. A useful feature needs to be stable AND rare — "
+            f"autocorrelation measures only the first half."
+        )
         print(f"\n  METHOD FINDING: {note}")
 
     # ---- does dropping the noisy features actually help retrieval? -------------
@@ -138,8 +150,7 @@ def main() -> int:
     subsets = {
         "all_16": ALL,
         "autocorr_ge_0.25": [j for j in ALL if acmap[feats[j]] >= 0.25],
-        "autocorr_ge_0.25_no_rank": [j for j in ALL
-                                     if acmap[feats[j]] >= 0.25 and j != rank_j],
+        "autocorr_ge_0.25_no_rank": [j for j in ALL if acmap[feats[j]] >= 0.25 and j != rank_j],
         "autocorr_ge_0.50": [j for j in ALL if acmap[feats[j]] >= 0.50],
         "only_the_noisy_lt_0.25": [j for j in ALL if acmap[feats[j]] < 0.25],
         "all_16_minus_rank": [j for j in ALL if j != rank_j],
@@ -152,42 +163,60 @@ def main() -> int:
         print(f"  {name:28} {len(cols):>3} {r:>10.4f}")
     best = max(sub, key=lambda k: sub[k]["recall_at_10"])
     delta = sub[best]["recall_at_10"] - sub["all_16"]["recall_at_10"]
-    binom = float(np.sqrt(sub[best]["recall_at_10"] *
-                          (1 - sub[best]["recall_at_10"]) / max(1, len(pairs))))
-    print(f"\n  best: {best} at {sub[best]['recall_at_10']:.4f}, "
-          f"{delta:+.4f} over all 16")
-    print(f"  binomial sd at n={len(pairs)}: {binom:.4f}  -> the gain is "
-          f"{abs(delta)/binom:.1f} sd, suggestive rather than decisive")
+    binom = float(np.sqrt(sub[best]["recall_at_10"] * (1 - sub[best]["recall_at_10"]) / max(1, len(pairs))))
+    print(f"\n  best: {best} at {sub[best]['recall_at_10']:.4f}, " f"{delta:+.4f} over all 16")
+    print(
+        f"  binomial sd at n={len(pairs)}: {binom:.4f}  -> the gain is "
+        f"{abs(delta)/binom:.1f} sd, suggestive rather than decisive"
+    )
 
-    OUT.write_text(json.dumps({
-        "question": ("Which of the 16 tennis features are stable within a player across "
-                     "adjacent years, i.e. could contribute to identifying that player?"),
-        "subset_retrieval": sub,
-        "subset_finding": (
-            f"Dropping the 7 features with autocorrelation below 0.25 raises recall@10 from "
-            f"{sub['all_16']['recall_at_10']} to {sub['autocorr_ge_0.25']['recall_at_10']} "
-            f"— a free improvement with no new data. The binomial sd at n={len(pairs)} is "
-            f"{binom:.4f}, so {delta:+.4f} is about {abs(delta)/binom:.1f} sd: suggestive, "
-            f"not decisive."),
-        "two_nuances_that_survive": (
-            "The 'noisy' 7 alone still retrieve at 0.0150, three times the 0.0050 random "
-            "floor, so they are not pure noise — low autocorrelation understates them. And "
-            "keeping ENTERING_RANK_LOG helps in COMBINATION (0.0393 with, 0.0349 without) "
-            "even though rank alone retrieves at 0.0062: it narrows the candidate pool "
-            "without identifying anyone by itself. Both cut against reading the "
-            "autocorrelation column as a ranking of feature value."),
-        "why": ("probe_tennis_metric.py showed more model capacity does not help, so the "
-                "recommendation was more features. That is only actionable if it says "
-                "which KIND, and 'add the odds columns' is a guess until measured."),
-        "method": ("Pearson r between a player's value this year and next, over adjacent-"
-                   "year pairs where BOTH sides are observed. No training."),
-        "n_pairs": len(pairs), "n_rows": int(X.shape[0]),
-        "per_feature": rows,
-        "method_caveat": note or (
-            "Autocorrelation measures stability only. A feature can be perfectly stable and "
-            "still useless for identity if everyone shares its value; discrimination needs "
-            "stable AND rare. This probe measures the first half."),
-    }, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "question": (
+                    "Which of the 16 tennis features are stable within a player across "
+                    "adjacent years, i.e. could contribute to identifying that player?"
+                ),
+                "subset_retrieval": sub,
+                "subset_finding": (
+                    f"Dropping the 7 features with autocorrelation below 0.25 raises recall@10 from "
+                    f"{sub['all_16']['recall_at_10']} to {sub['autocorr_ge_0.25']['recall_at_10']} "
+                    f"— a free improvement with no new data. The binomial sd at n={len(pairs)} is "
+                    f"{binom:.4f}, so {delta:+.4f} is about {abs(delta)/binom:.1f} sd: suggestive, "
+                    f"not decisive."
+                ),
+                "two_nuances_that_survive": (
+                    "The 'noisy' 7 alone still retrieve at 0.0150, three times the 0.0050 random "
+                    "floor, so they are not pure noise — low autocorrelation understates them. And "
+                    "keeping ENTERING_RANK_LOG helps in COMBINATION (0.0393 with, 0.0349 without) "
+                    "even though rank alone retrieves at 0.0062: it narrows the candidate pool "
+                    "without identifying anyone by itself. Both cut against reading the "
+                    "autocorrelation column as a ranking of feature value."
+                ),
+                "why": (
+                    "probe_tennis_metric.py showed more model capacity does not help, so the "
+                    "recommendation was more features. That is only actionable if it says "
+                    "which KIND, and 'add the odds columns' is a guess until measured."
+                ),
+                "method": (
+                    "Pearson r between a player's value this year and next, over adjacent-"
+                    "year pairs where BOTH sides are observed. No training."
+                ),
+                "n_pairs": len(pairs),
+                "n_rows": int(X.shape[0]),
+                "per_feature": rows,
+                "method_caveat": note
+                or (
+                    "Autocorrelation measures stability only. A feature can be perfectly stable and "
+                    "still useless for identity if everyone shares its value; discrimination needs "
+                    "stable AND rare. This probe measures the first half."
+                ),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"\nwrote {OUT}")
     if args.check and not pairs:
         return 1

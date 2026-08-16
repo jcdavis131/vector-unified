@@ -23,29 +23,33 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from _torch_safe import safe_torch_load
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
+from eval_unified import knn5_acc
+from load_live_encoders import DEVICE_DEF, load_live
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import silhouette_score
-
+from sklearn.model_selection import train_test_split
 from train_unified import (
-    UnifiedTrunk, GRL, supcon_loss, effective_rank, per_sport_pools,
-    load_matrix, SPORTS, SEED, DATA, UCACHE,
+    DATA,
+    GRL,
+    SEED,
+    SPORTS,
+    UCACHE,
+    UnifiedTrunk,
+    effective_rank,
+    load_matrix,
+    per_sport_pools,
+    supcon_loss,
 )
-from eval_unified import knn5_acc
-from load_live_encoders import load_live, DEVICE_DEF
 
 
 def enc_encode_params(model):
     """Only towers+fusion (the encode path). Heads are frozen (never used)."""
-    return [p for n, p in model.named_parameters()
-            if n.startswith("towers.") or n.startswith("fusion.")]
+    return [p for n, p in model.named_parameters() if n.startswith("towers.") or n.startswith("fusion.")]
 
 
 def live_e_s_numpy(live, device, sport):
@@ -72,8 +76,7 @@ def g1_encoder(live, M, device, frozen_E):
 
 def g2_sport_acc(z_full, M):
     sid = M["sport_id"].cpu().numpy()
-    Xtr, Xte, ytr, yte = train_test_split(z_full, sid, test_size=0.2,
-                                          random_state=SEED, stratify=sid)
+    Xtr, Xte, ytr, yte = train_test_split(z_full, sid, test_size=0.2, random_state=SEED, stratify=sid)
     clf = LogisticRegression(max_iter=400, C=1.0)
     clf.fit(Xtr, ytr)
     return float(clf.score(Xte, yte))
@@ -90,8 +93,7 @@ def full_z(model, live, M, device):
     """Full-corpus trunk forward on live e_s (no_grad). z in global order."""
     e_per = []
     for s, sport in enumerate(SPORTS):
-        e_per.append(torch.tensor(live_e_s_numpy(live, device, sport),
-                                  dtype=torch.float32, device=device))
+        e_per.append(torch.tensor(live_e_s_numpy(live, device, sport), dtype=torch.float32, device=device))
     with torch.no_grad():
         z = model.encode(e_per, M["sport_id"], M["era_id"])
     return z.cpu().numpy().astype(np.float32)
@@ -137,7 +139,8 @@ def main():
     if args.smoke:
         args.epochs = 2
 
-    torch.manual_seed(SEED); np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    np.random.seed(SEED)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     try:
@@ -159,18 +162,27 @@ def main():
         enc_params += enc_encode_params(live[sport].model)
     print(f"encoder encode-path params: {sum(p.numel() for p in enc_params):,}")
 
-    model = UnifiedTrunk(sport_dims, n_seasons_era=M["n_eras"],
-                         d_adapter=args.d_adapter, d_sport_tok=args.d_sport_tok,
-                         d_emb=args.d_emb, n_arch=8, n_pos=n_pos, dropout=0.2).to(device)
+    model = UnifiedTrunk(
+        sport_dims,
+        n_seasons_era=M["n_eras"],
+        d_adapter=args.d_adapter,
+        d_sport_tok=args.d_sport_tok,
+        d_emb=args.d_emb,
+        n_arch=8,
+        n_pos=n_pos,
+        dropout=0.2,
+    ).to(device)
     # load Stage 1 trunk weights as a warm start (if present)
     s1 = UCACHE / "unified_best.pt"
     if s1.exists():
         ck = safe_torch_load(s1, map_location=device)
         a = ck["args"]
         # only load if arch compatible (d_emb, d_adapter, d_sport_tok match)
-        compat = (int(a.get("d_emb", 64)) == args.d_emb and
-                  int(a.get("d_adapter", 48)) == args.d_adapter and
-                  int(a.get("d_sport_tok", 0)) == args.d_sport_tok)
+        compat = (
+            int(a.get("d_emb", 64)) == args.d_emb
+            and int(a.get("d_adapter", 48)) == args.d_adapter
+            and int(a.get("d_sport_tok", 0)) == args.d_sport_tok
+        )
         if compat:
             try:
                 model.load_state_dict(ck["state"], strict=False)
@@ -178,10 +190,13 @@ def main():
             except RuntimeError as e:
                 print(f"warm-start skipped ({e})")
 
-    opt = torch.optim.AdamW([
-        {"params": enc_params, "lr": args.enc_lr},
-        {"params": list(model.parameters()), "lr": args.trunk_lr},
-    ], weight_decay=1e-4)
+    opt = torch.optim.AdamW(
+        [
+            {"params": enc_params, "lr": args.enc_lr},
+            {"params": list(model.parameters()), "lr": args.trunk_lr},
+        ],
+        weight_decay=1e-4,
+    )
 
     # ---- Stage 0 baselines (frozen encoder e_s) ----
     print("\n=== Stage 0 baselines (frozen e_s) ===")
@@ -198,10 +213,8 @@ def main():
             "role_knn5": knn5_acc(e_froz, native_np[idx]),
             "pos_knn5": knn5_acc(e_froz, pos_np[idx], posm_np[idx]) if posm_np[idx].any() else None,
         }
-        print(f"  {sport:9s} role={baselines[sport]['role_knn5']:.4f} "
-              f"pos={baselines[sport]['pos_knn5']}")
-    (DATA / "stage2_baselines.json").write_text(
-        json.dumps(baselines, indent=2), encoding="utf-8")
+        print(f"  {sport:9s} role={baselines[sport]['role_knn5']:.4f} " f"pos={baselines[sport]['pos_knn5']}")
+    (DATA / "stage2_baselines.json").write_text(json.dumps(baselines, indent=2), encoding="utf-8")
 
     rng = np.random.default_rng(SEED)
     q = args.batch_per_sport
@@ -246,14 +259,17 @@ def main():
             z, h = model.encode(e_per, sid, eid, return_raw=True)
             l_task = task_loss(z, sid, native, pos, posm)
             loss = args.w_task * l_task
-            l_sup = z.new_zeros(()); l_sport = z.new_zeros(())
+            l_sup = z.new_zeros(())
+            l_sport = z.new_zeros(())
             if folding:
                 l_sup = supcon_loss(z, arch, sid, model.log_temp)
                 l_sport = sport_clf_loss(z, sid, lam)
                 loss = loss + l_sup + args.w_sport * l_sport
             loss.backward()
             opt.step()
-            ep["sup"] += float(l_sup); ep["task"] += float(l_task); ep["sport"] += float(l_sport)
+            ep["sup"] += float(l_sup)
+            ep["task"] += float(l_task)
+            ep["sport"] += float(l_sport)
         for k in ep:
             ep[k] /= max(1, steps)
 
@@ -267,7 +283,8 @@ def main():
         # regression check
         regressed = []
         for sport in SPORTS:
-            b = baselines[sport]; g = g1[sport]
+            b = baselines[sport]
+            g = g1[sport]
             if b["role_knn5"] is not None and g["role_knn5_live"] is not None:
                 if b["role_knn5"] - g["role_knn5_live"] > args.revert_threshold:
                     regressed.append((sport, "role", b["role_knn5"], g["role_knn5_live"]))
@@ -276,17 +293,31 @@ def main():
                     regressed.append((sport, "pos", b["pos_knn5"], g["pos_knn5_live"]))
         phase = "warmup" if not folding else "folding"
         g1str = " ".join(f"{s[:2]}:{g1[s]['role_knn5_live']:.3f}" for s in SPORTS)
-        print(f"epoch {epoch+1:>2}/{args.epochs} [{phase}] "
-              f"sup={ep['sup']:.3f} task={ep['task']:.3f} sport={ep['sport']:.3f} | "
-              f"G1_role[{g1str}] G2={g2:.3f} G3={g3:.3f} rank={rank:.1f} lam={lam:.3f}")
-        history.append({"epoch": epoch + 1, "phase": phase, **ep,
-                        "g2": round(g2, 4), "g3": round(g3, 4), "rank": round(rank, 1),
-                        "g1": {s: {k: (round(v, 4) if v is not None else None)
-                                   for k, v in g1[s].items() if k != "n"} for s in SPORTS}})
+        print(
+            f"epoch {epoch+1:>2}/{args.epochs} [{phase}] "
+            f"sup={ep['sup']:.3f} task={ep['task']:.3f} sport={ep['sport']:.3f} | "
+            f"G1_role[{g1str}] G2={g2:.3f} G3={g3:.3f} rank={rank:.1f} lam={lam:.3f}"
+        )
+        history.append(
+            {
+                "epoch": epoch + 1,
+                "phase": phase,
+                **ep,
+                "g2": round(g2, 4),
+                "g3": round(g3, 4),
+                "rank": round(rank, 1),
+                "g1": {
+                    s: {k: (round(v, 4) if v is not None else None) for k, v in g1[s].items() if k != "n"}
+                    for s in SPORTS
+                },
+            }
+        )
 
         if regressed:
-            print(f"  ! G1 flag > {args.revert_threshold}: "
-                  + ", ".join(f"{s}/{k}:{bv:.3f}->{gv:.3f}" for s, k, bv, gv in regressed))
+            print(
+                f"  ! G1 flag > {args.revert_threshold}: "
+                + ", ".join(f"{s}/{k}:{bv:.3f}->{gv:.3f}" for s, k, bv, gv in regressed)
+            )
         # save best by G2 among folding epochs with rank >= floor (always, so a best
         # checkpoint exists even if G1 mildly regresses — G1 tradeoff is reported below,
         # not used to block the save). Per-sport assets are read-only, so there is nothing
@@ -295,9 +326,10 @@ def main():
             best_g2 = g2
             best_epoch = epoch + 1
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
-            best_enc = {sport: {k: v.detach().cpu().clone()
-                                for k, v in live[sport].model.state_dict().items()}
-                        for sport in SPORTS}
+            best_enc = {
+                sport: {k: v.detach().cpu().clone() for k, v in live[sport].model.state_dict().items()}
+                for sport in SPORTS
+            }
             best_g1 = {s: dict(g1[s]) for s in SPORTS}
             print(f"  -> new best (G2={g2:.4f}, rank={rank:.1f})")
 
@@ -310,20 +342,23 @@ def main():
     # capture drifted encoder state_dicts (encoders were unfrozen+stepped; per-sport
     # checkpoint files stay read-only, so the drift lives only here). Use best_enc
     # when available (paired with best trunk), else end-of-training encoders.
-    enc_states = best_enc or {sport: {k: v.detach().cpu().clone()
-                                      for k, v in live[sport].model.state_dict().items()}
-                              for sport in SPORTS}
+    enc_states = best_enc or {
+        sport: {k: v.detach().cpu().clone() for k, v in live[sport].model.state_dict().items()} for sport in SPORTS
+    }
     # post-hoc shippability verdict: G1 regression of the best checkpoint vs baselines
     verdict = {}
     if best_g1 is not None:
         for sport in SPORTS:
-            b = baselines[sport]; g = best_g1[sport]
+            b = baselines[sport]
+            g = best_g1[sport]
             role_drop = (b["role_knn5"] - g["role_knn5_live"]) if (b["role_knn5"] and g["role_knn5_live"]) else 0.0
             pos_drop = (b["pos_knn5"] - g["pos_knn5_live"]) if (b["pos_knn5"] and g["pos_knn5_live"]) else 0.0
-            verdict[sport] = {"role_drop": round(role_drop, 4),
-                              "pos_drop": round(pos_drop, 4),
-                              "role_ok": bool(role_drop <= args.revert_threshold),
-                              "pos_ok": bool(pos_drop <= args.revert_threshold)}
+            verdict[sport] = {
+                "role_drop": round(role_drop, 4),
+                "pos_drop": round(pos_drop, 4),
+                "role_ok": bool(role_drop <= args.revert_threshold),
+                "pos_ok": bool(pos_drop <= args.revert_threshold),
+            }
         g1_ok = all(v["role_ok"] and v["pos_ok"] for v in verdict.values())
         # MAJORITY, NOT 1/3. `chance + 0.10` = 0.4333 was UNREACHABLE: the sports are
         # 12,966 / 5,323 / 2,430, a majority predictor scores 0.6258, and a perfectly
@@ -335,25 +370,43 @@ def main():
         print(f"\n=== Stage 2 verdict (best epoch {best_epoch}) ===")
         for sport in SPORTS:
             v = verdict[sport]
-            print(f"  {sport:9s} role_drop={v['role_drop']:+.4f} pos_drop={v['pos_drop']:+.4f} "
-                  f"[{'OK' if v['role_ok'] and v['pos_ok'] else 'REGRESSED'}]")
-        print(f"  G2={best_g2:.4f} (target<={_majority + 0.10:.4f} = majority "
-              f"{_majority:.4f} + 0.10; SUPERSEDED bar was {1/3+0.10:.4f}) -> "
-              f"{'PASS' if g2_pass else 'FAIL'}  "
-              f"G1 -> {'PASS' if g1_ok else 'FAIL'}")
-        print(f"  SHIPPABLE: {bool(g1_ok and g2_pass)} "
-              f"(G1 {'ok' if g1_ok else 'regressed'} AND G2 {'pass' if g2_pass else 'miss'})")
+            print(
+                f"  {sport:9s} role_drop={v['role_drop']:+.4f} pos_drop={v['pos_drop']:+.4f} "
+                f"[{'OK' if v['role_ok'] and v['pos_ok'] else 'REGRESSED'}]"
+            )
+        print(
+            f"  G2={best_g2:.4f} (target<={_majority + 0.10:.4f} = majority "
+            f"{_majority:.4f} + 0.10; SUPERSEDED bar was {1/3+0.10:.4f}) -> "
+            f"{'PASS' if g2_pass else 'FAIL'}  "
+            f"G1 -> {'PASS' if g1_ok else 'FAIL'}"
+        )
+        print(
+            f"  SHIPPABLE: {bool(g1_ok and g2_pass)} "
+            f"(G1 {'ok' if g1_ok else 'regressed'} AND G2 {'pass' if g2_pass else 'miss'})"
+        )
     UCACHE.mkdir(parents=True, exist_ok=True)
-    torch.save({"state": best_state or {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
-                "args": vars(args), "n_eras": M["n_eras"], "sport_dim": sport_dims,
-                "n_pos": n_pos, "best_epoch": best_epoch, "best_g2": best_g2,
-                "reverted": reverted, "baselines": baselines, "verdict": verdict,
-                "enc_states": enc_states},
-               UCACHE / "unified_stage2_best.pt")
+    torch.save(
+        {
+            "state": best_state or {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
+            "args": vars(args),
+            "n_eras": M["n_eras"],
+            "sport_dim": sport_dims,
+            "n_pos": n_pos,
+            "best_epoch": best_epoch,
+            "best_g2": best_g2,
+            "reverted": reverted,
+            "baselines": baselines,
+            "verdict": verdict,
+            "enc_states": enc_states,
+        },
+        UCACHE / "unified_stage2_best.pt",
+    )
     (DATA / "stage2_history.json").write_text(json.dumps(history, indent=2), encoding="utf-8")
-    print(f"\nDone {args.epochs} epochs in {elapsed:.0f}s. best_epoch={best_epoch} "
-          f"best_g2={best_g2:.4f} reverted={reverted}")
-    print(f"saved unified_stage2_best.pt + stage2_history.json")
+    print(
+        f"\nDone {args.epochs} epochs in {elapsed:.0f}s. best_epoch={best_epoch} "
+        f"best_g2={best_g2:.4f} reverted={reverted}"
+    )
+    print("saved unified_stage2_best.pt + stage2_history.json")
     return 0
 
 

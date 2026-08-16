@@ -15,13 +15,12 @@ import json
 import sys
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pipeline"))
-from eval_unified import load_model, encode_all
+from eval_unified import encode_all, load_model
 from train_unified import load_matrix as load_train_matrix
 
 DATA = ROOT / "data"
@@ -35,7 +34,9 @@ def main() -> int:
     ap.add_argument("--ckpt", default="unified_cultural.pt")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 
     model, ck = load_model(device, args.ckpt)
     if model.text_proj is None:
@@ -53,14 +54,24 @@ def main() -> int:
     U = json.loads((ASSETS / "unified.json").read_text(encoding="utf-8"))
     # showcase a few labeled stars
     showcase = []
-    want = {"LeBron James", "Tom Brady", "Lionel Messi", "Stephen Curry",
-            "Aaron Rodgers", "Cristiano Ronaldo"}
+    want = {
+        "LeBron James",
+        "Tom Brady",
+        "Lionel Messi",
+        "Stephen Curry",
+        "Aaron Rodgers",
+        "Cristiano Ronaldo",
+    }
     for i, p in enumerate(U["players"]):
         if p["name"] in want and float(m[i]) > 0.5:
-            showcase.append({
-                "name": p["name"], "sport": p["sport"], "season": p["season"],
-                "cos": round(float(cos[i]), 4),
-            })
+            showcase.append(
+                {
+                    "name": p["name"],
+                    "sport": p["sport"],
+                    "season": p["season"],
+                    "cos": round(float(cos[i]), 4),
+                }
+            )
 
     report = {
         "ckpt": args.ckpt,

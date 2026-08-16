@@ -43,7 +43,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-
 import json
 import re
 import sys
@@ -53,7 +52,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portable_paths import find_absolute, resolve  # noqa: E402
+from portable_paths import find_absolute, resolve
 
 ROOT = Path(__file__).resolve().parent.parent
 HUB = Path("C:/Users/jcdav/vector-hub")
@@ -75,7 +74,12 @@ def renderer_fields() -> dict[str, list[str]]:
     def grab(var: str) -> list[str]:
         return sorted(set(re.findall(rf"\b{var}\.([a-z_]+)", js)) - NOT_A_FIELD)
 
-    return {"top": grab("d"), "game": grab("g"), "round": grab("r"), "side": grab("side")}
+    return {
+        "top": grab("d"),
+        "game": grab("g"),
+        "round": grab("r"),
+        "side": grab("side"),
+    }
 
 
 def fetch(url: str) -> bytes | None:
@@ -102,8 +106,9 @@ def main() -> int:
     fields = renderer_fields()
     present = {p.stem for p in DATA.glob("*.json")}
     for missing in sorted(set(SLUGS) - present):
-        problems.append(f"{missing}: no data file, but /models/{missing}.html ships and "
-                        f"will render its empty state")
+        problems.append(
+            f"{missing}: no data file, but /models/{missing}.html ships and " f"will render its empty state"
+        )
 
     for slug in SLUGS:
         p = DATA / f"{slug}.json"
@@ -125,17 +130,21 @@ def main() -> int:
         # as the citation the heading promises. Whole-document walk, because the set of
         # fields carrying citations has grown twice already.
         for loc, val in find_absolute(doc):
-            problems.append(f"{slug}: {loc} publishes a machine-local path ({val[:60]}...) "
-                            f"— the page renders sources to the reader")
+            problems.append(
+                f"{slug}: {loc} publishes a machine-local path ({val[:60]}...) "
+                f"— the page renders sources to the reader"
+            )
 
         hashes = doc.get("source_hashes") or {}
         changed = []
         for f in doc.get("source_files") or []:
             q = resolve(f)
             if q is None:
-                problems.append(f"{slug}: cited source {f} names no known repo root, so "
-                                f"its existence and freshness cannot be checked at all — "
-                                f"add the repo to portable_paths.REPOS or fix the citation")
+                problems.append(
+                    f"{slug}: cited source {f} names no known repo root, so "
+                    f"its existence and freshness cannot be checked at all — "
+                    f"add the repo to portable_paths.REPOS or fix the citation"
+                )
                 continue
             if not q.exists():
                 problems.append(f"{slug}: cited source {f} no longer exists")
@@ -148,8 +157,9 @@ def main() -> int:
                 changed.append(Path(f).name + " (mtime, no hash recorded)")
         if changed:
             row.append(f"STALE vs {', '.join(changed[:2])}")
-            problems.append(f"{slug}: cited artifact(s) changed since this page was "
-                            f"written: {changed} — re-run the extractor")
+            problems.append(
+                f"{slug}: cited artifact(s) changed since this page was " f"written: {changed} — re-run the extractor"
+            )
         else:
             row.append("fresh" + ("" if hashes else "*mtime"))
 
@@ -171,22 +181,24 @@ def main() -> int:
         # failure it exists to prevent, invisible to it. Found only because the guard suite
         # asked whether the guard could fail at all.
         for j, ins in enumerate(doc.get("insights") or []):
-            miss += [f"insights[{j}].{k}" for k in ("title", "body", "source")
-                     if not ins.get(k)]
+            miss += [f"insights[{j}].{k}" for k in ("title", "body", "source") if not ins.get(k)]
         for j, st in enumerate(doc.get("headline_stats") or []):
-            miss += [f"headline_stats[{j}].{k}" for k in ("value", "label", "source")
-                     if not st.get(k)]
+            miss += [f"headline_stats[{j}].{k}" for k in ("value", "label", "source") if not st.get(k)]
         if miss:
             row.append(f"CONTRACT {miss}")
-            problems.append(f"{slug}: model.js reads {miss} and the data lacks it — that "
-                            f"renders as a blank section on a live page, not an error")
+            problems.append(
+                f"{slug}: model.js reads {miss} and the data lacks it — that "
+                f"renders as a blank section on a live page, not an error"
+            )
         else:
             row.append("contract-ok")
 
         # ---- the answer key must follow the values -----------------------------
-        wrong = [i for i, rr in enumerate(g.get("rounds") or [])
-                 if (rr.get("answer") == "a") !=
-                 (float(rr["a"]["value"]) > float(rr["b"]["value"]))]
+        wrong = [
+            i
+            for i, rr in enumerate(g.get("rounds") or [])
+            if (rr.get("answer") == "a") != (float(rr["a"]["value"]) > float(rr["b"]["value"]))
+        ]
         if wrong:
             row.append(f"ANSWERKEY {wrong}")
             problems.append(f"{slug}: rounds {wrong} mark the wrong side correct")
@@ -198,8 +210,9 @@ def main() -> int:
             body = fetch(LIVE.format(slug=slug))
             if body is None:
                 row.append("live-UNREACHABLE")
-                problems.append(f"{slug}: could not fetch {LIVE.format(slug=slug)} — "
-                                f"unreachable is not the same as matching")
+                problems.append(
+                    f"{slug}: could not fetch {LIVE.format(slug=slug)} — " f"unreachable is not the same as matching"
+                )
             else:
                 # COMPARE THE PARSED DATA, NOT THE BYTES. The first version hashed raw bytes
                 # and reported DRIFT on all six: Python's write_text translates \n to \r\n on
@@ -214,9 +227,11 @@ def main() -> int:
                     problems.append(f"{slug}: the live response is not valid JSON")
                 if not same:
                     row.append("DRIFT")
-                    problems.append(f"{slug}: the live DATA differs from the committed file "
-                                    f"— either the deploy has not landed or the repo moved "
-                                    f"on without one")
+                    problems.append(
+                        f"{slug}: the live DATA differs from the committed file "
+                        f"— either the deploy has not landed or the repo moved "
+                        f"on without one"
+                    )
                 else:
                     row.append("live-match")
         print("  ".join(row))
@@ -245,8 +260,7 @@ def main() -> int:
             if a.name not in cited:
                 uncited.append(f"{slug}: does not cite data/{a.name}")
     if uncited:
-        print(f"\n  advisory — {len(uncited)} artifact(s) a page may want and does not "
-              f"cite (not a failure):")
+        print(f"\n  advisory — {len(uncited)} artifact(s) a page may want and does not " f"cite (not a failure):")
         for u in uncited:
             print(f"      {u}")
 
@@ -255,8 +269,10 @@ def main() -> int:
         print(f"{len(problems)} problem(s):")
         for p_ in problems:
             print(f"  {p_}")
-        print("\nThe site's fine print says every number is recomputable from public "
-              "sources. That is the claim these checks defend.")
+        print(
+            "\nThe site's fine print says every number is recomputable from public "
+            "sources. That is the claim these checks defend."
+        )
         return 1 if args.check else 0
     suffix = " (live comparison skipped)" if args.offline else ""
     print(f"all {len(SLUGS)} model pages match their artifacts and the renderer{suffix}.")

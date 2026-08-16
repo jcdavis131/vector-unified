@@ -144,6 +144,7 @@ def main() -> int:
     # If the pooled number were an artefact of mixing positions, splitting them would
     # collapse it. It does not — it inverts the guess.
     import collections
+
     by_pos: dict[str, list[dict]] = collections.defaultdict(list)
     for r in g:
         by_pos[r.get("position") or "?"].append(r)
@@ -162,7 +163,9 @@ def main() -> int:
         qx = statistics.quantiles(px, n=4)
         qy = statistics.quantiles(py, n=4)
         per_position[pos] = {
-            "n": len(rows), "r": b["r"], "ci95": [b["lo"], b["hi"]],
+            "n": len(rows),
+            "r": b["r"],
+            "ci95": [b["lo"], b["hi"]],
             "ci_includes_zero": b["lo"] <= 0.0 <= b["hi"],
             "expect_sd": round(statistics.stdev(px), 4),
             "expect_iqr": round(qx[2] - qx[0], 4),
@@ -180,7 +183,8 @@ def main() -> int:
             "hoops' pooled r, so splitting by position does not collapse the difference. "
             "A composition artefact would have shown one dominant position carrying the "
             "pooled number; instead the pooled number is DRAGGED DOWN by its smallest "
-            "group."),
+            "group."
+        ),
         "qb_verdict": (
             "QB r=+0.12 with a 95% CI that INCLUDES ZERO — draft slot has no detectable "
             "relationship with fantasy delivery at quarterback — while RB is +0.57 with a "
@@ -190,7 +194,8 @@ def main() -> int:
             "elsewhere). Attenuation from a narrow predictor would require the opposite. "
             "Teams spend draft capital on quarterbacks across the whole board, and among "
             "those who last four fantasy-relevant seasons, where they were taken tells you "
-            "nothing."),
+            "nothing."
+        ),
         "qb_remaining_alternative": (
             "SURVIVORSHIP, and it is not excluded. A high-pick QB who busts is benched "
             "quickly and never reaches four charted seasons, so the surviving QB pool is "
@@ -198,7 +203,8 @@ def main() -> int:
             "selection that would flatten this correlation. The undrafted share at QB is "
             "10.3% against 20-25% elsewhere, consistent with a pool that is mostly drafted "
             "players who survived. Testing this needs the players who left, which this "
-            "dataset does not contain."),
+            "dataset does not contain."
+        ),
         "undrafted_share": {
             "gridiron": round(100.0 * sum(1 for r in g if r.get("undrafted")) / len(g), 1),
             "hoops": round(100.0 * sum(1 for r in h if r.get("undrafted")) / len(h), 1),
@@ -221,25 +227,29 @@ def main() -> int:
             "direction and loses significance. See data/hoops_vor_draft_value.json and "
             "data/vor_draft_value.json. This file is kept because the position "
             "stratification below is still sound and because the refutation is worth "
-            "more than the result it replaced."),
-        "verdict": ("SUPERSEDED — on matched constructs the gap is -0.0584 with a CI "
-                    "spanning zero. The unmatched difference below is a construct "
-                    "artefact, not a fact about the two sports."
-                    if separated else
-                    "CIs overlap — no difference to interpret, and the comparability "
-                    "question does not arise"),
+            "more than the result it replaced."
+        ),
+        "verdict": (
+            "SUPERSEDED — on matched constructs the gap is -0.0584 with a CI "
+            "spanning zero. The unmatched difference below is a construct "
+            "artefact, not a fact about the two sports."
+            if separated
+            else "CIs overlap — no difference to interpret, and the comparability " "question does not arise"
+        ),
         "comparability_caveat": (
             "hoops delivery is the `impact` percentile (curated composite of on-court "
             "value); gridiron delivery is fantasy PPR percentile (rewards volume and "
             "touchdowns, blind to blocking, route running and all defence). Same scoring "
             "rule, different yardsticks. The comparison is defensible at the level of "
             "RELATIVE STANDING AMONG SEASON PEERS and not at the level of the underlying "
-            "statistic."),
+            "statistic."
+        ),
         "scope_caveat": (
             "gridiron covers QB/RB/WR/TE only — all 18 features are pass/rush/receiving. "
             "hoops covers every charted player. The gridiron pool is therefore already "
             "restricted to the positions where draft capital is most concentrated, which "
-            "could inflate its correlation on its own."),
+            "could inflate its correlation on its own."
+        ),
     }
 
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -252,8 +262,7 @@ def main() -> int:
     for name, b in (("hoops", hb), ("gridiron", gb)):
         print(f"{name:10} {b['n']:>6} {b['r']:>8} {'[' + str(b['lo']) + ', ' + str(b['hi']) + ']':>20}")
     d = report["difference_gridiron_minus_hoops"]
-    print(f"\ndifference (gridiron - hoops): {d['point']:+.4f}"
-          f"   95% CI [{d['ci95'][0]:+.4f}, {d['ci95'][1]:+.4f}]")
+    print(f"\ndifference (gridiron - hoops): {d['point']:+.4f}" f"   95% CI [{d['ci95'][0]:+.4f}, {d['ci95'][1]:+.4f}]")
     print(f"excludes zero: {d['excludes_zero']}")
     print(f"\nVERDICT: {report['verdict']}")
     if per_position:
@@ -262,8 +271,10 @@ def main() -> int:
         for pos, v in sorted(per_position.items(), key=lambda kv: -kv[1]["r"]):
             ci = f"[{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}]"
             flag = " *zero" if v["ci_includes_zero"] else ""
-            print(f"  {pos:4} {v['n']:>5} {v['r']:>+8.4f} {ci:>20} "
-                  f"{v['expect_sd']:>7.3f} {v['expect_iqr']:>8.3f} {v['undrafted_pct']:>6.1f}%{flag}")
+            print(
+                f"  {pos:4} {v['n']:>5} {v['r']:>+8.4f} {ci:>20} "
+                f"{v['expect_sd']:>7.3f} {v['expect_iqr']:>8.3f} {v['undrafted_pct']:>6.1f}%{flag}"
+            )
         print("\n  " + report["qb_verdict"][:150] + "...")
         print("  REMAINING: " + report["qb_remaining_alternative"][:120] + "...")
     print(f"\n{RESAMPLES} resamples, seed {SEED}")

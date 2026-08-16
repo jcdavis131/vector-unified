@@ -43,8 +43,7 @@ def main() -> int:
     ents = json.loads(ORG_ENTS.read_text(encoding="utf-8"))
 
     i2s = smap["industry_to_sector"]
-    overrides = {a["company"]: a["sectors"]
-                 for a in smap["company_overrides"]["assignments"]}
+    overrides = {a["company"]: a["sectors"] for a in smap["company_overrides"]["assignments"]}
     sector_label = {s["id"]: s["label"] for s in smap["sectors"]}
 
     biz = [c for c in doc["companies"] if c.get("is_business")]
@@ -113,38 +112,56 @@ def main() -> int:
         "all_sectors": stats(set()),
         "excluding_sports_holdings": stats({"sports_holdings"}),
         "by_sector": {
-            s: {"label": sector_label.get(s, s), "companies": len(sector_cos[s]),
-                "athletes": len(sector_ath[s])}
+            s: {
+                "label": sector_label.get(s, s),
+                "companies": len(sector_cos[s]),
+                "athletes": len(sector_ath[s]),
+            }
             for s in sorted(sector_ath, key=lambda x: -len(sector_ath[x]))
         },
         "unassigned_detail": sorted(unassigned, key=lambda t: -t[1]),
     }
 
-    OUT.write_text(json.dumps({
-        "built_from": "data/sector_map.json (human-authored anchor)",
-        "report": report,
-        "sector_companies": {s: sorted(v) for s, v in sector_cos.items()},
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "built_from": "data/sector_map.json (human-authored anchor)",
+                "report": report,
+                "sector_companies": {s: sorted(v) for s, v in sector_cos.items()},
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
 
     print(f"business-typed companies : {report['business_typed_companies']}")
-    print(f"assigned to >=1 sector   : {report['assigned_to_a_sector']} "
-          f"({report['pct_assigned_of_128']}% OF 128, not of the 98 with an industry value)")
+    print(
+        f"assigned to >=1 sector   : {report['assigned_to_a_sector']} "
+        f"({report['pct_assigned_of_128']}% OF 128, not of the 98 with an industry value)"
+    )
     print(f"still unassigned         : {report['still_unassigned']}")
-    print(f"sectors declared         : {report['sectors_declared']}   "
-          f"used: {report['all_sectors']['sectors_used']}\n")
+    print(
+        f"sectors declared         : {report['sectors_declared']}   " f"used: {report['all_sectors']['sectors_used']}\n"
+    )
     print(f"{'sector':34} {'cos':>4} {'athletes':>9}")
     for s, v in report["by_sector"].items():
         print(f"{v['label'][:34]:34} {v['companies']:>4} {v['athletes']:>9}")
     a, x = report["all_sectors"], report["excluding_sports_holdings"]
     print("\nDO NOT SUM the athlete column:")
-    print(f"  all sectors            rows {a['row_sum']}  distinct {a['distinct_athletes']}"
-          f"  inflation {a['inflation_if_summed']}x  = {a['pct_of_all_athletes']}% of athletes")
-    print(f"  excl. sports_holdings  rows {x['row_sum']}  distinct {x['distinct_athletes']}"
-          f"  inflation {x['inflation_if_summed']}x  = {x['pct_of_all_athletes']}% of athletes")
+    print(
+        f"  all sectors            rows {a['row_sum']}  distinct {a['distinct_athletes']}"
+        f"  inflation {a['inflation_if_summed']}x  = {a['pct_of_all_athletes']}% of athletes"
+    )
+    print(
+        f"  excl. sports_holdings  rows {x['row_sum']}  distinct {x['distinct_athletes']}"
+        f"  inflation {x['inflation_if_summed']}x  = {x['pct_of_all_athletes']}% of athletes"
+    )
     print("  the second line is the brand-exposure figure; a club owning itself is not a sponsor.")
     if report["unassigned_detail"]:
         print("\nstill unassigned:")

@@ -30,9 +30,11 @@ from bs4 import BeautifulSoup
 ROOT = Path(__file__).resolve().parents[1]
 MARKET = ROOT / "data" / "market"
 
-API = ("https://en.wikipedia.org/w/api.php?action=parse&page="
-       "Forbes_list_of_the_world%27s_highest-paid_athletes"
-       "&format=json&prop=text&disabletoc=1&disableeditsection=1")
+API = (
+    "https://en.wikipedia.org/w/api.php?action=parse&page="
+    "Forbes_list_of_the_world%27s_highest-paid_athletes"
+    "&format=json&prop=text&disabletoc=1&disableeditsection=1"
+)
 UA = "VectorUnifiedResearch/0.1 (athlete market/cultural signal research; local build)"
 
 SPORT_MAP = {
@@ -92,12 +94,14 @@ def main():
         if not trs:
             continue
         header_cells = [norm_header(c.get_text(" ", strip=True)) for c in trs[0].find_all(["th", "td"])]
+
         # map column indices by header keyword
         def colidx(*keywords):
             for i, h in enumerate(header_cells):
                 if any(k in h for k in keywords):
                     return i
             return None
+
         i_rank = colidx("rank")
         i_name = colidx("name")
         i_sport = colidx("sport")
@@ -109,8 +113,10 @@ def main():
             cells = tr.find_all(["td", "th"])
             if len(cells) < 3:
                 continue
+
             def cell(i):
                 return cells[i].get_text(" ", strip=True) if (i is not None and i < len(cells)) else ""
+
             name = cell(i_name)
             if not name or name.lower() == "name":
                 continue
@@ -123,21 +129,30 @@ def main():
             rank_s = cell(i_rank) if i_rank is not None else ""
             rm = re.search(r"\d+", rank_s)
             rank = int(rm.group()) if rm else None
-            rows.append({
-                "year": cur_year, "rank": rank, "name": name,
-                "sport_forbes": sport_forbes, "sport_unified": sport_unified,
-                "out_of_corpus": sport_unified == "other",
-                "country": cell(i_country), "total_musd": total,
-                "salary_musd": sal, "endorse_musd": end,
-            })
+            rows.append(
+                {
+                    "year": cur_year,
+                    "rank": rank,
+                    "name": name,
+                    "sport_forbes": sport_forbes,
+                    "sport_unified": sport_unified,
+                    "out_of_corpus": sport_unified == "other",
+                    "country": cell(i_country),
+                    "total_musd": total,
+                    "salary_musd": sal,
+                    "endorse_musd": end,
+                }
+            )
 
     # dedupe identical (year, name) rows (Wikipedia sometimes lists ties/footnotes twice)
-    seen = set(); deduped = []
+    seen = set()
+    deduped = []
     for r_ in rows:
         k = (r_["year"], r_["name"], r_["sport_forbes"])
         if k in seen:
             continue
-        seen.add(k); deduped.append(r_)
+        seen.add(k)
+        deduped.append(r_)
     rows = deduped
 
     by_sport = {}
@@ -148,16 +163,21 @@ def main():
     out = {
         "source": "Wikipedia: Forbes list of the world's highest-paid athletes",
         "fetched_via": "MediaWiki action=parse API",
-        "n_rows": len(rows), "years": years,
+        "n_rows": len(rows),
+        "years": years,
         "by_sport_unified": by_sport,
-        "note": ("STAR-tier cross-sport earnings anchor. ~10 athletes/year. "
-                 "salary_musd/endorse_musd are the on-field/off-field $ split (millions USD). "
-                 "out_of_corpus=True for sports outside hoops/gridiron/pitch (kept for context, "
-                 "not joined to the unified matrix)."),
+        "note": (
+            "STAR-tier cross-sport earnings anchor. ~10 athletes/year. "
+            "salary_musd/endorse_musd are the on-field/off-field $ split (millions USD). "
+            "out_of_corpus=True for sports outside hoops/gridiron/pitch (kept for context, "
+            "not joined to the unified matrix)."
+        ),
         "rows": rows,
     }
     (MARKET / "Forbes_highest_paid.json").write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"wrote {MARKET / 'Forbes_highest_paid.json'}: {len(rows)} rows across {len(years)} years ({years[0]}-{years[-1]})")
+    print(
+        f"wrote {MARKET / 'Forbes_highest_paid.json'}: {len(rows)} rows across {len(years)} years ({years[0]}-{years[-1]})"
+    )
     print("by sport_unified:", by_sport)
     # show the in-corpus stars
     inc = [r_ for r_ in rows if not r_["out_of_corpus"]]

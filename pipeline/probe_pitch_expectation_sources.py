@@ -55,12 +55,12 @@ OUT = ROOT / "data" / "pitch_expectation_sources.json"
 
 ENDPOINT = "https://query.wikidata.org/sparql"
 UA = "vector-unified/0.1 (personal research; contact via github)"
-FOOTBALLER = "Q937857"          # association football player — verified via wbgetentities
-BATCH = 150                     # names per SPARQL query; 2,430 names -> ~17 queries
-SLEEP = 1.0                     # polite pacing against a free public endpoint
-MIN_AGE, MAX_AGE = 15, 45       # a candidate outside this at their first context is a
-                                # different person with the same name, not a footballer
-                                # with a surprising birthday
+FOOTBALLER = "Q937857"  # association football player — verified via wbgetentities
+BATCH = 150  # names per SPARQL query; 2,430 names -> ~17 queries
+SLEEP = 1.0  # polite pacing against a free public endpoint
+MIN_AGE, MAX_AGE = 15, 45  # a candidate outside this at their first context is a
+# different person with the same name, not a footballer
+# with a surprising birthday
 
 
 def norm_name(name: str) -> str:
@@ -93,9 +93,12 @@ SELECT ?item ?itemLabel ?name ?dob (COUNT(DISTINCT ?club) AS ?clubs)
 }}
 GROUP BY ?item ?itemLabel ?name ?dob
 """
-    r = requests.get(ENDPOINT, params={"query": q, "format": "json"},
-                     headers={"User-Agent": UA,
-                              "Accept": "application/sparql-results+json"}, timeout=180)
+    r = requests.get(
+        ENDPOINT,
+        params={"query": q, "format": "json"},
+        headers={"User-Agent": UA, "Accept": "application/sparql-results+json"},
+        timeout=180,
+    )
     r.raise_for_status()
     return r.json()["results"]["bindings"]
 
@@ -111,7 +114,7 @@ def main() -> int:
         return 2
     rows = json.loads(PITCH.read_text(encoding="utf-8"))["players"]
     if args.limit:
-        rows = rows[:args.limit]
+        rows = rows[: args.limit]
 
     # de-duplicate by name: the corpus is player-CONTEXT, so a player in three tournaments
     # is three rows and one Wikidata lookup.
@@ -123,24 +126,29 @@ def main() -> int:
 
     candidates: dict[str, list[dict]] = collections.defaultdict(list)
     for i in range(0, len(names), BATCH):
-        chunk = names[i:i + BATCH]
+        chunk = names[i : i + BATCH]
         try:
             res = query(chunk)
-        except Exception as e:                                    # noqa: BLE001
+        except Exception as e:
             print(f"  batch {i // BATCH + 1} failed: {e}")
             continue
         for b in res:
             nm = b.get("name", {}).get("value")
             if not nm:
                 continue
-            candidates[nm].append({
-                "qid": b["item"]["value"].rsplit("/", 1)[-1],
-                "dob": (b.get("dob") or {}).get("value"),
-                "clubs": int((b.get("clubs") or {}).get("value") or 0),
-                "first_club_start": (b.get("first_club_start") or {}).get("value"),
-            })
-        print(f"  batch {i // BATCH + 1}/{(len(names) - 1) // BATCH + 1}: "
-              f"{len(candidates)} names with at least one candidate", flush=True)
+            candidates[nm].append(
+                {
+                    "qid": b["item"]["value"].rsplit("/", 1)[-1],
+                    "dob": (b.get("dob") or {}).get("value"),
+                    "clubs": int((b.get("clubs") or {}).get("value") or 0),
+                    "first_club_start": (b.get("first_club_start") or {}).get("value"),
+                }
+            )
+        print(
+            f"  batch {i // BATCH + 1}/{(len(names) - 1) // BATCH + 1}: "
+            f"{len(candidates)} names with at least one candidate",
+            flush=True,
+        )
         time.sleep(SLEEP)
 
     # ---- AMBIGUITY IS NOT RESOLVED BY TAKING THE FIRST ROW -----------------------
@@ -155,8 +163,7 @@ def main() -> int:
     # A candidate survives only if its date of birth puts the player at a plausible age in
     # the EARLIEST context they appear in. Exactly one survivor -> resolved. More than one
     # -> AMBIGUOUS, and reported as such rather than guessed.
-    first_ctx = {nm: min((context_year(r.get("context")) or 9999) for r in grp)
-                 for nm, grp in by_name.items()}
+    first_ctx = {nm: min((context_year(r.get("context")) or 9999) for r in grp) for nm, grp in by_name.items()}
     found: dict[str, dict] = {}
     ambiguous: dict[str, int] = {}
     for nm, cands in candidates.items():
@@ -209,14 +216,16 @@ def main() -> int:
             f"A name is resolved only when exactly ONE candidate puts the player between "
             f"{MIN_AGE} and {MAX_AGE} at their earliest context. Taking the first SPARQL "
             f"row instead matched Cristiano Ronaldo's son and produced an age range of "
-            f"14-129 on the first run."),
+            f"14-129 on the first run."
+        ),
         "field_coverage_pct_of_names": {
-            k: round(100.0 * have[k] / max(n, 1), 1)
-            for k in ("dob", "clubs", "first_club_start")},
+            k: round(100.0 * have[k] / max(n, 1), 1) for k in ("dob", "clubs", "first_club_start")
+        },
         "age_at_context": {
             "player_contexts_scorable": age_rows,
             "pct_of_contexts": round(100.0 * age_rows / max(len(rows), 1), 1),
-            "min": min(ages) if ages else None, "max": max(ages) if ages else None,
+            "min": min(ages) if ages else None,
+            "max": max(ages) if ages else None,
         },
         "construct_warning": (
             "age_at_context is NOT the same construct as a draft slot. A draft slot is a "
@@ -224,23 +233,25 @@ def main() -> int:
             "7.7b showed that comparing two different constructs under one name reversed a "
             "cross-sport finding twice. Any T0/T1-style pitch axis built on age must be "
             "labelled WITHIN-PITCH and must not be compared against the hoops or gridiron "
-            "draft axes."),
+            "draft axes."
+        ),
         # Per-name resolution, persisted so a downstream axis joins THIS table rather than
         # re-running the query and re-deriving the ambiguity rules. `ambiguous` names are
         # carried explicitly with their candidate count so a consumer cannot mistake
         # "not resolved" for "not looked up".
-        "resolved": {nm: {"qid": f["qid"], "dob": f["dob"], "clubs": f["clubs"]}
-                     for nm, f in sorted(found.items())},
+        "resolved": {nm: {"qid": f["qid"], "dob": f["dob"], "clubs": f["clubs"]} for nm, f in sorted(found.items())},
         "ambiguous": dict(sorted(ambiguous.items())),
         "rejected_in_advance": {
             "sitelinks / article count": (
                 "7.11 showed Wikidata coverage dominates this kind of signal and 7.12 "
                 "showed the market layer is a star-only sample. Using fame as a prior "
-                "would launder notability into 'expectation'."),
+                "would launder notability into 'expectation'."
+            ),
             "transfer fees / market values": (
                 "No free source. Transfermarkt is the only real one and scraping it at "
                 "corpus scale is neither polite nor reliable. Recorded as absent rather "
-                "than approximated."),
+                "than approximated."
+            ),
         },
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -249,8 +260,10 @@ def main() -> int:
     for k, v in report["field_coverage_pct_of_names"].items():
         print(f"  {k:18} {have[k]:>5} names  {v:>5.1f}%")
     a = report["age_at_context"]
-    print(f"\nage_at_context scorable on {a['player_contexts_scorable']}/{len(rows)} "
-          f"contexts ({a['pct_of_contexts']}%)   range {a['min']}-{a['max']}")
+    print(
+        f"\nage_at_context scorable on {a['player_contexts_scorable']}/{len(rows)} "
+        f"contexts ({a['pct_of_contexts']}%)   range {a['min']}-{a['max']}"
+    )
     print(f"\n{report['construct_warning']}")
     print(f"\nwrote {OUT}")
     return 0

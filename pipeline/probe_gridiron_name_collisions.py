@@ -58,7 +58,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import build_vor_draft_value as G  # noqa: E402
+import build_vor_draft_value as G
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "gridiron_name_collisions.json"
@@ -85,9 +85,12 @@ SELECT ?item ?name ?dob WHERE {{
   OPTIONAL {{ ?item wdt:P569 ?dob }}
 }}
 """
-    r = requests.get(ENDPOINT, params={"query": q, "format": "json"},
-                     headers={"User-Agent": UA,
-                              "Accept": "application/sparql-results+json"}, timeout=240)
+    r = requests.get(
+        ENDPOINT,
+        params={"query": q, "format": "json"},
+        headers={"User-Agent": UA, "Accept": "application/sparql-results+json"},
+        timeout=240,
+    )
     r.raise_for_status()
     # strict=False: some Wikidata labels carry raw control characters and the default parser
     # rejects the whole response over one of them, which would read as "0 matches" — a data
@@ -102,8 +105,8 @@ def sweep(names: list[str], display: dict[str, str]) -> tuple[dict, int]:
     probe = [display.get(n, n) + s for n in names for s in SUFFIXES]
     for i in range(0, len(probe), BATCH):
         try:
-            res = query(probe[i:i + BATCH])
-        except Exception as e:                                        # noqa: BLE001
+            res = query(probe[i : i + BATCH])
+        except Exception as e:
             failed += 1
             print(f"  sweep batch {i // BATCH + 1} failed: {str(e)[:70]}")
             continue
@@ -126,9 +129,10 @@ def main() -> int:
     gvec = json.loads(G.GRID_VEC.read_text(encoding="utf-8"))["players"]
     with G.DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as fh:
         drows = list(csv.DictReader(fh))
-    G.configure_norm([p["name"] for p in gvec],
-                     [(r.get("pfr_player_name") or "").strip() for r in drows
-                      if (r.get("pfr_player_name") or "").strip()])
+    G.configure_norm(
+        [p["name"] for p in gvec],
+        [(r.get("pfr_player_name") or "").strip() for r in drows if (r.get("pfr_player_name") or "").strip()],
+    )
 
     span: dict[str, list[int]] = collections.defaultdict(list)
     display: dict[str, str] = {}
@@ -138,17 +142,17 @@ def main() -> int:
         display.setdefault(n, str(p["name"]))
     names = sorted(span)
     if args.limit:
-        names = names[:args.limit]
+        names = names[: args.limit]
     print(f"{len(names)} distinct corpus names")
 
     # ---- stage 1: bare pass, every candidate kept ------------------------------
     cands: dict[str, dict[str, int]] = collections.defaultdict(dict)
     failed = 0
     for i in range(0, len(names), BATCH):
-        chunk = [display[n] for n in names[i:i + BATCH]]
+        chunk = [display[n] for n in names[i : i + BATCH]]
         try:
             res = query(chunk)
-        except Exception as e:                                        # noqa: BLE001
+        except Exception as e:
             failed += 1
             print(f"  batch {i // BATCH + 1} failed: {str(e)[:70]}")
             continue
@@ -158,24 +162,28 @@ def main() -> int:
                 continue
             nm = G.norm_name(b.get("name", {}).get("value", ""))
             cands[nm][b["item"]["value"].rsplit("/", 1)[-1]] = int(dob[:4])
-        print(f"  batch {i // BATCH + 1}/{(len(names) - 1) // BATCH + 1}: "
-              f"{len(cands)} names with a candidate", flush=True)
+        print(
+            f"  batch {i // BATCH + 1}/{(len(names) - 1) // BATCH + 1}: " f"{len(cands)} names with a candidate",
+            flush=True,
+        )
         time.sleep(SLEEP)
 
     # ---- stage 2: COMPUTE the band from single-candidate names -----------------
-    ages = [s - by
-            for n, qs in cands.items() if len(qs) == 1 and n in span
-            for by in qs.values() for s in span[n]]
+    ages = [s - by for n, qs in cands.items() if len(qs) == 1 and n in span for by in qs.values() for s in span[n]]
     if len(ages) < 500:
-        print(f"only {len(ages)} age observations from single-candidate names — refusing "
-              f"to derive a band from that. Nothing written.")
+        print(
+            f"only {len(ages)} age observations from single-candidate names — refusing "
+            f"to derive a band from that. Nothing written."
+        )
         return 2
     ages.sort()
     lo = math.floor(statistics.quantiles(ages, n=1000)[int(BAND_LO_PCT * 10) - 1])
     hi = math.ceil(statistics.quantiles(ages, n=1000)[int(BAND_HI_PCT * 10) - 1])
-    print(f"\nband computed from {len(ages)} ages over "
-          f"{sum(1 for qs in cands.values() if len(qs) == 1)} single-candidate names: "
-          f"[{lo}, {hi}]  (p{BAND_LO_PCT}/p{BAND_HI_PCT}, pre-registered)")
+    print(
+        f"\nband computed from {len(ages)} ages over "
+        f"{sum(1 for qs in cands.values() if len(qs) == 1)} single-candidate names: "
+        f"[{lo}, {hi}]  (p{BAND_LO_PCT}/p{BAND_HI_PCT}, pre-registered)"
+    )
 
     def plausible(n: str, by: int) -> bool:
         return any(lo <= s - by <= hi for s in span[n])
@@ -189,8 +197,11 @@ def main() -> int:
             continue
         seen = {q: by for q, by in qs.items() if plausible(n, by)}
         if len(seen) >= 2:
-            colliding[n] = {"qids": seen, "corpus_seasons": [min(span[n]), max(span[n])],
-                            "birth_years": sorted(set(seen.values()))}
+            colliding[n] = {
+                "qids": seen,
+                "corpus_seasons": [min(span[n]), max(span[n])],
+                "birth_years": sorted(set(seen.values())),
+            }
         elif len(seen) == 1:
             resolved.append(n)
 
@@ -250,24 +261,29 @@ def main() -> int:
             "band": [lo, hi],
             "percentiles": [BAND_LO_PCT, BAND_HI_PCT],
             "n_age_observations": len(ages),
-            "derived_from": ("names Wikidata returns exactly ONE candidate for, which are "
-                             "unambiguous by construction"),
+            "derived_from": (
+                "names Wikidata returns exactly ONE candidate for, which are " "unambiguous by construction"
+            ),
             "why_computed": (
                 "The hoops probe asserted 17/45, watched a 44-year-old rookie pass, and "
                 "tightened to 18/42 — a threshold tuned against the cases it judges. The "
                 "percentiles here were fixed in the docstring before the first run; the "
                 "band is whatever the data says. A mis-assigned single candidate shows up "
-                "as an outlier age, which is what trimming to 0.5/99.5 handles."),
+                "as an outlier age, which is what trimming to 0.5/99.5 handles."
+            ),
         },
         "WHAT_COLLIDING_MEANS": (
             "A SUPERSET OF SUSPICION. It says two American football players with this name "
             "exist and are both age-plausible for these seasons — NOT that both appear in "
-            "this corpus. It never excludes on its own; only the arithmetic set does."),
+            "this corpus. It never excludes on its own; only the arithmetic set does."
+        ),
         "SUFFIX_SWEEP": {
-            "what": (f"Re-queries the overturnable names across {SUFFIXES}. Label matching "
-                     "is EXACT and the corpus display name carries no suffix, so a bare "
-                     "query for 'Marvin Harrison' cannot see Marvin Harrison Jr. Without "
-                     "this the bare pass reports one person and acquits a father/son pair."),
+            "what": (
+                f"Re-queries the overturnable names across {SUFFIXES}. Label matching "
+                "is EXACT and the corpus display name carries no suffix, so a bare "
+                "query for 'Marvin Harrison' cannot see Marvin Harrison Jr. Without "
+                "this the bare pass reports one person and acquits a father/son pair."
+            ),
             "arithmetic_flagged": len(arith),
             "never_acquittable_season_before_draft": sorted(impossible),
             "overturnable": len(overturnable),
@@ -277,9 +293,11 @@ def main() -> int:
             "confirmed_two_or_more": dict(sorted(confirmed.items())),
             "no_wikidata_answer": unknown,
             "EXCLUSION_SET": exclusion,
-            "rule": ("EXCLUDE = arithmetic-flagged AND NOT acquitted by EITHER method. A "
-                     "name with no answer from either stays excluded — no evidence is not "
-                     "evidence of one person."),
+            "rule": (
+                "EXCLUDE = arithmetic-flagged AND NOT acquitted by EITHER method. A "
+                "name with no answer from either stays excluded — no evidence is not "
+                "evidence of one person."
+            ),
             "gsis_acquitted_of_flagged": sorted(gsis_acq & arith),
             "gsis_note": (
                 "vector-gridiron's train_matrix.npz carries `gsis`, the NFL's own player id "
@@ -292,7 +310,8 @@ def main() -> int:
                 "on all 5 it claimed (jesse james, tyler davis, anthony miller, chad "
                 "williams, mike davis are each one person). Two same-name footballers being "
                 "age-plausible does not put both in this corpus — the exclusion rests on "
-                "the ARITHMETIC flag, and confirmed merely fails to lift it."),
+                "the ARITHMETIC flag, and confirmed merely fails to lift it."
+            ),
         },
         "cross_check": {
             "found_by_both": sorted(set(colliding) & arith),
@@ -305,15 +324,21 @@ def main() -> int:
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    print(f"\nmatched {len(cands)}/{len(names)}   unmatched {unmatched}   "
-          f"single-person {len(resolved)}   COLLIDING {len(colliding)}")
-    print(f"\narithmetic-flagged {len(arith)}  "
-          f"(season-before-draft {len(impossible)}, overturnable {len(overturnable)})")
+    print(
+        f"\nmatched {len(cands)}/{len(names)}   unmatched {unmatched}   "
+        f"single-person {len(resolved)}   COLLIDING {len(colliding)}"
+    )
+    print(
+        f"\narithmetic-flagged {len(arith)}  "
+        f"(season-before-draft {len(impossible)}, overturnable {len(overturnable)})"
+    )
     print(f"  ACQUITTED by DOB        : {len(acquitted)}  {sorted(acquitted)[:5]}")
     print(f"  CONFIRMED (>=2 people)  : {len(confirmed)}  {sorted(confirmed)[:5]}")
     print(f"  no Wikidata answer      : {len(unknown)}  {unknown[:5]}")
-    print(f"  ACQUITTED by NFL gsis   : {len(gsis_acq & arith)}  "
-          f"(+{len(gsis_acq & arith - set(acquitted))} the age band could not clear)")
+    print(
+        f"  ACQUITTED by NFL gsis   : {len(gsis_acq & arith)}  "
+        f"(+{len(gsis_acq & arith - set(acquitted))} the age band could not clear)"
+    )
     print(f"  EXCLUSION SET           : {len(exclusion)}   (was {len(arith)})")
     print(f"\nwrote {OUT}")
     return 0

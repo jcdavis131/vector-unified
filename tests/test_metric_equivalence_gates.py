@@ -20,7 +20,6 @@ the divergence rather than asserting it by hand.
 from __future__ import annotations
 
 import numpy as np
-
 from probe_tennis_retrieval import recall_at_k as repo_recall_at_k
 from vector_core.eval import recall_at_k as vc_recall_at_k
 

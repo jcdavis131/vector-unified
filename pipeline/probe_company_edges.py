@@ -87,8 +87,10 @@ def run_query(q: str, *, attempts: int = 5):
         )
         if r.status_code == 429 and attempt < attempts:
             wait = float(r.headers.get("Retry-After") or delay)
-            print(f"  429 from WDQS, waiting {wait:.0f}s (attempt {attempt}/{attempts})",
-                  file=sys.stderr)
+            print(
+                f"  429 from WDQS, waiting {wait:.0f}s (attempt {attempt}/{attempts})",
+                file=sys.stderr,
+            )
             time.sleep(wait)
             delay *= 2
             continue
@@ -143,11 +145,13 @@ def main() -> int:
             ("named_after", "namedAfter", "namedAfterLabel", "namedAfterIsOrg"),
         ):
             if node in b:
-                edges[rel].setdefault(club, []).append({
-                    "qid": qid(b[node]["value"]),
-                    "label": b.get(lab, {}).get("value"),
-                    "is_org": truthy(b, isorg),
-                })
+                edges[rel].setdefault(club, []).append(
+                    {
+                        "qid": qid(b[node]["value"]),
+                        "label": b.get(lab, {}).get("value"),
+                        "is_org": truthy(b, isorg),
+                    }
+                )
 
     n = len(pairs)
     report = {"orgs_probed": n, "relations": {}}
@@ -205,23 +209,35 @@ def main() -> int:
             "pct": round(100.0 * len(reached) / len(total), 2) if total else 0.0,
             "census_athlete_sponsor_pct": 0.22,
             "per_sport": {
-                sp: {"reached": len(r), "total": len(t),
-                     "pct": round(100.0 * len(r) / len(t), 2) if t else 0.0}
+                sp: {
+                    "reached": len(r),
+                    "total": len(t),
+                    "pct": round(100.0 * len(r) / len(t), 2) if t else 0.0,
+                }
                 for sp, (r, t) in sorted(per.items())
             },
         }
         report["athlete_reach"] = reach
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({
-        "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "source": "Wikidata SPARQL (P859 sponsor, P127 owner, P115/P138 venue named-after)",
-        "note": ("Coverage probe only. The census measured P859 on ATHLETES (0.22%); this "
-                 "measures the ORG side, which is a different question."),
-        "report": report,
-        "edges": edges,
-        "org_names": by_qid,
-    }, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "source": "Wikidata SPARQL (P859 sponsor, P127 owner, P115/P138 venue named-after)",
+                "note": (
+                    "Coverage probe only. The census measured P859 on ATHLETES (0.22%); this "
+                    "measures the ORG side, which is a different question."
+                ),
+                "report": report,
+                "edges": edges,
+                "org_names": by_qid,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
@@ -230,15 +246,21 @@ def main() -> int:
     print(f"\nenriched orgs probed: {n}\n")
     print(f"{'relation':14} {'any':>8} {'any %':>7} {'is-org':>8} {'org %':>7} {'targets':>8}")
     for rel, r in report["relations"].items():
-        print(f"{rel:14} {r['orgs_with_edge']:>8} {r['pct_any']:>7} "
-              f"{r['orgs_with_ORGANIZATION_edge']:>8} {r['pct_org']:>7} {r['distinct_targets']:>8}")
+        print(
+            f"{rel:14} {r['orgs_with_edge']:>8} {r['pct_any']:>7} "
+            f"{r['orgs_with_ORGANIZATION_edge']:>8} {r['pct_org']:>7} {r['distinct_targets']:>8}"
+        )
     print("\nCompare: athlete -> sponsor (P859 on the athlete) = 0.22% (13/5,821).")
     r = report.get("athlete_reach")
     if r:
-        print(f"\norgs with >=1 ORGANIZATION-typed company edge: "
-              f"{len(org_edges)} / {n} = {100.0 * len(org_edges) / n:.1f}%")
-        print(f"ATHLETES reaching a company in 2 hops: "
-              f"{r['athletes_reaching_a_company']} / {r['athletes_total']} = {r['pct']}%")
+        print(
+            f"\norgs with >=1 ORGANIZATION-typed company edge: "
+            f"{len(org_edges)} / {n} = {100.0 * len(org_edges) / n:.1f}%"
+        )
+        print(
+            f"ATHLETES reaching a company in 2 hops: "
+            f"{r['athletes_reaching_a_company']} / {r['athletes_total']} = {r['pct']}%"
+        )
         for sp, v in r["per_sport"].items():
             print(f"    {sp:10} {v['reached']:5} / {v['total']:5}  {v['pct']:5.1f}%")
     for rel, r in report["relations"].items():

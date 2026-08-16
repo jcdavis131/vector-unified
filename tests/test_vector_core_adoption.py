@@ -26,9 +26,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import aggregate_fleet  # noqa: E402
-from vector_core.schema import validate_entry  # noqa: E402
-
+import aggregate_fleet
+from vector_core.schema import validate_entry
 
 # --------------------------------------------------------------------------- #
 # Frozen copy of aggregate_fleet's ORIGINAL inline per-entry checks (pre-swap).
@@ -99,9 +98,7 @@ def _battery() -> list[dict]:
     f["weird"] = 1
     fixtures.append(f)
     fixtures.append({})
-    fixtures.append(
-        {"repo": "r", "status": "bogus", "embeddingDim": "x", "headlineMetric": "no"}
-    )
+    fixtures.append({"repo": "r", "status": "bogus", "embeddingDim": "x", "headlineMetric": "no"})
     return fixtures
 
 

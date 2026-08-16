@@ -70,11 +70,11 @@ def test_align_batch_parity_all_branches(tmp_path):
     n = 40
     Z = rng.normal(size=(n, d_full)).astype(np.float32)
     seasons_pool = [
-        "1996-97",   # identity
-        "1997-98",   # full rotation
-        "1998-99",   # full rotation
-        "1999-00",   # subset rotation (D-2)
-        "2050-51",   # missing -> identity fallback
+        "1996-97",  # identity
+        "1997-98",  # full rotation
+        "1998-99",  # full rotation
+        "1999-00",  # subset rotation (D-2)
+        "2050-51",  # missing -> identity fallback
     ]
     seasons = [seasons_pool[i % len(seasons_pool)] for i in range(n)]
 

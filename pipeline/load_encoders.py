@@ -32,15 +32,13 @@ Honest constraints (named, not hidden):
 from __future__ import annotations
 
 import json
-import re
-from pathlib import Path
 from collections import Counter
+from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from _torch_safe import safe_torch_load
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +56,7 @@ UCACHE = ROOT / "pipeline" / "data"  # unified-side cache for derived artifacts
 # ---------------------------------------------------------------------------
 # Gridiron MTNN — minimal stable copy (do NOT import the ingestion layer)
 # ---------------------------------------------------------------------------
+
 
 class _ResidualTower(nn.Module):
     def __init__(self, d_in: int, d_out: int = 24, d_hidden: int = 64):
@@ -79,11 +78,14 @@ class _GatedFusion(nn.Module):
         super().__init__()
         self.season_emb = nn.Embedding(n_seasons, d_season)
         self.gate = nn.Linear(d_tower, 1)
-        self.attn = nn.Sequential(nn.Linear(d_tower, d_tower), nn.Tanh(),
-                                  nn.Linear(d_tower, 1))
+        self.attn = nn.Sequential(nn.Linear(d_tower, d_tower), nn.Tanh(), nn.Linear(d_tower, 1))
         self.fuse = nn.Sequential(
-            nn.Linear(d_tower + d_season, d_hidden), nn.GELU(), nn.LayerNorm(d_hidden),
-            nn.Dropout(0.15), nn.Linear(d_hidden, d_emb))
+            nn.Linear(d_tower + d_season, d_hidden),
+            nn.GELU(),
+            nn.LayerNorm(d_hidden),
+            nn.Dropout(0.15),
+            nn.Linear(d_hidden, d_emb),
+        )
 
     def forward(self, tower_stack, season_ids):
         scores = self.attn(tower_stack).squeeze(-1)
@@ -98,8 +100,7 @@ class _MTNN(nn.Module):
     def __init__(self, fam_dims, n_seasons, d_tower=24, d_emb=32, n_targets=6, n_usage=3, n_pos=4):
         super().__init__()
         self.families = sorted(fam_dims)
-        self.towers = nn.ModuleDict({f: _ResidualTower(fam_dims[f], d_out=d_tower)
-                                     for f in self.families})
+        self.towers = nn.ModuleDict({f: _ResidualTower(fam_dims[f], d_out=d_tower) for f in self.families})
         self.fusion = _GatedFusion(len(self.families), d_tower, n_seasons, d_emb=d_emb)
         # heads are unused for encoding but must exist to load the state_dict
         self.target_heads = nn.ModuleList([nn.Linear(d_emb, 1) for _ in range(n_targets)])
@@ -128,6 +129,7 @@ def _split_by_family(Xz, M, slices, device):
 # Loaders
 # ---------------------------------------------------------------------------
 
+
 def _l2norm(E):
     n = np.linalg.norm(E, axis=1, keepdims=True)
     n[n == 0] = 1.0
@@ -145,14 +147,23 @@ def load_hoops():
         a = np.load(p, allow_pickle=False)
     E = np.ascontiguousarray(a["E"], dtype=np.float32)
     records = []
-    pid = a["player_id"]; sea = a["season"]; nm = a["name"]
-    clu = a["cluster"]; pos = a["position"]
+    pid = a["player_id"]
+    sea = a["season"]
+    nm = a["name"]
+    clu = a["cluster"]
+    pos = a["position"]
     for i in range(E.shape[0]):
-        records.append({
-            "sport": "hoops", "player_id": str(int(pid[i])), "name": str(nm[i]),
-            "season": str(sea[i]), "pos": int(pos[i]), "team": "",
-            "native_cluster": int(clu[i]),
-        })
+        records.append(
+            {
+                "sport": "hoops",
+                "player_id": str(int(pid[i])),
+                "name": str(nm[i]),
+                "season": str(sea[i]),
+                "pos": int(pos[i]),
+                "team": "",
+                "native_cluster": int(clu[i]),
+            }
+        )
     E = _l2norm(E)
     return E, records
 
@@ -163,11 +174,18 @@ def load_pitch():
     blob = json.loads(p.read_text(encoding="utf-8"))
     rows = blob["players"]
     E = np.array([r["e_p"] for r in rows], dtype=np.float32)
-    records = [{
-        "sport": "pitch", "player_id": str(r["player_id"]), "name": r["name"],
-        "season": r["context"], "pos": r.get("pos", ""), "team": r.get("team", ""),
-        "native_cluster": -1,
-    } for r in rows]
+    records = [
+        {
+            "sport": "pitch",
+            "player_id": str(r["player_id"]),
+            "name": r["name"],
+            "season": r["context"],
+            "pos": r.get("pos", ""),
+            "team": r.get("team", ""),
+            "native_cluster": -1,
+        }
+        for r in rows
+    ]
     E = _l2norm(E)
     return E, records
 
@@ -178,23 +196,35 @@ def load_gridiron(device=None):
     Cached to pipeline/data/gridiron_season_emb.npz, invalidated by mtnn_best.pt mtime,
     so the ~16s forward-pass runs once and is reused across build/train/eval.
     """
-    device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = device or torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     ckpt_path = GRID / "pipeline" / "data" / "mtnn_best.pt"
     cache = UCACHE / "gridiron_season_emb.npz"
     if cache.exists() and cache.stat().st_mtime >= ckpt_path.stat().st_mtime:
         a = np.load(cache, allow_pickle=False)
         E = np.ascontiguousarray(a["E"], dtype=np.float32)
-        recs = [{
-            "sport": "gridiron", "player_id": str(a["gsis"][i]), "name": str(a["name"][i]),
-            "season": int(a["season"][i]), "pos": str(a["pos"][i]), "team": str(a["team"][i]),
-            "native_cluster": -1,
-        } for i in range(E.shape[0])]
+        recs = [
+            {
+                "sport": "gridiron",
+                "player_id": str(a["gsis"][i]),
+                "name": str(a["name"][i]),
+                "season": int(a["season"][i]),
+                "pos": str(a["pos"][i]),
+                "team": str(a["team"][i]),
+                "native_cluster": -1,
+            }
+            for i in range(E.shape[0])
+        ]
         return E, recs
 
     ckpt = safe_torch_load(ckpt_path, map_location=device)
-    feats = ckpt["feats"]; families = ckpt["families"]
-    mu = ckpt["mu"]; sd = ckpt["sd"]
-    n_seasons = int(ckpt["n_seasons"]); season_min = int(ckpt["season_min"])
+    feats = ckpt["feats"]
+    families = ckpt["families"]
+    mu = ckpt["mu"]
+    sd = ckpt["sd"]
+    n_seasons = int(ckpt["n_seasons"])
+    season_min = int(ckpt["season_min"])
     d_emb = int(ckpt.get("d_emb", 32))
     slices = _family_slices(feats, families)
     fam_dims = {f: len(c) for f, c in slices.items()}
@@ -204,9 +234,13 @@ def load_gridiron(device=None):
     model.eval()
 
     d = np.load(GRID / "pipeline" / "data" / "train_matrix.npz", allow_pickle=False)
-    Z = d["Z"].astype(np.float32); M = d["mask"].astype(np.float32)
-    season = d["season"].astype(int); gsis = d["gsis"].astype(str)
-    name = d["name"].astype(str); pos = d["pos"].astype(str); team = d["team"].astype(str)
+    Z = d["Z"].astype(np.float32)
+    M = d["mask"].astype(np.float32)
+    season = d["season"].astype(int)
+    gsis = d["gsis"].astype(str)
+    name = d["name"].astype(str)
+    pos = d["pos"].astype(str)
+    team = d["team"].astype(str)
 
     Xz = ((Z - mu) / sd) * M
     sid = np.clip(season - season_min, 0, n_seasons - 1).astype(np.int64)
@@ -217,13 +251,18 @@ def load_gridiron(device=None):
 
     # aggregate weekly rows -> player-season (mean over a player's weeks that season)
     order = np.lexsort((gsis, season))  # stable: group by season then gsis
-    Ew = Ew[order]; season = season[order]; gsis = gsis[order]
-    name = name[order]; pos = pos[order]; team = team[order]
+    Ew = Ew[order]
+    season = season[order]
+    gsis = gsis[order]
+    name = name[order]
+    pos = pos[order]
+    team = team[order]
     keep = gsis != ""
     Ew, season, gsis = Ew[keep], season[keep], gsis[keep]
     name, pos, team = name[keep], pos[keep], team[keep]
 
-    E_out = []; recs = []
+    E_out = []
+    recs = []
     start = 0
     n = len(gsis)
     for i in range(1, n + 1):
@@ -237,39 +276,52 @@ def load_gridiron(device=None):
         e_mean = Ew[seg].mean(axis=0)
         E_out.append(e_mean)
         # pos / team: mode over the segment (stable per player; handles trades)
-        pseg = pos[seg]; tseg = team[seg]; nseg = name[seg]
-        recs.append({
-            "sport": "gridiron", "player_id": gsis[seg.start],
-            "name": str(Counter(nseg).most_common(1)[0][0]),
-            "season": int(season[seg.start]),
-            "pos": str(Counter(pseg).most_common(1)[0][0]),
-            "team": str(Counter(tseg).most_common(1)[0][0]),
-            "native_cluster": -1,
-        })
+        pseg = pos[seg]
+        tseg = team[seg]
+        nseg = name[seg]
+        recs.append(
+            {
+                "sport": "gridiron",
+                "player_id": gsis[seg.start],
+                "name": str(Counter(nseg).most_common(1)[0][0]),
+                "season": int(season[seg.start]),
+                "pos": str(Counter(pseg).most_common(1)[0][0]),
+                "team": str(Counter(tseg).most_common(1)[0][0]),
+                "native_cluster": -1,
+            }
+        )
     E = _l2norm(np.array(E_out, dtype=np.float32))
     UCACHE.mkdir(parents=True, exist_ok=True)
-    np.savez(cache, E=E,
-             gsis=np.array([r["player_id"] for r in recs], dtype="<U12"),
-             name=np.array([r["name"] for r in recs], dtype="<U28"),
-             season=np.array([r["season"] for r in recs], dtype=np.int32),
-             pos=np.array([r["pos"] for r in recs], dtype="<U4"),
-             team=np.array([r["team"] for r in recs], dtype="<U4"))
+    np.savez(
+        cache,
+        E=E,
+        gsis=np.array([r["player_id"] for r in recs], dtype="<U12"),
+        name=np.array([r["name"] for r in recs], dtype="<U28"),
+        season=np.array([r["season"] for r in recs], dtype=np.int32),
+        pos=np.array([r["pos"] for r in recs], dtype="<U4"),
+        team=np.array([r["team"] for r in recs], dtype="<U4"),
+    )
     return E, recs
 
 
 def load_all(verbose=True):
     out = {}
-    for sport, fn in (("hoops", load_hoops), ("pitch", load_pitch),
-                      ("gridiron", load_gridiron)):
+    for sport, fn in (
+        ("hoops", load_hoops),
+        ("pitch", load_pitch),
+        ("gridiron", load_gridiron),
+    ):
         E, recs = fn()
         d = E.shape[1]
         assert d == SPORT_DIM[sport], f"{sport} dim {d} != expected {SPORT_DIM[sport]}"
         norms = np.linalg.norm(E, axis=1)
         if verbose:
             seasons = sorted({r["season"] for r in recs})
-            print(f"[{sport}] N={len(recs):,} d={d} "
-                  f"norm[min={norms.min():.4f} max={norms.max():.4f}] "
-                  f"seasons={len(seasons)} pos={dict(Counter(r['pos'] for r in recs))}")
+            print(
+                f"[{sport}] N={len(recs):,} d={d} "
+                f"norm[min={norms.min():.4f} max={norms.max():.4f}] "
+                f"seasons={len(seasons)} pos={dict(Counter(r['pos'] for r in recs))}"
+            )
         out[sport] = {"E": E, "records": recs}
     return out
 

@@ -50,20 +50,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from acquire_tennis import YEARS, path_for, read_sheet  # noqa: E402
+from acquire_tennis import YEARS, path_for, read_sheet
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "tennis_expectation_probe.json"
 
-MIN_MATCHES = 12        # per player-season, before a win rate means anything
+MIN_MATCHES = 12  # per player-season, before a win rate means anything
 NEAR_ZERO = 0.05
-RANK_CAP = 500.0        # unranked/blank -> treated as this, and the count is reported
+RANK_CAP = 500.0  # unranked/blank -> treated as this, and the count is reported
 
 
 def season_records(women: bool) -> dict[tuple[str, int], dict]:
     """(player, year) -> {matches, wins, sets_for, sets_against, end_rank}."""
-    rec: dict[tuple[str, int], dict] = collections.defaultdict(
-        lambda: {"m": 0, "w": 0, "sf": 0, "sa": 0, "ranks": []})
+    rec: dict[tuple[str, int], dict] = collections.defaultdict(lambda: {"m": 0, "w": 0, "sf": 0, "sa": 0, "ranks": []})
     for y in YEARS:
         p = path_for(y, women)
         if not p.exists():
@@ -81,8 +80,10 @@ def season_records(women: bool) -> dict[tuple[str, int], dict]:
                 ws, ls = float(r[i["Wsets"]] or 0), float(r[i["Lsets"]] or 0)
             except ValueError:
                 ws = ls = 0.0
-            for name, won, sf, sa, rk in ((w, 1, ws, ls, r[i["WRank"]]),
-                                          (lo, 0, ls, ws, r[i["LRank"]])):
+            for name, won, sf, sa, rk in (
+                (w, 1, ws, ls, r[i["WRank"]]),
+                (lo, 0, ls, ws, r[i["LRank"]]),
+            ):
                 d = rec[(name, y)]
                 d["m"] += 1
                 d["w"] += won
@@ -120,13 +121,17 @@ def analyse(rec: dict, tour: str) -> dict:
             prior_rank = RANK_CAP
             unranked += 1
         same_rank = statistics.median(d["ranks"]) if d["ranks"] else RANK_CAP
-        rows.append({
-            "player": name, "year": y, "matches": d["m"],
-            "win_rate": d["w"] / d["m"],
-            "set_ratio": d["sf"] / max(d["sf"] + d["sa"], 1),
-            "prior_expect": -math.log1p(prior_rank),
-            "same_expect": -math.log1p(same_rank),
-        })
+        rows.append(
+            {
+                "player": name,
+                "year": y,
+                "matches": d["m"],
+                "win_rate": d["w"] / d["m"],
+                "set_ratio": d["sf"] / max(d["sf"] + d["sa"], 1),
+                "prior_expect": -math.log1p(prior_rank),
+                "same_expect": -math.log1p(same_rank),
+            }
+        )
     if len(rows) < 100:
         return {"tour": tour, "n": len(rows), "verdict": "TOO FEW ROWS"}
 
@@ -135,14 +140,14 @@ def analyse(rec: dict, tour: str) -> dict:
     same_wr = corr([r["same_expect"] for r in rows], [r["win_rate"] for r in rows])
     shrink = (1 - abs(lag_wr) / abs(same_wr)) if same_wr and not math.isnan(same_wr) else float("nan")
     return {
-        "tour": tour, "n": len(rows),
+        "tour": tour,
+        "n": len(rows),
         "player_seasons_unranked_prior": unranked,
         "corr_lagged_rank_vs_win_rate": round(lag_wr, 4),
         "corr_lagged_rank_vs_set_ratio": round(lag_sr, 4),
         "corr_SAME_season_rank_vs_win_rate": round(same_wr, 4),
         "shrinkage_from_lagging": (None if math.isnan(shrink) else round(shrink, 3)),
-        "verdict": ("NOT ASSIGNABLE — lagged prior carries almost nothing"
-                    if abs(lag_wr) < NEAR_ZERO else "USABLE"),
+        "verdict": ("NOT ASSIGNABLE — lagged prior carries almost nothing" if abs(lag_wr) < NEAR_ZERO else "USABLE"),
     }
 
 
@@ -164,12 +169,14 @@ def main() -> int:
             "against that season's win rate is close to correlating results with "
             "themselves. A draft slot cannot be contaminated that way; a ranking can. The "
             "prior is therefore the median rank in season t-1, used against delivery in "
-            "season t."),
+            "season t."
+        ),
         "why_not_odds": (
             "Closing odds are genuinely pre-match but are a near-optimal forecast of the "
             "very outcome being measured, so corr(odds, result) is high by construction. "
             "Odds belong here as the BASELINE A MODEL MUST BEAT, not as the expectation an "
-            "axis is built against."),
+            "axis is built against."
+        ),
         "min_matches_per_player_season": MIN_MATCHES,
         "unranked_prior_treated_as": RANK_CAP,
         "per_tour": out,
@@ -177,20 +184,22 @@ def main() -> int:
             "corr_SAME_season_rank_vs_win_rate is reported beside the lagged figure on "
             "purpose. If lagging does not materially shrink the correlation, the lag did "
             "not remove the contamination it exists to remove and neither number should be "
-            "trusted."),
+            "trusted."
+        ),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    print(f"\n{'tour':6}{'n':>7}{'lag vs win':>12}{'lag vs sets':>13}"
-          f"{'SAME vs win':>13}{'shrink':>9}  verdict")
+    print(f"\n{'tour':6}{'n':>7}{'lag vs win':>12}{'lag vs sets':>13}" f"{'SAME vs win':>13}{'shrink':>9}  verdict")
     for tour, d in out.items():
         if "corr_lagged_rank_vs_win_rate" not in d:
             print(f"{tour:6}{d.get('n', 0):>7}   {d['verdict']}")
             continue
-        print(f"{tour:6}{d['n']:>7}{d['corr_lagged_rank_vs_win_rate']:>+12.4f}"
-              f"{d['corr_lagged_rank_vs_set_ratio']:>+13.4f}"
-              f"{d['corr_SAME_season_rank_vs_win_rate']:>+13.4f}"
-              f"{str(d['shrinkage_from_lagging']):>9}  {d['verdict']}")
+        print(
+            f"{tour:6}{d['n']:>7}{d['corr_lagged_rank_vs_win_rate']:>+12.4f}"
+            f"{d['corr_lagged_rank_vs_set_ratio']:>+13.4f}"
+            f"{d['corr_SAME_season_rank_vs_win_rate']:>+13.4f}"
+            f"{d['shrinkage_from_lagging']!s:>9}  {d['verdict']}"
+        )
     print(f"\nwrote {OUT}")
     return 0
 

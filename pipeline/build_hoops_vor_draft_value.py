@@ -57,11 +57,16 @@ VECTORS = HOOPS / "assets" / "vectors.json"
 OUT = ROOT / "data" / "hoops_vor_draft_value.json"
 
 TEAMS, STARTERS = 30, 5
-REPLACEMENT_RANK = TEAMS * STARTERS          # 150
-MAX_PICK = 60.0                              # NBA draft depth (NFL is 262)
-WINDOW_YEARS = 5                             # matches gridiron's rookie-deal window
+REPLACEMENT_RANK = TEAMS * STARTERS  # 150
+MAX_PICK = 60.0  # NBA draft depth (NFL is 262)
+WINDOW_YEARS = 5  # matches gridiron's rookie-deal window
 MIN_CELL = 8
-BUCKETS = [(1, 14, "lottery"), (15, 30, "late-1st"), (31, 45, "early-2nd"), (46, 60, "late-2nd")]
+BUCKETS = [
+    (1, 14, "lottery"),
+    (15, 30, "late-1st"),
+    (31, 45, "early-2nd"),
+    (46, 60, "late-2nd"),
+]
 
 W = {"PTS": 1.0, "REB": 1.2, "AST": 1.5, "STL": 3.0, "BLK": 3.0, "TOV": -1.0}
 
@@ -85,9 +90,14 @@ def bucket(overall) -> str | None:
 
 def composite(row: dict) -> float:
     reb = float(row.get("OREB") or 0) + float(row.get("DREB") or 0)
-    return (W["PTS"] * float(row.get("PTS") or 0) + W["REB"] * reb
-            + W["AST"] * float(row.get("AST") or 0) + W["STL"] * float(row.get("STL") or 0)
-            + W["BLK"] * float(row.get("BLK") or 0) + W["TOV"] * float(row.get("TOV") or 0))
+    return (
+        W["PTS"] * float(row.get("PTS") or 0)
+        + W["REB"] * reb
+        + W["AST"] * float(row.get("AST") or 0)
+        + W["STL"] * float(row.get("STL") or 0)
+        + W["BLK"] * float(row.get("BLK") or 0)
+        + W["TOV"] * float(row.get("TOV") or 0)
+    )
 
 
 def season_start(season: str) -> int:
@@ -115,8 +125,7 @@ def vor_series(seasons: list[str], eligible: set[tuple[str, str]]):
             continue
         seen += 1
         rows = json.loads(f.read_text(encoding="utf-8"))
-        comps = {norm_name(k): composite(v) for k, v in rows.items()
-                 if (season, norm_name(k)) in eligible}
+        comps = {norm_name(k): composite(v) for k, v in rows.items() if (season, norm_name(k)) in eligible}
         if not comps:
             continue
         ranked = sorted(comps.values(), reverse=True)
@@ -255,12 +264,20 @@ def main() -> int:
         if not window:
             never[b] += 1
         totals[b].append(total)
-        rows_out.append({"name": n, "overall": overall, "bucket": b, "year": yr,
-                         "expect_log": round(max(0.0, 1 - log1p(overall) / log1p(MAX_PICK)), 4),
-                         "vor_total": round(total, 2), "played": bool(window),
-                         # FULL-career eligible season count, not the 5-year window — see
-                         # I6 in check_draft_value_invariants.py.
-                         "seasons_total": len(vor_of.get(n, ()))})
+        rows_out.append(
+            {
+                "name": n,
+                "overall": overall,
+                "bucket": b,
+                "year": yr,
+                "expect_log": round(max(0.0, 1 - log1p(overall) / log1p(MAX_PICK)), 4),
+                "vor_total": round(total, 2),
+                "played": bool(window),
+                # FULL-career eligible season count, not the 5-year window — see
+                # I6 in check_draft_value_invariants.py.
+                "seasons_total": len(vor_of.get(n, ())),
+            }
+        )
 
     cells = []
     for _lo, _hi, b in BUCKETS:
@@ -268,11 +285,15 @@ def main() -> int:
         if len(ds) < MIN_CELL:
             cells.append({"bucket": b, "drafted": len(ds), "thin": True})
             continue
-        cells.append({
-            "bucket": b, "drafted": len(ds),
-            "never_played_pct": round(100.0 * never.get(b, 0) / len(ds), 1),
-            "ev_vor": round(statistics.mean(ds), 2), "thin": False,
-        })
+        cells.append(
+            {
+                "bucket": b,
+                "drafted": len(ds),
+                "never_played_pct": round(100.0 * never.get(b, 0) / len(ds), 1),
+                "ev_vor": round(statistics.mean(ds), 2),
+                "thin": False,
+            }
+        )
 
     xs = [r["expect_log"] for r in rows_out]
     ys = [r["vor_total"] for r in rows_out]
@@ -282,23 +303,33 @@ def main() -> int:
         "sport": "hoops",
         "construct": "MATCHED to gridiron: fantasy VOR, floored, summed over a 5-year window",
         "scoring": W,
-        "league": {"teams": TEAMS, "starters": STARTERS, "replacement_rank": REPLACEMENT_RANK},
+        "league": {
+            "teams": TEAMS,
+            "starters": STARTERS,
+            "replacement_rank": REPLACEMENT_RANK,
+        },
         "max_pick": MAX_PICK,
         "seasons_read": seasons_seen,
         "draft_year_window": [first_year, max_draft_year],
         "drafted_scored": len(rows_out),
         "merged_names_excluded": len(merged),
-        "merged_note": ("Names that provably cover more than one person are dropped, not "
-                        "scored. See check_merged_careers.py; operator-reported 2026-08-03."),
+        "merged_note": (
+            "Names that provably cover more than one person are dropped, not "
+            "scored. See check_merged_careers.py; operator-reported 2026-08-03."
+        ),
         "corr_expectation_vor": round(corr, 4),
         "cells": cells,
-        "note_7_7b": ("This is the hoops half of the matched comparison. The gridiron half "
-                      "is data/vor_draft_value.json. Correlations computed on MATCHED "
-                      "constructs are the ones that may be compared; the earlier "
-                      "+0.2598 vs +0.4236 pair could not be."),
+        "note_7_7b": (
+            "This is the hoops half of the matched comparison. The gridiron half "
+            "is data/vor_draft_value.json. Correlations computed on MATCHED "
+            "constructs are the ones that may be compared; the earlier "
+            "+0.2598 vs +0.4236 pair could not be."
+        ),
     }
-    OUT.write_text(json.dumps({"report": report, "players": rows_out}, indent=2,
-                              ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps({"report": report, "players": rows_out}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))

@@ -57,7 +57,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from acquire_tennis import YEARS, path_for, read_sheet  # noqa: E402
+from acquire_tennis import YEARS, path_for, read_sheet
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "tennis_entities.json"
@@ -66,8 +66,14 @@ OUT = ROOT / "data" / "tennis_entities.json"
 # it is a group phase, not a knockout depth, and ranking it above 1st Round would say a
 # player who lost every group match went further than one who won a knockout match.
 ROUND_ORDER = {
-    "Round Robin": 1, "1st Round": 1, "2nd Round": 2, "3rd Round": 3, "4th Round": 4,
-    "Quarterfinals": 5, "Semifinals": 6, "The Final": 7,
+    "Round Robin": 1,
+    "1st Round": 1,
+    "2nd Round": 2,
+    "3rd Round": 3,
+    "4th Round": 4,
+    "Quarterfinals": 5,
+    "Semifinals": 6,
+    "The Final": 7,
 }
 RANK_CAP = 500.0
 MIN_ROWS = 200
@@ -156,7 +162,9 @@ def build(women: bool) -> list[dict]:
                 d = ent.get(k)
                 if d is None:
                     d = ent[k] = {
-                        "player": name, "tournament": tname, "year": y,
+                        "player": name,
+                        "tournament": tname,
+                        "year": y,
                         "tour": "wta" if women else "atp",
                         "location": str(r[i["Location"]]).strip() if "Location" in i else "",
                         "surface": str(r[i["Surface"]]).strip() if "Surface" in i else "",
@@ -165,14 +173,26 @@ def build(women: bool) -> list[dict]:
                         # `Series` left all 33,096 WTA rows with an empty tier — a silent
                         # half-corpus gap that a per-tour build would have hidden, since
                         # each tour's own file looks complete on its own.
-                        "series": (str(r[i["Series"]]).strip() if "Series" in i
-                                   else str(r[i["Tier"]]).strip() if "Tier" in i else ""),
-                        "matches": 0, "wins": 0, "round_reached": 0,
-                        "sets_for": 0.0, "sets_against": 0.0,
-                        "games_for": 0.0, "games_against": 0.0,
-                        "opp_ranks": [], "beat_better_ranked": 0,
-                        "walkovers": 0, "retirements": 0,
-                        "_first_rank": own, "_first_round": rnd,
+                        "series": (
+                            str(r[i["Series"]]).strip()
+                            if "Series" in i
+                            else str(r[i["Tier"]]).strip()
+                            if "Tier" in i
+                            else ""
+                        ),
+                        "matches": 0,
+                        "wins": 0,
+                        "round_reached": 0,
+                        "sets_for": 0.0,
+                        "sets_against": 0.0,
+                        "games_for": 0.0,
+                        "games_against": 0.0,
+                        "opp_ranks": [],
+                        "beat_better_ranked": 0,
+                        "walkovers": 0,
+                        "retirements": 0,
+                        "_first_rank": own,
+                        "_first_round": rnd,
                     }
                 # ENTERING rank = the rank in the player's EARLIEST match of the event.
                 # Rows are not guaranteed to be in draw order, so this is chosen by round
@@ -214,16 +234,18 @@ def build(women: bool) -> list[dict]:
         opp = d.pop("opp_ranks")
         sf, sa = d["sets_for"], d["sets_against"]
         gf, ga = d["games_for"], d["games_against"]
-        d.update({
-            "player_key": player_key(d["player"]),
-            "entering_rank": entering,
-            "draw_progress": round(d["round_reached"] / mr, 4) if mr else None,
-            "max_round_in_event": mr,
-            "opp_rank_median": round(statistics.median(opp), 1) if opp else None,
-            "set_ratio": round(sf / max(sf + sa, 1), 4),
-            "game_ratio": round(gf / max(gf + ga, 1), 4),
-            "win_rate": round(d["wins"] / max(d["matches"], 1), 4),
-        })
+        d.update(
+            {
+                "player_key": player_key(d["player"]),
+                "entering_rank": entering,
+                "draw_progress": round(d["round_reached"] / mr, 4) if mr else None,
+                "max_round_in_event": mr,
+                "opp_rank_median": round(statistics.median(opp), 1) if opp else None,
+                "set_ratio": round(sf / max(sf + sa, 1), 4),
+                "game_ratio": round(gf / max(gf + ga, 1), 4),
+                "win_rate": round(d["wins"] / max(d["matches"], 1), 4),
+            }
+        )
         rows.append(d)
     return rows
 
@@ -255,13 +277,13 @@ def main() -> int:
         "supersedes": (
             "the player-SEASON aggregation in probe_tennis_expectation.py, which collapsed "
             "67,081 matches to ~2,500 rows and discarded opponent rank, surface, round and "
-            "location — the columns that make tennis worth adding."),
+            "location — the columns that make tennis worth adding."
+        ),
         "rows": len(rows),
         "by_tour": dict(by_tour),
         "distinct_players_raw": len({r["player"] for r in rows}),
         "distinct_players_normalised": len({r["player_key"] for r in rows}),
-        "names_collapsed_by_normalisation": (
-            len({r["player"] for r in rows}) - len({r["player_key"] for r in rows})),
+        "names_collapsed_by_normalisation": (len({r["player"] for r in rows}) - len({r["player_key"] for r in rows})),
         "name_format_note": (
             "The source spells the same human several ways -- Zhang K-L. / Zhang K.L., "
             "Wang Xiy. / Wang Xiyu, Lu J.J / Lu Jia-Jing -- and almost every case is a "
@@ -269,7 +291,8 @@ def main() -> int:
             "player_key normalises punctuation and case only. It does NOT expand "
             "abbreviations, because Zhang Ze and Zhang Zh. may be different people and "
             "conflation is worse than fragmentation. The residual is whatever the collapse "
-            "count does not close."),
+            "count does not close."
+        ),
         "distinct_events": len({(r["tournament"], r["year"]) for r in rows}),
         "distinct_locations": len({r["location"] for r in rows if r["location"]}),
         "with_entering_rank": with_rank,
@@ -286,23 +309,28 @@ def main() -> int:
             "which draws a player entered — the same shape as the team-strength confound "
             "that dominated the pitch age axis, arriving through the opponent instead of "
             "the teammate. Unlike pitch, this corpus records the opponent, so it can be "
-            "controlled rather than merely reported."),
+            "controlled rather than merely reported."
+        ),
         "walkover_note": (
             "Walkovers and retirements are FLAGGED, not dropped. A walkover is a win with "
             "no play: counting it as delivery inflates the winner, dropping it punishes "
             "nobody but loses a real draw advance. Both counts ride on the row so the "
-            "consumer decides."),
+            "consumer decides."
+        ),
     }
-    OUT.write_text(json.dumps({"report": report, "entities": rows}, indent=2,
-                              ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps({"report": report, "entities": rows}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     print(f"entities {len(rows)}   {dict(by_tour)}")
-    print(f"players {report['distinct_players_raw']} raw -> "
-          f"{report['distinct_players_normalised']} normalised "
-          f"({report['names_collapsed_by_normalisation']} spellings collapsed)   "
-          f"events {report['distinct_events']}   locations {report['distinct_locations']}")
-    print(f"entering rank on {with_rank} ({report['pct_with_entering_rank']}%)   "
-          f"draw_progress on {with_prog}")
+    print(
+        f"players {report['distinct_players_raw']} raw -> "
+        f"{report['distinct_players_normalised']} normalised "
+        f"({report['names_collapsed_by_normalisation']} spellings collapsed)   "
+        f"events {report['distinct_events']}   locations {report['distinct_locations']}"
+    )
+    print(f"entering rank on {with_rank} ({report['pct_with_entering_rank']}%)   " f"draw_progress on {with_prog}")
     print(f"rows with >1 match {multi}   wins over better-ranked {upsets}")
     print(f"surfaces {dict(surf.most_common())}")
     print(f"walkovers {report['walkovers']}   retirements {report['retirements']}")

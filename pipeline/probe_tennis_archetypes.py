@@ -51,11 +51,25 @@ MAT = ROOT / "pipeline" / "data" / "tennis_matrix.npz"
 META = ROOT / "pipeline" / "data" / "meta_tennis_matrix.json"
 OUT = ROOT / "data" / "tennis_archetype_probe.json"
 
-QUALITY = ("WIN_RATE", "GAMES_WON_PCT", "DRAW_PROGRESS_MEAN", "ENTERING_RANK_LOG",
-           "HOLD_RATE")
-BEHAVIOURAL = ("SURFACE_SPECIALISATION", "HARD_WR", "CLAY_WR", "GRASS_WR",
-               "DECIDER_RATE", "STRAIGHT_SETS_RATE", "BIG_EVENT_SHARE", "INDOOR_WR",
-               "UPSET_RATE", "RETIRE_RATE")
+QUALITY = (
+    "WIN_RATE",
+    "GAMES_WON_PCT",
+    "DRAW_PROGRESS_MEAN",
+    "ENTERING_RANK_LOG",
+    "HOLD_RATE",
+)
+BEHAVIOURAL = (
+    "SURFACE_SPECIALISATION",
+    "HARD_WR",
+    "CLAY_WR",
+    "GRASS_WR",
+    "DECIDER_RATE",
+    "STRAIGHT_SETS_RATE",
+    "BIG_EVENT_SHARE",
+    "INDOOR_WR",
+    "UPSET_RATE",
+    "RETIRE_RATE",
+)
 SEED = 7
 
 
@@ -110,7 +124,7 @@ def main() -> int:
 
     # ---- 1. how much is one quality dimension? -------------------------------
     U, S, Vt = np.linalg.svd(Z - Z.mean(0), full_matrices=False)
-    var = (S ** 2) / (S ** 2).sum()
+    var = (S**2) / (S**2).sum()
     pc1 = dict(sorted(zip(feats, Vt[0], strict=True), key=lambda kv: -abs(kv[1])))
     pc1_top = list(pc1)[:6]
     pc1_is_quality = sum(1 for f in pc1_top if f in QUALITY) >= 3
@@ -133,12 +147,10 @@ def main() -> int:
     for c in range(args.k):
         sel = lab == c
         sizes[c] = int(sel.sum())
-        prof[c] = {f: round(float(Z[sel, j].mean()), 3)
-                   for j, f in enumerate(feats)}
+        prof[c] = {f: round(float(Z[sel, j].mean()), 3) for j, f in enumerate(feats)}
 
     # spread across clusters, per feature: the discriminating columns
-    spread = {f: round(float(max(prof[c][f] for c in prof) - min(prof[c][f] for c in prof)), 3)
-              for f in feats}
+    spread = {f: round(float(max(prof[c][f] for c in prof) - min(prof[c][f] for c in prof)), 3) for f in feats}
     top_disc = sorted(spread, key=lambda f: -spread[f])[:6]
     quality_spread = max(spread[f] for f in QUALITY if f in spread)
     behav_spread = max(spread[f] for f in BEHAVIOURAL if f in spread)
@@ -151,8 +163,7 @@ def main() -> int:
     for c in range(args.k):
         qmax = max(abs(prof[c][f]) for f in QUALITY if f in prof[c])
         bmax = max(abs(prof[c][f]) for f in BEHAVIOURAL if f in prof[c])
-        bfeat = max((f for f in BEHAVIOURAL if f in prof[c]),
-                    key=lambda f: abs(prof[c][f]))
+        bfeat = max((f for f in BEHAVIOURAL if f in prof[c]), key=lambda f: abs(prof[c][f]))
         per_cluster[c] = {
             "n": sizes[c],
             "max_abs_quality_z": round(qmax, 3),
@@ -164,15 +175,16 @@ def main() -> int:
     role_clusters = [c for c, v in per_cluster.items() if v["role_like"]]
 
     verdict = (
-        "ROLE-LIKE — the widest-spread columns are behavioural and quality is comparatively "
-        "flat across clusters."
-        if behav_spread > quality_spread else
-        "QUALITY TIERING — clusters separate mainly on how good the player is. NOT usable "
-        "as archetypes; naming these would repeat the role-vs-trajectory category error.")
+        "ROLE-LIKE — the widest-spread columns are behavioural and quality is comparatively " "flat across clusters."
+        if behav_spread > quality_spread
+        else "QUALITY TIERING — clusters separate mainly on how good the player is. NOT usable "
+        "as archetypes; naming these would repeat the role-vs-trajectory category error."
+    )
 
     report = {
         "question": "Are there tennis ROLES in this matrix, or only quality tiers?",
-        "rows": int(X.shape[0]), "k": args.k,
+        "rows": int(X.shape[0]),
+        "k": args.k,
         "pc1_variance_share": round(float(var[0]), 4),
         "pc2_variance_share": round(float(var[1]), 4),
         "pc1_top_loadings": {f: round(float(pc1[f]), 3) for f in pc1_top},
@@ -191,16 +203,19 @@ def main() -> int:
             "< 0.5) and a behavioural column is extreme (> 1.0). The global verdict asks "
             "whether the PARTITION is a tiering; this asks whether any single cluster is a "
             "clean role inside it, because discarding the whole partition would throw those "
-            "away with the tiers."),
+            "away with the tiers."
+        ),
         "method_note": (
             "Clusters are fit on the matrix with the QUALITY axis projected out — the mean "
             "of the standardised WIN_RATE / GAMES_WON_PCT / DRAW_PROGRESS_MEAN / "
             "ENTERING_RANK_LOG / HOLD_RATE columns. Profiles are then printed on the "
             "ORIGINAL standardised features, so the quality spread reported above is what "
-            "SURVIVED the projection rather than what was fed to k-means."),
+            "SURVIVED the projection rather than what was fed to k-means."
+        ),
         "naming_note": (
             "This file proposes no archetype names. Naming a cluster is a human judgement "
-            "and labelling it here would launder a k-means partition into a taxonomy."),
+            "and labelling it here would launder a k-means partition into a taxonomy."
+        ),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -210,10 +225,8 @@ def main() -> int:
     print(f"\ncluster sizes: {sizes}")
     print(f"\n{'feature':24}" + "".join(f"{c:>8}" for c in range(args.k)) + "   spread")
     for f in feats:
-        print(f"{f:24}" + "".join(f"{prof[c][f]:>8.2f}" for c in range(args.k))
-              + f"   {spread[f]:.2f}")
-    print(f"\nwidest quality spread {quality_spread:.3f}   "
-          f"widest behavioural spread {behav_spread:.3f}")
+        print(f"{f:24}" + "".join(f"{prof[c][f]:>8.2f}" for c in range(args.k)) + f"   {spread[f]:.2f}")
+    print(f"\nwidest quality spread {quality_spread:.3f}   " f"widest behavioural spread {behav_spread:.3f}")
     print(f"\n{verdict}")
     print(f"\nwrote {OUT}")
     return 0

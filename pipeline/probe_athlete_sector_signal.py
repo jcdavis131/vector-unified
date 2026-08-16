@@ -94,8 +94,7 @@ def main() -> int:
     # team -> {relation -> {sector}}, business-typed companies only. Federations, families
     # and geographic entities were the 68-of-196 that inflated the first reach claim from a
     # true 71.5% to a reported 84.3%; is_business is the gate that removed them.
-    by_team: dict[str, dict[str, set[str]]] = collections.defaultdict(
-        lambda: {r: set() for r in RELATIONS})
+    by_team: dict[str, dict[str, set[str]]] = collections.defaultdict(lambda: {r: set() for r in RELATIONS})
     edges_used = 0
     for e in comp["edges"]:
         if e["company"] not in business:
@@ -150,9 +149,14 @@ def main() -> int:
         for a, tms in teams_of.items():
             if any(by_team.get(t, {}).get(rel) for t in tms):
                 hit_sp[sport_of.get(a, "?")] += 1
-        per_sport[rel] = {sp: {"athletes": hit_sp[sp], "of": n,
-                               "pct": round(100.0 * hit_sp[sp] / n, 1)}
-                          for sp, n in sorted(tot_sp.items())}
+        per_sport[rel] = {
+            sp: {
+                "athletes": hit_sp[sp],
+                "of": n,
+                "pct": round(100.0 * hit_sp[sp] / n, 1),
+            }
+            for sp, n in sorted(tot_sp.items())
+        }
 
     # ---- 2/3. effective n and class sizes ------------------------------------
     classes: dict[frozenset, list[str]] = collections.defaultdict(list)
@@ -175,7 +179,8 @@ def main() -> int:
             "Only `sponsor` is a sponsorship. `owner` is who owns the club and "
             "`named_after` is whose name is on the building — both are commercial facts "
             "about the ORG, neither is an endorsement of an athlete. A sponsorship product "
-            f"has a base of {reach['sponsor']['pct']}%, not {reach['any']['pct']}%."),
+            f"has a base of {reach['sponsor']['pct']}%, not {reach['any']['pct']}%."
+        ),
         "reach_by_relation_and_sport": per_sport,
         "reach_by_sport_note": (
             "The pooled figure is two disjoint phenomena summed. named_after reaches 94.5% "
@@ -183,7 +188,8 @@ def main() -> int:
             "naming rights. sponsor is the reverse in kind: a shirt-sponsorship pattern, "
             "and it lands at 10-16% in EVERY sport, so the one relation that is actually a "
             "sponsorship is uniformly thin. Whichever sport you pick, ~85% of athletes have "
-            "no team-level sponsor edge at all."),
+            "no team-level sponsor edge at all."
+        ),
         "effective_n": {
             "athletes_with_any_sector": reached,
             "distinct_team_sets": len(team_sets),
@@ -191,8 +197,13 @@ def main() -> int:
             "collapse_ratio": round(reached / max(len(classes), 1), 1),
         },
         "largest_classes": [
-            {"n_athletes": len(v), "sectors": sorted(k),
-             "example_athletes": sorted(v)[:3]} for k, v in biggest],
+            {
+                "n_athletes": len(v),
+                "sectors": sorted(k),
+                "example_athletes": sorted(v)[:3],
+            }
+            for k, v in biggest
+        ],
         "class_size_distribution": {
             "max": sizes[0] if sizes else 0,
             "median": sizes[len(sizes) // 2] if sizes else 0,
@@ -204,15 +215,18 @@ def main() -> int:
             "within a class can carry information. Archetype, T0/T1 standing, D0/D1 "
             "direction, Forbes rank and honors all vary within classes. Their contribution "
             "to this target is exactly zero — not small, zero. A held-out score would still "
-            "look good, because the class structure leaks across any athlete-level split."),
+            "look good, because the class structure leaks across any athlete-level split."
+        ),
         "the_split_that_would_be_wrong": (
             "Splitting train/test by ATHLETE puts teammates on both sides and the model "
             "memorises the team lookup. The only honest split is by TEAM SET, which leaves "
-            f"{len(team_sets)} independent units, not {reached}."),
+            f"{len(team_sets)} independent units, not {reached}."
+        ),
         "what_would_make_it_athlete_level": (
             "Athlete-level endorsement records. The Wikidata census found P859 on 0.22% of "
             "athletes, which is not a base for fitting or for validating. This is a "
-            "data-acquisition problem and no modelling choice substitutes for it."),
+            "data-acquisition problem and no modelling choice substitutes for it."
+        ),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -224,8 +238,7 @@ def main() -> int:
     sports = sorted(tot_sp)
     print(f"{'relation':<12} {'athletes':>9} {'pct':>7}   " + "  ".join(f"{s:>9}" for s in sports))
     for rel in (*RELATIONS, "any"):
-        tail = ("  ".join(f"{per_sport[rel][s]['pct']:>8.1f}%" for s in sports)
-                if rel in per_sport else "")
+        tail = "  ".join(f"{per_sport[rel][s]['pct']:>8.1f}%" for s in sports) if rel in per_sport else ""
         print(f"{rel:<12} {reach[rel]['athletes']:>9} {reach[rel]['pct']:>6.2f}%   {tail}")
     e = report["effective_n"]
     print(f"\nathletes with any sector : {e['athletes_with_any_sector']}")
@@ -235,8 +248,7 @@ def main() -> int:
     print(f"largest class            : {report['class_size_distribution']['max']} athletes")
     print("\nlargest equivalence classes (identical sector vectors):")
     for c in report["largest_classes"][:3]:
-        print(f"  n={c['n_athletes']:<5} {', '.join(c['sectors'][:5])}"
-              f"{' ...' if len(c['sectors']) > 5 else ''}")
+        print(f"  n={c['n_athletes']:<5} {', '.join(c['sectors'][:5])}" f"{' ...' if len(c['sectors']) > 5 else ''}")
     print(f"\n{report['why_this_matters']}")
     print(f"\nwrote {OUT}")
     return 0

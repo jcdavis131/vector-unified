@@ -69,8 +69,7 @@ def main() -> int:
 
     for p in (SURV, TRAJ):
         if not p.exists():
-            print(f"missing {p} — run probe_qb_survivorship.py and "
-                  f"build_trajectory_axis.py --sport gridiron first")
+            print(f"missing {p} — run probe_qb_survivorship.py and " f"build_trajectory_axis.py --sport gridiron first")
             return 2
 
     surv = json.loads(SURV.read_text(encoding="utf-8"))
@@ -113,40 +112,49 @@ def main() -> int:
             cell = v["by_bucket"].get(b)
             ds = deliv.get((pos, b)) or []
             if not cell or len(ds) < MIN_CELL:
-                rows.append({"pos": pos, "bucket": b,
-                             "drafted": cell["drafted"] if cell else 0,
-                             "survival_pct": cell["rate"] if cell else None,
-                             "survivors_scored": len(ds),
-                             "cond_delivery": None, "ev": None,
-                             "thin": True})
+                rows.append(
+                    {
+                        "pos": pos,
+                        "bucket": b,
+                        "drafted": cell["drafted"] if cell else 0,
+                        "survival_pct": cell["rate"] if cell else None,
+                        "survivors_scored": len(ds),
+                        "cond_delivery": None,
+                        "ev": None,
+                        "thin": True,
+                    }
+                )
                 continue
             cond = statistics.mean(ds)
-            rows.append({
-                "pos": pos, "bucket": b,
-                "drafted": cell["drafted"],
-                "survival_pct": cell["rate"],
-                "survivors_scored": len(ds),
-                "cond_delivery": round(cond, 1),
-                "ev": round(cell["rate"] / 100.0 * cond, 1),
-                "thin": False,
-            })
+            rows.append(
+                {
+                    "pos": pos,
+                    "bucket": b,
+                    "drafted": cell["drafted"],
+                    "survival_pct": cell["rate"],
+                    "survivors_scored": len(ds),
+                    "cond_delivery": round(cond, 1),
+                    "ev": round(cell["rate"] / 100.0 * cond, 1),
+                    "thin": False,
+                }
+            )
 
     scored = [r for r in rows if not r["thin"]]
 
     # Does accounting for bust risk REORDER anything? That is the question the product
     # is for — a pick that looks good conditional on working out is not the same as a
     # pick that is good.
-    by_cond = [r["pos"] + " " + r["bucket"]
-               for r in sorted(scored, key=lambda x: -x["cond_delivery"])]
-    by_ev = [r["pos"] + " " + r["bucket"]
-             for r in sorted(scored, key=lambda x: -x["ev"])]
+    by_cond = [r["pos"] + " " + r["bucket"] for r in sorted(scored, key=lambda x: -x["cond_delivery"])]
+    by_ev = [r["pos"] + " " + r["bucket"] for r in sorted(scored, key=lambda x: -x["ev"])]
     moved = [c for c in by_cond if by_cond.index(c) != by_ev.index(c)]
 
     report = {
         "definition": "EV = P(survive | pos, bucket) x E[delivery percentile | survive]",
-        "zero_choice": ("A player who does not reach 4 fantasy-relevant seasons "
-                        "contributes ZERO. Right for a 4-year fantasy horizon, wrong for "
-                        "trade value or a 2-year window."),
+        "zero_choice": (
+            "A player who does not reach 4 fantasy-relevant seasons "
+            "contributes ZERO. Right for a 4-year fantasy horizon, wrong for "
+            "trade value or a 2-year window."
+        ),
         "min_cell": MIN_CELL,
         "draft_year_window": [lo_year, hi_year],
         "delivery_careers_dropped_out_of_window": out_of_window,
@@ -154,13 +162,15 @@ def main() -> int:
             "Both halves are now restricted to the SAME draft-year window. They were not "
             "in the first version, and the symptom was TE R1 reporting 25 drafted and 28 "
             "survivors scored — more survivors than draftees. 144 of 951 delivery careers "
-            "were out of window."),
+            "were out of window."
+        ),
         "cross_position_caveat": (
             "EV is comparable WITHIN a position across buckets. Comparing ACROSS positions "
             "requires assuming a delivery percentile at QB is worth what one is at RB, and "
             "it is not: delivery is a percentile WITHIN (season, position), so each column "
             "is scored against its own pool. Positional scarcity and the fact that one QB "
-            "starts per team are outside this number entirely."),
+            "starts per team are outside this number entirely."
+        ),
         "cells": rows,
         "ranking_conditional": by_cond,
         "ranking_expected_value": by_ev,
@@ -168,9 +178,11 @@ def main() -> int:
         "undrafted_reference": {
             "survivors_scored": len(undrafted),
             "cond_delivery": round(statistics.mean(undrafted), 1) if undrafted else None,
-            "note": ("Undrafted players have no slot, so they carry no EV row — their "
-                     "survival denominator is every undrafted free agent ever signed, "
-                     "which draft_picks.csv does not contain. Conditional delivery only."),
+            "note": (
+                "Undrafted players have no slot, so they carry no EV row — their "
+                "survival denominator is every undrafted free agent ever signed, "
+                "which draft_picks.csv does not contain. Conditional delivery only."
+            ),
         },
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -183,20 +195,26 @@ def main() -> int:
     print(f"{'pos':4} {'bucket':7} {'drafted':>8} {'surv%':>7} {'cond':>7} {'EV':>7}  n_surv")
     for r in rows:
         if r["thin"]:
-            print(f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} "
-                  f"{(str(r['survival_pct']) + '%') if r['survival_pct'] is not None else '-':>7} "
-                  f"{'thin':>7} {'-':>7}  {r['survivors_scored']}")
+            print(
+                f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} "
+                f"{(str(r['survival_pct']) + '%') if r['survival_pct'] is not None else '-':>7} "
+                f"{'thin':>7} {'-':>7}  {r['survivors_scored']}"
+            )
         else:
-            print(f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} {r['survival_pct']:>6.1f}% "
-                  f"{r['cond_delivery']:>7.1f} {r['ev']:>7.1f}  {r['survivors_scored']}")
+            print(
+                f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} {r['survival_pct']:>6.1f}% "
+                f"{r['cond_delivery']:>7.1f} {r['ev']:>7.1f}  {r['survivors_scored']}"
+            )
     print("\ntop 6 by CONDITIONAL delivery (what a pick is worth if it works out):")
     print("  " + " > ".join(by_cond[:6]))
     print("top 6 by EXPECTED VALUE (what a pick is worth):")
     print("  " + " > ".join(by_ev[:6]))
     print(f"\ncells whose rank changes once bust risk is priced in: {len(moved)} of {len(scored)}")
     u = report["undrafted_reference"]
-    print(f"\nundrafted survivors: n={u['survivors_scored']}, conditional delivery "
-          f"{u['cond_delivery']} — no EV row, see note")
+    print(
+        f"\nundrafted survivors: n={u['survivors_scored']}, conditional delivery "
+        f"{u['cond_delivery']} — no EV row, see note"
+    )
     print(f"\nwrote {OUT}")
     return 0
 

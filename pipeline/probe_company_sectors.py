@@ -52,11 +52,25 @@ BATCH = 60
 # different question" failure this estate keeps catching. If this list is ever edited,
 # the coverage number moves, so it is version-controlled rather than inlined in a query.
 GENERIC_P31 = {
-    "business", "enterprise", "public company", "private company", "company",
-    "organization", "corporation", "brand", "joint-stock company",
-    "public limited company", "limited liability company", "conglomerate",
-    "subsidiary", "holding company", "privately held company", "trade name",
-    "state-owned enterprise", "societas Europaea", "aktiengesellschaft",
+    "business",
+    "enterprise",
+    "public company",
+    "private company",
+    "company",
+    "organization",
+    "corporation",
+    "brand",
+    "joint-stock company",
+    "public limited company",
+    "limited liability company",
+    "conglomerate",
+    "subsidiary",
+    "holding company",
+    "privately held company",
+    "trade name",
+    "state-owned enterprise",
+    "societas Europaea",
+    "aktiengesellschaft",
 }
 
 QUERY = """SELECT ?c ?p31Label ?p452Label ?p1056Label WHERE {{
@@ -111,12 +125,14 @@ def main() -> int:
         rows.extend(run_query(QUERY.format(values=values)))
         time.sleep(1.0)
 
-    got: dict[str, dict[str, set]] = collections.defaultdict(
-        lambda: {"p31": set(), "p452": set(), "p1056": set()}
-    )
+    got: dict[str, dict[str, set]] = collections.defaultdict(lambda: {"p31": set(), "p452": set(), "p1056": set()})
     for b in rows:
         c = qid(b["c"]["value"])
-        for src, key in (("p31Label", "p31"), ("p452Label", "p452"), ("p1056Label", "p1056")):
+        for src, key in (
+            ("p31Label", "p31"),
+            ("p452Label", "p452"),
+            ("p1056Label", "p1056"),
+        ):
             if src in b:
                 got[c][key].add(b[src]["value"])
 
@@ -151,22 +167,34 @@ def main() -> int:
 
     samples = []
     for c in sorted(backfill_any, key=lambda x: -ath_of_company.get(x, 0))[:12]:
-        samples.append({
-            "company": comps[c]["label"], "athletes": ath_of_company.get(c, 0),
-            "specific_P31": sorted(specific_p31(c))[:3],
-            "P1056": sorted(got[c]["p1056"])[:3],
-        })
+        samples.append(
+            {
+                "company": comps[c]["label"],
+                "athletes": ath_of_company.get(c, 0),
+                "specific_P31": sorted(specific_p31(c))[:3],
+                "P1056": sorted(got[c]["p1056"])[:3],
+            }
+        )
     report["samples"] = samples
 
-    still = [comps[c]["label"] for c in sorted(
-        set(missing) - backfill_any, key=lambda x: -ath_of_company.get(x, 0))[:12]]
+    still = [
+        comps[c]["label"] for c in sorted(set(missing) - backfill_any, key=lambda x: -ath_of_company.get(x, 0))[:12]
+    ]
     report["still_uncategorised_sample"] = still
 
-    OUT.write_text(json.dumps({
-        "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "source": "Wikidata SPARQL (P31 / P452 / P1056)",
-        "report": report,
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "source": "Wikidata SPARQL (P31 / P452 / P1056)",
+                "report": report,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
@@ -175,8 +203,10 @@ def main() -> int:
     print(f"\ncompanies: {n}")
     print(f"  with P452 industry              {report['with_P452']:4}  ({report['coverage_before_pct']}%)")
     print(f"  without                         {report['without_P452']:4}")
-    print(f"    backfilled by SPECIFIC P31    {report['backfilled_by_specific_P31']:4}"
-          f"   (generic corporate forms excluded)")
+    print(
+        f"    backfilled by SPECIFIC P31    {report['backfilled_by_specific_P31']:4}"
+        f"   (generic corporate forms excluded)"
+    )
     print(f"    backfilled by P1056 product   {report['backfilled_by_P1056']:4}")
     print(f"    backfilled by either          {report['backfilled_by_either']:4}")
     print(f"  coverage after backfill         {report['coverage_after_pct']}%")

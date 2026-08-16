@@ -41,7 +41,7 @@ def main() -> int:
     npz = np.load(DATA / "cultural_text_embeds.npz", allow_pickle=True)
     pks = [str(x) for x in npz["pk"]]
     T_u = npz["t"].astype(np.float32)
-    chars_u = {pk: int(c) for pk, c in zip(pks, npz["extract_chars"])}
+    chars_u = {pk: int(c) for pk, c in zip(pks, npz["extract_chars"], strict=False)}
     emb = {pk: T_u[i] for i, pk in enumerate(pks)}
     d_text = int(T_u.shape[1])
 
@@ -65,15 +65,25 @@ def main() -> int:
             m_text[i] = 1.0
             extract_chars[i] = chars_u.get(pk, int(bio.get("extract_chars") or 0))
             n_ok += 1
-            meta_rows.append({
-                "i": i, "sport": p["sport"], "name": p["name"],
-                "wiki_title": bio.get("wiki_title"), "m_text": 1,
-            })
+            meta_rows.append(
+                {
+                    "i": i,
+                    "sport": p["sport"],
+                    "name": p["name"],
+                    "wiki_title": bio.get("wiki_title"),
+                    "m_text": 1,
+                }
+            )
         else:
-            meta_rows.append({
-                "i": i, "sport": p["sport"], "name": p["name"],
-                "wiki_title": bio.get("wiki_title"), "m_text": 0,
-            })
+            meta_rows.append(
+                {
+                    "i": i,
+                    "sport": p["sport"],
+                    "name": p["name"],
+                    "wiki_title": bio.get("wiki_title"),
+                    "m_text": 0,
+                }
+            )
 
     np.savez_compressed(OUT_NPZ, T=T, m_text=m_text, extract_chars=extract_chars)
     by_sport = {}
@@ -102,8 +112,10 @@ def main() -> int:
         "labeled_sample": meta_rows[:50],
     }
     OUT_JSON.write_text(json.dumps(out, indent=2), encoding="utf-8")
-    print(f"wrote {OUT_NPZ} T={T.shape} labeled={n_ok}/{n} "
-          f"({100 * n_ok / n:.1f}%) | {OUT_JSON}", flush=True)
+    print(
+        f"wrote {OUT_NPZ} T={T.shape} labeled={n_ok}/{n} " f"({100 * n_ok / n:.1f}%) | {OUT_JSON}",
+        flush=True,
+    )
     return 0
 
 

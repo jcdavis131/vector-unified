@@ -65,8 +65,10 @@ ORDER = ["R1", "R2", "R3", "R4-7"]
 # the same normalised name, and both claim to count the same qualifying seasons.
 AXIS_PAIRS = {
     "gridiron": (VOR, ROOT / "data" / "direction_axis_gridiron.json"),
-    "hoops": (ROOT / "data" / "hoops_vor_draft_value.json",
-              ROOT / "data" / "direction_axis_hoops.json"),
+    "hoops": (
+        ROOT / "data" / "hoops_vor_draft_value.json",
+        ROOT / "data" / "direction_axis_hoops.json",
+    ),
 }
 
 
@@ -86,7 +88,8 @@ def check() -> list[str]:
         if n_surv is not None and drafted and n_surv > drafted:
             problems.append(
                 f"I1 {pos} {b}: {n_surv} survivors scored against {drafted} drafted — "
-                f"impossible; the two halves are drawn from different pools")
+                f"impossible; the two halves are drawn from different pools"
+            )
 
     # I2 — a denominator with no zeros is not a denominator
     for (pos, b), c in cells.items():
@@ -95,15 +98,15 @@ def check() -> list[str]:
         never = c.get("never_played_pct")
         surv_pct = c.get("survival_pct")
         if never is None:
-            problems.append(f"I2 {pos} {b}: no never_played_pct — cannot tell whether the "
-                            f"washouts were counted")
+            problems.append(f"I2 {pos} {b}: no never_played_pct — cannot tell whether the " f"washouts were counted")
             continue
         # If survival is low, a large share must never have played. A 9%-survival bucket
         # reporting 0% never-played means the washouts are missing from the pool.
         if surv_pct is not None and surv_pct < 40.0 and never < 5.0:
             problems.append(
                 f"I2 {pos} {b}: survival {surv_pct}% but only {never}% never played — "
-                f"the denominator is missing its zeros (survivor-only pool)")
+                f"the denominator is missing its zeros (survivor-only pool)"
+            )
 
     # I3 — floored value must never be negative
     for (pos, b), c in cells.items():
@@ -111,7 +114,8 @@ def check() -> list[str]:
         if ev is not None and ev < 0:
             problems.append(
                 f"I3 {pos} {b}: EV {ev} is negative. VOR is floored at zero per season, "
-                f"so a bucket mean cannot be — a wasted pick would outrank a good one")
+                f"so a bucket mean cannot be — a wasted pick would outrank a good one"
+            )
 
     # I4 — drafted counts must agree across artifacts
     per = surv["per_position"]
@@ -121,7 +125,8 @@ def check() -> list[str]:
         if want is not None and got is not None and want != got:
             problems.append(
                 f"I4 {pos} {b}: survivorship probe says {want} drafted, value table says "
-                f"{got} — same CSV, different filtering somewhere")
+                f"{got} — same CSV, different filtering somewhere"
+            )
 
     # I5 — value must not rise with later rounds inside a position
     for pos in {p for p, _ in cells}:
@@ -131,7 +136,8 @@ def check() -> list[str]:
             if v1 > v0:
                 problems.append(
                     f"I5 {pos}: {b1} ({v1}) is worth MORE than {b0} ({v0}). Either a "
-                    f"remarkable finding or a bug — it must not pass unnoticed")
+                    f"remarkable finding or a bug — it must not pass unnoticed"
+                )
 
     problems += check_axis_agreement()
     return problems
@@ -150,23 +156,27 @@ def check_axis_agreement() -> list[str]:
             continue
         val = json.loads(val_p.read_text(encoding="utf-8"))
         players = val.get("players") or val.get("player_rows") or []
-        table = {r["name"]: r.get("seasons_total") for r in players
-                 if r.get("seasons_total") is not None}
+        table = {r["name"]: r.get("seasons_total") for r in players if r.get("seasons_total") is not None}
         if not table:
             problems.append(
                 f"I6 {sport}: {val_p.name} carries no seasons_total — rebuild it; without "
-                f"that field the axis and the table cannot be checked against each other")
+                f"that field the axis and the table cannot be checked against each other"
+            )
             continue
         axis = json.loads(axis_p.read_text(encoding="utf-8")).get("careers") or []
-        bad = [(r["name"], r["seasons"], table[r["name"]]) for r in axis
-               if r["name"] in table and r["seasons"] != table[r["name"]]]
+        bad = [
+            (r["name"], r["seasons"], table[r["name"]])
+            for r in axis
+            if r["name"] in table and r["seasons"] != table[r["name"]]
+        ]
         if bad:
             shown = ", ".join(f"{n} axis={a} table={t}" for n, a, t in bad[:3])
             problems.append(
                 f"I6 {sport}: {len(bad)} career(s) where the direction axis and the value "
                 f"table disagree on qualifying-season count ({shown}). The two are reading "
                 f"the same source under DIFFERENT rules — that is how a one-season player "
-                f"became the league's biggest riser")
+                f"became the league's biggest riser"
+            )
     return problems
 
 

@@ -37,7 +37,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 
-from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
+from build_tennis_forward import null_extras_gain, r, ridge
 
 MATRIX = ROOT / "pipeline" / "data" / "tennis_matrix.npz"
 META = ROOT / "pipeline" / "data" / "meta_tennis_matrix.json"
@@ -51,7 +51,8 @@ def main() -> int:
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    from probe_tennis_candidate_features import CANDIDATES, build as build_cand
+    from probe_tennis_candidate_features import CANDIDATES
+    from probe_tennis_candidate_features import build as build_cand
 
     a = np.load(MATRIX, allow_pickle=True)
     X, M = a["X"].astype(np.float64), a["M"].astype(np.float64)
@@ -75,9 +76,11 @@ def main() -> int:
 
     rank_j = feats.index("ENTERING_RANK_LOG")
     idx = {(m["player"], m["year"], m["tour"]): i for i, m in enumerate(meta)}
-    pairs = [(i, idx[(m["player"], m["year"] + 1, m["tour"])], m["year"] + 1)
-             for i, m in enumerate(meta)
-             if (m["player"], m["year"] + 1, m["tour"]) in idx]
+    pairs = [
+        (i, idx[(m["player"], m["year"] + 1, m["tour"])], m["year"] + 1)
+        for i, m in enumerate(meta)
+        if (m["player"], m["year"] + 1, m["tour"]) in idx
+    ]
     pairs = [(i, k, y) for i, k, y in pairs if M[i, rank_j] == 1 and M[k, rank_j] == 1]
 
     src = np.array([i for i, _, _ in pairs])
@@ -107,39 +110,57 @@ def main() -> int:
 
     print(f"  persistence (this rank -> next)   r = {persistence:.4f}")
     print(f"  RIDGE-1   rank only               r = {r1:.4f}")
-    print(f"  RIDGE-16  original features       r = {r16:.4f}   gain {r16-r1:+.4f}  "
-          f"p={p16:.3f}")
-    print(f"  RIDGE-28  + 12 candidates         r = {r28:.4f}   gain {r28-r1:+.4f}  "
-          f"p={p28:.3f}")
+    print(f"  RIDGE-16  original features       r = {r16:.4f}   gain {r16-r1:+.4f}  " f"p={p16:.3f}")
+    print(f"  RIDGE-28  + 12 candidates         r = {r28:.4f}   gain {r28-r1:+.4f}  " f"p={p28:.3f}")
     print(f"\n  the 12 candidates add {r28-r16:+.4f} over the original 16")
 
     helps = (r28 - r16) > 0.01 and p28 < 0.05
     verdict = (
-        f"THE CANDIDATES HELP FORECASTING TOO ({r28-r16:+.4f} over RIDGE-16)" if helps else
-        f"IDENTITY ONLY. The 12 features that lifted retrieval 0.0447 -> 0.0584 add "
+        f"THE CANDIDATES HELP FORECASTING TOO ({r28-r16:+.4f} over RIDGE-16)"
+        if helps
+        else f"IDENTITY ONLY. The 12 features that lifted retrieval 0.0447 -> 0.0584 add "
         f"{r28-r16:+.4f} to rank forecasting — below the 0.01 bar. Knowing WHO a player is "
         f"and knowing WHERE THEY WILL FINISH are different problems, and features that "
-        f"solve the first need not touch the second.")
+        f"solve the first need not touch the second."
+    )
     print(f"\n  verdict: {verdict}")
 
-    OUT.write_text(json.dumps({
-        "question": ("Do the 12 schedule/shot candidates validated on RETRIEVAL also "
-                     "improve rank FORECASTING?"),
-        "why_separate_file": ("build_tennis_forward.py is a registered gate check and its "
-                             "numbers are published on dumbmodel.com's tennis card. "
-                             "Changing its feature set would silently move a live figure."),
-        "persistence_r": round(persistence, 4),
-        "ridge1_rank_only_r": round(r1, 4),
-        "ridge16_r": round(r16, 4), "ridge16_gain": round(r16 - r1, 4), "ridge16_null_p": p16,
-        "ridge28_r": round(r28, 4), "ridge28_gain": round(r28 - r1, 4), "ridge28_null_p": p28,
-        "candidates_add_over_16": round(r28 - r16, 4),
-        "retrieval_contrast": ("The same 12 features lifted retrieval from 0.0447 to 0.0584 "
-                               "(learned linear) and the MTNN to 0.0783. Retrieval is an "
-                               "identity task; this is a forecasting task."),
-        "n_pairs": len(pairs), "n_train": int(tr.sum()), "n_test": int(te.sum()),
-        "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
-        "verdict": verdict,
-    }, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "question": (
+                    "Do the 12 schedule/shot candidates validated on RETRIEVAL also " "improve rank FORECASTING?"
+                ),
+                "why_separate_file": (
+                    "build_tennis_forward.py is a registered gate check and its "
+                    "numbers are published on dumbmodel.com's tennis card. "
+                    "Changing its feature set would silently move a live figure."
+                ),
+                "persistence_r": round(persistence, 4),
+                "ridge1_rank_only_r": round(r1, 4),
+                "ridge16_r": round(r16, 4),
+                "ridge16_gain": round(r16 - r1, 4),
+                "ridge16_null_p": p16,
+                "ridge28_r": round(r28, 4),
+                "ridge28_gain": round(r28 - r1, 4),
+                "ridge28_null_p": p28,
+                "candidates_add_over_16": round(r28 - r16, 4),
+                "retrieval_contrast": (
+                    "The same 12 features lifted retrieval from 0.0447 to 0.0584 "
+                    "(learned linear) and the MTNN to 0.0783. Retrieval is an "
+                    "identity task; this is a forecasting task."
+                ),
+                "n_pairs": len(pairs),
+                "n_train": int(tr.sum()),
+                "n_test": int(te.sum()),
+                "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
+                "verdict": verdict,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"\nwrote {OUT}")
     if args.check and te.sum() < 100:
         return 1

@@ -52,7 +52,7 @@ DRAFT_CSV = GRIDIRON / "pipeline" / "cache" / "draft_picks.csv"
 VECTORS = GRIDIRON / "assets" / "vectors.json"
 OUT = ROOT / "data" / "qb_survivorship_probe.json"
 
-MIN_SEASONS = 4          # same floor the trajectory axis uses
+MIN_SEASONS = 4  # same floor the trajectory axis uses
 POSITIONS = ("QB", "RB", "WR", "TE")
 MAX_PICK = 262.0
 BUCKETS = [(1, 32, "R1"), (33, 64, "R2"), (65, 105, "R3"), (106, 262, "R4-7")]
@@ -64,7 +64,7 @@ BUCKETS = [(1, 32, "R1"), (33, 64, "R2"), (65, 105, "R3"), (106, 262, "R4-7")]
 # artifacts disagreeing by exactly one WR in two cells. Five files in this pipeline each
 # had a private norm_name(); that is the same "two copies of one rule" defect as the VOR
 # series in 7.8a, at five times the scale.
-from build_vor_draft_value import norm_name  # noqa: E402
+from build_vor_draft_value import norm_name
 
 
 def bucket(pick: int) -> str:
@@ -99,8 +99,10 @@ def main() -> int:
     # the exclusion landed here first. The invariant caught the divergence rather than
     # letting a 109-name gap sit between two files that read the same CSV.
     import sys as _sys
+
     _sys.path.insert(0, str(Path(__file__).resolve().parent))
     from build_vor_draft_value import merged_names as _merged_names
+
     _series: dict[str, list] = collections.defaultdict(list)
     for p in vec:
         _v = (p.get("ppg") or {}).get("ppr")
@@ -133,13 +135,18 @@ def main() -> int:
             if key in seen or key in merged:
                 continue
             seen.add(key)
-            rows.append({
-                "name": key, "pos": pos, "pick": pick, "year": year,
-                "bucket": bucket(pick),
-                "expect_log": max(0.0, 1.0 - log1p(pick) / log1p(MAX_PICK)),
-                "seasons": charted.get(key, 0),
-                "survived": charted.get(key, 0) >= MIN_SEASONS,
-            })
+            rows.append(
+                {
+                    "name": key,
+                    "pos": pos,
+                    "pick": pick,
+                    "year": year,
+                    "bucket": bucket(pick),
+                    "expect_log": max(0.0, 1.0 - log1p(pick) / log1p(MAX_PICK)),
+                    "seasons": charted.get(key, 0),
+                    "survived": charted.get(key, 0) >= MIN_SEASONS,
+                }
+            )
 
     if not rows:
         print("no drafted players in window — check the caches")
@@ -182,42 +189,52 @@ def main() -> int:
     report = {
         "min_seasons": MIN_SEASONS,
         "draft_year_window": [first_season, max_draft_year],
-        "window_note": (f"Only draft years {first_season}-{max_draft_year} are scored. A "
-                        f"player drafted later has not had {MIN_SEASONS} seasons of "
-                        f"opportunity, so counting them as attrition would measure the "
-                        f"calendar."),
+        "window_note": (
+            f"Only draft years {first_season}-{max_draft_year} are scored. A "
+            f"player drafted later has not had {MIN_SEASONS} seasons of "
+            f"opportunity, so counting them as attrition would measure the "
+            f"calendar."
+        ),
         "per_position": per_position,
         "verdict": (
             "SURVIVORSHIP SUPPORTED at QB: draft slot predicts SURVIVAL more strongly at "
             "quarterback than at running back, so slot is doing its work at the selection "
             "stage and the flat correlation among survivors is a truncation artefact."
-            if supported else
-            "SURVIVORSHIP NOT SUPPORTED as a QB-specific explanation: draft slot predicts "
+            if supported
+            else "SURVIVORSHIP NOT SUPPORTED as a QB-specific explanation: draft slot predicts "
             "survival at QB no more strongly than at RB, so differential attrition does "
             "not single out quarterbacks and the flat QB correlation among survivors needs "
-            "a different explanation."),
+            "a different explanation."
+        ),
         "verdict_is_directional": (
             "This compares two correlations without a CI on the difference, so it is a "
             "direction, not a significance test. It answers 'does the survivorship story "
-            "even point the right way', which is the question that was open."),
+            "even point the right way', which is the question that was open."
+        ),
     }
 
-    OUT.write_text(json.dumps({"report": report, "players": rows}, indent=2,
-                              ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps({"report": report, "players": rows}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
 
-    print(f"draft years scored: {first_season}-{max_draft_year}  "
-          f"(need {MIN_SEASONS} seasons of opportunity; vector set ends {last_season})\n")
+    print(
+        f"draft years scored: {first_season}-{max_draft_year}  "
+        f"(need {MIN_SEASONS} seasons of opportunity; vector set ends {last_season})\n"
+    )
     print(f"{'pos':4} {'drafted':>8} {'survived':>9} {'rate':>7} {'corr slot->survival':>20}")
     for pos in POSITIONS:
         v = per_position.get(pos)
         if not v:
             continue
-        print(f"{pos:4} {v['drafted_in_window']:>8} {v['survived']:>9} "
-              f"{v['survival_rate']:>6.1f}% {v['corr_slot_vs_survival']:>+20.4f}")
+        print(
+            f"{pos:4} {v['drafted_in_window']:>8} {v['survived']:>9} "
+            f"{v['survival_rate']:>6.1f}% {v['corr_slot_vs_survival']:>+20.4f}"
+        )
     print(f"\n{'pos':4} " + "  ".join(f"{b:>12}" for _l, _h, b in BUCKETS))
     for pos in POSITIONS:
         v = per_position.get(pos)

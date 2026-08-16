@@ -97,19 +97,26 @@ API = "https://www.wikidata.org/w/api.php"
 UA = "vector-unified/0.1 (personal research; contact via github)"
 SEED = 20260803
 REPS = 10000
-MIN_N = 30          # below this a per-sport correlation is reported but not used to decide
-MIN_MINORITY = 15   # smaller outcome class must reach this; see the AMENDMENT above
+MIN_N = 30  # below this a per-sport correlation is reported but not used to decide
+MIN_MINORITY = 15  # smaller outcome class must reach this; see the AMENDMENT above
 
 
 def fetch_sitelinks(qids: list[str]) -> dict[str, int]:
     """QID -> number of Wikipedia language editions. 50 per call, the API's own limit."""
     out: dict[str, int] = {}
     for i in range(0, len(qids), 50):
-        chunk = qids[i:i + 50]
-        r = requests.get(API, params={
-            "action": "wbgetentities", "ids": "|".join(chunk),
-            "props": "sitelinks", "format": "json"},
-            headers={"User-Agent": UA}, timeout=120)
+        chunk = qids[i : i + 50]
+        r = requests.get(
+            API,
+            params={
+                "action": "wbgetentities",
+                "ids": "|".join(chunk),
+                "props": "sitelinks",
+                "format": "json",
+            },
+            headers={"User-Agent": UA},
+            timeout=120,
+        )
         r.raise_for_status()
         for qid, ent in (r.json().get("entities") or {}).items():
             if "missing" in ent:
@@ -129,7 +136,7 @@ def pearson(xs: list[float], ys: list[float]) -> float:
 def partial(y: list[float], x: list[float], z: list[float]) -> float:
     """corr(y, x | z) via the standard three-correlation identity."""
     ryx, ryz, rxz = pearson(y, x), pearson(y, z), pearson(x, z)
-    den = math.sqrt(max(0.0, (1 - ryz ** 2) * (1 - rxz ** 2)))
+    den = math.sqrt(max(0.0, (1 - ryz**2) * (1 - rxz**2)))
     if den == 0 or any(math.isnan(v) for v in (ryx, ryz, rxz)):
         return float("nan")
     return (ryx - ryz * rxz) / den
@@ -152,21 +159,25 @@ def analyse(rows: list[dict], rng: random.Random) -> dict:
     n = len(rows)
     for _ in range(REPS):
         idx = [rng.randrange(n) for _ in range(n)]
-        boots.append(partial([y[i] for i in idx], [cap[i] for i in idx],
-                             [site[i] for i in idx]))
+        boots.append(partial([y[i] for i in idx], [cap[i] for i in idx], [site[i] for i in idx]))
     lo, hi = ci(boots)
     excludes = not (math.isnan(lo) or lo <= 0.0 <= hi)
     pos = int(sum(y))
-    return {"n": n, "positives": pos, "negatives": n - pos,
-            "minority": min(pos, n - pos),
-            "edge_rate": round(100.0 * pos / n, 1),
-            "r_capacity": round(r_cap, 4), "r_sitelinks": round(r_site, 4),
-            "r_capacity_given_sitelinks": round(r_partial, 4),
-            "partial_ci95": [round(lo, 4), round(hi, 4)],
-            "partial_ci_excludes_zero": excludes,
-            "verdict": ("COMMERCIAL SIGNAL" if excludes else
-                        "COVERAGE ARTIFACT" if abs(r_site) > abs(r_cap) else
-                        "UNRESOLVED")}
+    return {
+        "n": n,
+        "positives": pos,
+        "negatives": n - pos,
+        "minority": min(pos, n - pos),
+        "edge_rate": round(100.0 * pos / n, 1),
+        "r_capacity": round(r_cap, 4),
+        "r_sitelinks": round(r_site, 4),
+        "r_capacity_given_sitelinks": round(r_partial, 4),
+        "partial_ci95": [round(lo, 4), round(hi, 4)],
+        "partial_ci_excludes_zero": excludes,
+        "verdict": (
+            "COMMERCIAL SIGNAL" if excludes else "COVERAGE ARTIFACT" if abs(r_site) > abs(r_cap) else "UNRESOLVED"
+        ),
+    }
 
 
 def main() -> int:
@@ -202,8 +213,13 @@ def main() -> int:
             team_row[tk] = x
 
     if args.fetch:
-        qids = sorted({(x.get("attrs") or {}).get("wikidata") for x in team_row.values()
-                       if (x.get("attrs") or {}).get("wikidata")})
+        qids = sorted(
+            {
+                (x.get("attrs") or {}).get("wikidata")
+                for x in team_row.values()
+                if (x.get("attrs") or {}).get("wikidata")
+            }
+        )
         print(f"fetching sitelinks for {len(qids)} team QIDs...")
         CACHE.parent.mkdir(parents=True, exist_ok=True)
         got = fetch_sitelinks(qids)
@@ -228,9 +244,16 @@ def main() -> int:
         if qid not in sitelinks:
             dropped["sitelinks_unresolved"] += 1
             continue
-        rows.append({"team": tk, "sport": x["sport"], "qid": qid,
-                     "capacity": float(cap), "sitelinks": sitelinks[qid],
-                     "has_edge": bool(sectors_of_team.get(tk))})
+        rows.append(
+            {
+                "team": tk,
+                "sport": x["sport"],
+                "qid": qid,
+                "capacity": float(cap),
+                "sitelinks": sitelinks[qid],
+                "has_edge": bool(sectors_of_team.get(tk)),
+            }
+        )
 
     if len(rows) < MIN_N:
         print(f"only {len(rows)} teams usable — not deciding.")
@@ -246,49 +269,65 @@ def main() -> int:
         if len(sub) >= MIN_N and res.get("minority", 0) < MIN_MINORITY:
             res["excluded_because"] = (
                 f"minority outcome class has {res.get('minority')} teams (< {MIN_MINORITY}) "
-                f"— the correlation is a statement about that many points")
+                f"— the correlation is a statement about that many points"
+            )
         per_sport[sp] = res
 
     deciding = [v for v in per_sport.values() if v.get("decides")]
     verdicts = {v["verdict"] for v in deciding}
 
     report = {
-        "question": ("Does a team have a company edge because it is commercially large, "
-                     "or because its Wikidata item is well populated?"),
+        "question": (
+            "Does a team have a company edge because it is commercially large, "
+            "or because its Wikidata item is well populated?"
+        ),
         "outcome": "has_edge (binary) — the sector distribution is too sparse for anything else",
-        "sectors_per_team_histogram": dict(sorted(collections.Counter(
-            len(sectors_of_team.get(t, ())) for t in team_row).items())),
-        "teams_total": len(team_row), "teams_usable": len(rows), "dropped": dict(dropped),
+        "sectors_per_team_histogram": dict(
+            sorted(collections.Counter(len(sectors_of_team.get(t, ())) for t in team_row).items())
+        ),
+        "teams_total": len(team_row),
+        "teams_usable": len(rows),
+        "dropped": dict(dropped),
         "pooled": pooled,
         "per_sport": per_sport,
         "pooled_caveat": (
             "The pooled row is reported but does NOT decide. Sport moves capacity, "
             "sitelinks and the outcome together — NFL stadiums are largest, European clubs "
             "carry the most language editions, edge rates run hoops 76% / gridiron 72% / "
-            "pitch 23% — so a pooled association can be produced by sport alone."),
+            "pitch 23% — so a pooled association can be produced by sport alone."
+        ),
         "decision_rule": (
             f"A group decides only with n >= {MIN_N} AND minority class >= {MIN_MINORITY}. "
             "COVERAGE ARTIFACT if |r_sitelinks| > |r_capacity| and the bootstrap CI on the "
             "partial correlation of capacity given sitelinks INCLUDES zero; COMMERCIAL "
             "SIGNAL if that CI EXCLUDES zero; otherwise UNRESOLVED. Fixed in the docstring "
-            "before the first run."),
-        "verdict": (next(iter(verdicts)) if len(verdicts) == 1 else
-                    f"MIXED across sports: {sorted(verdicts)}" if verdicts else
-                    "NO SPORT MEETS THE MINIMUM n"),
+            "before the first run."
+        ),
+        "verdict": (
+            next(iter(verdicts))
+            if len(verdicts) == 1
+            else f"MIXED across sports: {sorted(verdicts)}"
+            if verdicts
+            else "NO SPORT MEETS THE MINIMUM n"
+        ),
         "decided_by": sorted(k for k, v in per_sport.items() if v.get("decides")),
         "scope_of_the_verdict": (
             "One sport of three decides it. hoops (28 of 30 teams have an edge) and "
             "gridiron (23 of 30) have almost no negative cases, so in US leagues there is "
             "nothing to explain — a company edge is close to universal and its presence "
             "carries no information. The question only has variance in pitch, where 35 of "
-            "101 clubs have one."),
+            "101 clubs have one."
+        ),
         "how_strong_the_signal_is": (
             "Weaker than the label sounds. In pitch, notability is still the STRONGER "
             "single predictor (r_site +0.3154 vs r_cap +0.2212); capacity survives "
             "controlling for it (partial +0.1742, CI excludes zero) but does not dominate "
             "it. The correct reading is 'commercial scale adds something beyond how much "
-            "has been written about the club', not 'the layer measures commerce'."),
-        "seed": SEED, "reps": REPS, "min_n_to_decide": MIN_N,
+            "has been written about the club', not 'the layer measures commerce'."
+        ),
+        "seed": SEED,
+        "reps": REPS,
+        "min_n_to_decide": MIN_N,
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -297,20 +336,20 @@ def main() -> int:
         return 0
 
     print(f"teams {len(team_row)}   usable {len(rows)}   dropped {dict(dropped)}\n")
-    hdr = (f"{'group':<12} {'n':>4} {'min':>4} {'edge%':>6} {'r_cap':>8} {'r_site':>8} "
-           f"{'r_cap|site':>11}  CI")
+    hdr = f"{'group':<12} {'n':>4} {'min':>4} {'edge%':>6} {'r_cap':>8} {'r_site':>8} " f"{'r_cap|site':>11}  CI"
     print(hdr)
     for name, v in [("POOLED", pooled), *per_sport.items()]:
         if "r_capacity" not in v:
             print(f"{name:<12} {v['n']:>4}   too few")
             continue
         lo, hi = v["partial_ci95"]
-        mark = ("" if v.get("decides", True) else
-                "  NOT DECIDING (%s)" % (v.get("excluded_because") or f"n<{MIN_N}"))
-        print(f"{name:<12} {v['n']:>4} {v['minority']:>4} {v['edge_rate']:>5.1f}% "
-              f"{v['r_capacity']:>+8.4f} "
-              f"{v['r_sitelinks']:>+8.4f} {v['r_capacity_given_sitelinks']:>+11.4f}  "
-              f"[{lo:+.4f}, {hi:+.4f}] {v['verdict']}{mark}")
+        mark = "" if v.get("decides", True) else "  NOT DECIDING (%s)" % (v.get("excluded_because") or f"n<{MIN_N}")
+        print(
+            f"{name:<12} {v['n']:>4} {v['minority']:>4} {v['edge_rate']:>5.1f}% "
+            f"{v['r_capacity']:>+8.4f} "
+            f"{v['r_sitelinks']:>+8.4f} {v['r_capacity_given_sitelinks']:>+11.4f}  "
+            f"[{lo:+.4f}, {hi:+.4f}] {v['verdict']}{mark}"
+        )
     print(f"\nVERDICT: {report['verdict']}")
     print(f"\nwrote {OUT}")
     return 0

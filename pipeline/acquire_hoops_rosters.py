@@ -91,12 +91,13 @@ def fetch_season(season: str, offline: bool) -> list[dict] | None:
                 team = str(x.get("TEAM_ABBREVIATION") or "").strip()
                 if not team or team in NOT_A_TEAM:
                     continue
+
                 def _num(v):
                     try:
                         f = float(v)
                     except (TypeError, ValueError):
                         return None
-                    return None if f != f else f      # NaN is not a measurement
+                    return None if f != f else f  # NaN is not a measurement
 
                 rows.append(
                     {
@@ -113,7 +114,7 @@ def fetch_season(season: str, offline: bool) -> list[dict] | None:
             CACHE.mkdir(parents=True, exist_ok=True)
             cache_p.write_text(json.dumps(rows, separators=(",", ":")), encoding="utf-8")
             return rows
-        except Exception as e:  # noqa: PERF203 - retry loop, the exception IS the signal
+        except Exception as e:
             last = e
             time.sleep(2.0 * (attempt + 1))
     print(f"  {season}: FAILED after 4 attempts ({last})")
@@ -198,8 +199,7 @@ def main() -> int:
     if missed:
         print(f"seasons MISSING   : {missed}")
     print(f"edges             : {len(edges)}")
-    print(f"hoops athletes    : {coverage['linked']}/{coverage['corpus_hoops_athletes']}"
-          f"  ({coverage['pct']}%)")
+    print(f"hoops athletes    : {coverage['linked']}/{coverage['corpus_hoops_athletes']}" f"  ({coverage['pct']}%)")
     print(f"was (rotation-only source): {coverage['prior_pct_roster_context_only']}%")
     print(f"\nwrote {OUT}")
     return 0

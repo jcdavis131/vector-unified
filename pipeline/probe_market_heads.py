@@ -25,11 +25,13 @@ import torch
 from scipy.stats import spearmanr
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from train_unified import UnifiedTrunk, load_matrix, SPORTS, UCACHE, DATA, SEED
-from eval_unified import load_model, encode_all
 from acquire_forbes import norm_name
+from eval_unified import encode_all, load_model
+from train_unified import DATA, SPORTS, load_matrix
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
 
 
 def main() -> int:

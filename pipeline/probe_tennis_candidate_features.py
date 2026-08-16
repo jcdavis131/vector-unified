@@ -47,7 +47,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 
-from acquire_tennis import path_for, read_sheet  # noqa: E402
+from acquire_tennis import path_for, read_sheet
 
 MATRIX = ROOT / "pipeline" / "data" / "tennis_matrix.npz"
 META = ROOT / "pipeline" / "data" / "meta_tennis_matrix.json"
@@ -55,8 +55,16 @@ OUT = ROOT / "data" / "tennis_candidate_features.json"
 YEARS = range(2013, 2027)
 K = 10
 
-SCHEDULE = ("SURF_SHARE_HARD", "SURF_SHARE_CLAY", "SURF_SHARE_GRASS", "INDOOR_SHARE",
-            "TIER_SHARE_TOP", "N_TOURNAMENTS", "N_LOCATIONS", "MEAN_EVENTS_PER_MONTH")
+SCHEDULE = (
+    "SURF_SHARE_HARD",
+    "SURF_SHARE_CLAY",
+    "SURF_SHARE_GRASS",
+    "INDOOR_SHARE",
+    "TIER_SHARE_TOP",
+    "N_TOURNAMENTS",
+    "N_LOCATIONS",
+    "MEAN_EVENTS_PER_MONTH",
+)
 SHOT = ("TIEBREAK_RATE", "BAGEL_RATE", "COMEBACK_RATE", "MEAN_GAMES_PER_SET")
 CANDIDATES = SCHEDULE + SHOT
 
@@ -81,19 +89,25 @@ def collect(women: bool, acc: dict) -> None:
         for r in body:
             surf = str(r[i["Surface"]]).strip().lower() if "Surface" in i else ""
             court = str(r[i["Court"]]).strip().lower() if "Court" in i else ""
-            tier = str(r[i.get("Series", i.get("Tier", 0))]).strip().lower() if (
-                "Series" in i or "Tier" in i) else ""
+            tier = str(r[i.get("Series", i.get("Tier", 0))]).strip().lower() if ("Series" in i or "Tier" in i) else ""
             loc = str(r[i["Location"]]).strip() if "Location" in i else ""
             trn = str(r[i["Tournament"]]).strip() if "Tournament" in i else ""
             date = str(r[i["Date"]]).strip() if "Date" in i else ""
-            ws, ls = num(r[i.get("Wsets", 0)], 0) or 0, num(r[i.get("Lsets", 0)], 0) or 0
-            sets_w = [(num(r[i[f"W{k}"]], None), num(r[i[f"L{k}"]], None))
-                      for k in range(1, 6) if f"W{k}" in i and f"L{k}" in i]
-            sets_w = [(a, b) for a, b in sets_w if a is not None and b is not None
-                      and (a > 0 or b > 0)]
+            ws, ls = (
+                num(r[i.get("Wsets", 0)], 0) or 0,
+                num(r[i.get("Lsets", 0)], 0) or 0,
+            )
+            sets_w = [
+                (num(r[i[f"W{k}"]], None), num(r[i[f"L{k}"]], None))
+                for k in range(1, 6)
+                if f"W{k}" in i and f"L{k}" in i
+            ]
+            sets_w = [(a, b) for a, b in sets_w if a is not None and b is not None and (a > 0 or b > 0)]
 
-            for name, won in ((str(r[i["Winner"]]).strip(), 1),
-                              (str(r[i["Loser"]]).strip(), 0)):
+            for name, won in (
+                (str(r[i["Winner"]]).strip(), 1),
+                (str(r[i["Loser"]]).strip(), 0),
+            ):
                 if not name:
                     continue
                 d = acc[(name, y, tour)]
@@ -102,8 +116,17 @@ def collect(women: bool, acc: dict) -> None:
                     d[f"surf_{surf}"] += 1
                 if court == "indoor":
                     d["indoor"] += 1
-                if any(t in tier for t in ("grand slam", "masters", "premier", "wta1000",
-                                           "atp1000", "international gold")):
+                if any(
+                    t in tier
+                    for t in (
+                        "grand slam",
+                        "masters",
+                        "premier",
+                        "wta1000",
+                        "atp1000",
+                        "international gold",
+                    )
+                ):
                     d["top_tier"] += 1
                 if trn:
                     d["tourneys"].add(trn)
@@ -127,11 +150,25 @@ def collect(women: bool, acc: dict) -> None:
 
 
 def build() -> dict[tuple, dict]:
-    acc: dict[tuple, dict] = collections.defaultdict(lambda: {
-        "m": 0, "wins": 0, "surf_hard": 0, "surf_clay": 0, "surf_grass": 0,
-        "indoor": 0, "top_tier": 0, "tourneys": set(), "locs": set(), "dates": [],
-        "sets": 0, "tb": 0, "bagel": 0, "games": 0, "comeback": 0,
-    })
+    acc: dict[tuple, dict] = collections.defaultdict(
+        lambda: {
+            "m": 0,
+            "wins": 0,
+            "surf_hard": 0,
+            "surf_clay": 0,
+            "surf_grass": 0,
+            "indoor": 0,
+            "top_tier": 0,
+            "tourneys": set(),
+            "locs": set(),
+            "dates": [],
+            "sets": 0,
+            "tb": 0,
+            "bagel": 0,
+            "games": 0,
+            "comeback": 0,
+        }
+    )
     collect(False, acc)
     collect(True, acc)
     out = {}
@@ -174,8 +211,7 @@ def main() -> int:
     cand = build()
     keys = [(m["player"], m["year"], m["tour"]) for m in meta]
     hit = sum(1 for k in keys if k in cand)
-    print(f"matrix rows {len(keys)}   candidate rows built {len(cand)}   "
-          f"joined {hit} ({100*hit/len(keys):.1f}%)")
+    print(f"matrix rows {len(keys)}   candidate rows built {len(cand)}   " f"joined {hit} ({100*hit/len(keys):.1f}%)")
     if hit < 0.5 * len(keys):
         print("join rate too low — the key convention does not match, refusing")
         return 2
@@ -192,8 +228,11 @@ def main() -> int:
 
     tours = np.array([m["tour"] for m in meta])
     idx = {(m["player"], m["year"], m["tour"]): i for i, m in enumerate(meta)}
-    pairs = [(i, idx[(m["player"], m["year"] + 1, m["tour"])]) for i, m in enumerate(meta)
-             if (m["player"], m["year"] + 1, m["tour"]) in idx]
+    pairs = [
+        (i, idx[(m["player"], m["year"] + 1, m["tour"])])
+        for i, m in enumerate(meta)
+        if (m["player"], m["year"] + 1, m["tour"]) in idx
+    ]
     src = np.array([p for p, _ in pairs])
     dst = np.array([q for _, q in pairs])
 
@@ -202,14 +241,21 @@ def main() -> int:
     for c, name in enumerate(CANDIDATES):
         ok = (CM[src, c] > 0) & (CM[dst, c] > 0)
         n = int(ok.sum())
-        r = (float(np.corrcoef(C[src[ok], c], C[dst[ok], c])[0, 1])
-             if n > 50 and C[src[ok], c].std() > 0 and C[dst[ok], c].std() > 0
-             else float("nan"))
+        r = (
+            float(np.corrcoef(C[src[ok], c], C[dst[ok], c])[0, 1])
+            if n > 50 and C[src[ok], c].std() > 0 and C[dst[ok], c].std() > 0
+            else float("nan")
+        )
         fam = "schedule" if name in SCHEDULE else "shot"
-        rows.append({"feature": name, "family": fam, "n_pairs": n,
-                     "autocorr": None if np.isnan(r) else round(r, 4)})
-        print(f"  {name:26} {fam:9} {n:>6} "
-              f"{('n/a' if np.isnan(r) else f'{r:.4f}'):>9}")
+        rows.append(
+            {
+                "feature": name,
+                "family": fam,
+                "n_pairs": n,
+                "autocorr": None if np.isnan(r) else round(r, 4),
+            }
+        )
+        print(f"  {name:26} {fam:9} {n:>6} " f"{('n/a' if np.isnan(r) else f'{r:.4f}'):>9}")
 
     def recall(V, VM):
         F = np.hstack([V, VM])
@@ -225,8 +271,7 @@ def main() -> int:
                 h += 1
         return h / len(pairs)
 
-    ident = json.loads((ROOT / "data" / "tennis_feature_identity.json")
-                       .read_text(encoding="utf-8"))
+    ident = json.loads((ROOT / "data" / "tennis_feature_identity.json").read_text(encoding="utf-8"))
     ac = {r["feature"]: (r["autocorr"] or 0.0) for r in ident["per_feature"]}
     keep = [j for j in range(len(feats)) if ac[feats[j]] >= 0.25]
     sch = [c for c, n in enumerate(CANDIDATES) if n in SCHEDULE]
@@ -234,12 +279,18 @@ def main() -> int:
 
     tests = {
         "existing_9 (best known)": (X[:, keep], M[:, keep]),
-        "existing_9 + schedule": (np.hstack([X[:, keep], C[:, sch]]),
-                                  np.hstack([M[:, keep], CM[:, sch]])),
-        "existing_9 + shot": (np.hstack([X[:, keep], C[:, sht]]),
-                              np.hstack([M[:, keep], CM[:, sht]])),
-        "existing_9 + all candidates": (np.hstack([X[:, keep], C]),
-                                        np.hstack([M[:, keep], CM])),
+        "existing_9 + schedule": (
+            np.hstack([X[:, keep], C[:, sch]]),
+            np.hstack([M[:, keep], CM[:, sch]]),
+        ),
+        "existing_9 + shot": (
+            np.hstack([X[:, keep], C[:, sht]]),
+            np.hstack([M[:, keep], CM[:, sht]]),
+        ),
+        "existing_9 + all candidates": (
+            np.hstack([X[:, keep], C]),
+            np.hstack([M[:, keep], CM]),
+        ),
         "schedule ONLY": (C[:, sch], CM[:, sch]),
         "shot ONLY": (C[:, sht], CM[:, sht]),
     }
@@ -255,25 +306,37 @@ def main() -> int:
     binom = float(np.sqrt(base * (1 - base) / max(1, len(pairs))))
     best = max(res, key=res.get)
     print(f"\n  best: {best} at {res[best]:.4f}  ({res[best]-base:+.4f} vs existing_9)")
-    print(f"  binomial sd at n={len(pairs)}: {binom:.4f} -> "
-          f"{abs(res[best]-base)/binom:.1f} sd")
+    print(f"  binomial sd at n={len(pairs)}: {binom:.4f} -> " f"{abs(res[best]-base)/binom:.1f} sd")
 
-    OUT.write_text(json.dumps({
-        "question": ("Do SCHEDULE features (what a player plays) identify better than "
-                     "performance rates (how well they play)?"),
-        "hypothesis": ("BIG_EVENT_SHARE, a mix feature, autocorrelates at 0.6170 — third "
-                       "highest of the existing 16. A player's calendar may be a "
-                       "fingerprint: idiosyncratic and repeated, where win rates regress "
-                       "and rank is shared across hundreds."),
-        "source": ("pipeline/cache/tennis/*.xlsx, already on disk — 28 files, 2013-2026, "
-                   "67,081 matches. No fetch, no key."),
-        "join_rate_pct": round(100 * hit / len(keys), 1),
-        "per_candidate": rows,
-        "retrieval": res,
-        "baseline_existing_9": round(float(base), 4),
-        "binomial_sd": round(binom, 4),
-        "n_pairs": len(pairs),
-    }, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "question": (
+                    "Do SCHEDULE features (what a player plays) identify better than "
+                    "performance rates (how well they play)?"
+                ),
+                "hypothesis": (
+                    "BIG_EVENT_SHARE, a mix feature, autocorrelates at 0.6170 — third "
+                    "highest of the existing 16. A player's calendar may be a "
+                    "fingerprint: idiosyncratic and repeated, where win rates regress "
+                    "and rank is shared across hundreds."
+                ),
+                "source": (
+                    "pipeline/cache/tennis/*.xlsx, already on disk — 28 files, 2013-2026, "
+                    "67,081 matches. No fetch, no key."
+                ),
+                "join_rate_pct": round(100 * hit / len(keys), 1),
+                "per_candidate": rows,
+                "retrieval": res,
+                "baseline_existing_9": round(float(base), 4),
+                "binomial_sd": round(binom, 4),
+                "n_pairs": len(pairs),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"\nwrote {OUT}")
     if args.check and hit < 0.5 * len(keys):
         return 1

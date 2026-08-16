@@ -18,9 +18,8 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
-from resolve_names import name_norm, MARKET
+from resolve_names import MARKET, name_norm
 
 
 def _country_key(country: str | None) -> str | None:
@@ -29,15 +28,20 @@ def _country_key(country: str | None) -> str | None:
     c = country.strip().lower()
     # crude normalization of common country variants
     aliases = {
-        "usa": "united states", "u.s.": "united states", "us": "united states",
-        "uk": "united kingdom", "u.k.": "united kingdom", "great britain": "united kingdom",
+        "usa": "united states",
+        "u.s.": "united states",
+        "us": "united states",
+        "uk": "united kingdom",
+        "u.k.": "united kingdom",
+        "great britain": "united kingdom",
         "republic of ireland": "ireland",
     }
     return aliases.get(c, c)
 
 
-def match_external(name: str, sport_unified: str | None, country: str | None,
-                   name_index: dict) -> tuple[int | None, str, int]:
+def match_external(
+    name: str, sport_unified: str | None, country: str | None, name_index: dict
+) -> tuple[int | None, str, int]:
     """Return (player_idx_or_None, tier, n_candidates).
 
     sport_unified restricts the candidate pool to that sport (Forbes/Wikidata carry a
@@ -47,8 +51,11 @@ def match_external(name: str, sport_unified: str | None, country: str | None,
     key = name_norm(name)
     ckey = _country_key(country)
     # candidate pool by name_norm, optionally restricted to sport
-    cand = [i for i, p in enumerate(players) if p["name_norm"] == key
-            and (sport_unified is None or p["sport"] == sport_unified)]
+    cand = [
+        i
+        for i, p in enumerate(players)
+        if p["name_norm"] == key and (sport_unified is None or p["sport"] == sport_unified)
+    ]
     n = len(cand)
     if n == 0:
         # fall back to cross-sport name match (some sources mislabel sport)
@@ -64,8 +71,7 @@ def match_external(name: str, sport_unified: str | None, country: str | None,
         return cand[0], "name_only", 1
     # n > 1: try to disambiguate by country
     if ckey:
-        byc = [i for i in cand if players[i]["nationality"]
-               and _country_key(players[i]["nationality"]) == ckey]
+        byc = [i for i in cand if players[i]["nationality"] and _country_key(players[i]["nationality"]) == ckey]
         if len(byc) == 1:
             return byc[0], "name+country", n
         if len(byc) > 1:

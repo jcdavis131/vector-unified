@@ -70,15 +70,17 @@ def wiki_get(params: dict, retries: int = 4) -> dict:
 def search_title(name: str, sport: str) -> str | None:
     # Prefer exact title hit first (1 request)
     direct = name.replace(" ", "_")
-    data = wiki_get({
-        "action": "query",
-        "prop": "extracts|info",
-        "exintro": 1,
-        "explaintext": 1,
-        "exchars": 200,
-        "redirects": 1,
-        "titles": name,
-    })
+    data = wiki_get(
+        {
+            "action": "query",
+            "prop": "extracts|info",
+            "exintro": 1,
+            "explaintext": 1,
+            "exchars": 200,
+            "redirects": 1,
+            "titles": name,
+        }
+    )
     pages = data.get("query", {}).get("pages", {})
     for pid, page in pages.items():
         if int(pid) > 0 and page.get("extract"):
@@ -88,22 +90,26 @@ def search_title(name: str, sport: str) -> str | None:
 
     hint = SPORT_HINT.get(sport, "")
     query = f"{name} {hint}".strip()
-    data = wiki_get({
-        "action": "query",
-        "list": "search",
-        "srsearch": query,
-        "srlimit": 5,
-        "srnamespace": 0,
-    })
-    hits = data.get("query", {}).get("search", [])
-    if not hits:
-        data = wiki_get({
+    data = wiki_get(
+        {
             "action": "query",
             "list": "search",
-            "srsearch": name,
+            "srsearch": query,
             "srlimit": 5,
             "srnamespace": 0,
-        })
+        }
+    )
+    hits = data.get("query", {}).get("search", [])
+    if not hits:
+        data = wiki_get(
+            {
+                "action": "query",
+                "list": "search",
+                "srsearch": name,
+                "srlimit": 5,
+                "srnamespace": 0,
+            }
+        )
         hits = data.get("query", {}).get("search", [])
     for h in hits:
         title = h.get("title") or ""
@@ -115,16 +121,18 @@ def search_title(name: str, sport: str) -> str | None:
 
 def fetch_extract(title: str) -> tuple[str | None, str | None, int]:
     """Return (canonical_title, extract, pageid) or (None, None, 0)."""
-    data = wiki_get({
-        "action": "query",
-        "prop": "extracts|info",
-        "exintro": 1,
-        "explaintext": 1,
-        "exchars": 1200,
-        "redirects": 1,
-        "titles": title,
-        "inprop": "url",
-    })
+    data = wiki_get(
+        {
+            "action": "query",
+            "prop": "extracts|info",
+            "exintro": 1,
+            "explaintext": 1,
+            "exchars": 1200,
+            "redirects": 1,
+            "titles": title,
+            "inprop": "url",
+        }
+    )
     pages = data.get("query", {}).get("pages", {})
     for pid, page in pages.items():
         if int(pid) < 0 or page.get("missing") is not None:
@@ -144,21 +152,49 @@ def extract_ok(sport: str, extract: str) -> bool:
         # only reject if the *wrong* sport dominates the opening and ours is absent
         if re.search(pat, low[:400]) and SPORT_HINT.get(sport, "xyz").lower() not in low[:400]:
             # pitch hint "footballer" often absent; allow "football" / "midfielder" etc.
-            if sport == "pitch" and any(w in low[:400] for w in (
-                "footballer", "football player", "midfielder", "striker",
-                "winger", "goalkeeper", "premier league", "la liga", "serie a",
-                "bundesliga", "world cup", "uefa",
-            )):
+            if sport == "pitch" and any(
+                w in low[:400]
+                for w in (
+                    "footballer",
+                    "football player",
+                    "midfielder",
+                    "striker",
+                    "winger",
+                    "goalkeeper",
+                    "premier league",
+                    "la liga",
+                    "serie a",
+                    "bundesliga",
+                    "world cup",
+                    "uefa",
+                )
+            ):
                 continue
-            if sport == "gridiron" and any(w in low[:400] for w in (
-                "nfl", "quarterback", "wide receiver", "running back",
-                "linebacker", "tight end", "american football",
-            )):
+            if sport == "gridiron" and any(
+                w in low[:400]
+                for w in (
+                    "nfl",
+                    "quarterback",
+                    "wide receiver",
+                    "running back",
+                    "linebacker",
+                    "tight end",
+                    "american football",
+                )
+            ):
                 continue
-            if sport == "hoops" and any(w in low[:400] for w in (
-                "nba", "basketball", "point guard", "shooting guard",
-                "small forward", "power forward", "center",
-            )):
+            if sport == "hoops" and any(
+                w in low[:400]
+                for w in (
+                    "nba",
+                    "basketball",
+                    "point guard",
+                    "shooting guard",
+                    "small forward",
+                    "power forward",
+                    "center",
+                )
+            ):
                 continue
             return False
     return True
@@ -188,8 +224,11 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="max new resolves this run (0=all)")
     ap.add_argument("--sleep", type=float, default=0.5)
     ap.add_argument("--priority-only", action="store_true")
-    ap.add_argument("--refresh-failed", action="store_true",
-                    help="retry entries previously marked failed/unmatched")
+    ap.add_argument(
+        "--refresh-failed",
+        action="store_true",
+        help="retry entries previously marked failed/unmatched",
+    )
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -205,8 +244,12 @@ def main() -> int:
     if args.priority_only:
         keys = [k for k in keys if k in pri]
 
-    state = {"built": time.strftime("%Y-%m-%d"), "n_unique_target": len(keys),
-             "ua": UA, "players": {}}
+    state = {
+        "built": time.strftime("%Y-%m-%d"),
+        "n_unique_target": len(keys),
+        "ua": UA,
+        "players": {},
+    }
     if OUT.exists():
         prev = json.loads(OUT.read_text(encoding="utf-8"))
         state["players"] = prev.get("players", {})
@@ -232,30 +275,47 @@ def main() -> int:
             time.sleep(args.sleep)
             if not title:
                 state["players"][pk] = {
-                    "sport": sport, "norm": norm, "name": name,
-                    "status": "unmatched", "wiki_title": None, "extract": None,
+                    "sport": sport,
+                    "norm": norm,
+                    "name": name,
+                    "status": "unmatched",
+                    "wiki_title": None,
+                    "extract": None,
                 }
             else:
                 canon, extract, pageid = fetch_extract(title)
                 time.sleep(args.sleep)
                 if not extract or not extract_ok(sport, extract):
                     state["players"][pk] = {
-                        "sport": sport, "norm": norm, "name": name,
-                        "status": "reject", "wiki_title": canon or title,
-                        "extract": None, "pageid": pageid,
+                        "sport": sport,
+                        "norm": norm,
+                        "name": name,
+                        "status": "reject",
+                        "wiki_title": canon or title,
+                        "extract": None,
+                        "pageid": pageid,
                     }
                 else:
                     state["players"][pk] = {
-                        "sport": sport, "norm": norm, "name": name,
-                        "status": "ok", "wiki_title": canon, "pageid": pageid,
-                        "extract": extract, "extract_chars": len(extract),
+                        "sport": sport,
+                        "norm": norm,
+                        "name": name,
+                        "status": "ok",
+                        "wiki_title": canon,
+                        "pageid": pageid,
+                        "extract": extract,
+                        "extract_chars": len(extract),
                     }
             new += 1
         except Exception as e:
             state["players"][pk] = {
-                "sport": sport, "norm": norm, "name": name,
-                "status": "error", "error": str(e)[:200],
-                "wiki_title": None, "extract": None,
+                "sport": sport,
+                "norm": norm,
+                "name": name,
+                "status": "error",
+                "error": str(e)[:200],
+                "wiki_title": None,
+                "extract": None,
             }
             new += 1
             time.sleep(max(args.sleep, 1.0))
@@ -281,7 +341,10 @@ def main() -> int:
     state["built"] = time.strftime("%Y-%m-%d")
     DATA.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(state, indent=2), encoding="utf-8")
-    print(f"wrote {OUT} | ok={ok_n}/{len(state['players'])} new_this_run={new}", flush=True)
+    print(
+        f"wrote {OUT} | ok={ok_n}/{len(state['players'])} new_this_run={new}",
+        flush=True,
+    )
     return 0
 
 

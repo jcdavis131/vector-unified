@@ -85,19 +85,24 @@ def claim_key(text: str) -> str:
     """
     return hashlib.sha256(" ".join(text.split()).encode()).hexdigest()[:16]
 
+
 SUPERLATIVE = re.compile(
     r"\b(the (highest|largest|lowest|smallest|closest|most|best|worst|only|top|biggest|"
     r"sharpest|steepest|widest|narrowest)"
     r"|highest|largest|lowest|smallest|closest|biggest|sharpest|steepest"
     r"|each other'?s|of any\b|in the entire\b|anywhere in\b|no other\b|nobody else\b"
-    r"|the sole\b|unmatched\b|runs from\b|ranges from\b)", re.I)
+    r"|the sole\b|unmatched\b|runs from\b|ranges from\b)",
+    re.I,
+)
 
 # A claim is PAGE-SCOPED when it says so. These phrases mean "among the things shown here",
 # which the page carries in full and can therefore be checked with arithmetic.
 PAGE_SCOPED = re.compile(
     r"\b(on (this|the) (board|page)|in (this|the) (pair set|board|page)|"
     r"of any (name|pair|player|row|career|ticker)s? (on|in) (this|the)|"
-    r"shown here|listed here|among these)\b", re.I)
+    r"shown here|listed here|among these)\b",
+    re.I,
+)
 
 # Which quantity a page-scoped claim is about, and how to compute it from the rounds.
 KIND = [
@@ -144,29 +149,31 @@ def check_page_scoped(rounds: list[dict], idx: int, text: str) -> tuple[str, str
     # fabrication a way out. Erring toward CHECKING is right here — the cost of a spurious
     # UNDECIDABLE is a manual read, the cost of a spurious escape is a lie on a live page.
     _vals = {round(float(v["value"]), 4) for rr in rounds for v in (rr["a"], rr["b"])}
-    _gaps = {round(abs(float(rr["a"]["value"]) - float(rr["b"]["value"])), 4)
-             for rr in rounds}
+    _gaps = {round(abs(float(rr["a"]["value"]) - float(rr["b"]["value"])), 4) for rr in rounds}
     said = {round(n, 4) for n in numbers(text)}
     if said and not (said & (_vals | _gaps)):
-        return ("UNDECIDABLE",
-                f"numbers in the sentence {sorted(said)[:4]} match no round value or gap — "
-                f"the claim ranks a quantity this page does not carry")
+        return (
+            "UNDECIDABLE",
+            f"numbers in the sentence {sorted(said)[:4]} match no round value or gap — "
+            f"the claim ranks a quantity this page does not carry",
+        )
 
-    gaps = [(abs(float(r["a"]["value"]) - float(r["b"]["value"])), i)
-            for i, r in enumerate(rounds)]
-    vals = [(float(s["value"]), i, s["name"])
-            for i, r in enumerate(rounds) for s in (r["a"], r["b"])]
+    gaps = [(abs(float(r["a"]["value"]) - float(r["b"]["value"])), i) for i, r in enumerate(rounds)]
+    vals = [(float(s["value"]), i, s["name"]) for i, r in enumerate(rounds) for s in (r["a"], r["b"])]
     if kind in ("min_gap", "max_gap"):
         best = (min if kind == "min_gap" else max)(gaps)
         ok = best[1] == idx
-        return ("TRUE" if ok else "FALSE",
-                f"{kind}={best[0]:.4f} at round {best[1]}; this is round {idx}")
+        return (
+            "TRUE" if ok else "FALSE",
+            f"{kind}={best[0]:.4f} at round {best[1]}; this is round {idx}",
+        )
     best = (max if kind == "max_value" else min)(vals)
     named = [n for n in (rounds[idx]["a"]["name"], rounds[idx]["b"]["name"])]
     ok = best[2] in named
-    return ("TRUE" if ok else "FALSE",
-            f"{kind}={best[0]} held by {best[2]!r} (round {best[1]}); "
-            f"this round names {named}")
+    return (
+        "TRUE" if ok else "FALSE",
+        f"{kind}={best[0]} held by {best[2]!r} (round {best[1]}); " f"this round names {named}",
+    )
 
 
 def main() -> int:
@@ -198,8 +205,7 @@ def main() -> int:
             rows.append(("caveat", -1, d["caveat"]))
 
         hits = [(loc, idx, t) for loc, idx, t in rows if SUPERLATIVE.search(t)]
-        auto = [(loc, idx, t) for loc, idx, t in hits
-                if idx >= 0 and PAGE_SCOPED.search(t)]
+        auto = [(loc, idx, t) for loc, idx, t in hits if idx >= 0 and PAGE_SCOPED.search(t)]
         # Registry clearances, matched on the sentence itself.
         cleared_here = 0
         still_open: list[tuple[str, str]] = []
@@ -214,8 +220,10 @@ def main() -> int:
                 cleared_by_verdict[e["verdict"]] = cleared_by_verdict.get(e["verdict"], 0) + 1
             else:
                 still_open.append((loc, sent))
-        print(f"  {d['slug']:9} {len(hits):2} superlative-shaped, {len(auto)} auto-checkable, "
-              f"{cleared_here} cleared in registry, {len(still_open)} UNCHECKED")
+        print(
+            f"  {d['slug']:9} {len(hits):2} superlative-shaped, {len(auto)} auto-checkable, "
+            f"{cleared_here} cleared in registry, {len(still_open)} UNCHECKED"
+        )
         for loc, sent in still_open:
             print(f"       UNCHECKED   {loc}  {sent[:110]}")
         unchecked.extend((d["slug"], loc, sent) for loc, sent in still_open)
@@ -228,18 +236,24 @@ def main() -> int:
             print(f"       {verdict:12} {loc}  {why}")
         flagged += len(still_open)
 
-    print(f"\n{verified} page-scoped verified by arithmetic, {len(false_claims)} FALSE, "
-          f"{sum(cleared_by_verdict.values())} cleared in registry {cleared_by_verdict}, "
-          f"{flagged} UNCHECKED")
+    print(
+        f"\n{verified} page-scoped verified by arithmetic, {len(false_claims)} FALSE, "
+        f"{sum(cleared_by_verdict.values())} cleared in registry {cleared_by_verdict}, "
+        f"{flagged} UNCHECKED"
+    )
     if flagged:
-        print("\nUNCHECKED IS NOT CLEAN. Verifying 'the largest in the corpus' needs the "
-              "corpus, and the sentence does not say which array to scan. Check each one "
-              "against its artifact and add it to data/superlative_registry.json with the "
-              "evidence. Do not clear one without reading the array.")
+        print(
+            "\nUNCHECKED IS NOT CLEAN. Verifying 'the largest in the corpus' needs the "
+            "corpus, and the sentence does not say which array to scan. Check each one "
+            "against its artifact and add it to data/superlative_registry.json with the "
+            "evidence. Do not clear one without reading the array."
+        )
     else:
-        print("\nEvery superlative on every page is either verified by arithmetic against "
-              "the page's own values or cleared in the registry with named evidence. A "
-              "clearance is keyed to the field's CONTENT, so any edit voids it.")
+        print(
+            "\nEvery superlative on every page is either verified by arithmetic against "
+            "the page's own values or cleared in the registry with named evidence. A "
+            "clearance is keyed to the field's CONTENT, so any edit voids it."
+        )
 
     if false_claims:
         print(f"\n{len(false_claims)} FALSE page-scoped superlative(s):")

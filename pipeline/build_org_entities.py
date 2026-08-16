@@ -267,8 +267,17 @@ def apply_wikidata(orgs: list[dict]) -> dict:
             continue
         o["attrs"] = {
             k: rec.get(k)
-            for k in ("country", "city", "venue", "capacity", "founded", "owner",
-                      "league", "org_kind", "wikidata")
+            for k in (
+                "country",
+                "city",
+                "venue",
+                "capacity",
+                "founded",
+                "owner",
+                "league",
+                "org_kind",
+                "wikidata",
+            )
             if rec.get(k) is not None
         }
         applied += 1
@@ -329,8 +338,7 @@ def main() -> int:
         "edges_resolved_to_an_org": link_stats["resolved"],
         "edges_unresolved": link_stats["unresolved"],
         "athletes_resolved_to_an_org": len(matched_resolved),
-        "athletes_resolved_pct": round(
-            100.0 * len(matched_resolved) / max(len(corpus_athletes), 1), 2),
+        "athletes_resolved_pct": round(100.0 * len(matched_resolved) / max(len(corpus_athletes), 1), 2),
         "per_sport": per_sport,
     }
 
@@ -354,22 +362,27 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    print(f"edges resolved to an org: {link_stats['resolved']}/{len(edges)}"
-          f"  (unresolved {link_stats['unresolved']})")
-    print(f"athletes RESOLVED to an org: {len(matched_resolved)}/{len(corpus_athletes)}"
-          f"  ({round(100.0*len(matched_resolved)/max(len(corpus_athletes),1),2)}%)")
+    print(
+        f"edges resolved to an org: {link_stats['resolved']}/{len(edges)}" f"  (unresolved {link_stats['unresolved']})"
+    )
+    print(
+        f"athletes RESOLVED to an org: {len(matched_resolved)}/{len(corpus_athletes)}"
+        f"  ({round(100.0*len(matched_resolved)/max(len(corpus_athletes),1),2)}%)"
+    )
     print(f"orgs with wikidata attrs: {wd_stats['orgs_with_any_attr']}/{len(orgs)}")
-    print(f"orgs  : {len(orgs)}   ({len(hoops_orgs)} hoops with features, "
-          f"{len(corpus_orgs)} identity-only)")
+    print(f"orgs  : {len(orgs)}   ({len(hoops_orgs)} hoops with features, " f"{len(corpus_orgs)} identity-only)")
     print(f"edges : {len(edges)}")
-    print(f"\ncorpus: {coverage['corpus_player_seasons']} player-seasons, "
-          f"{coverage['corpus_unique_athletes']} unique athletes")
-    print(f"linked: {coverage['matched_unique_athletes']} "
-          f"({coverage['matched_pct']}% of unique athletes)\n")
+    print(
+        f"\ncorpus: {coverage['corpus_player_seasons']} player-seasons, "
+        f"{coverage['corpus_unique_athletes']} unique athletes"
+    )
+    print(f"linked: {coverage['matched_unique_athletes']} " f"({coverage['matched_pct']}% of unique athletes)\n")
     print(f"{'sport':10} {'linked':>16}  {'pct':>6}  {'orgs':>6}  {'w/feats':>8}")
     for sport, s in sorted(per_sport.items()):
-        print(f"{sport:10} {s['linked_to_an_org']:6}/{s['unique_athletes']:<9} "
-              f"{s['pct']:6}  {s['orgs']:6}  {s['orgs_with_features']:8}")
+        print(
+            f"{sport:10} {s['linked_to_an_org']:6}/{s['unique_athletes']:<9} "
+            f"{s['pct']:6}  {s['orgs']:6}  {s['orgs_with_features']:8}"
+        )
     if missing_team:
         print(f"\nplayer-seasons with no team label: {missing_team}")
 

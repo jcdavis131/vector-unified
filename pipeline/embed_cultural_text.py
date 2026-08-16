@@ -49,12 +49,13 @@ def main() -> int:
     if not BIOS.exists():
         raise SystemExit(f"missing {BIOS} — run acquire_wikipedia_bios.py first")
     bios = json.loads(BIOS.read_text(encoding="utf-8"))
-    rows = [(pk, r) for pk, r in bios["players"].items()
-            if r.get("status") == "ok" and r.get("extract")]
+    rows = [(pk, r) for pk, r in bios["players"].items() if r.get("status") == "ok" and r.get("extract")]
     if not rows:
         raise SystemExit("no ok extracts to embed")
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     print(f"embedding {len(rows)} leads with {args.model} on {device} …", flush=True)
     tok = AutoTokenizer.from_pretrained(args.model)
     model = AutoModel.from_pretrained(args.model).to(device)
@@ -64,9 +65,14 @@ def main() -> int:
     chunks = []
     with torch.no_grad():
         for i in range(0, len(texts), args.batch):
-            batch = texts[i:i + args.batch]
-            enc = tok(batch, padding=True, truncation=True, max_length=256,
-                      return_tensors="pt").to(device)
+            batch = texts[i : i + args.batch]
+            enc = tok(
+                batch,
+                padding=True,
+                truncation=True,
+                max_length=256,
+                return_tensors="pt",
+            ).to(device)
             out = model(**enc)
             emb = mean_pool(out.last_hidden_state, enc["attention_mask"])
             emb = F.normalize(emb, p=2, dim=1)
@@ -79,8 +85,10 @@ def main() -> int:
     assert np.allclose(norms, 1.0, atol=1e-3), (float(norms.min()), float(norms.max()))
 
     pks = np.array([pk for pk, _ in rows], dtype=object)
-    chars = np.array([int(r.get("extract_chars") or len(r.get("extract") or ""))
-                      for _, r in rows], dtype=np.int32)
+    chars = np.array(
+        [int(r.get("extract_chars") or len(r.get("extract") or "")) for _, r in rows],
+        dtype=np.int32,
+    )
     m = np.ones(len(rows), dtype=np.float32)
     np.savez_compressed(OUT_NPZ, pk=pks, t=emb, extract_chars=chars, m=m)
     meta = {

@@ -12,6 +12,7 @@ The trainer writes data/tennis_mtnn_report.json and the embedding on every run; 
 backed up before the sweep and restored after, so the gate artifact is not left holding a
 sweep result.
 """
+
 import json
 import shutil
 import subprocess
@@ -20,15 +21,22 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 REPO = Path(r"C:\Users\jcdav\vector-unified")
-SC = Path(r"C:\Users\jcdav\AppData\Local\Temp\claude\C--Users-jcdav"
-          r"\be69d382-ce38-4d23-b6d1-d92c62546c02\scratchpad")
+SC = Path(
+    r"C:\Users\jcdav\AppData\Local\Temp\claude\C--Users-jcdav" r"\be69d382-ce38-4d23-b6d1-d92c62546c02\scratchpad"
+)
 PY = r"C:\Users\jcdav\vector-hoops\pipeline\.venv\Scripts\python.exe"
 REPORT = REPO / "pipeline" / "data" / "tennis_mtnn_report.json"
 REPORT2 = REPO / "data" / "tennis_mtnn_report.json"
 EMB = REPO / "pipeline" / "data" / "tennis_mtnn_embedding.npz"
 
-BASE = {"dim": 32, "tower-width": 16, "epochs": 400, "lr": 3e-3,
-        "temp": 0.1, "dropout": 0.1}
+BASE = {
+    "dim": 32,
+    "tower-width": 16,
+    "epochs": 400,
+    "lr": 3e-3,
+    "temp": 0.1,
+    "dropout": 0.1,
+}
 
 VARIANTS = [
     ("base", {}),
@@ -54,17 +62,33 @@ for name, override in VARIANTS:
     argv = [PY, "pipeline/train_tennis_mtnn.py"]
     for k, v in cfg.items():
         argv += [f"--{k}", str(v)]
-    p = subprocess.run(argv, cwd=REPO, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
+    p = subprocess.run(
+        argv,
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     if p.returncode not in (0, 1):
         print(f"  {name:20} FAILED rc={p.returncode}")
         print((p.stderr or "")[-400:])
         continue
     r = json.loads(REPORT2.read_text(encoding="utf-8"))
-    rows.append({"name": name, "cfg": cfg, "mean": r["mtnn_mean"], "sd": r["mtnn_sd"],
-                 "per_seed": r["mtnn_per_seed"], "over_bar": r["seeds_over_bar"]})
-    print(f"  {name:20} mean {r['mtnn_mean']:.4f}  sd {r['mtnn_sd']:.4f}  "
-          f"over_bar {r['seeds_over_bar']}", flush=True)
+    rows.append(
+        {
+            "name": name,
+            "cfg": cfg,
+            "mean": r["mtnn_mean"],
+            "sd": r["mtnn_sd"],
+            "per_seed": r["mtnn_per_seed"],
+            "over_bar": r["seeds_over_bar"],
+        }
+    )
+    print(
+        f"  {name:20} mean {r['mtnn_mean']:.4f}  sd {r['mtnn_sd']:.4f}  " f"over_bar {r['seeds_over_bar']}",
+        flush=True,
+    )
 
 for f in (REPORT2, EMB):
     b = SC / (f.name + ".sweepbak")

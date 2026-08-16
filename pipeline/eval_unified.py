@@ -39,14 +39,13 @@ import json
 
 import numpy as np
 import torch
-from sklearn.neighbors import KNeighborsClassifier
+from _torch_safe import safe_torch_load
+from load_encoders import ROOT, SPORTS, UCACHE
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import silhouette_score
 from sklearn.model_selection import train_test_split
-
-from load_encoders import ROOT, UCACHE, SPORTS
+from sklearn.neighbors import KNeighborsClassifier
 from train_unified import UnifiedTrunk, effective_rank
-from _torch_safe import safe_torch_load
 
 DATA = ROOT / "data"
 SEED = 7
@@ -74,10 +73,20 @@ def load_model(device, ckpt_name="unified_best.pt"):
     # 0.2 matches train_unified.py's own default and is inert anyway once .eval() runs —
     # export_unified_stage2.py has carried the same workaround all along, in one place only.
     dr = a.get("dropout", 0.2) if isinstance(a, dict) else getattr(a, "dropout", 0.2)
-    model = UnifiedTrunk(sport_dims=ck["sport_dim"], n_seasons_era=ck["n_eras"],
-                         d_adapter=a["d_adapter"], d_sport_tok=d_st, d_emb=a["d_emb"], n_arch=8,
-                         n_pos=ck["n_pos"], dropout=dr, shared_adapter=sh,
-                         market_heads=mk, cultural_text=ct, d_text=d_text).to(device)
+    model = UnifiedTrunk(
+        sport_dims=ck["sport_dim"],
+        n_seasons_era=ck["n_eras"],
+        d_adapter=a["d_adapter"],
+        d_sport_tok=d_st,
+        d_emb=a["d_emb"],
+        n_arch=8,
+        n_pos=ck["n_pos"],
+        dropout=dr,
+        shared_adapter=sh,
+        market_heads=mk,
+        cultural_text=ct,
+        d_text=d_text,
+    ).to(device)
     model.load_state_dict(ck["state"])
     model.eval()
     return model, ck
@@ -109,12 +118,16 @@ def load_and_encode(device, ckpt_name="unified_stage2_best.pt"):
     "model" field — hardcoding "UnifiedTrunk Stage 1 (frozen encoders)" is how
     unified_report.json came to carry Stage 2.1 numbers under a Stage 1 name.
     """
-    from train_unified import load_matrix  # local: avoids a circular import at module load
+    from train_unified import (
+        load_matrix,
+    )  # local: avoids a circular import at module load
+
     model, ck = load_model(device, ckpt_name)
     M = load_matrix(device)
     if "enc_states" in ck:
         from load_live_encoders import load_live
         from train_stage2 import full_z
+
         live = load_live(device)
         for sport in live:
             live[sport].model.load_state_dict(ck["enc_states"][sport])
@@ -143,12 +156,12 @@ def knn5_acc(emb, labels, mask=None):
         if len(labels) != int(mask.sum()):
             raise AssertionError(
                 f"mask selected {len(labels)} rows but has {int(mask.sum())} true entries "
-                f"— the mask is being used as an index, not a mask")
+                f"— the mask is being used as an index, not a mask"
+            )
     if len(labels) < 50:
         return None
     try:
-        Xtr, Xte, ytr, yte = train_test_split(emb, labels, test_size=0.2,
-                                              random_state=SEED, stratify=labels)
+        Xtr, Xte, ytr, yte = train_test_split(emb, labels, test_size=0.2, random_state=SEED, stratify=labels)
     except ValueError:
         Xtr, Xte, ytr, yte = train_test_split(emb, labels, test_size=0.2, random_state=SEED)
     clf = KNeighborsClassifier(n_neighbors=5, metric="cosine")
@@ -182,8 +195,9 @@ def g1_per_sport(z_full, M):
             "native_majority_baseline": round(float(np.bincount(native).max()) / len(native), 4),
             "pos_knn5_e_s": knn5_acc(e_s, pos, posm) if posm.any() else None,
             "pos_knn5_z": knn5_acc(z_s, pos, posm) if posm.any() else None,
-            "pos_majority_baseline": (round(float(np.bincount(pos[pmask]).max())
-                                            / int(pmask.sum()), 4) if pmask.any() else None),
+            "pos_majority_baseline": (
+                round(float(np.bincount(pos[pmask]).max()) / int(pmask.sum()), 4) if pmask.any() else None
+            ),
         }
     return out
 
@@ -228,8 +242,7 @@ def g4_random_baseline(M) -> float:
 
 def g2_sport_invariance(z_full, M):
     sid = M["sport_id"].cpu().numpy()
-    Xtr, Xte, ytr, yte = train_test_split(z_full, sid, test_size=0.2,
-                                          random_state=SEED, stratify=sid)
+    Xtr, Xte, ytr, yte = train_test_split(z_full, sid, test_size=0.2, random_state=SEED, stratify=sid)
     clf = LogisticRegression(max_iter=400, C=1.0)
     clf.fit(Xtr, ytr)
     acc = float(clf.score(Xte, yte))
@@ -248,16 +261,22 @@ def g2_sport_invariance(z_full, M):
     # information at all, still scored 0.6257. `chance` and `delta_vs_chance` are KEPT so
     # older reports remain readable, but the majority figures are the ones to quote.
     majority = float(np.bincount(sid).max()) / len(sid)
-    return {"sport_acc": round(acc, 4), "chance": round(1.0 / 3.0, 4),
-            "delta_vs_chance": round(acc - 1.0 / 3.0, 4),
-            "majority_class_share": round(majority, 4),
-            "delta_vs_majority": round(acc - majority, 4),
-            "baseline_note": ("Quote delta_vs_majority. delta_vs_chance assumes balanced "
-                              "classes and these are 62.6 / 25.7 / 11.7."),
-            "effective_rank": round(rank, 1), "rank_target_literal": target,
-            "rank_literal_pass": bool(rank >= target),
-            "rank_nondeg_floor": nondeg, "rank_nondeg_pass": bool(rank >= nondeg),
-            "note": "rank_literal=d_emb/2 (heuristic). collapse_detector = rank>=12 AND G1 AND G3 (rank alone over-alarms on a genuinely low-d role manifold). no-GRL baseline via --baseline-sport-acc."}
+    return {
+        "sport_acc": round(acc, 4),
+        "chance": round(1.0 / 3.0, 4),
+        "delta_vs_chance": round(acc - 1.0 / 3.0, 4),
+        "majority_class_share": round(majority, 4),
+        "delta_vs_majority": round(acc - majority, 4),
+        "baseline_note": (
+            "Quote delta_vs_majority. delta_vs_chance assumes balanced " "classes and these are 62.6 / 25.7 / 11.7."
+        ),
+        "effective_rank": round(rank, 1),
+        "rank_target_literal": target,
+        "rank_literal_pass": bool(rank >= target),
+        "rank_nondeg_floor": nondeg,
+        "rank_nondeg_pass": bool(rank >= nondeg),
+        "note": "rank_literal=d_emb/2 (heuristic). collapse_detector = rank>=12 AND G1 AND G3 (rank alone over-alarms on a genuinely low-d role manifold). no-GRL baseline via --baseline-sport-acc.",
+    }
 
 
 def g3_silhouette(z_full, M):
@@ -302,28 +321,41 @@ def g3_silhouette(z_full, M):
     # it was not actually broken — but it had no margin, and "greater than zero" is not
     # evidence of the thing G3 is named after. The floor sits above the observed null
     # maximum; real is +0.6147.
-    return {"silhouette": round(sil, 4), "silhouette_floor": SIL_FLOOR,
-            "silhouette_pass": bool(sil > SIL_FLOOR),
-            "within_arch_cross_sport_cos": round(within_m, 4),
-            "between_arch_cross_sport_cos": round(between_m, 4),
-            "separation": round(within_m - between_m, 4),
-            "separation_floor": SEP_FLOOR,
-            "separation_pass": bool(within_m - between_m > SEP_FLOOR)}
+    return {
+        "silhouette": round(sil, 4),
+        "silhouette_floor": SIL_FLOOR,
+        "silhouette_pass": bool(sil > SIL_FLOOR),
+        "within_arch_cross_sport_cos": round(within_m, 4),
+        "between_arch_cross_sport_cos": round(between_m, 4),
+        "separation": round(within_m - between_m, 4),
+        "separation_floor": SEP_FLOOR,
+        "separation_pass": bool(within_m - between_m > SEP_FLOOR),
+    }
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--baseline-sport-acc", type=float, default=None,
-                    help="no-GRL control sport-acc; G2-sport passes if (baseline - acc) >= 0.10")
+    ap.add_argument(
+        "--baseline-sport-acc",
+        type=float,
+        default=None,
+        help="no-GRL control sport-acc; G2-sport passes if (baseline - acc) >= 0.10",
+    )
     # DEFAULTS TO THE SHIPPED MODEL. analogy_report.json and unified_report.json both
     # carry model="UnifiedTrunk Stage 1 (frozen encoders)" while assets/unified.json
     # ships Stage 2.1 — so the dumbmodel.com model card was about to publish Stage 1's
     # G4 of 0.9401 as the joint model's number.
-    ap.add_argument("--ckpt", default="unified_stage2_best.pt",
-                    help="checkpoint filename under pipeline/data to evaluate")
+    ap.add_argument(
+        "--ckpt",
+        default="unified_stage2_best.pt",
+        help="checkpoint filename under pipeline/data to evaluate",
+    )
     args = ap.parse_args()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     from train_unified import load_matrix
+
     M = load_matrix(device)
     model, ck, z, z_source, model_label = load_and_encode(device, args.ckpt)
     print(f"  z built from: {z_source}")
@@ -356,13 +388,17 @@ def main():
         "model": model_label,
         "z_source": z_source,
         "checkpoint_rank": ck.get("best_rank"),
-        "n_rows": int(z.shape[0]), "d_emb": int(z.shape[1]),
-        "G1_per_sport_noninferiority": g1, "G1_pass": g1_pass,
+        "n_rows": int(z.shape[0]),
+        "d_emb": int(z.shape[1]),
+        "G1_per_sport_noninferiority": g1,
+        "G1_pass": g1_pass,
         "G2_sport_invariance": g2,
         "G3_cross_sport_archetype": g3,
         "verdict": {
             "G1": "PASS" if g1_pass else "FAIL",
-            "G2": "PASS" if g2_pass else ("FAIL" if sport_pass is False else "DEFERRED(collapse_pass={}, need no-GRL baseline)".format(collapse_pass)),
+            "G2": "PASS"
+            if g2_pass
+            else ("FAIL" if sport_pass is False else f"DEFERRED(collapse_pass={collapse_pass}, need no-GRL baseline)"),
             "G3": "PASS" if g3_ok else "FAIL",
             "collapse_detector": "PASS" if collapse_pass else "FAIL",
         },
@@ -375,25 +411,33 @@ def main():
     for s, d in g1.items():
         ne, nz = d["native_knn5_e_s"], d["native_knn5_z"]
         pe, pz = d["pos_knn5_e_s"], d["pos_knn5_z"]
-        print(f"  {s:8s} n={d['n']:>5}  native e_s={ne:.3f} z={nz:.3f} (d{nz-ne:+.3f})"
-              f" [base {d['native_majority_baseline']:.3f}]"
-              f"  pos e_s={pe if pe is None else round(pe, 3)} z={pz if pz is None else round(pz, 3)}"
-              f" [base {d['pos_majority_baseline']}]")
+        print(
+            f"  {s:8s} n={d['n']:>5}  native e_s={ne:.3f} z={nz:.3f} (d{nz-ne:+.3f})"
+            f" [base {d['native_majority_baseline']:.3f}]"
+            f"  pos e_s={pe if pe is None else round(pe, 3)} z={pz if pz is None else round(pz, 3)}"
+            f" [base {d['pos_majority_baseline']}]"
+        )
     bmsg = ""
     if args.baseline_sport_acc is not None:
         bmsg = f"  baseline={args.baseline_sport_acc:.3f} dVsBase={g2['delta_vs_baseline']:+.3f}"
-    print(f"\nG2 sport-invariance: acc={g2['sport_acc']:.3f} vs MAJORITY "
-          f"{g2['majority_class_share']:.3f} = {g2['delta_vs_majority']:+.3f} "
-          f"(uniform-chance framing, kept for older reports: "
-          f"dVsChance{g2['delta_vs_chance']:+.3f}){bmsg}  rank={g2['effective_rank']:.1f} "
-          f"(literal>{g2['rank_target_literal']}: {'PASS' if g2['rank_literal_pass'] else 'FAIL'}; "
-          f"nondeg>{g2['rank_nondeg_floor']}: {'PASS' if g2['rank_nondeg_pass'] else 'FAIL'})")
-    print(f"G3 cross-sport archetype: silhouette={g3['silhouette']:.4f} "
-          f"{'PASS' if g3['silhouette_pass'] else 'FAIL'} | within-cos={g3['within_arch_cross_sport_cos']:.4f} "
-          f"> between-cos={g3['between_arch_cross_sport_cos']:.4f} "
-          f"{'PASS' if g3['separation_pass'] else 'FAIL'}")
-    print(f"\nVERDICT: G1={report['verdict']['G1']}  G2={report['verdict']['G2']}  G3={report['verdict']['G3']}  "
-          f"collapse_detector={report['verdict']['collapse_detector']}")
+    print(
+        f"\nG2 sport-invariance: acc={g2['sport_acc']:.3f} vs MAJORITY "
+        f"{g2['majority_class_share']:.3f} = {g2['delta_vs_majority']:+.3f} "
+        f"(uniform-chance framing, kept for older reports: "
+        f"dVsChance{g2['delta_vs_chance']:+.3f}){bmsg}  rank={g2['effective_rank']:.1f} "
+        f"(literal>{g2['rank_target_literal']}: {'PASS' if g2['rank_literal_pass'] else 'FAIL'}; "
+        f"nondeg>{g2['rank_nondeg_floor']}: {'PASS' if g2['rank_nondeg_pass'] else 'FAIL'})"
+    )
+    print(
+        f"G3 cross-sport archetype: silhouette={g3['silhouette']:.4f} "
+        f"{'PASS' if g3['silhouette_pass'] else 'FAIL'} | within-cos={g3['within_arch_cross_sport_cos']:.4f} "
+        f"> between-cos={g3['between_arch_cross_sport_cos']:.4f} "
+        f"{'PASS' if g3['separation_pass'] else 'FAIL'}"
+    )
+    print(
+        f"\nVERDICT: G1={report['verdict']['G1']}  G2={report['verdict']['G2']}  G3={report['verdict']['G3']}  "
+        f"collapse_detector={report['verdict']['collapse_detector']}"
+    )
     return 0
 
 

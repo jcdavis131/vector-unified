@@ -56,17 +56,38 @@ LEAGUE_Q = {"hoops": "Q155223", "gridiron": "Q1215884"}  # NBA, NFL
 # NFL code -> Wikidata label. Explicit because a fuzzy match that puts the wrong city on a
 # franchise is worse than no city at all, and these 32 rows are stable.
 NFL_CODES = {
-    "ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore Ravens",
-    "BUF": "Buffalo Bills", "CAR": "Carolina Panthers", "CHI": "Chicago Bears",
-    "CIN": "Cincinnati Bengals", "CLE": "Cleveland Browns", "DAL": "Dallas Cowboys",
-    "DEN": "Denver Broncos", "DET": "Detroit Lions", "GB": "Green Bay Packers",
-    "HOU": "Houston Texans", "IND": "Indianapolis Colts", "JAX": "Jacksonville Jaguars",
-    "KC": "Kansas City Chiefs", "LAC": "Los Angeles Chargers", "LAR": "Los Angeles Rams",
-    "LV": "Las Vegas Raiders", "MIA": "Miami Dolphins", "MIN": "Minnesota Vikings",
-    "NE": "New England Patriots", "NO": "New Orleans Saints", "NYG": "New York Giants",
-    "NYJ": "New York Jets", "PHI": "Philadelphia Eagles", "PIT": "Pittsburgh Steelers",
-    "SEA": "Seattle Seahawks", "SF": "San Francisco 49ers", "TB": "Tampa Bay Buccaneers",
-    "TEN": "Tennessee Titans", "WAS": "Washington Commanders",
+    "ARI": "Arizona Cardinals",
+    "ATL": "Atlanta Falcons",
+    "BAL": "Baltimore Ravens",
+    "BUF": "Buffalo Bills",
+    "CAR": "Carolina Panthers",
+    "CHI": "Chicago Bears",
+    "CIN": "Cincinnati Bengals",
+    "CLE": "Cleveland Browns",
+    "DAL": "Dallas Cowboys",
+    "DEN": "Denver Broncos",
+    "DET": "Detroit Lions",
+    "GB": "Green Bay Packers",
+    "HOU": "Houston Texans",
+    "IND": "Indianapolis Colts",
+    "JAX": "Jacksonville Jaguars",
+    "KC": "Kansas City Chiefs",
+    "LAC": "Los Angeles Chargers",
+    "LAR": "Los Angeles Rams",
+    "LV": "Las Vegas Raiders",
+    "MIA": "Miami Dolphins",
+    "MIN": "Minnesota Vikings",
+    "NE": "New England Patriots",
+    "NO": "New Orleans Saints",
+    "NYG": "New York Giants",
+    "NYJ": "New York Jets",
+    "PHI": "Philadelphia Eagles",
+    "PIT": "Pittsburgh Steelers",
+    "SEA": "Seattle Seahawks",
+    "SF": "San Francisco 49ers",
+    "TB": "Tampa Bay Buccaneers",
+    "TEN": "Tennessee Titans",
+    "WAS": "Washington Commanders",
 }
 
 
@@ -92,8 +113,11 @@ def norm(s: str) -> str:
     s = re.sub(r"\s+", " ", s).strip()
     # National teams: the corpus says "Argentina", Wikidata says "Argentina national
     # football team". Stripped so the two sides meet; org_kind still records what it is.
-    s = re.sub(r"\s+(men'?s\s+)?national\s+(association\s+)?(football|basketball)\s+team$",
-               "", s)
+    s = re.sub(
+        r"\s+(men'?s\s+)?national\s+(association\s+)?(football|basketball)\s+team$",
+        "",
+        s,
+    )
     # Applied twice: "1. FC Koln" carries two leading tokens.
     for _ in range(2):
         s = CLUB_AFFIX.sub(" ", s).strip()
@@ -203,8 +227,12 @@ def collect(rows, sport: str) -> dict:
                 "members": _as_int(val(b, "members")),
             },
         )
-        for k, src in (("country", "countryLabel"), ("city", "hqLabel"),
-                       ("venue", "venueLabel"), ("owner", "ownerLabel")):
+        for k, src in (
+            ("country", "countryLabel"),
+            ("city", "hqLabel"),
+            ("venue", "venueLabel"),
+            ("owner", "ownerLabel"),
+        ):
             if not rec[k]:
                 v = val(b, src)
                 if v and not re.fullmatch(r"Q\d+", v):
@@ -275,8 +303,9 @@ def main() -> int:
                 "matched_on": lookup,
                 # A nation is not a franchise. Tagged so a model can separate them rather
                 # than averaging a country with a club.
-                "org_kind": "national_team" if hit.get("league") is None
-                and sport == "pitch" and hit.get("city") is None else "club",
+                "org_kind": "national_team"
+                if hit.get("league") is None and sport == "pitch" and hit.get("city") is None
+                else "club",
             }
         else:
             misses.append(f"{sport}::{team}")
@@ -287,9 +316,7 @@ def main() -> int:
         if not (city or country):
             continue
         key = norm(f"{city or ''}|{country or ''}")
-        loc = locations.setdefault(
-            key, {"city": city, "country": country, "n_orgs": 0, "sports": []}
-        )
+        loc = locations.setdefault(key, {"city": city, "country": country, "n_orgs": 0, "sports": []})
         loc["n_orgs"] += 1
         if rec["sport"] not in loc["sports"]:
             loc["sports"].append(rec["sport"])
@@ -331,8 +358,9 @@ def main() -> int:
     )
 
     print(f"\nwikidata orgs pulled : {len(wd)}")
-    print(f"corpus orgs enriched : {coverage['enriched']}/{coverage['distinct_orgs_in_corpus']}"
-          f"  ({coverage['pct']}%)")
+    print(
+        f"corpus orgs enriched : {coverage['enriched']}/{coverage['distinct_orgs_in_corpus']}" f"  ({coverage['pct']}%)"
+    )
     print(f"distinct locations   : {coverage['locations']}")
     print(f"\n{'sport':10} {'enriched':>14} {'pct':>7}")
     for sport, s in sorted(per_sport.items()):

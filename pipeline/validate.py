@@ -87,17 +87,14 @@ CHECKS: dict[str, tuple[list[str], bool]] = {
 # re-running them costs a live Wikidata pull, and claiming them as checked would be exactly
 # the kind of unearned green this file was written to prevent.
 UNRUN_GUARDS = {
-    "resolve_names.py::_verify_season_years":
-        "refuses to write when a derived season year is >1y from its own label",
-    "pull_honors_wikidata.py::empty-sport refusal":
-        "refuses to write when any sport produced zero honors or zero handles rows",
+    "resolve_names.py::_verify_season_years": "refuses to write when a derived season year is >1y from its own label",
+    "pull_honors_wikidata.py::empty-sport refusal": "refuses to write when any sport produced zero honors or zero handles rows",
 }
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--offline", action="store_true",
-                    help="skip checks that need live network")
+    ap.add_argument("--offline", action="store_true", help="skip checks that need live network")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -111,13 +108,24 @@ def main() -> int:
             results.append((name, "SKIP", 0.0, "--offline"))
             continue
         t0 = time.monotonic()
-        proc = subprocess.run([sys.executable, str(PIPE / argv[0]), *argv[1:]],
-                              capture_output=True, text=True, encoding="utf-8",
-                              errors="replace", cwd=str(ROOT))
+        proc = subprocess.run(
+            [sys.executable, str(PIPE / argv[0]), *argv[1:]],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            cwd=str(ROOT),
+        )
         dt = time.monotonic() - t0
         tail = (proc.stdout or proc.stderr or "").strip().splitlines()
-        results.append((name, "PASS" if proc.returncode == 0 else "FAIL", dt,
-                        tail[-1][:110] if tail else ""))
+        results.append(
+            (
+                name,
+                "PASS" if proc.returncode == 0 else "FAIL",
+                dt,
+                tail[-1][:110] if tail else "",
+            )
+        )
 
     width = max(len(n) for n in CHECKS)
     for name, status, dt, note in results:
@@ -126,8 +134,10 @@ def main() -> int:
     if unregistered:
         print()
         for f in unregistered:
-            print(f"  FAIL unregistered checker {f} — add it to CHECKS in validate.py; a "
-                  f"checker outside the gate is a comment with a shebang")
+            print(
+                f"  FAIL unregistered checker {f} — add it to CHECKS in validate.py; a "
+                f"checker outside the gate is a comment with a shebang"
+            )
 
     print("\nguards not exercised here (they fire only when their builder runs):")
     for g, what in UNRUN_GUARDS.items():

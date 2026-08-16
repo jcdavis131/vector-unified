@@ -90,7 +90,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portable_paths import resolve  # noqa: E402
+from portable_paths import resolve
 
 HUB = Path("C:/Users/jcdav/vector-hub/assets/data")
 SLUGS = ("hoops", "gridiron", "pitch", "equities", "tennis", "unified")
@@ -258,7 +258,8 @@ def main() -> int:
                         s_unres += 1
                         unresolved.append(
                             f"{where}: '{base}' matches {len(hits)} entries in this page's "
-                            f"source_files — cannot check its fields")
+                            f"source_files — cannot check its fields"
+                        )
                         continue
                     cited = hits[0]
                     if cited.endswith(".npz"):
@@ -294,8 +295,7 @@ def main() -> int:
                             # skipped assertion is indistinguishable from a verified one in
                             # the summary line, and that is how coverage rots unnoticed.
                             s_valskip += 1
-                            unlocated.append(f"{where}: asserts {k}={cited_v} but '{k}' "
-                                             f"appears nowhere in {base}")
+                            unlocated.append(f"{where}: asserts {k}={cited_v} but '{k}' " f"appears nowhere in {base}")
                             continue
                         # TOP LEVEL WINS when the key is there. `n_test` occurs 6x in
                         # hoops_forward_report.json — once at top level (2290) and once per
@@ -312,9 +312,11 @@ def main() -> int:
                                 # the page meant is genuinely undecidable, and guessing is
                                 # how this file produced 43 false positives already.
                                 s_valskip += 1
-                                ambiguous.append(f"{where}: {k} appears {len(found)}x in "
-                                                 f"{base} with differing values and none "
-                                                 f"at top level")
+                                ambiguous.append(
+                                    f"{where}: {k} appears {len(found)}x in "
+                                    f"{base} with differing values and none "
+                                    f"at top level"
+                                )
                                 continue
                             actual = found[0]
                         vals_checked += 1
@@ -325,7 +327,8 @@ def main() -> int:
                             mismatched.append(
                                 f"{where}: cites {base} -> {k}={cited_v}, but the file "
                                 f"says {found[0]!r} — the page publishes a number its own "
-                                f"source does not support")
+                                f"source does not support"
+                            )
 
                     parsed = expand_fields(fields)
                     if parsed is None:
@@ -358,16 +361,18 @@ def main() -> int:
                             missing.append(
                                 f"{where}: cites {base} -> {bare}, which is in that file "
                                 f"neither at top level nor under '{implied or '(none)'}' — "
-                                f"the page states a source that does not say it")
-        print(f"  {slug:9} {s_ok:3} fields ok  {s_miss:2} MISSING   "
-              f"{s_valok:2} values ok  {s_valbad:2} WRONG   "
-              f"{s_unres:2} unresolved  {s_unparse:2} uncovered")
+                                f"the page states a source that does not say it"
+                            )
+        print(
+            f"  {slug:9} {s_ok:3} fields ok  {s_miss:2} MISSING   "
+            f"{s_valok:2} values ok  {s_valbad:2} WRONG   "
+            f"{s_unres:2} unresolved  {s_unparse:2} uncovered"
+        )
 
     print(f"\n  {checked} simple field reference(s) checked against their cited file")
     print(f"  {vals_checked} published VALUE(s) compared against the artifact")
     if unparseable:
-        print(f"  {len(unparseable)} reference(s) NOT COVERED (indexed/prose form) — "
-              f"neither pass nor fail")
+        print(f"  {len(unparseable)} reference(s) NOT COVERED (indexed/prose form) — " f"neither pass nor fail")
         if args.verbose:
             for u in unparseable:
                 print(f"      {u}")
@@ -376,8 +381,7 @@ def main() -> int:
         for u in unlocated:
             print(f"      {u}")
     if ambiguous:
-        print(f"  {len(ambiguous)} value assertion(s) ambiguous (key repeats with "
-              f"differing values):")
+        print(f"  {len(ambiguous)} value assertion(s) ambiguous (key repeats with " f"differing values):")
         for u in ambiguous:
             print(f"      {u}")
     if unresolved:
@@ -395,21 +399,27 @@ def main() -> int:
         print(f"\n{len(mismatched)} published value(s) disagree with their artifact:")
         for m in mismatched:
             print(f"  {m}")
-        print("\nThis is the site's own fine print failing: 'Every number is recomputable "
-              "from public sources'. A number whose cited source says something else is "
-              "not a rounding quibble — it is the page and the artifact disagreeing about "
-              "a fact, with the reader given no way to tell.")
+        print(
+            "\nThis is the site's own fine print failing: 'Every number is recomputable "
+            "from public sources'. A number whose cited source says something else is "
+            "not a rounding quibble — it is the page and the artifact disagreeing about "
+            "a fact, with the reader given no way to tell."
+        )
     if missing:
         print(f"\n{len(missing)} cited field(s) do not exist:")
         for m in missing:
             print(f"  {m}")
-        print("\nA citation naming a field its file does not contain is not a small error: "
-              "it is the page asserting that a source supports a claim it never made.")
+        print(
+            "\nA citation naming a field its file does not contain is not a small error: "
+            "it is the page asserting that a source supports a claim it never made."
+        )
     if missing or mismatched:
         return 1 if args.check else 0
 
-    print(f"\nEvery checkable cited field exists in the file it is cited from, and all "
-          f"{vals_checked} published values match it.")
+    print(
+        f"\nEvery checkable cited field exists in the file it is cited from, and all "
+        f"{vals_checked} published values match it."
+    )
     return 0
 
 

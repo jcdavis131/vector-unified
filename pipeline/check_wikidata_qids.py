@@ -76,8 +76,10 @@ EXPECT = {
 # only checks identity would happily pass a revived Q9398 — "Q9398 is Grugliasco, correct!"
 # — which is the wrong question. Some values are banned regardless of whether they resolve.
 BANNED = {
-    "Q9398": ("Grugliasco, an Italian comune. It sat in SPORT_Q['gridiron'] in two files "
-              "and silently emptied every gridiron query. The correct value is Q41323."),
+    "Q9398": (
+        "Grugliasco, an Italian comune. It sat in SPORT_Q['gridiron'] in two files "
+        "and silently emptied every gridiron query. The correct value is Q41323."
+    ),
 }
 
 # OPERATIVE occurrences only: a SPARQL `wd:` prefix, an entity URL, or a bare quoted
@@ -102,15 +104,22 @@ def scan() -> dict[str, list[str]]:
 def labels(qids: list[str]) -> dict[str, str | None]:
     out: dict[str, str | None] = {}
     for i in range(0, len(qids), 50):
-        chunk = qids[i:i + 50]
-        r = requests.get(API, params={
-            "action": "wbgetentities", "ids": "|".join(chunk),
-            "props": "labels", "languages": "en", "format": "json"},
-            headers={"User-Agent": UA}, timeout=120)
+        chunk = qids[i : i + 50]
+        r = requests.get(
+            API,
+            params={
+                "action": "wbgetentities",
+                "ids": "|".join(chunk),
+                "props": "labels",
+                "languages": "en",
+                "format": "json",
+            },
+            headers={"User-Agent": UA},
+            timeout=120,
+        )
         r.raise_for_status()
         for qid, ent in (r.json().get("entities") or {}).items():
-            out[qid] = (None if "missing" in ent
-                        else (ent.get("labels") or {}).get("en", {}).get("value"))
+            out[qid] = None if "missing" in ent else (ent.get("labels") or {}).get("en", {}).get("value")
     return out
 
 
@@ -128,7 +137,8 @@ def main() -> int:
     for q in unregistered:
         problems.append(
             f"UNREGISTERED {q} ({got.get(q) or '?'}) at {', '.join(found[q][:3])} — add it "
-            f"to EXPECT with its label, or the next wrong QID hides the same way Q9398 did")
+            f"to EXPECT with its label, or the next wrong QID hides the same way Q9398 did"
+        )
     for q, why in sorted(BANNED.items()):
         if q in found:
             problems.append(f"BANNED {q} at {', '.join(found[q][:3])} — {why}")
@@ -139,12 +149,11 @@ def main() -> int:
         elif have != want:
             problems.append(f"CHANGED {q}: expected {want!r}, Wikidata now says {have!r}")
 
-    print(f"{len(found)} distinct QID literal(s) under pipeline/, "
-          f"{len(EXPECT)} registered, {len(BANNED)} banned\n")
+    print(f"{len(found)} distinct QID literal(s) under pipeline/, " f"{len(EXPECT)} registered, {len(BANNED)} banned\n")
     print(f"{'QID':<12} {'label':<42} sites")
     for q in sorted(found, key=lambda x: int(x[1:])):
         tag = "  BANNED" if q in BANNED else ""
-        print(f"{q:<12} {str(got.get(q)):<42} {len(found[q])}{tag}")
+        print(f"{q:<12} {got.get(q)!s:<42} {len(found[q])}{tag}")
 
     if not problems:
         print("\nevery hard-coded QID still resolves to the entity the code expects.")

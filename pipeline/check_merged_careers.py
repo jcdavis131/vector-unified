@@ -62,8 +62,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import build_hoops_vor_draft_value as B  # noqa: E402
-import build_vor_draft_value as G  # noqa: E402
+import build_hoops_vor_draft_value as B
+import build_vor_draft_value as G
 
 ROOT = Path(__file__).resolve().parent.parent
 # artifact -> (row key, WHICH SPORT'S merged set applies). Scoped per sport because a name
@@ -91,15 +91,22 @@ AXES = {
 # Every data/ artifact carrying career-level rows keyed by player name must appear in AXES.
 # Discovery by glob, refusal on omission — registration is mandatory for the same reason it
 # is in validate.py: the thing you forget to register is the thing that goes unchecked.
-CAREER_ARTIFACT_GLOB = ("direction_axis*.json", "trajectory_axis*.json", "*vor_draft_value.json")
+CAREER_ARTIFACT_GLOB = (
+    "direction_axis*.json",
+    "trajectory_axis*.json",
+    "*vor_draft_value.json",
+)
 OUT = ROOT / "data" / "merged_careers.json"
 GAP_YEARS = 3
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--check", action="store_true",
-                    help="exit 1 if an axis artifact still carries a merged career")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="exit 1 if an axis artifact still carries a merged career",
+    )
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -121,7 +128,9 @@ def main() -> int:
         if len(picks) > 1:
             ambiguous[name] = {
                 "picks": [(p.get("year"), p.get("overall")) for p in picks],
-                "seasons": [years[0], years[-1]], "n_seasons": len(years)}
+                "seasons": [years[0], years[-1]],
+                "n_seasons": len(years),
+            }
 
         if draft_years:
             earliest_draft = min(draft_years)
@@ -130,13 +139,18 @@ def main() -> int:
                 impossible[name] = {
                     "earliest_draft_year": earliest_draft,
                     "seasons_before_draft": before,
-                    "span": [years[0], years[-1]], "n_seasons": len(years)}
+                    "span": [years[0], years[-1]],
+                    "n_seasons": len(years),
+                }
                 continue
 
         gaps = [(a, b) for a, b in zip(years, years[1:], strict=False) if b - a >= GAP_YEARS]
         if gaps and name not in ambiguous:
-            review[name] = {"gaps": gaps, "span": [years[0], years[-1]],
-                            "n_seasons": len(years)}
+            review[name] = {
+                "gaps": gaps,
+                "span": [years[0], years[-1]],
+                "n_seasons": len(years),
+            }
 
     # GRIDIRON TOO. The operator's report named a hoops pair, but the defect is larger
     # here: 318 draft names carry more than one distinct draft year against hoops' 250, and
@@ -160,12 +174,13 @@ def main() -> int:
     # sweep in probe_hoops_name_collisions.py gets to acquit. IMPOSSIBLE is arithmetic and
     # stays: a season before the draft year is not explainable by a re-draft.
     acquitted = B.acquitted_names() - set(impossible)
-    by_sport = {"hoops": (set(impossible) | set(ambiguous)) - acquitted, "gridiron": gmerged}
+    by_sport = {
+        "hoops": (set(impossible) | set(ambiguous)) - acquitted,
+        "gridiron": gmerged,
+    }
     definitive = by_sport["hoops"] | by_sport["gridiron"]
 
-    unregistered = sorted(
-        {p.name for pat in CAREER_ARTIFACT_GLOB for p in (ROOT / "data").glob(pat)}
-        - set(AXES))
+    unregistered = sorted({p.name for pat in CAREER_ARTIFACT_GLOB for p in (ROOT / "data").glob(pat)} - set(AXES))
 
     contaminated = {}
     empty_reads = []
@@ -183,20 +198,24 @@ def main() -> int:
         bad = [r for r in rows if r.get("name") in by_sport[sport]]
         if bad:
             contaminated[fn] = [
-                {"name": r["name"],
-                 **{k: r[k] for k in ("delta", "direction", "vor_total", "overall")
-                    if k in r}}
-                for r in bad[:10]]
+                {
+                    "name": r["name"],
+                    **{k: r[k] for k in ("delta", "direction", "vor_total", "overall") if k in r},
+                }
+                for r in bad[:10]
+            ]
 
     report = {
         "operator_report": (
             "Jaren Jackson and Jaren Jackson Jr. are being combined; same-name players need "
-            "date of birth and team to separate. Reported 2026-08-03."),
+            "date of birth and team to separate. Reported 2026-08-03."
+        ),
         "root_cause": (
             "Not the norm_name() suffix strip. vector-hoops' vectors.json already carries "
             "ZERO suffixes, so Sr. and Jr. arrive as one key. Its `id` field is a row index, "
             "not a player id — LeBron James has 23 of them. There is no player identity key "
-            "in the source."),
+            "in the source."
+        ),
         "eligible_careers": len(series),
         "impossible_count": len(impossible),
         "ambiguous_count": len(ambiguous),
@@ -210,12 +229,15 @@ def main() -> int:
             "two rows. Arvydas Sabonis: 1985 #77 voided as underage, 1986 #24 Portland, one "
             "Wikidata qid born 1964. These names are flagged by arithmetic and cleared by "
             "the suffix sweep in probe_hoops_name_collisions.py. IMPOSSIBLE is never "
-            "acquitted: a season before the draft year survives no re-draft explanation."),
+            "acquitted: a season before the draft year survives no re-draft explanation."
+        ),
         "gridiron_merged_count": len(gmerged),
-        "gridiron_note": ("Same two definitive tests applied to gridiron via "
-                          "build_vor_draft_value.merged_names. The defect is larger there: "
-                          "318 draft names with >1 distinct draft year, and `antonio brown` "
-                          "was the top D0 example while carrying pre-draft seasons."),
+        "gridiron_note": (
+            "Same two definitive tests applied to gridiron via "
+            "build_vor_draft_value.merged_names. The defect is larger there: "
+            "318 draft names with >1 distinct draft year, and `antonio brown` "
+            "was the top D0 example while carrying pre-draft seasons."
+        ),
         "impossible": dict(sorted(impossible.items())),
         "ambiguous": dict(sorted(ambiguous.items())[:40]),
         "review_sample": dict(sorted(review.items())[:20]),
@@ -225,21 +247,25 @@ def main() -> int:
             "was drafted. It needs no threshold and no legitimate career trips it. A career "
             "GAP proves nothing by contrast — Anthony Parker played in Europe 2000-2005 and "
             f"{len(review)} careers carry a >={GAP_YEARS}-season gap — so gaps are REVIEW "
-            "only and never used to exclude."),
+            "only and never used to exclude."
+        ),
         "the_real_fix": (
             "Date of birth, as the operator said. It is free via Wikidata and this repo "
             "already runs that query in probe_pitch_expectation_sources.py. Until it "
             "exists, definitively-merged careers should be EXCLUDED from any axis that "
             "treats a career as one person's, not split — splitting without an identity key "
-            "is a guess dressed as a repair."),
+            "is a guess dressed as a repair."
+        ),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     print(f"eligible hoops careers {len(series)}")
     print(f"  IMPOSSIBLE (season before draft year) : {len(impossible)}")
     for n, d in sorted(impossible.items())[:8]:
-        print(f"      {n:24} drafted {d['earliest_draft_year']}, seasons from "
-              f"{d['span'][0]}  ({len(d['seasons_before_draft'])} impossible)")
+        print(
+            f"      {n:24} drafted {d['earliest_draft_year']}, seasons from "
+            f"{d['span'][0]}  ({len(d['seasons_before_draft'])} impossible)"
+        )
     print(f"  AMBIGUOUS  (>1 draft entry for the name) : {len(ambiguous)}")
     print(f"  ACQUITTED by DOB (one person, re-draft)  : {len(acquitted)}")
     print(f"  REVIEW     (gap only, NOT excluded)      : {len(review)}")
@@ -248,16 +274,20 @@ def main() -> int:
 
     problems = 0
     if contaminated:
-        print(f"\n{sum(len(v) for v in contaminated.values())} contaminated row(s) in "
-              f"{len(contaminated)} artifact(s):")
+        print(
+            f"\n{sum(len(v) for v in contaminated.values())} contaminated row(s) in "
+            f"{len(contaminated)} artifact(s):"
+        )
         for fn, rows in contaminated.items():
             for r in rows:
                 print(f"  {fn}: {r}")
         print("\nThese treat two people as one career. Exclude them or supply a DOB key.")
         problems += 1
     if unregistered:
-        print(f"\n{len(unregistered)} career artifact(s) not registered in AXES — an "
-              f"artifact outside this check is silently unchecked:")
+        print(
+            f"\n{len(unregistered)} career artifact(s) not registered in AXES — an "
+            f"artifact outside this check is silently unchecked:"
+        )
         for fn in unregistered:
             print(f"  {fn}")
         problems += 1

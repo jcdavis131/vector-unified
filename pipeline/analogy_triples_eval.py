@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import sys
 from collections import defaultdict
+
 import numpy as np
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -49,7 +50,14 @@ def main():
         a_rows = idx.get(a_key, [])
         b_rows = idx.get(b_key, [])
         if not a_rows or not b_rows:
-            rows.append({"triple": t, "status": "MISSING", "a_rows": len(a_rows), "b_rows": len(b_rows)})
+            rows.append(
+                {
+                    "triple": t,
+                    "status": "MISSING",
+                    "a_rows": len(a_rows),
+                    "b_rows": len(b_rows),
+                }
+            )
             continue
         a = a_rows[0]  # anchor: first season row
         sa = sport[a]
@@ -76,17 +84,33 @@ def main():
             arch_agree += 1
         if intu_match_a:
             intuition_a_match += 1
-        rows.append({
-            "a": t["a"], "b": t["b"], "role_intuitive": intu_a, "because": t["because"],
-            "a_arch": a_arch, "b_arch": b_arch, "arch_agree": bool(agree),
-            "intuition_matches_a_arch": bool(intu_match_a),
-            "b_best_rank": rank_of_b, "in_top10": bool(in_top10),
-            # kept for the corrected random-rank baseline; B's row count is what the
-            # old `pool / 2` baseline ignored
-            "_a_sport": sa, "_n_b_rows": len(b_rows),
-            "top3_names": [{"name": players[j]["name"], "sport": players[j]["sport"],
-                            "arch": players[j]["cross_arch"], "cos": round(float(sims[j]), 3)} for j in top10[:3]],
-        })
+        rows.append(
+            {
+                "a": t["a"],
+                "b": t["b"],
+                "role_intuitive": intu_a,
+                "because": t["because"],
+                "a_arch": a_arch,
+                "b_arch": b_arch,
+                "arch_agree": bool(agree),
+                "intuition_matches_a_arch": bool(intu_match_a),
+                "b_best_rank": rank_of_b,
+                "in_top10": bool(in_top10),
+                # kept for the corrected random-rank baseline; B's row count is what the
+                # old `pool / 2` baseline ignored
+                "_a_sport": sa,
+                "_n_b_rows": len(b_rows),
+                "top3_names": [
+                    {
+                        "name": players[j]["name"],
+                        "sport": players[j]["sport"],
+                        "arch": players[j]["cross_arch"],
+                        "cos": round(float(sims[j]), 3),
+                    }
+                    for j in top10[:3]
+                ],
+            }
+        )
 
     scored = [r for r in rows if "in_top10" in r]
     g4_hit = hits / len(scored) if scored else 0.0
@@ -116,8 +140,7 @@ def main():
         empirical.append(float(np.mean(draws)))
     random_rank = float(np.mean(analytic))
     random_rank_empirical = float(np.mean(empirical))
-    naive_random_rank = float(np.mean(
-        [n - sport_counts[r["_a_sport"]] for r in scored])) / 2.0
+    naive_random_rank = float(np.mean([n - sport_counts[r["_a_sport"]] for r in scored])) / 2.0
     btr = random_rank / mean_rank if mean_rank > 0 else 0.0
     btr_naive = naive_random_rank / mean_rank if mean_rank > 0 else 0.0
     formulas_agree = abs(random_rank - random_rank_empirical) / max(random_rank, 1.0) < 0.05
@@ -139,18 +162,17 @@ def main():
     # updates — the same defect as a stale report, one layer down.
     _ar = ROOT / "data" / "analogy_report.json"
     if _ar.exists():
-        _g = (json.loads(_ar.read_text(encoding="utf-8"))
-              .get("G4_cross_sport_nn_role_coherence") or {})
+        _g = json.loads(_ar.read_text(encoding="utf-8")).get("G4_cross_sport_nn_role_coherence") or {}
         _h, _b = _g.get("hit_rate"), _g.get("random_baseline")
-        _g4_all = (f"{_h} vs a {_b} random baseline" if _h is not None
-                   else "not present in analogy_report.json")
+        _g4_all = f"{_h} vs a {_b} random baseline" if _h is not None else "not present in analogy_report.json"
     else:
         # NOT a fallback literal. Quoting a remembered number when the source is missing is
         # how the stale one survived in the first place.
         _g4_all = "unavailable — data/analogy_report.json not found"
 
     report = {
-        "n_triples": len(T["triples"]), "n_scored": len(scored),
+        "n_triples": len(T["triples"]),
+        "n_scored": len(scored),
         "metric_note": (
             "WITHDRAWN AND REPLACED. This field used to say specific-pair top-10 retrieval "
             "was the wrong gate for large archetype pools, and offered a "
@@ -161,8 +183,11 @@ def main():
             "reframed — the curated-pair retrieval carries no signal, and that is the "
             "honest reading. What still stands is arch-agreement, which is reported here "
             "against its own computed baseline, and the automated all-players G4 "
-            f"({_g4_all}, see analogy_report.json)."),
-        "G4_curated_arch_agreement": round(arch_rate, 4), "target": 0.60, "pass": bool(arch_rate >= 0.60),
+            f"({_g4_all}, see analogy_report.json)."
+        ),
+        "G4_curated_arch_agreement": round(arch_rate, 4),
+        "target": 0.60,
+        "pass": bool(arch_rate >= 0.60),
         "arch_agreement_random_baseline": round(arch_base, 4),
         "arch_agreement_lift": round(arch_rate - arch_base, 4),
         "retrieval_top10_hit_rate_informational": round(g4_hit, 4),
@@ -179,31 +204,44 @@ def main():
             "expectation is E[min of k uniform draws from N] = (N-k)/(k+1), not N/2. The "
             "old N/2 baseline overstated the better-than-random ratio by roughly the "
             "number of B rows. Both the closed form and a 200-draw simulation are "
-            "computed and required to agree."),
+            "computed and required to agree."
+        ),
         "sport_counts": sport_counts,
         "triples": rows,
     }
-    (DATA / "analogy_triples_report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    (DATA / "analogy_triples_report.json").write_text(
+        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
     print("=== Curated analogy triples panel (on shipped unified.json) ===")
     print(f"triples scored: {len(scored)}/{len(T['triples'])}  (missing: {len(rows)-len(scored)})")
-    print(f"G4-curated arch-agreement (arch A == arch B): {arch_rate:.3f} "
-          f"vs random baseline {arch_base:.3f} (lift {arch_rate - arch_base:+.3f}), "
-          f"target 0.60 {'PASS' if arch_rate >= 0.60 else 'FAIL'}")
+    print(
+        f"G4-curated arch-agreement (arch A == arch B): {arch_rate:.3f} "
+        f"vs random baseline {arch_base:.3f} (lift {arch_rate - arch_base:+.3f}), "
+        f"target 0.60 {'PASS' if arch_rate >= 0.60 else 'FAIL'}"
+    )
     print(f"intuition matches A's model-arch: {intu_rate:.3f}")
-    print(f"retrieval top-10 hit-rate: {g4_hit:.3f}   mean B rank: {mean_rank:.1f}  "
-          f"(random {random_rank:.0f} analytic / {random_rank_empirical:.0f} simulated)")
-    print(f"  better-than-random: {btr:.2f}x   "
-          f"[SUPERSEDED N/2 baseline reported {btr_naive:.2f}x — see "
-          f"baseline_correction_note]\n")
+    print(
+        f"retrieval top-10 hit-rate: {g4_hit:.3f}   mean B rank: {mean_rank:.1f}  "
+        f"(random {random_rank:.0f} analytic / {random_rank_empirical:.0f} simulated)"
+    )
+    print(
+        f"  better-than-random: {btr:.2f}x   "
+        f"[SUPERSEDED N/2 baseline reported {btr_naive:.2f}x — see "
+        f"baseline_correction_note]\n"
+    )
     for r in rows:
         if "in_top10" not in r:
-            print(f"  MISSING  {r.get('a',{}).get('name')} ~ {r.get('b',{}).get('name')}  a_rows={r['a_rows']} b_rows={r['b_rows']}")
+            print(
+                f"  MISSING  {r.get('a',{}).get('name')} ~ {r.get('b',{}).get('name')}  a_rows={r['a_rows']} b_rows={r['b_rows']}"
+            )
             continue
         top3 = " | ".join(f"{t['name']}({t['sport'][:2]}/{t['arch']}){t['cos']}" for t in r["top3_names"])
         flag = "HIT " if r["in_top10"] else "miss"
-        print(f"  {flag} r={r['b_best_rank']:>4}  [{r['a']['sport'][:2]}]{r['a']['name']:<22}({r['a_arch']}) ~ "
-              f"[{r['b']['sport'][:2]}]{r['b']['name']:<20}({r['b_arch']}) intu={r['role_intuitive']}  top3: {top3}")
+        print(
+            f"  {flag} r={r['b_best_rank']:>4}  [{r['a']['sport'][:2]}]{r['a']['name']:<22}({r['a_arch']}) ~ "
+            f"[{r['b']['sport'][:2]}]{r['b']['name']:<20}({r['b_arch']}) intu={r['role_intuitive']}  top3: {top3}"
+        )
     return 0
 
 

@@ -59,48 +59,83 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
     "matched_draft_value_comparison.json": ("compare_matched_draft_value.py", []),
     "hoops_vor_draft_value.json": ("build_hoops_vor_draft_value.py", []),
     "vor_draft_value.json": ("build_vor_draft_value.py", []),
-    "direction_axis_hoops.json": ("build_direction_axis.py",
-                                  ["build_hoops_vor_draft_value.py"]),
-    "direction_axis_gridiron.json": ("build_direction_axis.py",
-                                     ["build_vor_draft_value.py"]),
+    "direction_axis_hoops.json": (
+        "build_direction_axis.py",
+        ["build_hoops_vor_draft_value.py"],
+    ),
+    "direction_axis_gridiron.json": (
+        "build_direction_axis.py",
+        ["build_vor_draft_value.py"],
+    ),
     "draft_value_curve.json": ("build_draft_value_curve.py", []),
     "qb_survivorship_probe.json": ("probe_qb_survivorship.py", []),
-    "merged_careers.json": ("check_merged_careers.py",
-                            ["build_hoops_vor_draft_value.py"]),
-    "hoops_name_collisions.json": ("probe_hoops_name_collisions.py",
-                                   ["build_hoops_vor_draft_value.py"]),
-    "gridiron_name_collisions.json": ("probe_gridiron_name_collisions.py",
-                                      ["build_vor_draft_value.py"]),
+    "merged_careers.json": (
+        "check_merged_careers.py",
+        ["build_hoops_vor_draft_value.py"],
+    ),
+    "hoops_name_collisions.json": (
+        "probe_hoops_name_collisions.py",
+        ["build_hoops_vor_draft_value.py"],
+    ),
+    "gridiron_name_collisions.json": (
+        "probe_gridiron_name_collisions.py",
+        ["build_vor_draft_value.py"],
+    ),
     # Both trajectory axes depend on the collision probes, not only on their own builder:
     # merged_names() subtracts acquitted_names(), which reads those artifacts. Declaring the
     # builder alone would let a re-run of a probe leave the axes silently stale.
-    "trajectory_axis.json": ("build_trajectory_axis.py",
-                             ["build_hoops_vor_draft_value.py",
-                              "probe_hoops_name_collisions.py"]),
-    "trajectory_axis_gridiron.json": ("build_trajectory_axis.py",
-                                      ["build_vor_draft_value.py",
-                                       "probe_gridiron_name_collisions.py",
-                                       "export_gridiron_pedigree.py"]),
-    "gridiron_pedigree.json": ("export_gridiron_pedigree.py", ["build_vor_draft_value.py"]),
+    "trajectory_axis.json": (
+        "build_trajectory_axis.py",
+        ["build_hoops_vor_draft_value.py", "probe_hoops_name_collisions.py"],
+    ),
+    "trajectory_axis_gridiron.json": (
+        "build_trajectory_axis.py",
+        [
+            "build_vor_draft_value.py",
+            "probe_gridiron_name_collisions.py",
+            "export_gridiron_pedigree.py",
+        ],
+    ),
+    "gridiron_pedigree.json": (
+        "export_gridiron_pedigree.py",
+        ["build_vor_draft_value.py"],
+    ),
     "pitch_expectation_sources.json": ("probe_pitch_expectation_sources.py", []),
     "tennis_coverage.json": ("acquire_tennis.py", []),
     "tennis_sponsors.json": ("build_tennis_sponsors.py", ["build_tennis_entities.py"]),
-    "tennis_forward_report.json": ("build_tennis_forward.py", ["build_tennis_matrix.py"]),
-    "equities_forward_report.json": ("build_equities_forward.py",
-                                    ["build_tennis_forward.py"]),
-    "hoops_forward_report.json": ("build_hoops_forward.py",
-                                 ["build_tennis_forward.py", "build_hoops_vor_draft_value.py"]),
+    "tennis_forward_report.json": (
+        "build_tennis_forward.py",
+        ["build_tennis_matrix.py"],
+    ),
+    "equities_forward_report.json": (
+        "build_equities_forward.py",
+        ["build_tennis_forward.py"],
+    ),
+    "hoops_forward_report.json": (
+        "build_hoops_forward.py",
+        ["build_tennis_forward.py", "build_hoops_vor_draft_value.py"],
+    ),
     "tennis_entities.json": ("build_tennis_entities.py", ["acquire_tennis.py"]),
-    "tennis_ranking_axis.json": ("build_tennis_ranking_axis.py",
-                                 ["build_tennis_entities.py"]),
-    "tennis_matrix_report.json": ("build_tennis_matrix.py",
-                                  ["acquire_tennis.py", "build_tennis_entities.py"]),
-    "tennis_archetype_probe.json": ("probe_tennis_archetypes.py",
-                                    ["build_tennis_matrix.py"]),
-    "tennis_expectation_probe.json": ("probe_tennis_expectation.py",
-                                      ["acquire_tennis.py"]),
-    "pitch_age_axis.json": ("build_pitch_age_axis.py",
-                            ["probe_pitch_expectation_sources.py"]),
+    "tennis_ranking_axis.json": (
+        "build_tennis_ranking_axis.py",
+        ["build_tennis_entities.py"],
+    ),
+    "tennis_matrix_report.json": (
+        "build_tennis_matrix.py",
+        ["acquire_tennis.py", "build_tennis_entities.py"],
+    ),
+    "tennis_archetype_probe.json": (
+        "probe_tennis_archetypes.py",
+        ["build_tennis_matrix.py"],
+    ),
+    "tennis_expectation_probe.json": (
+        "probe_tennis_expectation.py",
+        ["acquire_tennis.py"],
+    ),
+    "pitch_age_axis.json": (
+        "build_pitch_age_axis.py",
+        ["probe_pitch_expectation_sources.py"],
+    ),
 }
 
 # The SHIPPED asset, checked the same way and for a sharper reason: 7.29 found
@@ -108,7 +143,10 @@ PRODUCED_BY: dict[str, tuple[str, list[str]]] = {
 # where every downstream consumer reads them. A stale report is a wrong number in a file
 # nobody reads twice; a stale ASSET is a wrong number in the product.
 SHIPPED = {
-    "unified.json": ("export_unified_stage2.py", ["eval_unified.py", "train_stage2.py"]),
+    "unified.json": (
+        "export_unified_stage2.py",
+        ["eval_unified.py", "train_stage2.py"],
+    ),
 }
 
 # Artifacts that are INPUTS or hand-authored anchors, not generated reports. Listed so the
@@ -119,18 +157,22 @@ SHIPPED = {
 # writing analogy_triples.json when it writes analogy_triples_REPORT.json. Declaring a
 # generated artifact as an input exempts it from the staleness check entirely, which is the
 # one thing this file exists to do.
-PRODUCED_BY.update({
-    "native_clusters.json": ("archetype_map.py", []),
-    "unified_meta.json": ("build_unified_matrix.py", []),
-    # build_stage2_baselines.py, NOT train_stage2.py. Both write this file and both call
-    # the same knn5_acc, but only the standalone one can be run without launching a
-    # Stage 2 training run — so it is the producer a staleness message should name.
-    "stage2_baselines.json": ("build_stage2_baselines.py", ["eval_unified.py"]),
-    "g1_position_probe.json": ("probe_g1_position.py",
-                               ["eval_unified.py", "export_unified_stage2.py"]),
-    "stage2_history.json": ("train_stage2.py", []),
-    "trajectory_sport_comparison.json": ("compare_trajectory_sports.py", []),
-})
+PRODUCED_BY.update(
+    {
+        "native_clusters.json": ("archetype_map.py", []),
+        "unified_meta.json": ("build_unified_matrix.py", []),
+        # build_stage2_baselines.py, NOT train_stage2.py. Both write this file and both call
+        # the same knn5_acc, but only the standalone one can be run without launching a
+        # Stage 2 training run — so it is the producer a staleness message should name.
+        "stage2_baselines.json": ("build_stage2_baselines.py", ["eval_unified.py"]),
+        "g1_position_probe.json": (
+            "probe_g1_position.py",
+            ["eval_unified.py", "export_unified_stage2.py"],
+        ),
+        "stage2_history.json": ("train_stage2.py", []),
+        "trajectory_sport_comparison.json": ("compare_trajectory_sports.py", []),
+    }
+)
 
 NOT_GENERATED = {
     # HAND-CURATED, not generated. Each entry records a superlative on a live page that was
@@ -143,7 +185,8 @@ NOT_GENERATED = {
     # 40 hand-written cross-sport pairs (Brady <-> Curry). NO script writes this file; it is
     # irreplaceable if lost, and it was gitignored until now.
     "analogy_triples.json",
-    "archetype_map.json", "sector_map.json",
+    "archetype_map.json",
+    "sector_map.json",
 }
 
 SYMBOL_DEPS = ROOT / "data" / "symbol_dep_registry.json"
@@ -210,14 +253,17 @@ def main() -> int:
             hours = (newest - a_t) / 3600.0
             exempt, why = symbol_exempt(name)
             if exempt:
-                rows.append((name, f"fresh*", 0.0))
-                print(f"  NOTE {name}: {hours:.1f}h behind {newest_src} by mtime, but "
-                      f"{why} — see data/symbol_dep_registry.json")
+                rows.append((name, "fresh*", 0.0))
+                print(
+                    f"  NOTE {name}: {hours:.1f}h behind {newest_src} by mtime, but "
+                    f"{why} — see data/symbol_dep_registry.json"
+                )
             else:
                 rows.append((name, "STALE", hours))
                 problems.append(
                     f"{name} is {hours:.1f}h older than {newest_src} — re-run "
-                    f"`python pipeline/{producer}`" + (f" ({why})" if why else ""))
+                    f"`python pipeline/{producer}`" + (f" ({why})" if why else "")
+                )
         else:
             rows.append((name, "fresh", 0.0))
 
@@ -239,7 +285,8 @@ def main() -> int:
                 f"SHIPPED ASSET assets/{name} is {hours:.1f}h older than {newest_src} — "
                 f"its metadata is what downstream consumers read. Rebuild with "
                 f"`python pipeline/{producer}` (an operator action: it replaces the live "
-                f"artifact)")
+                f"artifact)"
+            )
         else:
             rows.append(("assets/" + name, "fresh", 0.0))
 
@@ -249,7 +296,8 @@ def main() -> int:
         problems.append(
             f"UNREGISTERED artifact data/{extra} — add it to PRODUCED_BY with its producer "
             f"or to NOT_GENERATED if it is an input; an undeclared report cannot be "
-            f"checked for staleness")
+            f"checked for staleness"
+        )
 
     width = max(len(n) for n, _s, _h in rows)
     for name, status, hours in rows:
@@ -262,8 +310,10 @@ def main() -> int:
     print(f"\n{len(problems)} problem(s):")
     for p in problems:
         print(f"  {p}")
-    print("\nmtime is a crude test: it cannot tell a comment edit from a formula change, "
-          "and\nit errs toward re-running. That is the cheap direction to be wrong in.")
+    print(
+        "\nmtime is a crude test: it cannot tell a comment edit from a formula change, "
+        "and\nit errs toward re-running. That is the cheap direction to be wrong in."
+    )
     return 1 if args.check else 0
 
 

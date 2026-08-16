@@ -73,7 +73,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import build_hoops_vor_draft_value as B  # noqa: E402
+import build_hoops_vor_draft_value as B
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "hoops_name_collisions.json"
@@ -102,9 +102,12 @@ SELECT ?item ?name ?dob WHERE {{
   # Wikidata ends the response early. The occupation is checked directly.
 }}
 """
-    r = requests.get(ENDPOINT, params={"query": q, "format": "json"},
-                     headers={"User-Agent": UA,
-                              "Accept": "application/sparql-results+json"}, timeout=240)
+    r = requests.get(
+        ENDPOINT,
+        params={"query": q, "format": "json"},
+        headers={"User-Agent": UA, "Accept": "application/sparql-results+json"},
+        timeout=240,
+    )
     r.raise_for_status()
     # strict=False: some Wikidata labels carry raw control characters, and the default
     # parser rejects the whole response over one of them. The first run lost both batches
@@ -128,25 +131,31 @@ def main() -> int:
         display.setdefault(n, str(p["name"]))
     names = sorted(span)
     if args.limit:
-        names = names[:args.limit]
+        names = names[: args.limit]
     print(f"{len(names)} distinct corpus names")
 
     cands: dict[str, list[dict]] = collections.defaultdict(list)
     failed = 0
     for i in range(0, len(names), BATCH):
-        chunk = [display[n] for n in names[i:i + BATCH]]
+        chunk = [display[n] for n in names[i : i + BATCH]]
         try:
             res = query(chunk)
-        except Exception as e:                                    # noqa: BLE001
+        except Exception as e:
             failed += 1
             print(f"  batch {i // BATCH + 1} failed: {str(e)[:70]}")
             continue
         for b in res:
             nm = B.norm_name(b.get("name", {}).get("value", ""))
-            cands[nm].append({"qid": b["item"]["value"].rsplit("/", 1)[-1],
-                              "dob": (b.get("dob") or {}).get("value")})
-        print(f"  batch {i // BATCH + 1}/{(len(names) - 1) // BATCH + 1}: "
-              f"{len(cands)} names with a candidate", flush=True)
+            cands[nm].append(
+                {
+                    "qid": b["item"]["value"].rsplit("/", 1)[-1],
+                    "dob": (b.get("dob") or {}).get("value"),
+                }
+            )
+        print(
+            f"  batch {i // BATCH + 1}/{(len(names) - 1) // BATCH + 1}: " f"{len(cands)} names with a candidate",
+            flush=True,
+        )
         time.sleep(SLEEP)
 
     colliding, resolved, unmatched = {}, [], 0
@@ -168,8 +177,11 @@ def main() -> int:
             if any(MIN_AGE <= y - by <= MAX_AGE for y in span[n]):
                 seen[c["qid"]] = by
         if len(seen) >= 2:
-            colliding[n] = {"qids": seen, "corpus_seasons": [lo, hi],
-                            "birth_years": sorted(set(seen.values()))}
+            colliding[n] = {
+                "qids": seen,
+                "corpus_seasons": [lo, hi],
+                "birth_years": sorted(set(seen.values())),
+            }
         elif len(seen) == 1:
             # KEEP THE NAMES, not just the count. Exactly one age-plausible person for a
             # name is positive evidence of a SINGLE person, and that is the only thing that
@@ -207,8 +219,8 @@ def main() -> int:
     probe_names = [display.get(n, n) + s for n in sweep_targets for s in SUFFIXES]
     for i in range(0, len(probe_names), BATCH):
         try:
-            res = query(probe_names[i:i + BATCH])
-        except Exception as e:                                        # noqa: BLE001
+            res = query(probe_names[i : i + BATCH])
+        except Exception as e:
             sweep_failed += 1
             print(f"  sweep batch {i // BATCH + 1} failed: {str(e)[:70]}")
             continue
@@ -232,9 +244,7 @@ def main() -> int:
     exclusion = sorted(set(arith) - set(acquitted))
 
     report = {
-        "operator_report": (
-            "Same-exact-name players need date of birth and team to separate. "
-            "Reported 2026-08-03."),
+        "operator_report": ("Same-exact-name players need date of birth and team to separate. " "Reported 2026-08-03."),
         "source": "Wikidata SPARQL — free, no key",
         "names_probed": len(names),
         "matched_to_wikidata": len(cands),
@@ -252,7 +262,8 @@ def main() -> int:
             "NOT say both appear in this corpus. Andrew Wiggins flags because a second "
             "basketball player born 1992 exists somewhere; only one is in the NBA. Treat "
             "these as names to verify, and the ARITHMETIC set in check_merged_careers.py "
-            "as the ones already proven."),
+            "as the ones already proven."
+        ),
         "failed_batches": failed,
         "plausibility_band": [MIN_AGE, MAX_AGE],
         "method_note": (
@@ -260,37 +271,45 @@ def main() -> int:
             "SPARQL returned first and reported an age range of 14 to 129, because "
             "Cristiano Ronaldo matches his own son. A name is COLLIDING when two or more "
             "distinct QIDs are both plausible by birth year against the corpus season span. "
-            "Nothing is merged and nothing is picked."),
+            "Nothing is merged and nothing is picked."
+        ),
         "SUFFIX_SWEEP": {
-            "what": ("Re-queries the arithmetic-flagged names across "
-                     f"{SUFFIXES} because label matching is EXACT and the corpus display "
-                     "name carries no suffix — asking for 'Glen Rice' never returns Glen "
-                     "Rice Jr. (Q4811246, b.1991). Without this the bare pass reports him "
-                     "as one person and the father/son pair is acquitted."),
+            "what": (
+                "Re-queries the arithmetic-flagged names across "
+                f"{SUFFIXES} because label matching is EXACT and the corpus display "
+                "name carries no suffix — asking for 'Glen Rice' never returns Glen "
+                "Rice Jr. (Q4811246, b.1991). Without this the bare pass reports him "
+                "as one person and the father/son pair is acquitted."
+            ),
             "names_swept": len(sweep_targets),
             "failed_batches": sweep_failed,
             "acquitted": {k: v for k, v in sorted(acquitted.items())},
             "confirmed_two_or_more": {k: v for k, v in sorted(confirmed.items())},
             "no_wikidata_answer": unknown,
             "EXCLUSION_SET": exclusion,
-            "rule": ("EXCLUDE = arithmetic-flagged AND NOT acquitted by the suffix sweep. "
-                     "A name with no Wikidata answer stays excluded — no evidence is not "
-                     "evidence of one person. DOB-colliding names that the arithmetic test "
-                     "did NOT flag are deliberately absent: `colliding` is a superset of "
-                     "suspicion (a second same-name player existing somewhere does not put "
-                     "him in this corpus), so it never excludes on its own."),
+            "rule": (
+                "EXCLUDE = arithmetic-flagged AND NOT acquitted by the suffix sweep. "
+                "A name with no Wikidata answer stays excluded — no evidence is not "
+                "evidence of one person. DOB-colliding names that the arithmetic test "
+                "did NOT flag are deliberately absent: `colliding` is a superset of "
+                "suspicion (a second same-name player existing somewhere does not put "
+                "him in this corpus), so it never excludes on its own."
+            ),
         },
         "cross_check": {
             "arithmetic_detector_count": len(arith),
             "found_by_both": both,
             "found_by_DOB_only": dob_only[:40],
             "found_by_ARITHMETIC_only": arith_only[:40],
-            "n_dob_only": len(dob_only), "n_arith_only": len(arith_only),
-            "note": ("Two independent methods. Agreement on the cases both can see is the "
-                     "confirmation; DOB-only cases are what the arithmetic test is blind "
-                     "to — same-name players drafted in overlapping eras, or undrafted. "
-                     "ARITHMETIC-only cases are names Wikidata has one or zero entries "
-                     "for, which is a coverage limit of the DOB method, not a refutation."),
+            "n_dob_only": len(dob_only),
+            "n_arith_only": len(arith_only),
+            "note": (
+                "Two independent methods. Agreement on the cases both can see is the "
+                "confirmation; DOB-only cases are what the arithmetic test is blind "
+                "to — same-name players drafted in overlapping eras, or undrafted. "
+                "ARITHMETIC-only cases are names Wikidata has one or zero entries "
+                "for, which is a coverage limit of the DOB method, not a refutation."
+            ),
         },
         # ALL of them. This was `[:80]` while `colliding_names` reported 119, so the file
         # said 119 and answered questions about 80 — a silent cap that reads as coverage.
@@ -298,13 +317,13 @@ def main() -> int:
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    print(f"\nmatched {len(cands)}/{len(names)}   unmatched {unmatched}   "
-          f"single-person {len(resolved)}   COLLIDING {len(colliding)}")
+    print(
+        f"\nmatched {len(cands)}/{len(names)}   unmatched {unmatched}   "
+        f"single-person {len(resolved)}   COLLIDING {len(colliding)}"
+    )
     print(f"\nsuffix sweep over the {len(sweep_targets)} arithmetic-flagged names:")
-    print(f"  ACQUITTED (one person, re-draft) : {len(acquitted)}  "
-          f"{sorted(acquitted)[:5]}")
-    print(f"  CONFIRMED (>=2 people)           : {len(confirmed)}  "
-          f"{sorted(confirmed)[:5]}")
+    print(f"  ACQUITTED (one person, re-draft) : {len(acquitted)}  " f"{sorted(acquitted)[:5]}")
+    print(f"  CONFIRMED (>=2 people)           : {len(confirmed)}  " f"{sorted(confirmed)[:5]}")
     print(f"  no Wikidata answer               : {len(unknown)}  {unknown[:5]}")
     print(f"  EXCLUSION SET                    : {len(exclusion)}")
     print(f"\ncross-check vs the arithmetic detector ({len(arith)} names):")

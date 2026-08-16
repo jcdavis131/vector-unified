@@ -21,16 +21,22 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from pathlib import Path
 
 import numpy as np
-
-from load_encoders import load_all, HOOPS, ROOT
+from load_encoders import ROOT, load_all
 
 DATA = ROOT / "data"
 SEED = 7
 K = 8
-CROSS_ARCH_IDS = ["A0", "A1", "A2", "A3", "A4", "A5", "A11"]  # v0 in-scope order -> idx 0..6
+CROSS_ARCH_IDS = [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A11",
+]  # v0 in-scope order -> idx 0..6
 HOOPS_POS = {0: "PG", 1: "SG", 2: "SF", 3: "PF", 4: "C", -1: "?"}
 HOOPS_ARCH = [
     "Offensive Glass + Rim Protection",
@@ -52,6 +58,7 @@ def _pos_dist(pos_list):
 
 def _kmeans(E, k=K, seed=SEED):
     from sklearn.cluster import KMeans
+
     km = KMeans(n_clusters=k, n_init=10, random_state=seed)
     labels = km.fit_predict(E)
     return labels.astype(int)
@@ -86,12 +93,14 @@ def main():
     hoops_entries = []
     for c in range(K):
         m = clu == c
-        hoops_entries.append({
-            "cluster": c,
-            "label": HOOPS_ARCH[c] if c < len(HOOPS_ARCH) else f"cluster_{c}",
-            "n": int(m.sum()),
-            "pos_dist": _pos_dist([HOOPS_POS.get(p, p) for p in np.array(pos)[m]]),
-        })
+        hoops_entries.append(
+            {
+                "cluster": c,
+                "label": HOOPS_ARCH[c] if c < len(HOOPS_ARCH) else f"cluster_{c}",
+                "n": int(m.sum()),
+                "pos_dist": _pos_dist([HOOPS_POS.get(p, p) for p in np.array(pos)[m]]),
+            }
+        )
     out["hoops"] = hoops_entries
 
     # pitch + gridiron — k-means(8), size-sorted via native_labels (matches native_clusters.json)
@@ -102,11 +111,13 @@ def main():
         entries = []
         for c in range(K):
             m = labels == c
-            entries.append({
-                "cluster": c,
-                "n": int(m.sum()),
-                "pos_dist": _pos_dist([r["pos"] for r in np.array(recs)[m]]),
-            })
+            entries.append(
+                {
+                    "cluster": c,
+                    "n": int(m.sum()),
+                    "pos_dist": _pos_dist([r["pos"] for r in np.array(recs)[m]]),
+                }
+            )
         out[sport] = entries
 
     (DATA / "native_clusters.json").write_text(json.dumps(out, indent=2), encoding="utf-8")

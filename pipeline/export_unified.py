@@ -21,15 +21,13 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
 import numpy as np
 import torch
+from eval_unified import encode_all, load_model
+from load_encoders import ROOT, SPORTS, load_all
 from sklearn.decomposition import PCA
-
-from load_encoders import SPORTS, SPORT_ID, ROOT, UCACHE, load_all
 from train_unified import load_matrix
-from eval_unified import load_model, encode_all
 
 DATA = ROOT / "data"
 ASSETS = ROOT / "assets"
@@ -40,7 +38,9 @@ ARCH_NAMES = _meta["arch_names"]
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
     M = load_matrix(device)
     # NAMED EXPLICITLY. This is the STAGE 1 exporter and it wants the Stage 1
     # checkpoint, but it was relying on load_model's DEFAULT to get it — so
@@ -65,7 +65,7 @@ def main():
         recs.append(all_sport[SPORTS[s]]["records"][int(pidx[i])])
 
     pca = PCA(n_components=3, random_state=7)
-    xyz = pca.fit_transform(z)          # (N,3)
+    xyz = pca.fit_transform(z)  # (N,3)
     W = pca.components_.astype(np.float32)  # (3,64)
 
     amap = json.loads((DATA / "archetype_map.json").read_text(encoding="utf-8"))
@@ -75,27 +75,30 @@ def main():
     players = []
     for i in range(len(sid)):
         r = recs[i]
-        players.append({
-            "sport": SPORTS[int(sid[i])],
-            "player_id": str(r["player_id"]),
-            "name": str(r["name"]),
-            "season": r["season"],
-            "pos": str(r["pos"]),
-            "team": str(r.get("team", "")),
-            "native_cluster": int(native[i]),
-            "cross_arch": ARCH_NAMES[int(arch[i])],
-            "e": [round(float(v), 5) for v in z[i]],
-            "x": round(float(xyz[i, 0]), 5),
-            "y": round(float(xyz[i, 1]), 5),
-            "z": round(float(xyz[i, 2]), 5),
-        })
+        players.append(
+            {
+                "sport": SPORTS[int(sid[i])],
+                "player_id": str(r["player_id"]),
+                "name": str(r["name"]),
+                "season": r["season"],
+                "pos": str(r["pos"]),
+                "team": str(r.get("team", "")),
+                "native_cluster": int(native[i]),
+                "cross_arch": ARCH_NAMES[int(arch[i])],
+                "e": [round(float(v), 5) for v in z[i]],
+                "x": round(float(xyz[i, 0]), 5),
+                "y": round(float(xyz[i, 1]), 5),
+                "z": round(float(xyz[i, 2]), 5),
+            }
+        )
 
     # per-sport count check
     counts = {SPORTS[s]: int((sid == s).sum()) for s in range(3)}
     meta = _meta
     for s in range(3):
-        assert counts[SPORTS[s]] == meta["coverage"][SPORTS[s]], \
-            f"{SPORTS[s]} count mismatch {counts[SPORTS[s]]} vs meta {meta['coverage'][SPORTS[s]]}"
+        assert (
+            counts[SPORTS[s]] == meta["coverage"][SPORTS[s]]
+        ), f"{SPORTS[s]} count mismatch {counts[SPORTS[s]]} vs meta {meta['coverage'][SPORTS[s]]}"
 
     out = {
         "built": "2026-07-10",
@@ -103,15 +106,28 @@ def main():
         "d_emb": int(z.shape[1]),
         "n_players": int(z.shape[0]),
         "normalization": "per-sport frozen e_s -> shared trunk (adapter+era) -> 64-d L2; cross-sport archetype contrastive (SupCon) + CORAL + GRL",
-        "sports": [{"id": s, "name": SPORTS[s], "d_native": int(all_sport[SPORTS[s]]["E"].shape[1]),
-                    "n": counts[SPORTS[s]]} for s in range(3)],
-        "archetypes": [{"id": a["id"], "label": a["label"], "description": a["description"]}
-                       for a in taxonomy],
-        "axes": [{"pc": f"PC{k+1}", "name": f"joint role axis {k+1}",
-                  "note": "PCA of the cross-sport embedding; cross-sport role axis, interpretation deferred"}
-                 for k in range(3)],
-        "proj": {"W": [[round(float(v), 6) for v in row] for row in W],
-                 "explained_variance": [round(float(v), 4) for v in pca.explained_variance_ratio_]},
+        "sports": [
+            {
+                "id": s,
+                "name": SPORTS[s],
+                "d_native": int(all_sport[SPORTS[s]]["E"].shape[1]),
+                "n": counts[SPORTS[s]],
+            }
+            for s in range(3)
+        ],
+        "archetypes": [{"id": a["id"], "label": a["label"], "description": a["description"]} for a in taxonomy],
+        "axes": [
+            {
+                "pc": f"PC{k+1}",
+                "name": f"joint role axis {k+1}",
+                "note": "PCA of the cross-sport embedding; cross-sport role axis, interpretation deferred",
+            }
+            for k in range(3)
+        ],
+        "proj": {
+            "W": [[round(float(v), 6) for v in row] for row in W],
+            "explained_variance": [round(float(v), 4) for v in pca.explained_variance_ratio_],
+        },
         "players": players,
     }
     ASSETS.mkdir(parents=True, exist_ok=True)
@@ -119,8 +135,10 @@ def main():
 
     print(f"exported assets/unified.json  players={len(players)}  d_emb={out['d_emb']}")
     print(f"per-sport: {counts}")
-    print(f"PCA(3) explained variance: {out['proj']['explained_variance']} (sum {sum(out['proj']['explained_variance']):.3f})")
-    print("norms: min={:.5f} max={:.5f} (all ~1.0)".format(float(norms.min()), float(norms.max())))
+    print(
+        f"PCA(3) explained variance: {out['proj']['explained_variance']} (sum {sum(out['proj']['explained_variance']):.3f})"
+    )
+    print(f"norms: min={float(norms.min()):.5f} max={float(norms.max()):.5f} (all ~1.0)")
     print("asserts PASS: no NaN, norms=1.0, per-sport counts match meta")
     return 0
 

@@ -49,12 +49,16 @@ import statistics
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = {"hoops": ROOT / "data" / "hoops_vor_draft_value.json",
-       "gridiron": ROOT / "data" / "vor_draft_value.json"}
-OUT = {"hoops": ROOT / "data" / "direction_axis_hoops.json",
-       "gridiron": ROOT / "data" / "direction_axis_gridiron.json"}
+SRC = {
+    "hoops": ROOT / "data" / "hoops_vor_draft_value.json",
+    "gridiron": ROOT / "data" / "vor_draft_value.json",
+}
+OUT = {
+    "hoops": ROOT / "data" / "direction_axis_hoops.json",
+    "gridiron": ROOT / "data" / "direction_axis_gridiron.json",
+}
 
-MIN_SEASONS = 4     # >=2 per half
+MIN_SEASONS = 4  # >=2 per half
 TAIL_PCT = 20.0
 
 
@@ -101,10 +105,17 @@ def main() -> int:
         if first == 0.0 and second == 0.0:
             dropped["never_above_replacement"] += 1
             continue
-        rows.append({"name": p["name"], "seasons": len(vals),
-                     "first_half": round(first, 2), "second_half": round(second, 2),
-                     "delta": round(second - first, 2),
-                     "overall": p.get("overall"), "pos": p.get("pos")})
+        rows.append(
+            {
+                "name": p["name"],
+                "seasons": len(vals),
+                "first_half": round(first, 2),
+                "second_half": round(second, 2),
+                "delta": round(second - first, 2),
+                "overall": p.get("overall"),
+                "pos": p.get("pos"),
+            }
+        )
 
     if len(rows) < 50:
         print(f"only {len(rows)} careers with a usable series — not assigning.")
@@ -115,8 +126,7 @@ def main() -> int:
     for r in rows:
         pr = pct_rank(deltas, r["delta"])
         r["delta_pct"] = round(pr, 1)
-        r["direction"] = ("D0" if pr >= 100.0 - TAIL_PCT else
-                          "D1" if pr <= TAIL_PCT else None)
+        r["direction"] = "D0" if pr >= 100.0 - TAIL_PCT else "D1" if pr <= TAIL_PCT else None
         counts[r["direction"] or "unlabelled"] += 1
 
     ranked = sorted(rows, key=lambda r: -r["delta"])
@@ -132,39 +142,59 @@ def main() -> int:
             "VOR is floored at zero, so a career spent entirely below replacement has "
             "delta 0 and is dropped, not labelled — 'bad then bad' is not a direction. "
             "D0/D1 therefore describe careers that were above replacement at some point, "
-            "a narrower population than 'all careers'."),
+            "a narrower population than 'all careers'."
+        ),
         "orthogonality_note": (
             "D is INDEPENDENT of T0/T1 by design. A player may be T1 (over-delivered "
             "against his draft slot) and D1 (declining now) at once; the previous "
-            "single-axis encoding made that inexpressible."),
-        "D0_examples": [{"name": r["name"], "pick": r["overall"], "pos": r.get("pos"),
-                         "first": r["first_half"], "second": r["second_half"],
-                         "delta": r["delta"]}
-                        for r in ranked if r["direction"] == "D0"][:8],
-        "D1_examples": [{"name": r["name"], "pick": r["overall"], "pos": r.get("pos"),
-                         "first": r["first_half"], "second": r["second_half"],
-                         "delta": r["delta"]}
-                        for r in reversed(ranked) if r["direction"] == "D1"][:8],
+            "single-axis encoding made that inexpressible."
+        ),
+        "D0_examples": [
+            {
+                "name": r["name"],
+                "pick": r["overall"],
+                "pos": r.get("pos"),
+                "first": r["first_half"],
+                "second": r["second_half"],
+                "delta": r["delta"],
+            }
+            for r in ranked
+            if r["direction"] == "D0"
+        ][:8],
+        "D1_examples": [
+            {
+                "name": r["name"],
+                "pick": r["overall"],
+                "pos": r.get("pos"),
+                "first": r["first_half"],
+                "second": r["second_half"],
+                "delta": r["delta"],
+            }
+            for r in reversed(ranked)
+            if r["direction"] == "D1"
+        ][:8],
     }
     OUT[args.sport].write_text(
         json.dumps({"report": report, "careers": rows}, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8")
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
 
     print(f"{args.sport}: {len(rows)} careers scored   dropped {dict(dropped)}")
-    print(f"D0 rising {counts['D0']}   D1 declining {counts['D1']}   "
-          f"unlabelled {counts['unlabelled']}\n")
+    print(f"D0 rising {counts['D0']}   D1 declining {counts['D1']}   " f"unlabelled {counts['unlabelled']}\n")
     print("D0 — rising (mean VOR, first half -> second):")
     for e in report["D0_examples"][:6]:
-        print(f"  pick {str(e['pick']):>4}  {e['first']:>7.2f} -> {e['second']:>7.2f}"
-              f"  ({e['delta']:+.2f})  {e['name']}")
+        print(
+            f"  pick {e['pick']!s:>4}  {e['first']:>7.2f} -> {e['second']:>7.2f}" f"  ({e['delta']:+.2f})  {e['name']}"
+        )
     print("\nD1 — declining:")
     for e in report["D1_examples"][:6]:
-        print(f"  pick {str(e['pick']):>4}  {e['first']:>7.2f} -> {e['second']:>7.2f}"
-              f"  ({e['delta']:+.2f})  {e['name']}")
+        print(
+            f"  pick {e['pick']!s:>4}  {e['first']:>7.2f} -> {e['second']:>7.2f}" f"  ({e['delta']:+.2f})  {e['name']}"
+        )
     print(f"\nwrote {OUT[args.sport]}")
     return 0
 
@@ -174,8 +204,7 @@ def _series(sport: str) -> dict[str, list[tuple[int, float]]]:
     import importlib.util
     import sys
 
-    name = ("build_hoops_vor_draft_value" if sport == "hoops"
-            else "build_vor_draft_value")
+    name = "build_hoops_vor_draft_value" if sport == "hoops" else "build_vor_draft_value"
     path = Path(__file__).resolve().parent / f"{name}.py"
     spec = importlib.util.spec_from_file_location(f"_dir_{name}", path)
     mod = importlib.util.module_from_spec(spec)
@@ -204,6 +233,7 @@ def _series(sport: str) -> dict[str, list[tuple[int, float]]]:
     # RuntimeError in merged_names() caught this caller; without it the axis would have
     # normalised under a different rule than its own value table.
     import csv as _csv
+
     with mod.DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as _fh:
         _dn = [(r.get("pfr_player_name") or "").strip() for r in _csv.DictReader(_fh)]
     mod.configure_norm([p["name"] for p in vec], [n for n in _dn if n])

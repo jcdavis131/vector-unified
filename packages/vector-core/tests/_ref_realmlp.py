@@ -149,7 +149,9 @@ class RealMLPPreprocessor:
     @classmethod
     def load(cls, path: str | Path):
         data = json.loads(Path(path).read_text())
-        obj = cls(data["feature_names"], mode=data.get("mode", "robust"), clip=data.get("clip", 3.0))  # noqa: E501
+        obj = cls(
+            data["feature_names"], mode=data.get("mode", "robust"), clip=data.get("clip", 3.0)
+        )  # noqa: E501
         for season, vals in data["scalers"].items():
             s = RobustScaler(clip=data.get("clip", 3.0))
             s.median_ = np.array(vals["median"], dtype=np.float32)
@@ -172,6 +174,10 @@ def audit_current_scaling(Z: np.ndarray, manifest: dict) -> dict:
         "outlier_rate_gt3": float((np.abs(Z) > 3).mean()),
         "outlier_rate_gt4": float((np.abs(Z) > 4).mean()),
         "worst_features": [
-            {"feature": features[i] if i < len(features) else f"f{i}", "outlier_gt3": float(outlier[i])} for i in top  # noqa: E501
+            {
+                "feature": features[i] if i < len(features) else f"f{i}",
+                "outlier_gt3": float(outlier[i]),
+            }
+            for i in top  # noqa: E501
         ],
     }

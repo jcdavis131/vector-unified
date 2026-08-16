@@ -89,19 +89,44 @@ BATCH = 40
 # lookup at runtime and printed, so a mis-resolved anchor shows up instead of silently
 # assigning every company to the wrong bucket.
 SECTOR_ANCHORS = [
-    "financial services", "insurance", "telecommunications", "transport",
-    "automotive industry", "energy industry", "retail", "information technology",
-    "health care", "food industry", "real estate", "mass media",
-    "construction", "manufacturing", "hospitality industry",
+    "financial services",
+    "insurance",
+    "telecommunications",
+    "transport",
+    "automotive industry",
+    "energy industry",
+    "retail",
+    "information technology",
+    "health care",
+    "food industry",
+    "real estate",
+    "mass media",
+    "construction",
+    "manufacturing",
+    "hospitality industry",
 ]
 
 # Same exclusions as probe_company_sectors.py: a corporate FORM is not a sector.
 GENERIC = {
-    "business", "enterprise", "public company", "private company", "company",
-    "organization", "corporation", "brand", "joint-stock company",
-    "public limited company", "limited liability company", "conglomerate",
-    "subsidiary", "holding company", "privately held company", "trade name",
-    "state-owned enterprise", "societas europaea", "aktiengesellschaft",
+    "business",
+    "enterprise",
+    "public company",
+    "private company",
+    "company",
+    "organization",
+    "corporation",
+    "brand",
+    "joint-stock company",
+    "public limited company",
+    "limited liability company",
+    "conglomerate",
+    "subsidiary",
+    "holding company",
+    "privately held company",
+    "trade name",
+    "state-owned enterprise",
+    "societas europaea",
+    "aktiengesellschaft",
 }
 
 
@@ -109,7 +134,8 @@ def run_query(q: str, *, attempts: int = 5):
     delay = 5.0
     for attempt in range(1, attempts + 1):
         r = requests.get(
-            ENDPOINT, params={"query": q, "format": "json"},
+            ENDPOINT,
+            params={"query": q, "format": "json"},
             headers={"User-Agent": UA, "Accept": "application/sparql-results+json"},
             timeout=240,
         )
@@ -190,8 +216,10 @@ def main() -> int:
         catlabel[cat] = lab
 
     all_cats = sorted({x for s in cat_of.values() for x in s})
-    print(f"\ndistinct category values across business-typed companies: {len(all_cats)}",
-          file=sys.stderr)
+    print(
+        f"\ndistinct category values across business-typed companies: {len(all_cats)}",
+        file=sys.stderr,
+    )
 
     # ---- which anchors is each category a subclass* of? ---------------------
     anchor_qids = {v: k for k, v in anchors.items()}
@@ -236,8 +264,13 @@ def main() -> int:
                 sector_companies[s].append(c["label"])
                 sector_ath[s] |= c_ath
         else:
-            unassigned.append((c["label"], len(c_ath),
-                               sorted(catlabel.get(x, x) for x in cat_of.get(c["qid"], ()))[:3]))
+            unassigned.append(
+                (
+                    c["label"],
+                    len(c_ath),
+                    sorted(catlabel.get(x, x) for x in cat_of.get(c["qid"], ()))[:3],
+                )
+            )
 
     union_all = set()
     for s in sector_ath.values():
@@ -252,8 +285,7 @@ def main() -> int:
         "anchors_declared": SECTOR_ANCHORS,
         "anchors_resolved": anchors,
         "multi_sector_companies": sum(
-            1 for c in biz
-            if len({s for cat in cat_of.get(c["qid"], ()) for s in sector_of_cat.get(cat, set())}) > 1
+            1 for c in biz if len({s for cat in cat_of.get(c["qid"], ()) for s in sector_of_cat.get(cat, set())}) > 1
         ),
         "sector_rows_are_non_disjoint": True,
         "sum_of_sector_rows": row_sum,
@@ -265,26 +297,35 @@ def main() -> int:
             for s in sorted(sector_ath, key=lambda x: -len(sector_ath[x]))
         },
     }
-    OUT.write_text(json.dumps({
-        "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "method": "Wikidata P279* subclass rollup onto declared anchors; no hand-authored map",
-        "report": report,
-        "sector_companies": {s: sorted(v) for s, v in sector_companies.items()},
-        "unassigned": sorted(unassigned, key=lambda t: -t[1])[:40],
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "method": "Wikidata P279* subclass rollup onto declared anchors; no hand-authored map",
+                "report": report,
+                "sector_companies": {s: sorted(v) for s, v in sector_companies.items()},
+                "unassigned": sorted(unassigned, key=lambda t: -t[1])[:40],
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
 
-    print(f"\nassigned to >=1 sector: {len(assigned)} / {len(biz)} "
-          f"({report['pct_assigned']}%)   sectors used: {report['sectors_used']}"
-          f"   multi-sector: {report['multi_sector_companies']}\n")
+    print(
+        f"\nassigned to >=1 sector: {len(assigned)} / {len(biz)} "
+        f"({report['pct_assigned']}%)   sectors used: {report['sectors_used']}"
+        f"   multi-sector: {report['multi_sector_companies']}\n"
+    )
     print(f"{'sector':26} {'cos':>5} {'athletes':>9}")
     for s, v in report["by_sector"].items():
         print(f"{s:26} {v['companies']:>5} {v['athletes']:>9}")
-    print(f"\nDO NOT SUM: rows {row_sum}, distinct {len(union_all)}, "
-          f"inflation {report['inflation_if_summed']}x")
+    print(f"\nDO NOT SUM: rows {row_sum}, distinct {len(union_all)}, " f"inflation {report['inflation_if_summed']}x")
     if unassigned:
         print("\nunassigned, largest first (what the anchors miss):")
         for lab, n, cats in sorted(unassigned, key=lambda t: -t[1])[:10]:

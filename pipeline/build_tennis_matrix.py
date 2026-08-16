@@ -54,23 +54,35 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from acquire_tennis import YEARS, path_for, read_sheet  # noqa: E402
+from acquire_tennis import YEARS, path_for, read_sheet
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTM = ROOT / "pipeline" / "data" / "tennis_matrix.npz"
 OUTJ = ROOT / "pipeline" / "data" / "meta_tennis_matrix.json"
 OUTR = ROOT / "data" / "tennis_matrix_report.json"
 
-MIN_MATCHES = 8            # a rate over fewer is noise wearing a number
-MIN_SURFACE_MATCHES = 3    # below this a surface WR is masked out, not zeroed
+MIN_MATCHES = 8  # a rate over fewer is noise wearing a number
+MIN_SURFACE_MATCHES = 3  # below this a surface WR is masked out, not zeroed
 RANK_CAP = 500.0
 BIG = {"Grand Slam", "Masters 1000", "WTA1000", "Masters Cup", "Tour Championships"}
 
 FEATURES = [
-    "WIN_RATE", "HARD_WR", "CLAY_WR", "GRASS_WR", "SURFACE_SPECIALISATION",
-    "UPSET_RATE", "HOLD_RATE", "STRAIGHT_SETS_RATE", "DECIDER_RATE",
-    "GAMES_WON_PCT", "DRAW_PROGRESS_MEAN", "BIG_EVENT_SHARE", "INDOOR_WR",
-    "RETIRE_RATE", "MEAN_OPP_RANK_LOG", "ENTERING_RANK_LOG",
+    "WIN_RATE",
+    "HARD_WR",
+    "CLAY_WR",
+    "GRASS_WR",
+    "SURFACE_SPECIALISATION",
+    "UPSET_RATE",
+    "HOLD_RATE",
+    "STRAIGHT_SETS_RATE",
+    "DECIDER_RATE",
+    "GAMES_WON_PCT",
+    "DRAW_PROGRESS_MEAN",
+    "BIG_EVENT_SHARE",
+    "INDOOR_WR",
+    "RETIRE_RATE",
+    "MEAN_OPP_RANK_LOG",
+    "ENTERING_RANK_LOG",
 ]
 
 
@@ -83,13 +95,27 @@ def num(v, d=None):
 
 
 def collect(women: bool) -> dict[tuple, dict]:
-    acc: dict[tuple, dict] = collections.defaultdict(lambda: {
-        "m": 0, "w": 0, "gf": 0.0, "ga": 0.0, "straight": 0, "decider": 0,
-        "vs_better": 0, "vs_better_w": 0, "vs_worse": 0, "vs_worse_w": 0,
-        "indoor": 0, "indoor_w": 0, "big": 0, "retire": 0,
-        "surf": collections.defaultdict(lambda: [0, 0]),
-        "opp": [], "own": [],
-    })
+    acc: dict[tuple, dict] = collections.defaultdict(
+        lambda: {
+            "m": 0,
+            "w": 0,
+            "gf": 0.0,
+            "ga": 0.0,
+            "straight": 0,
+            "decider": 0,
+            "vs_better": 0,
+            "vs_better_w": 0,
+            "vs_worse": 0,
+            "vs_worse_w": 0,
+            "indoor": 0,
+            "indoor_w": 0,
+            "big": 0,
+            "retire": 0,
+            "surf": collections.defaultdict(lambda: [0, 0]),
+            "opp": [],
+            "own": [],
+        }
+    )
     for y in YEARS:
         p = path_for(y, women)
         if not p.exists():
@@ -101,8 +127,7 @@ def collect(women: bool) -> dict[tuple, dict]:
         for r in body:
             surf = str(r[i["Surface"]]).strip() if "Surface" in i else ""
             court = str(r[i["Court"]]).strip() if "Court" in i else ""
-            tier = str(r[i.get("Series", i.get("Tier", 0))]).strip() if (
-                "Series" in i or "Tier" in i) else ""
+            tier = str(r[i.get("Series", i.get("Tier", 0))]).strip() if ("Series" in i or "Tier" in i) else ""
             comment = str(r[i["Comment"]]).strip() if "Comment" in i else ""
             wr, lr = num(r[i["WRank"]], RANK_CAP), num(r[i["LRank"]], RANK_CAP)
             ws, ls = num(r[i["Wsets"]], 0) or 0, num(r[i["Lsets"]], 0) or 0
@@ -213,8 +238,7 @@ def main() -> int:
             put("ENTERING_RANK_LOG", -np.log1p(statistics.median(d["own"])))
 
         rows.append(f)
-        meta.append({"player": name, "year": y, "tour": tour, "matches": d["m"],
-                     "wins": d["w"]})
+        meta.append({"player": name, "year": y, "tour": tour, "matches": d["m"], "wins": d["w"]})
 
     raw = np.array(rows, dtype=np.float64)
     # M is derived from WHERE THE VALUE IS NaN, before nan_to_num destroys the distinction.
@@ -229,24 +253,27 @@ def main() -> int:
     cov = {FEATURES[j]: int(M[:, j].sum()) for j in range(len(FEATURES))}
     report = {
         "matrix": str(OUTM.relative_to(ROOT)),
-        "rows": int(X.shape[0]), "features": len(FEATURES),
+        "rows": int(X.shape[0]),
+        "features": len(FEATURES),
         "by_tour": dict(collections.Counter(m["tour"] for m in meta)),
-        "min_matches": MIN_MATCHES, "min_surface_matches": MIN_SURFACE_MATCHES,
+        "min_matches": MIN_MATCHES,
+        "min_surface_matches": MIN_SURFACE_MATCHES,
         "feature_coverage": cov,
-        "feature_coverage_pct": {k: round(100.0 * v / max(X.shape[0], 1), 1)
-                                 for k, v in cov.items()},
+        "feature_coverage_pct": {k: round(100.0 * v / max(X.shape[0], 1), 1) for k, v in cov.items()},
         "mask_note": (
             "M is 1 where the feature was OBSERVED. Surface win rates are masked below "
             f"{MIN_SURFACE_MATCHES} matches on that surface rather than set to 0.0 — a "
             "player who never played grass did not lose every grass match. 7.32 is the "
             "precedent: an unobserved zero contaminated the pitch composite until the mask "
-            "was applied."),
+            "was applied."
+        ),
         "not_derivable": (
             "No serve or shot statistics exist in this source — no aces, first-serve "
             "percentage, winners or unforced errors. The classic big-server vs "
             "baseline-grinder style axis is therefore NOT derivable here and is not faked. "
             "What is derivable is behavioural: surface specialisation, upset vs hold rate, "
-            "decider rate, margin."),
+            "decider rate, margin."
+        ),
     }
     OUTR.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

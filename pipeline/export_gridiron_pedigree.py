@@ -52,7 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # — and, worse, disagreed with the VOR table that keys off the same names. `gridiron_
 # pedigree.json`'s KEYS are norm_names, so a private copy here silently re-keys the whole
 # artifact relative to every consumer of it. Import, never re-implement.
-from build_vor_draft_value import norm_name  # noqa: E402
+from build_vor_draft_value import norm_name
 
 ROOT = Path(__file__).resolve().parent.parent
 GRIDIRON = Path("C:/Users/jcdav/vector-gridiron")
@@ -99,10 +99,15 @@ def main() -> int:
                 if picks[key]["overall"] <= overall:
                     continue
             picks[key] = {
-                "name": name, "overall": overall, "round": rnd, "pick": overall,
-                "draft_year": season, "team": (row.get("team") or "").strip(),
+                "name": name,
+                "overall": overall,
+                "round": rnd,
+                "pick": overall,
+                "draft_year": season,
+                "team": (row.get("team") or "").strip(),
                 "position": (row.get("position") or "").strip(),
-                "undrafted": False, "expect_log": round(expect_log(overall), 4),
+                "undrafted": False,
+                "expect_log": round(expect_log(overall), 4),
             }
 
     # ---- coverage against the athletes that actually exist -------------------
@@ -116,13 +121,18 @@ def main() -> int:
     # tail is populated rather than silently dropped, which is where T1 lives.
     for k in unmatched_athletes:
         matched[k] = {
-            "name": k, "overall": None, "round": None, "pick": None,
-            "draft_year": None, "team": "", "position": athletes.get(k) or "",
-            "undrafted": True, "expect_log": 0.0,
+            "name": k,
+            "overall": None,
+            "round": None,
+            "pick": None,
+            "draft_year": None,
+            "team": "",
+            "position": athletes.get(k) or "",
+            "undrafted": True,
+            "expect_log": 0.0,
         }
 
-    by_pos = collections.Counter(
-        athletes[k] for k in matched if k in athletes and athletes[k])
+    by_pos = collections.Counter(athletes[k] for k in matched if athletes.get(k))
     n_drafted = sum(1 for v in matched.values() if not v["undrafted"])
 
     report = {
@@ -138,25 +148,38 @@ def main() -> int:
     }
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({
-        "built_from": str(DRAFT_CSV),
-        "shape": "mirrors vector-hoops/assets/pedigree.json so both sports score identically",
-        "caveat_scope": ("vector-gridiron's vector set is OFFENSIVE SKILL POSITIONS only "
-                         "(QB/RB/WR/TE) — all 18 features are pass/rush/receiving. Linemen "
-                         "and defenders are absent, so any gridiron trajectory label covers "
-                         "fantasy-relevant positions, not the roster."),
-        "caveat_join": ("Scope the join to sport == 'gridiron'. Joining hoops pedigree "
-                        "across the whole unified set produced 17 matches, all false."),
-        "report": report,
-        "players": {k: v for k, v in sorted(matched.items())},
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "built_from": str(DRAFT_CSV),
+                "shape": "mirrors vector-hoops/assets/pedigree.json so both sports score identically",
+                "caveat_scope": (
+                    "vector-gridiron's vector set is OFFENSIVE SKILL POSITIONS only "
+                    "(QB/RB/WR/TE) — all 18 features are pass/rush/receiving. Linemen "
+                    "and defenders are absent, so any gridiron trajectory label covers "
+                    "fantasy-relevant positions, not the roster."
+                ),
+                "caveat_join": (
+                    "Scope the join to sport == 'gridiron'. Joining hoops pedigree "
+                    "across the whole unified set produced 17 matches, all false."
+                ),
+                "report": report,
+                "players": {k: v for k, v in sorted(matched.items())},
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
 
-    print(f"draft rows: {report['distinct_drafted_names']} distinct names "
-          f"({dupes} collisions, kept the earlier pick)")
+    print(
+        f"draft rows: {report['distinct_drafted_names']} distinct names " f"({dupes} collisions, kept the earlier pick)"
+    )
     print(f"athletes in the gridiron vector set : {report['athletes_in_vector_set']}")
     print(f"  with a draft row                  : {n_drafted} ({report['pct_drafted']}%)")
     print(f"  marked undrafted                  : {report['athletes_marked_undrafted']}")

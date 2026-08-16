@@ -53,10 +53,14 @@ MARKET = ROOT / "data" / "market"
 NAME_INDEX = MARKET / "name_index.json"
 OUT = ROOT / "data" / "market" / "market_layer_coverage.json"
 
-RAW_PULLS = {"honors": MARKET / "honors_wikidata.json",
-             "social_handles": MARKET / "social_handles.json"}
-MATCHED = {"award_prestige": MARKET / "award_prestige.json",
-           "forbes": MARKET / "Forbes_highest_paid.json"}
+RAW_PULLS = {
+    "honors": MARKET / "honors_wikidata.json",
+    "social_handles": MARKET / "social_handles.json",
+}
+MATCHED = {
+    "award_prestige": MARKET / "award_prestige.json",
+    "forbes": MARKET / "Forbes_highest_paid.json",
+}
 
 DECILES = 10
 STAR_RATIO = 5.0
@@ -75,6 +79,7 @@ def hoops_career_vor() -> dict[str, float]:
     """Career floored VOR per hoops athlete, from the one implementation (7.8a)."""
     import importlib.util
     import sys
+
     path = Path(__file__).resolve().parent / "build_hoops_vor_draft_value.py"
     spec = importlib.util.spec_from_file_location("_mkt_vor", path)
     mod = importlib.util.module_from_spec(spec)
@@ -95,19 +100,26 @@ def _gridiron_note(signals: dict, corpus: dict) -> str:
     states a measurement in prose has to be computed from that measurement.
     """
     n = len(corpus.get("gridiron", ()))
-    got = {k: (v.get("per_sport", {}).get("gridiron", {}) or {}).get("matched", 0)
-           for k, v in signals.items() if "per_sport" in v}
+    got = {
+        k: (v.get("per_sport", {}).get("gridiron", {}) or {}).get("matched", 0)
+        for k, v in signals.items()
+        if "per_sport" in v
+    }
     if not any(got.values()):
-        return (f"GRIDIRON HAS NO ATHLETE-LEVEL MARKET DATA — every signal matched 0 of "
-                f"{n} athletes. Check the sport QID in pull_honors_wikidata.py: a QID "
-                f"that is not a sport returns an empty result set rather than an error.")
+        return (
+            f"GRIDIRON HAS NO ATHLETE-LEVEL MARKET DATA — every signal matched 0 of "
+            f"{n} athletes. Check the sport QID in pull_honors_wikidata.py: a QID "
+            f"that is not a sport returns an empty result set rather than an error."
+        )
     parts = ", ".join(f"{k} {v} ({100.0 * v / max(n, 1):.1f}%)" for k, v in sorted(got.items()))
-    return (f"gridiron coverage of {n} athletes: {parts}. It was zero on every signal "
-            f"until SPORT_Q['gridiron'] was corrected from Q9398 (Grugliasco, an Italian "
-            f"comune) to Q41323 (American football). Honors stay thin at the low single "
-            f"digits because NFL players genuinely carry fewer Wikidata P166 award "
-            f"statements than NBA players — that part is a property of the source, not a "
-            f"bug, and it is not fixable by re-querying.")
+    return (
+        f"gridiron coverage of {n} athletes: {parts}. It was zero on every signal "
+        f"until SPORT_Q['gridiron'] was corrected from Q9398 (Grugliasco, an Italian "
+        f"comune) to Q41323 (American football). Honors stay thin at the low single "
+        f"digits because NFL players genuinely carry fewer Wikidata P166 award "
+        f"statements than NBA players — that part is a property of the source, not a "
+        f"bug, and it is not fixable by re-querying."
+    )
 
 
 def main() -> int:
@@ -147,15 +159,19 @@ def main() -> int:
                 "out-of-corpus ATHLETES (Anne Donovan, Cynthia Cooper-Dyke, Nancy "
                 "Lieberman are WNBA; Maik Zirbes and Alexander Kuhl are European league) "
                 "alongside genuine non-person entities (ARCO Arena, Roseto Sharks). The "
-                "pull was scoped by sport QID, not by corpus membership."),
+                "pull was scoped by sport QID, not by corpus membership."
+            ),
             "rows_total": len(d),
             "matched_corpus_total": sum(hits.values()),
-            "per_sport": {sp: {"rows": rows.get(sp, 0), "matched": hits.get(sp, 0),
-                               "pct_of_rows": round(100.0 * hits.get(sp, 0)
-                                                    / max(rows.get(sp, 0), 1), 1),
-                               "pct_of_corpus": round(100.0 * hits.get(sp, 0)
-                                                      / len(corpus[sp]), 1)}
-                          for sp in sports},
+            "per_sport": {
+                sp: {
+                    "rows": rows.get(sp, 0),
+                    "matched": hits.get(sp, 0),
+                    "pct_of_rows": round(100.0 * hits.get(sp, 0) / max(rows.get(sp, 0), 1), 1),
+                    "pct_of_corpus": round(100.0 * hits.get(sp, 0) / len(corpus[sp]), 1),
+                }
+                for sp in sports
+            },
             "unmatched_examples": junk_examples,
         }
 
@@ -170,42 +186,48 @@ def main() -> int:
             # hoops' Chris Johnson as covered — one collision here, but it is the same
             # unscoped cross-sport join that produced 17/17 false matches earlier in this
             # phase (NFL Matt Ryan -> NBA Matt Ryan). Scope it whether or not it bites.
-            prestige[(v.get("sport", "?"), norm_name(v.get("name", "")))] = float(
-                v.get("AWARD_PRESTIGE") or 0.0)
+            prestige[(v.get("sport", "?"), norm_name(v.get("name", "")))] = float(v.get("AWARD_PRESTIGE") or 0.0)
         vals = [float(v.get("AWARD_PRESTIGE") or 0.0) for v in d.values()]
-        nz_per = collections.Counter(v.get("sport", "?") for v in d.values()
-                                     if float(v.get("AWARD_PRESTIGE") or 0.0) > 0)
+        nz_per = collections.Counter(
+            v.get("sport", "?") for v in d.values() if float(v.get("AWARD_PRESTIGE") or 0.0) > 0
+        )
         ceiling = [v for v in d.values() if float(v.get("AWARD_PRESTIGE") or 0.0) >= 0.999]
         ce_awards = sorted(int(v.get("n_awards") or 0) for v in ceiling)
         signals["award_prestige"] = {
             "kind": "MATCHED product (carries native_player_id)",
             "rows_total": len(d),
-            "per_sport": {sp: {"matched": per.get(sp, 0),
-                               "pct_of_corpus": round(100.0 * per.get(sp, 0)
-                                                      / len(corpus[sp]), 1),
-                               # A matched row is not a signal-carrying row.
-                               "nonzero": nz_per.get(sp, 0),
-                               "pct_of_corpus_nonzero": round(100.0 * nz_per.get(sp, 0)
-                                                              / len(corpus[sp]), 1)}
-                          for sp in sports},
+            "per_sport": {
+                sp: {
+                    "matched": per.get(sp, 0),
+                    "pct_of_corpus": round(100.0 * per.get(sp, 0) / len(corpus[sp]), 1),
+                    # A matched row is not a signal-carrying row.
+                    "nonzero": nz_per.get(sp, 0),
+                    "pct_of_corpus_nonzero": round(100.0 * nz_per.get(sp, 0) / len(corpus[sp]), 1),
+                }
+                for sp in sports
+            },
             "zero_valued_rows": {
                 "n": sum(1 for v in vals if v == 0.0),
                 "pct": round(100.0 * sum(1 for v in vals if v == 0.0) / max(len(vals), 1), 1),
-                "note": ("The median AWARD_PRESTIGE across matched players is "
-                         f"{statistics.median(vals) if vals else 0}. A row exists because "
-                         "the athlete has SOME Wikidata award, but the tiering scores "
-                         "untiered awards at nothing, so 'matched' overstates usable "
-                         "coverage roughly two-fold."),
+                "note": (
+                    "The median AWARD_PRESTIGE across matched players is "
+                    f"{statistics.median(vals) if vals else 0}. A row exists because "
+                    "the athlete has SOME Wikidata award, but the tiering scores "
+                    "untiered awards at nothing, so 'matched' overstates usable "
+                    "coverage roughly two-fold."
+                ),
             },
             "ceiling": {
                 "n_at_1.000": len(ceiling),
                 "pct": round(100.0 * len(ceiling) / max(len(vals), 1), 1),
                 "n_awards_span": [ce_awards[0], ce_awards[-1]] if ce_awards else [],
-                "note": ("AWARD_PRESTIGE saturates. The players at 1.000 span "
-                         f"{ce_awards[0] if ce_awards else 0} to "
-                         f"{ce_awards[-1] if ce_awards else 0} raw awards — Jokic ties "
-                         "Messi — so the measure cannot rank the top of its own range, "
-                         "which is exactly the range a marketability product cares about."),
+                "note": (
+                    "AWARD_PRESTIGE saturates. The players at 1.000 span "
+                    f"{ce_awards[0] if ce_awards else 0} to "
+                    f"{ce_awards[-1] if ce_awards else 0} raw awards — Jokic ties "
+                    "Messi — so the measure cannot rank the top of its own range, "
+                    "which is exactly the range a marketability product cares about."
+                ),
             },
         }
 
@@ -216,13 +238,16 @@ def main() -> int:
         in_corpus = {sp: len(names & corpus[sp]) for sp in sports}
         signals["forbes"] = {
             "kind": "TOP-N LIST — absence is not zero earnings, it is absence from a "
-                    "10-per-year list. Cannot be used as a continuous outcome.",
+            "10-per-year list. Cannot be used as a continuous outcome.",
             "rows_total": fb.get("n_rows"),
             "distinct_names_in_corpus_sports": len(names),
-            "per_sport": {sp: {"matched": in_corpus[sp],
-                               "pct_of_corpus": round(100.0 * in_corpus[sp]
-                                                      / len(corpus[sp]), 2)}
-                          for sp in sports},
+            "per_sport": {
+                sp: {
+                    "matched": in_corpus[sp],
+                    "pct_of_corpus": round(100.0 * in_corpus[sp] / len(corpus[sp]), 2),
+                }
+                for sp in sports
+            },
         }
 
     # ---- 3. selection test, hoops --------------------------------------------
@@ -233,20 +258,30 @@ def main() -> int:
         size = len(pool) / DECILES
         buckets = []
         for i in range(DECILES):
-            chunk = pool[int(i * size):int((i + 1) * size)]
+            chunk = pool[int(i * size) : int((i + 1) * size)]
             cov = sum(1 for n in chunk if ("hoops", n) in prestige)
-            buckets.append({"decile": i + 1, "n": len(chunk), "covered": cov,
-                            "pct": round(100.0 * cov / len(chunk), 1),
-                            "median_vor": round(statistics.median(vor[n] for n in chunk), 2)})
+            buckets.append(
+                {
+                    "decile": i + 1,
+                    "n": len(chunk),
+                    "covered": cov,
+                    "pct": round(100.0 * cov / len(chunk), 1),
+                    "median_vor": round(statistics.median(vor[n] for n in chunk), 2),
+                }
+            )
         top, bot = buckets[-1]["pct"], buckets[0]["pct"]
         ratio = (top / bot) if bot > 0 else float("inf")
-        selection.update({
-            "deciles": buckets,
-            "top_decile_pct": top, "bottom_decile_pct": bot,
-            "ratio": (round(ratio, 1) if ratio != float("inf") else "inf (bottom decile 0%)"),
-            "verdict": ("STAR-ONLY SAMPLE" if ratio >= STAR_RATIO else
-                        "USABLE" if ratio < USABLE_RATIO else "PARTIAL"),
-        })
+        selection.update(
+            {
+                "deciles": buckets,
+                "top_decile_pct": top,
+                "bottom_decile_pct": bot,
+                "ratio": (round(ratio, 1) if ratio != float("inf") else "inf (bottom decile 0%)"),
+                "verdict": (
+                    "STAR-ONLY SAMPLE" if ratio >= STAR_RATIO else "USABLE" if ratio < USABLE_RATIO else "PARTIAL"
+                ),
+            }
+        )
 
     report = {
         "question": "What does the athlete-level market layer cover, and who is in it?",
@@ -254,17 +289,19 @@ def main() -> int:
         "signals": signals,
         "selection_test_hoops": selection,
         "per_sport_summary": {
-            sp: {sig: signals[sig]["per_sport"][sp].get("matched", 0)
-                 for sig in signals if "per_sport" in signals[sig]}
-            for sp in sports},
+            sp: {sig: signals[sig]["per_sport"][sp].get("matched", 0) for sig in signals if "per_sport" in signals[sig]}
+            for sp in sports
+        },
         "gridiron_note": _gridiron_note(signals, corpus),
         "forbes_caveat": (
             "Forbes is a top-N list: ~10 athletes per year over 16 years. Absence from it "
             "is absence from a leaderboard, not zero endorsement income. Using it as a "
-            "continuous outcome would repeat the survivor-pool error from 7.7f exactly."),
+            "continuous outcome would repeat the survivor-pool error from 7.7f exactly."
+        ),
         "decision_rule": (
             f"STAR-ONLY if top-decile coverage >= {STAR_RATIO}x bottom-decile; USABLE if "
-            f"< {USABLE_RATIO}x; PARTIAL between. Fixed before the first run."),
+            f"< {USABLE_RATIO}x; PARTIAL between. Fixed before the first run."
+        ),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -281,9 +318,11 @@ def main() -> int:
         print(f"{'':16} rows {s['rows_total']}")
         for sp in sports:
             v = s["per_sport"].get(sp, {})
-            print(f"{'':18}{sp:<9} matched {v.get('matched', 0):>5}  "
-                  f"= {v.get('pct_of_corpus', 0):>5.1f}% of corpus"
-                  + (f"   ({v['pct_of_rows']}% of its rows)" if "pct_of_rows" in v else ""))
+            print(
+                f"{'':18}{sp:<9} matched {v.get('matched', 0):>5}  "
+                f"= {v.get('pct_of_corpus', 0):>5.1f}% of corpus"
+                + (f"   ({v['pct_of_rows']}% of its rows)" if "pct_of_rows" in v else "")
+            )
         if s.get("unmatched_examples"):
             print(f"{'':18}unmatched e.g. {', '.join(s['unmatched_examples'][:4])}")
         print()
@@ -292,10 +331,11 @@ def main() -> int:
         print("selection test (hoops, career VOR decile -> award_prestige coverage):")
         for b in selection["deciles"]:
             bar = "#" * int(b["pct"] / 2)
-            print(f"  d{b['decile']:<2} n={b['n']:<4} med VOR {b['median_vor']:>8.2f}  "
-                  f"{b['pct']:>5.1f}%  {bar}")
-        print(f"\n  top {selection['top_decile_pct']}%  bottom {selection['bottom_decile_pct']}%"
-              f"   ratio {selection['ratio']}   -> {selection['verdict']}")
+            print(f"  d{b['decile']:<2} n={b['n']:<4} med VOR {b['median_vor']:>8.2f}  " f"{b['pct']:>5.1f}%  {bar}")
+        print(
+            f"\n  top {selection['top_decile_pct']}%  bottom {selection['bottom_decile_pct']}%"
+            f"   ratio {selection['ratio']}   -> {selection['verdict']}"
+        )
     print(f"\n{report['gridiron_note']}")
     print(f"\nwrote {OUT}")
     return 0

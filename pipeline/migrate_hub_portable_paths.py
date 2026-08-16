@@ -38,7 +38,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portable_paths import find_absolute, to_portable  # noqa: E402
+from portable_paths import find_absolute, to_portable
 
 DATA = Path("C:/Users/jcdav/vector-hub/assets/data")
 SLUGS = ("hoops", "gridiron", "pitch", "equities", "tennis", "unified")
@@ -60,8 +60,7 @@ def main() -> int:
         before = len(find_absolute(doc))
 
         doc["source_files"] = [to_portable(f) for f in (doc.get("source_files") or [])]
-        doc["source_hashes"] = {to_portable(k): v
-                                for k, v in (doc.get("source_hashes") or {}).items()}
+        doc["source_hashes"] = {to_portable(k): v for k, v in (doc.get("source_hashes") or {}).items()}
         for key in ("insights", "headline_stats"):
             for item in doc.get(key) or []:
                 if isinstance(item, dict) and isinstance(item.get("source"), str):
@@ -86,11 +85,12 @@ def main() -> int:
         print(f"  {slug:9} {status}")
 
         if args.write:
-            p.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n",
-                         encoding="utf-8")
+            p.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    print(f"\n{total} machine-local path(s) "
-          f"{'rewritten' if args.write else 'would be rewritten (dry run, pass --write)'}")
+    print(
+        f"\n{total} machine-local path(s) "
+        f"{'rewritten' if args.write else 'would be rewritten (dry run, pass --write)'}"
+    )
     return 0
 
 

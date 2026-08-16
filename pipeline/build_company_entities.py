@@ -89,7 +89,10 @@ def run_query(q: str, *, attempts: int = 5):
         )
         if r.status_code == 429 and attempt < attempts:
             wait = float(r.headers.get("Retry-After") or delay)
-            print(f"  429 from WDQS, waiting {wait:.0f}s ({attempt}/{attempts})", file=sys.stderr)
+            print(
+                f"  429 from WDQS, waiting {wait:.0f}s ({attempt}/{attempts})",
+                file=sys.stderr,
+            )
             time.sleep(wait)
             delay *= 2
             continue
@@ -111,8 +114,11 @@ def norm_name(name: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--json", action="store_true")
-    ap.add_argument("--no-fetch", action="store_true",
-                    help="skip Wikidata; REUSES attributes already in the output file")
+    ap.add_argument(
+        "--no-fetch",
+        action="store_true",
+        help="skip Wikidata; REUSES attributes already in the output file",
+    )
     args = ap.parse_args()
 
     if not PROBE.exists():
@@ -130,12 +136,17 @@ def main() -> int:
             for t in targets:
                 if not t["is_org"]:
                     continue  # a person or a place is not a company edge
-                c = companies.setdefault(t["qid"], {"qid": t["qid"], "label": t["label"],
-                                                     "relations": set()})
+                c = companies.setdefault(t["qid"], {"qid": t["qid"], "label": t["label"], "relations": set()})
                 c["relations"].add(rel)
-                edges.append({"company": t["qid"], "company_label": t["label"],
-                              "rel": rel, "org_qid": org_qid,
-                              "org_key": key_of_qid.get(org_qid)})
+                edges.append(
+                    {
+                        "company": t["qid"],
+                        "company_label": t["label"],
+                        "rel": rel,
+                        "org_qid": org_qid,
+                        "org_key": key_of_qid.get(org_qid),
+                    }
+                )
 
     # ---- attributes ---------------------------------------------------------
     # --no-fetch REUSES what is already on disk. The first version simply skipped the
@@ -149,13 +160,17 @@ def main() -> int:
         for rec in prev.get("companies", []):
             attrs[rec["qid"]] = {
                 "industries": set(rec.get("industries") or []),
-                "country": rec.get("country"), "inception": rec.get("inception"),
-                "employees": rec.get("employees"), "revenue": rec.get("revenue"),
+                "country": rec.get("country"),
+                "inception": rec.get("inception"),
+                "employees": rec.get("employees"),
+                "revenue": rec.get("revenue"),
                 "is_business": bool(rec.get("is_business")),
             }
         kept = sum(1 for a in attrs.values() if a["industries"])
-        print(f"--no-fetch: reused attributes for {len(attrs)} companies "
-              f"({kept} with an industry)", file=sys.stderr)
+        print(
+            f"--no-fetch: reused attributes for {len(attrs)} companies " f"({kept} with an industry)",
+            file=sys.stderr,
+        )
     if not args.no_fetch and companies:
         qids = sorted(companies)
         print(f"fetching attributes for {len(qids)} companies...", file=sys.stderr)
@@ -166,15 +181,27 @@ def main() -> int:
             time.sleep(1.0)
         for b in rows:
             c = qid(b["c"]["value"])
-            a = attrs.setdefault(c, {"industries": set(), "country": None,
-                                     "inception": None, "employees": None, "revenue": None,
-                                     "is_business": False})
+            a = attrs.setdefault(
+                c,
+                {
+                    "industries": set(),
+                    "country": None,
+                    "inception": None,
+                    "employees": None,
+                    "revenue": None,
+                    "is_business": False,
+                },
+            )
             if b.get("isBusiness", {}).get("value") == "true":
                 a["is_business"] = True
             if "industryLabel" in b:
                 a["industries"].add(b["industryLabel"]["value"])
-            for src, dst in (("countryLabel", "country"), ("inception", "inception"),
-                             ("employees", "employees"), ("revenue", "revenue")):
+            for src, dst in (
+                ("countryLabel", "country"),
+                ("inception", "inception"),
+                ("employees", "employees"),
+                ("revenue", "revenue"),
+            ):
                 if src in b and a[dst] is None:
                     a[dst] = b[src]["value"]
 
@@ -214,11 +241,9 @@ def main() -> int:
         rec["orgs"] = sorted(orgs_of_company.get(c, ()))
         rec["athlete_count"] = len(ath)
 
-    reached = {a for c in companies for k in orgs_of_company.get(c, ())
-               for a in athletes_of_key.get(k, set())}
+    reached = {a for c in companies for k in orgs_of_company.get(c, ()) for a in athletes_of_key.get(k, set())}
     biz_qids = {c for c, r in companies.items() if r.get("is_business")}
-    reached_biz = {a for c in biz_qids for k in orgs_of_company.get(c, ())
-                   for a in athletes_of_key.get(k, set())}
+    reached_biz = {a for c in biz_qids for k in orgs_of_company.get(c, ()) for a in athletes_of_key.get(k, set())}
     per_sport_biz: dict[str, list[int]] = {}
     for a in all_athletes:
         sp = sport_of_athlete.get(a, "?")
@@ -254,8 +279,7 @@ def main() -> int:
         "sum_of_listed_rows": row_sum,
         "distinct_athletes_across_listed": len(listed_union),
         "inflation_if_summed": round(row_sum / len(listed_union), 2) if listed_union else None,
-        "companies_with_multiple_industries": sum(1 for r in companies.values()
-                                                  if len(r["industries"]) > 1),
+        "companies_with_multiple_industries": sum(1 for r in companies.values() if len(r["industries"]) > 1),
     }
 
     no_ind_athletes: set[str] = set()
@@ -282,8 +306,7 @@ def main() -> int:
         "pct_athletes_BUSINESS": round(100.0 * len(reached_biz) / len(all_athletes), 2) if all_athletes else 0.0,
         "overstatement_if_any_org_used": {
             "athletes": len(reached) - len(reached_biz),
-            "points": round(100.0 * (len(reached) - len(reached_biz)) / len(all_athletes), 2)
-            if all_athletes else 0.0,
+            "points": round(100.0 * (len(reached) - len(reached_biz)) / len(all_athletes), 2) if all_athletes else 0.0,
         },
         "pct_business_by_sport": {
             sp: {"reached": r, "total": t, "pct": round(100.0 * r / t, 2) if t else 0.0}
@@ -299,14 +322,23 @@ def main() -> int:
     out = {
         "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "entity_model": "company = Wikidata organization; edge = (company, rel, org); NOT time-sliced",
-        "time_caveat": ("Wikidata truthy values give the CURRENT holder with no interval. "
-                        "Reach means 'athletes who ever played for an org whose company edge "
-                        "is X today', not a season-accurate sponsorship history."),
-        "sources": {"edges": str(PROBE.name), "athletes": str(ORG_ENTS.name),
-                    "attributes": "Wikidata SPARQL (P452/P17/P571/P1128/P2139)"},
+        "time_caveat": (
+            "Wikidata truthy values give the CURRENT holder with no interval. "
+            "Reach means 'athletes who ever played for an org whose company edge "
+            "is X today', not a season-accurate sponsorship history."
+        ),
+        "sources": {
+            "edges": str(PROBE.name),
+            "athletes": str(ORG_ENTS.name),
+            "attributes": "Wikidata SPARQL (P452/P17/P571/P1128/P2139)",
+        },
         "coverage": coverage,
         "top_industries_by_athlete_reach": [
-            {"industry": i, "companies": ind_counter[i], "athletes": len(ind_athletes[i])}
+            {
+                "industry": i,
+                "companies": ind_counter[i],
+                "athletes": len(ind_athletes[i]),
+            }
             for i in sorted(ind_athletes, key=lambda x: -len(ind_athletes[x]))[:25]
         ],
         "companies": sorted(companies.values(), key=lambda r: -r["athlete_count"]),
@@ -319,19 +351,23 @@ def main() -> int:
         print(json.dumps(coverage, indent=2))
         return 0
 
-    print(f"\ncompanies: {coverage['companies']}   edges: {coverage['edges']}   "
-          f"{coverage['by_relation']}")
-    print(f"with industry (P452): {coverage['companies_with_industry']} "
-          f"({coverage['pct_with_industry']}%)   distinct industries: {coverage['distinct_industries']}")
-    print(f"athletes reaching ANY org   : {coverage['athletes_reaching_ANY_org']} / "
-          f"{coverage['athletes_total']} = {coverage['pct_athletes_ANY_org']}%"
-          "   <- includes families, federations, clubs. NOT a sponsorship figure.")
-    print(f"athletes reaching a BUSINESS: {coverage['athletes_reaching_a_BUSINESS']} / "
-          f"{coverage['athletes_total']} = {coverage['pct_athletes_BUSINESS']}%"
-          f"   ({coverage['companies_business_typed']} of {coverage['companies']} companies)")
+    print(f"\ncompanies: {coverage['companies']}   edges: {coverage['edges']}   " f"{coverage['by_relation']}")
+    print(
+        f"with industry (P452): {coverage['companies_with_industry']} "
+        f"({coverage['pct_with_industry']}%)   distinct industries: {coverage['distinct_industries']}"
+    )
+    print(
+        f"athletes reaching ANY org   : {coverage['athletes_reaching_ANY_org']} / "
+        f"{coverage['athletes_total']} = {coverage['pct_athletes_ANY_org']}%"
+        "   <- includes families, federations, clubs. NOT a sponsorship figure."
+    )
+    print(
+        f"athletes reaching a BUSINESS: {coverage['athletes_reaching_a_BUSINESS']} / "
+        f"{coverage['athletes_total']} = {coverage['pct_athletes_BUSINESS']}%"
+        f"   ({coverage['companies_business_typed']} of {coverage['companies']} companies)"
+    )
     ov = coverage["overstatement_if_any_org_used"]
-    print(f"  quoting the first line overstates by {ov['athletes']} athletes "
-          f"({ov['points']} points)")
+    print(f"  quoting the first line overstates by {ov['athletes']} athletes " f"({ov['points']} points)")
     for sp, v in coverage["pct_business_by_sport"].items():
         print(f"    {sp:10} {v['reached']:5} / {v['total']:5} = {v['pct']:5.1f}%")
     print()
@@ -344,12 +380,16 @@ def main() -> int:
     print(f"  distinct athletes across    {dj['distinct_athletes_across_listed']}")
     print(f"  inflation if summed         {dj['inflation_if_summed']}x")
     print(f"  companies with >1 industry  {dj['companies_with_multiple_industries']}")
-    print(f"  companies with NO industry  {coverage['companies_without_industry']}"
-          f" (reaching {coverage['athletes_via_companies_with_no_industry']} athletes)")
+    print(
+        f"  companies with NO industry  {coverage['companies_without_industry']}"
+        f" (reaching {coverage['athletes_via_companies_with_no_industry']} athletes)"
+    )
     print("\ntop companies by athlete reach:")
     for r in out["companies"][:10]:
-        print(f"  {r['label'][:34]:34} {r['athlete_count']:>5} athletes  "
-              f"{','.join(r['relations'])}  {', '.join(r['industries'][:2])}")
+        print(
+            f"  {r['label'][:34]:34} {r['athlete_count']:>5} athletes  "
+            f"{','.join(r['relations'])}  {', '.join(r['industries'][:2])}"
+        )
     print(f"\nwrote {OUT}")
     return 0
 

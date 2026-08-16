@@ -75,8 +75,7 @@ def main() -> int:
     spotrac = json.loads((DATA / "spotrac_nfl_salary.json").read_text(encoding="utf-8"))
     awards = json.loads((DATA / "awards.json").read_text(encoding="utf-8"))
     pageviews_path = DATA / "wikipedia_pageviews.json"
-    pageviews = (json.loads(pageviews_path.read_text(encoding="utf-8"))
-                 if pageviews_path.exists() else {"players": {}})
+    pageviews = json.loads(pageviews_path.read_text(encoding="utf-8")) if pageviews_path.exists() else {"players": {}}
 
     # Forbes index: (norm, sport, year) -> {salary_m, endorse_m, total_m}
     # Also career-max endorse per (norm, sport) as a fallback cultural signal
@@ -172,34 +171,34 @@ def main() -> int:
         if m_salary or m_endorse or m_award or m_reach:
             cov["any"][sport] += 1
 
-        rows.append({
-            "sport": sport,
-            "player_id": p["player_id"],
-            "name": p["name"],
-            "season": p["season"],
-            "year": year,
-            "salary_m": salary_m,
-            "endorse_m": endorse_m,
-            "earnings_m": earnings_m,
-            "award_prestige": award_prestige,
-            "reach_views": reach_views,
-            "salary_log": log1p_m(salary_m),
-            "endorse_log": log1p_m(endorse_m),
-            "earnings_log": log1p_m(earnings_m),
-            "reach_log": (math.log1p(reach_views) if reach_views is not None else None),
-            "m_salary": m_salary,
-            "m_endorse": m_endorse,
-            "m_earnings": m_earnings,
-            "m_award": m_award,
-            "m_reach": m_reach,
-        })
+        rows.append(
+            {
+                "sport": sport,
+                "player_id": p["player_id"],
+                "name": p["name"],
+                "season": p["season"],
+                "year": year,
+                "salary_m": salary_m,
+                "endorse_m": endorse_m,
+                "earnings_m": earnings_m,
+                "award_prestige": award_prestige,
+                "reach_views": reach_views,
+                "salary_log": log1p_m(salary_m),
+                "endorse_log": log1p_m(endorse_m),
+                "earnings_log": log1p_m(earnings_m),
+                "reach_log": (math.log1p(reach_views) if reach_views is not None else None),
+                "m_salary": m_salary,
+                "m_endorse": m_endorse,
+                "m_earnings": m_earnings,
+                "m_award": m_award,
+                "m_reach": m_reach,
+            }
+        )
 
     # coverage rates
     rates = {}
     for signal in ("salary", "endorse", "award", "reach", "any"):
-        rates[signal] = {
-            s: round(cov[signal][s] / max(1, cov["n"][s]), 4) for s in ("hoops", "gridiron", "pitch")
-        }
+        rates[signal] = {s: round(cov[signal][s] / max(1, cov["n"][s]), 4) for s in ("hoops", "gridiron", "pitch")}
 
     doc = {
         "built": time.strftime("%Y-%m-%d"),
@@ -252,8 +251,10 @@ def main() -> int:
     print("\nshowcase (highest salary_m present):")
     top_s = sorted([r for r in rows if r["m_salary"]], key=lambda r: -(r["salary_m"] or 0))[:6]
     for r in top_s:
-        print(f"  [{r['sport'][:2]}] {r['year']} {r['name']:<22} salary=${r['salary_m']:.1f}M "
-              f"endorse={r['endorse_m']}")
+        print(
+            f"  [{r['sport'][:2]}] {r['year']} {r['name']:<22} salary=${r['salary_m']:.1f}M "
+            f"endorse={r['endorse_m']}"
+        )
     print("\nshowcase (highest reach_views present):")
     top_r = sorted([r for r in rows if r["m_reach"]], key=lambda r: -(r["reach_views"] or 0))[:6]
     for r in top_r:

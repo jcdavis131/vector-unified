@@ -86,14 +86,14 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import build_vor_draft_value as B  # noqa: E402
-from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
+import build_vor_draft_value as B
+from build_tennis_forward import null_extras_gain, r, ridge
 
 ROOT = Path(__file__).resolve().parent.parent
 VEC = Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json")
 OUT = ROOT / "data" / "gridiron_forward_report.json"
-CUT_YEAR = 2018          # train on target seasons <= this, test strictly after
-MIN_GAMES = 8            # pre-registered, both sides of the pair
+CUT_YEAR = 2018  # train on target seasons <= this, test strictly after
+MIN_GAMES = 8  # pre-registered, both sides of the pair
 EARNS = 0.01
 POSITIONS = ("QB", "RB", "WR", "TE")
 
@@ -103,8 +103,11 @@ def arm(ppr, F, src, dst, ty, mask, label):
     s, d_, y = src[mask], dst[mask], ty[mask]
     tr, te = y <= CUT_YEAR, y > CUT_YEAR
     if te.sum() < 60 or tr.sum() < 60:
-        return {"group": label, "n_pairs": int(mask.sum()), "skipped":
-                f"train {int(tr.sum())} / test {int(te.sum())} — too few to interpret"}
+        return {
+            "group": label,
+            "n_pairs": int(mask.sum()),
+            "skipped": f"train {int(tr.sum())} / test {int(te.sum())} — too few to interpret",
+        }
     yp, yn = ppr[s], ppr[d_]
     X = np.hstack([yp[:, None], F[s]])
     persist = r(yp[te], yn[te])
@@ -127,20 +130,35 @@ def arm(ppr, F, src, dst, ty, mask, label):
             continue
         g1 = r(ridge(yp[a_tr, None], yn[a_tr], yp[a_te, None]), yn[a_te])
         gN = r(ridge(X[a_tr], yn[a_tr], X[a_te]), yn[a_te])
-        sweep.append({"cut_year": cut, "n_test": int(a_te.sum()),
-                      "ppr_only_r": round(g1, 4), "with_profile_r": round(gN, 4),
-                      "gain": round(gN - g1, 4)})
+        sweep.append(
+            {
+                "cut_year": cut,
+                "n_test": int(a_te.sum()),
+                "ppr_only_r": round(g1, 4),
+                "with_profile_r": round(gN, 4),
+                "gain": round(gN - g1, 4),
+            }
+        )
     gains = [s_["gain"] for s_ in sweep]
     all_pos = bool(gains) and all(g > 0 for g in gains)
 
-    return {"group": label, "n_pairs": int(mask.sum()), "n_train": int(tr.sum()),
-            "n_test": int(te.sum()), "persistence_r": round(persist, 4),
-            "ridge1_ppr_only_r": round(r1, 4), "profile_only_r": round(only, 4),
-            "ridge19_r": round(rN, 4), "gain": round(gain, 4), "null_p": p_val,
-            "null_sd": round(float(nd.std()), 4),
-            "cut_year_sweep": sweep, "gain_positive_at_every_cut": all_pos,
-            "gain_mean_across_cuts": round(float(np.mean(gains)), 4) if gains else None,
-            "earns_its_keep": bool(gain > EARNS and p_val < 0.05 and all_pos)}
+    return {
+        "group": label,
+        "n_pairs": int(mask.sum()),
+        "n_train": int(tr.sum()),
+        "n_test": int(te.sum()),
+        "persistence_r": round(persist, 4),
+        "ridge1_ppr_only_r": round(r1, 4),
+        "profile_only_r": round(only, 4),
+        "ridge19_r": round(rN, 4),
+        "gain": round(gain, 4),
+        "null_p": p_val,
+        "null_sd": round(float(nd.std()), 4),
+        "cut_year_sweep": sweep,
+        "gain_positive_at_every_cut": all_pos,
+        "gain_mean_across_cuts": round(float(np.mean(gains)), 4) if gains else None,
+        "earns_its_keep": bool(gain > EARNS and p_val < 0.05 and all_pos),
+    }
 
 
 def main() -> int:
@@ -185,17 +203,31 @@ def main() -> int:
     enough = (games[src] >= MIN_GAMES) & (games[dst] >= MIN_GAMES)
     keep = usable & enough
     src, dst, ty = src[keep], dst[keep], ty[keep]
-    print(f"{len(raw)} name-keyed consecutive-season pairs, {excluded} excluded as merged "
-          f"names, {int(usable.sum())} with PPR both sides, {len(src)} after "
-          f"MIN_GAMES={MIN_GAMES} on both")
+    print(
+        f"{len(raw)} name-keyed consecutive-season pairs, {excluded} excluded as merged "
+        f"names, {int(usable.sum())} with PPR both sides, {len(src)} after "
+        f"MIN_GAMES={MIN_GAMES} on both"
+    )
 
     # unfiltered pooled, so the filter's effect is visible rather than assumed
     s_all = np.array([a for a, _, _ in kept])[usable]
     d_all = np.array([b for _, b, _ in kept])[usable]
-    print(f"  pooled persistence  unfiltered r = {r(ppr[s_all], ppr[d_all]):.4f}   "
-          f"MIN_GAMES>={MIN_GAMES} r = {r(ppr[src], ppr[dst]):.4f}")
+    print(
+        f"  pooled persistence  unfiltered r = {r(ppr[s_all], ppr[d_all]):.4f}   "
+        f"MIN_GAMES>={MIN_GAMES} r = {r(ppr[src], ppr[dst]):.4f}"
+    )
 
-    rows = [arm(ppr, F, src, dst, ty, np.ones(len(src), bool), "POOLED (position-confounded)")]
+    rows = [
+        arm(
+            ppr,
+            F,
+            src,
+            dst,
+            ty,
+            np.ones(len(src), bool),
+            "POOLED (position-confounded)",
+        )
+    ]
     for q in POSITIONS:
         rows.append(arm(ppr, F, src, dst, ty, pos[src] == q, q))
 
@@ -205,89 +237,123 @@ def main() -> int:
             print(f"  {w['group']:30} SKIPPED — {w['skipped']}")
             continue
         cuts = w.get("cut_year_sweep") or []
-        flag = ("EARNS" if w["earns_its_keep"] else
-                ("no (flips sign across cuts)" if w["gain"] > EARNS and w["null_p"] < 0.05
-                 and not w["gain_positive_at_every_cut"] else "no"))
-        print(f"  {w['group']:30} {w['persistence_r']:>8.4f} {w['profile_only_r']:>10.4f} "
-              f"{w['ridge19_r']:>9.4f} {w['gain']:>+8.4f}   p={w['null_p']:.3f} {flag}")
+        flag = (
+            "EARNS"
+            if w["earns_its_keep"]
+            else (
+                "no (flips sign across cuts)"
+                if w["gain"] > EARNS and w["null_p"] < 0.05 and not w["gain_positive_at_every_cut"]
+                else "no"
+            )
+        )
+        print(
+            f"  {w['group']:30} {w['persistence_r']:>8.4f} {w['profile_only_r']:>10.4f} "
+            f"{w['ridge19_r']:>9.4f} {w['gain']:>+8.4f}   p={w['null_p']:.3f} {flag}"
+        )
         if cuts:
-            print(f"  {'':30} cuts: " + "  ".join(
-                f"{c['cut_year']}:{c['gain']:+.4f}" for c in cuts))
+            print(f"  {'':30} cuts: " + "  ".join(f"{c['cut_year']}:{c['gain']:+.4f}" for c in cuts))
 
     scored = [w for w in rows if not w.get("skipped")]
     per_pos = [w for w in scored if w["group"] in POSITIONS]
     earners = [w["group"] for w in per_pos if w["earns_its_keep"]]
 
-    OUT.write_text(json.dumps({
-        "question": ("Does an NFL season's 18-feature profile predict next season's PPR "
-                     "points-per-game beyond what this season's PPR already predicts?"),
-        "verdict": (f"{len(earners)} of {len(per_pos)} positions earn it: "
+    OUT.write_text(
+        json.dumps(
+            {
+                "question": (
+                    "Does an NFL season's 18-feature profile predict next season's PPR "
+                    "points-per-game beyond what this season's PPR already predicts?"
+                ),
+                "verdict": (
+                    f"{len(earners)} of {len(per_pos)} positions earn it: "
                     f"{', '.join(earners) or 'none'}. The PER-POSITION rows are the finding; "
-                    f"the pooled row is reported and is confounded."),
-        "cut_sweep_changed_a_verdict": (
-            "TE cleared both bars on the single 2018 cut — gain +0.0105 against a 0.01 "
-            "threshold at p=0.000 — and would have shipped as 'the tight-end profile "
-            "forecasts next season'. At the 2021 cut the same gain is -0.0022. A result "
-            "that changes sign with where the boundary was drawn is a fact about the "
-            "boundary. The first version of this file had no sweep; build_tennis_forward.py "
-            "already had one for this reason, so its absence here was an omission rather "
-            "than a difference between the sports."),
-        "qb_note": (
-            "The profile makes QB prediction WORSE (-0.0151, p=0.500 — the null beats the "
-            "real gain half the time), and QB persistence is itself the weakest at 0.4914 "
-            "against 0.74-0.77 elsewhere. QB output is the least self-similar season to "
-            "season, and the volume-dominated features add noise on the smallest sample."),
-        "why_per_position_is_the_finding": (
-            "Pooling QB/RB/WR/TE puts a 14.48-mean population beside a 5.86-mean one, and "
-            "the 18 features are z-scored WITHIN SEASON ACROSS ALL FOUR positions, so "
-            "PASS_ATT_PG is strongly negative for every non-QB. A ridge can recover "
-            "position from them almost exactly, and 'the model knows a quarterback is a "
-            "quarterback' would be reported as forecasting skill. Pooled persistence is "
-            "0.7642 against per-position 0.58-0.74 for exactly that reason."),
-        "merged_name_note": (
-            f"vectors.json has NO player key — `id` is a row index, 10,700 distinct over "
-            f"10,700 rows, and 2,014 names own more than one. {excluded} of {len(raw)} "
-            f"name-keyed pairs join two different people across the season boundary. "
-            f"Excluded via merged_names() in build_vor_draft_value.py, the one gridiron "
-            f"normaliser, which applies the gsis and Wikidata acquittals internally."),
-        "min_games": MIN_GAMES,
-        "min_games_note": (
-            "Pre-registered before the run, not tuned. A 2-game season's per-game rate is "
-            "mostly noise, and noise in the target depresses baseline and model equally. "
-            "Unfiltered pooled persistence is reported alongside so the effect is visible."),
-        "era_note": ("Features are z-scored within season, so a 1999 rate and a 2025 rate "
-                     "both mean 'how far from that year's mean'. No era term is added."),
-        # HEADLINE FIELDS, UNIQUELY NAMED AND TOP-LEVEL. The per-group numbers live inside
-        # per_group[], where `gain` occurs five times with five different values — so
-        # check_cited_fields.py correctly refuses to verify a page citing `gain=-0.0151`,
-        # because it cannot tell which of the five was meant. Anything published from this
-        # report would therefore be unverifiable exactly where it is most interesting.
-        # A report whose headline numbers can only be reached by indexing into a list is
-        # awkward for a human consumer and unusable for a mechanical one; these names are
-        # unambiguous, so a citation to them can be checked.
-        "headline_positions_earning_keep": len(earners),
-        "headline_positions_tested": len(per_pos),
-        "headline_pooled_persistence_r": next(
-            (w["persistence_r"] for w in scored if w["group"].startswith("POOLED")), None),
-        "headline_qb_persistence_r": next(
-            (w["persistence_r"] for w in scored if w["group"] == "QB"), None),
-        "headline_qb_gain": next((w["gain"] for w in scored if w["group"] == "QB"), None),
-        "headline_te_gain_at_main_cut": next(
-            (w["gain"] for w in scored if w["group"] == "TE"), None),
-        "headline_te_gain_at_2021_cut": next(
-            (c["gain"] for w in scored if w["group"] == "TE"
-             for c in (w.get("cut_year_sweep") or []) if c["cut_year"] == 2021), None),
-        "n_pairs_raw": len(raw), "n_excluded_merged_names": excluded,
-        "n_pairs_used": len(src),
-        "split": f"TEMPORAL — train on target season <= {CUT_YEAR}, test strictly after",
-        "target": "ppg.ppr (PPR fantasy points per game)",
-        "per_group": rows,
-        "vs_other_sports": (
-            "tennis +0.0941 over 0.7486, hoops +0.0625 over 0.4514, equities ~0 over "
-            "0.85-0.92. The GAINS are not comparable across sports — different targets, "
-            "baselines and domains — and quoting one against another would be the "
-            "apples-to-oranges this repo keeps refusing to make."),
-    }, indent=2) + "\n", encoding="utf-8")
+                    f"the pooled row is reported and is confounded."
+                ),
+                "cut_sweep_changed_a_verdict": (
+                    "TE cleared both bars on the single 2018 cut — gain +0.0105 against a 0.01 "
+                    "threshold at p=0.000 — and would have shipped as 'the tight-end profile "
+                    "forecasts next season'. At the 2021 cut the same gain is -0.0022. A result "
+                    "that changes sign with where the boundary was drawn is a fact about the "
+                    "boundary. The first version of this file had no sweep; build_tennis_forward.py "
+                    "already had one for this reason, so its absence here was an omission rather "
+                    "than a difference between the sports."
+                ),
+                "qb_note": (
+                    "The profile makes QB prediction WORSE (-0.0151, p=0.500 — the null beats the "
+                    "real gain half the time), and QB persistence is itself the weakest at 0.4914 "
+                    "against 0.74-0.77 elsewhere. QB output is the least self-similar season to "
+                    "season, and the volume-dominated features add noise on the smallest sample."
+                ),
+                "why_per_position_is_the_finding": (
+                    "Pooling QB/RB/WR/TE puts a 14.48-mean population beside a 5.86-mean one, and "
+                    "the 18 features are z-scored WITHIN SEASON ACROSS ALL FOUR positions, so "
+                    "PASS_ATT_PG is strongly negative for every non-QB. A ridge can recover "
+                    "position from them almost exactly, and 'the model knows a quarterback is a "
+                    "quarterback' would be reported as forecasting skill. Pooled persistence is "
+                    "0.7642 against per-position 0.58-0.74 for exactly that reason."
+                ),
+                "merged_name_note": (
+                    f"vectors.json has NO player key — `id` is a row index, 10,700 distinct over "
+                    f"10,700 rows, and 2,014 names own more than one. {excluded} of {len(raw)} "
+                    f"name-keyed pairs join two different people across the season boundary. "
+                    f"Excluded via merged_names() in build_vor_draft_value.py, the one gridiron "
+                    f"normaliser, which applies the gsis and Wikidata acquittals internally."
+                ),
+                "min_games": MIN_GAMES,
+                "min_games_note": (
+                    "Pre-registered before the run, not tuned. A 2-game season's per-game rate is "
+                    "mostly noise, and noise in the target depresses baseline and model equally. "
+                    "Unfiltered pooled persistence is reported alongside so the effect is visible."
+                ),
+                "era_note": (
+                    "Features are z-scored within season, so a 1999 rate and a 2025 rate "
+                    "both mean 'how far from that year's mean'. No era term is added."
+                ),
+                # HEADLINE FIELDS, UNIQUELY NAMED AND TOP-LEVEL. The per-group numbers live inside
+                # per_group[], where `gain` occurs five times with five different values — so
+                # check_cited_fields.py correctly refuses to verify a page citing `gain=-0.0151`,
+                # because it cannot tell which of the five was meant. Anything published from this
+                # report would therefore be unverifiable exactly where it is most interesting.
+                # A report whose headline numbers can only be reached by indexing into a list is
+                # awkward for a human consumer and unusable for a mechanical one; these names are
+                # unambiguous, so a citation to them can be checked.
+                "headline_positions_earning_keep": len(earners),
+                "headline_positions_tested": len(per_pos),
+                "headline_pooled_persistence_r": next(
+                    (w["persistence_r"] for w in scored if w["group"].startswith("POOLED")),
+                    None,
+                ),
+                "headline_qb_persistence_r": next((w["persistence_r"] for w in scored if w["group"] == "QB"), None),
+                "headline_qb_gain": next((w["gain"] for w in scored if w["group"] == "QB"), None),
+                "headline_te_gain_at_main_cut": next((w["gain"] for w in scored if w["group"] == "TE"), None),
+                "headline_te_gain_at_2021_cut": next(
+                    (
+                        c["gain"]
+                        for w in scored
+                        if w["group"] == "TE"
+                        for c in (w.get("cut_year_sweep") or [])
+                        if c["cut_year"] == 2021
+                    ),
+                    None,
+                ),
+                "n_pairs_raw": len(raw),
+                "n_excluded_merged_names": excluded,
+                "n_pairs_used": len(src),
+                "split": f"TEMPORAL — train on target season <= {CUT_YEAR}, test strictly after",
+                "target": "ppg.ppr (PPR fantasy points per game)",
+                "per_group": rows,
+                "vs_other_sports": (
+                    "tennis +0.0941 over 0.7486, hoops +0.0625 over 0.4514, equities ~0 over "
+                    "0.85-0.92. The GAINS are not comparable across sports — different targets, "
+                    "baselines and domains — and quoting one against another would be the "
+                    "apples-to-oranges this repo keeps refusing to make."
+                ),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"\nwrote {OUT}")
 
     # ---- --check has a BODY, unlike the equities probe as first shipped ---------
@@ -298,12 +364,16 @@ def main() -> int:
     fails = []
     identical = int((np.abs(ppr[dst] - ppr[src]) < 1e-9).sum())
     if identical / max(1, len(src)) > 0.01:
-        fails.append(f"CARRY-FORWARD: {identical}/{len(src)} pairs have an identical PPR "
-                     f"both seasons — persistence would be measuring duplication")
+        fails.append(
+            f"CARRY-FORWARD: {identical}/{len(src)} pairs have an identical PPR "
+            f"both seasons — persistence would be measuring duplication"
+        )
     flat = [w["group"] for w in scored if w["null_sd"] < 1e-6]
     if flat:
-        fails.append(f"DEGENERATE NULL in {flat}: shuffled-extras sd is ~0, so every "
-                     f"p-value for those groups is uninterpretable")
+        fails.append(
+            f"DEGENERATE NULL in {flat}: shuffled-extras sd is ~0, so every "
+            f"p-value for those groups is uninterpretable"
+        )
     if args.check and fails:
         print()
         for f_ in fails:

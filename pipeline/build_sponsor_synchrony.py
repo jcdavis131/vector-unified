@@ -70,7 +70,7 @@ def main() -> int:
         shared = []
         locs = sorted(by_loc)
         for i, a in enumerate(locs):
-            for b in locs[i + 1:]:
+            for b in locs[i + 1 :]:
                 both = by_loc[a] & by_loc[b]
                 if both:
                     shared.append({"locations": [a, b], "shared_years": sorted(both)})
@@ -79,8 +79,7 @@ def main() -> int:
             "n_locations": len(by_loc),
             "locations": locs,
             "synchronous_pairs": shared,
-            "tournament_names": sorted({n for e in entries
-                                        for n in (e.get("tournament_names") or [])}),
+            "tournament_names": sorted({n for e in entries for n in (e.get("tournament_names") or [])}),
         }
         (survivors if shared else cut)[token] = rec
 
@@ -91,58 +90,74 @@ def main() -> int:
     print("  SURVIVORS (token — venues sharing a year):")
     for t, r in sorted(survivors.items()):
         p = r["synchronous_pairs"][0]
-        print(f"    {t:14} {r['n_locations']} venues   "
-              f"{p['locations'][0]} + {p['locations'][1]} in {p['shared_years'][:4]}")
+        print(
+            f"    {t:14} {r['n_locations']} venues   "
+            f"{p['locations'][0]} + {p['locations'][1]} in {p['shared_years'][:4]}"
+        )
 
-    print(f"\n  CUT — appear at one venue only, so indistinguishable from a place name:")
+    print("\n  CUT — appear at one venue only, so indistinguishable from a place name:")
     print(f"    {', '.join(sorted(cut))}")
 
-    OUT.write_text(json.dumps({
-        "question": ("Which of build_tennis_sponsors.py's 36 CONFIRMED tokens appear at "
-                     "TWO OR MORE venues in a shared year?"),
-        "why": ("A company buys naming rights to several events in a season; a river is in "
-                "one place. The source file named this filter as its own natural next step "
-                "and named the false-positive class it removes — the Melbourne 2021 "
-                "quarantine-bubble events (Great Ocean Road, Murray River, Phillip Island, "
-                "Yarra Valley), all Australian geography, none sponsored."),
-        "what_this_still_is_not": (
-            "NOT entity resolution. Surviving this filter does not tie a token to a "
-            "company; it removes the geography class and anything seen at a single venue. "
-            "A survivor is a better CANDIDATE and nothing more. Joining one to a ticker "
-            "needs a second source, exactly as the source file said."),
-        # HAND ADJUDICATION OF THE SURVIVORS, because 7 survivors is not 7 sponsors and the
-        # artifact must not be readable as though it were. Checked against the tournament
-        # names the filter itself carries.
-        "survivor_adjudication": {
-            "aegon": "REAL — AEGON Championships/Classic/International/Open across 4 venues",
-            "ericsson": "REAL — Ericsson Open, Sony Ericsson Open across 4 venues",
-            "sony": "REAL — Sony Ericsson Championships/Open across 3 venues",
-            "rogers": "REAL — Rogers Cup (Montreal) and Rogers Masters (Toronto)",
-            "viking": "REAL — Viking Classic/International; the Aegon UK rebrand, and it "
-                      "lands on the SAME two venues Aegon held (Birmingham, Eastbourne), "
-                      "which independently reproduces the dated corporate action "
-                      "build_tennis_sponsors.py called its strongest evidence",
-            "home": "REAL SPONSOR, FRAGMENT TOKEN — 'Bet-At-Home Cup' and 'bet-at-home "
+    OUT.write_text(
+        json.dumps(
+            {
+                "question": (
+                    "Which of build_tennis_sponsors.py's 36 CONFIRMED tokens appear at "
+                    "TWO OR MORE venues in a shared year?"
+                ),
+                "why": (
+                    "A company buys naming rights to several events in a season; a river is in "
+                    "one place. The source file named this filter as its own natural next step "
+                    "and named the false-positive class it removes — the Melbourne 2021 "
+                    "quarantine-bubble events (Great Ocean Road, Murray River, Phillip Island, "
+                    "Yarra Valley), all Australian geography, none sponsored."
+                ),
+                "what_this_still_is_not": (
+                    "NOT entity resolution. Surviving this filter does not tie a token to a "
+                    "company; it removes the geography class and anything seen at a single venue. "
+                    "A survivor is a better CANDIDATE and nothing more. Joining one to a ticker "
+                    "needs a second source, exactly as the source file said."
+                ),
+                # HAND ADJUDICATION OF THE SURVIVORS, because 7 survivors is not 7 sponsors and the
+                # artifact must not be readable as though it were. Checked against the tournament
+                # names the filter itself carries.
+                "survivor_adjudication": {
+                    "aegon": "REAL — AEGON Championships/Classic/International/Open across 4 venues",
+                    "ericsson": "REAL — Ericsson Open, Sony Ericsson Open across 4 venues",
+                    "sony": "REAL — Sony Ericsson Championships/Open across 3 venues",
+                    "rogers": "REAL — Rogers Cup (Montreal) and Rogers Masters (Toronto)",
+                    "viking": "REAL — Viking Classic/International; the Aegon UK rebrand, and it "
+                    "lands on the SAME two venues Aegon held (Birmingham, Eastbourne), "
+                    "which independently reproduces the dated corporate action "
+                    "build_tennis_sponsors.py called its strongest evidence",
+                    "home": "REAL SPONSOR, FRAGMENT TOKEN — 'Bet-At-Home Cup' and 'bet-at-home "
                     "Open'. bet-at-home.com is a genuine sponsor; 'home' is a tokenisation "
                     "artefact of its name, not a separate entity",
-            "valley": "FALSE POSITIVE — 'Yarra Valley Classic' (Melbourne) and 'Mubadala "
-                      "Silicon Valley Classic' (San Jose) are BOTH geography, and they "
-                      "coincided in 2021. The San Jose event's actual sponsor is Mubadala; "
-                      "'Silicon Valley' is the location. Cross-venue synchrony cannot "
-                      "separate two geographically-named events that happen to share a "
-                      "year, and this is the one case in 36 where that occurs.",
-        },
-        "honest_score": ("6 of 7 survivors correspond to real sponsorship (5 clean, 1 a "
-                         "fragment of a real sponsor's name); 1 is geography coincidence. "
-                         "The filter removed all 4 Melbourne-2021 geography tokens the "
-                         "source file named — great, ocean, river, island — and missed "
-                         "'valley' only because San Jose is also geographically named."),
-        "n_confirmed_in": len(detail),
-        "n_survivors": len(survivors),
-        "n_cut": len(cut),
-        "survivors": survivors,
-        "cut_single_venue": sorted(cut),
-    }, indent=2) + "\n", encoding="utf-8")
+                    "valley": "FALSE POSITIVE — 'Yarra Valley Classic' (Melbourne) and 'Mubadala "
+                    "Silicon Valley Classic' (San Jose) are BOTH geography, and they "
+                    "coincided in 2021. The San Jose event's actual sponsor is Mubadala; "
+                    "'Silicon Valley' is the location. Cross-venue synchrony cannot "
+                    "separate two geographically-named events that happen to share a "
+                    "year, and this is the one case in 36 where that occurs.",
+                },
+                "honest_score": (
+                    "6 of 7 survivors correspond to real sponsorship (5 clean, 1 a "
+                    "fragment of a real sponsor's name); 1 is geography coincidence. "
+                    "The filter removed all 4 Melbourne-2021 geography tokens the "
+                    "source file named — great, ocean, river, island — and missed "
+                    "'valley' only because San Jose is also geographically named."
+                ),
+                "n_confirmed_in": len(detail),
+                "n_survivors": len(survivors),
+                "n_cut": len(cut),
+                "survivors": survivors,
+                "cut_single_venue": sorted(cut),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"\nwrote {OUT}")
     return 0
 

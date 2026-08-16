@@ -48,16 +48,18 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from eval_unified import knn5_acc  # noqa: E402  THE fixed implementation, imported not copied
-from train_unified import SPORTS, load_matrix  # noqa: E402
+from eval_unified import knn5_acc
+from train_unified import SPORTS, load_matrix
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "stage2_baselines.json"
 # role_knn5 was never masked and so was never affected by the bug. These are the values the
 # shipped file carries; a standalone recomputation must reproduce them.
-EXPECT_ROLE = {"hoops": 0.8407864302235929,
-               "gridiron": 0.9774647887323944,
-               "pitch": 0.9609053497942387}
+EXPECT_ROLE = {
+    "hoops": 0.8407864302235929,
+    "gridiron": 0.9774647887323944,
+    "pitch": 0.9609053497942387,
+}
 ROLE_TOL = 1e-9
 
 
@@ -80,27 +82,30 @@ def main() -> int:
         idx = np.where(sid == s)[0]
         e = M["E"][s].cpu().numpy()
         role = knn5_acc(e, native[idx])
-        pos_acc = (knn5_acc(e, pos[idx], posm[idx]) if posm[idx].any() else None)
+        pos_acc = knn5_acc(e, pos[idx], posm[idx]) if posm[idx].any() else None
         baselines[sport] = {"n": int(len(idx)), "role_knn5": role, "pos_knn5": pos_acc}
         exp = EXPECT_ROLE.get(sport)
         ok = exp is not None and role is not None and abs(role - exp) <= ROLE_TOL
         if not ok:
             drift.append(f"{sport}: role_knn5 {role} != shipped {exp}")
         was = (prev.get(sport) or {}).get("pos_knn5")
-        print(f"  {sport:9} n={len(idx):6}  role={role:.10f} {'OK' if ok else 'DRIFT'}"
-              f"   pos {was} -> {pos_acc}")
+        print(f"  {sport:9} n={len(idx):6}  role={role:.10f} {'OK' if ok else 'DRIFT'}" f"   pos {was} -> {pos_acc}")
 
     if drift:
         print("\nROLE COLUMN DID NOT REPRODUCE — refusing to write:")
         for d in drift:
             print(f"  {d}")
-        print("role_knn5 was never masked and so was never touched by the 7.21 fix. If it "
-              "moved, this script is measuring something other than what the trainer "
-              "measured, and its pos_knn5 cannot be trusted either.")
+        print(
+            "role_knn5 was never masked and so was never touched by the 7.21 fix. If it "
+            "moved, this script is measuring something other than what the trainer "
+            "measured, and its pos_knn5 cannot be trusted either."
+        )
         return 1
 
-    print("\nrole column reproduces the shipped values exactly, so this computes the same "
-          "quantity the trainer does; only the masked column moved.")
+    print(
+        "\nrole column reproduces the shipped values exactly, so this computes the same "
+        "quantity the trainer does; only the masked column moved."
+    )
     if args.dry_run:
         print("--dry-run: nothing written")
         return 0

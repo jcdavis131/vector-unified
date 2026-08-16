@@ -38,10 +38,10 @@ DATA = ROOT / "data" / "market_cultural"
 ASSETS = ROOT / "assets"
 CACHE = PIPE / "cache"
 
-WIKI_RENDER = ("https://en.wikipedia.org/wiki/"
-               "Forbes_list_of_the_world%27s_highest-paid_athletes?action=render")
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+WIKI_RENDER = "https://en.wikipedia.org/wiki/" "Forbes_list_of_the_world%27s_highest-paid_athletes?action=render"
+UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
 
 SPORT_MAP = {
     "basketball": "hoops",
@@ -64,11 +64,13 @@ def norm_name(name: str) -> str:
 def fetch_html(url: str) -> str:
     try:
         from curl_cffi import requests as cr
+
         r = cr.get(url, impersonate="chrome120", headers={"User-Agent": UA}, timeout=60)
         r.raise_for_status()
         return r.text
     except ImportError:
         import urllib.request
+
         req = urllib.request.Request(url, headers={"User-Agent": UA})
         with urllib.request.urlopen(req, timeout=60) as resp:
             return resp.read().decode("utf-8", errors="replace")
@@ -78,9 +80,14 @@ def _strip_tags(s: str) -> str:
     """Remove HTML tags, collapse whitespace, drop footnote refs like [1]."""
     s = re.sub(r"<ref[^>]*>.*?</ref>", "", s, flags=re.DOTALL | re.IGNORECASE)
     s = re.sub(r"<[^>]+>", "", s)
-    s = (s.replace("&amp;", "&").replace("&nbsp;", " ")
-          .replace("&#160;", " ").replace("&quot;", '"')
-          .replace("&#39;", "'").replace("&apos;", "'"))
+    s = (
+        s.replace("&amp;", "&")
+        .replace("&nbsp;", " ")
+        .replace("&#160;", " ")
+        .replace("&quot;", '"')
+        .replace("&#39;", "'")
+        .replace("&apos;", "'")
+    )
     s = re.sub(r"\s*\[\d+\]\s*", " ", s)  # wikipedia reference markers
     s = re.sub(r"\s+", " ", s).strip()
     return s
@@ -148,8 +155,7 @@ def _year_from_heading(html: str, table_start: int) -> int | None:
     """Find the nearest preceding heading before a table's start; return its 4-digit year."""
     chunk = html[:table_start]
     # iterate heading matches from the end backwards
-    heads = list(re.finditer(
-        r"<h[23][^>]*>(.*?)</h[23]>", chunk, re.DOTALL | re.IGNORECASE))
+    heads = list(re.finditer(r"<h[23][^>]*>(.*?)</h[23]>", chunk, re.DOTALL | re.IGNORECASE))
     for h in reversed(heads):
         text = _strip_tags(h.group(1))
         m = re.search(r"(\d{4})", text)
@@ -165,9 +171,14 @@ def _year_from_heading(html: str, table_start: int) -> int | None:
 def parse_forbes_html(html: str) -> dict[int, list[dict]]:
     """Return {year: [record, ...]} from the rendered Wikipedia HTML."""
     # locate table start offsets for heading association
-    table_spans = [(m.start(), m.end()) for m in re.finditer(
-        r"<table[^>]*class=\"[^\"]*wikitable[^\"]*\"[^>]*>.*?</table>",
-        html, re.DOTALL | re.IGNORECASE)]
+    table_spans = [
+        (m.start(), m.end())
+        for m in re.finditer(
+            r"<table[^>]*class=\"[^\"]*wikitable[^\"]*\"[^>]*>.*?</table>",
+            html,
+            re.DOTALL | re.IGNORECASE,
+        )
+    ]
     ext = _TableTextExtractor()
     ext.feed(html)
     if not ext.tables:
@@ -202,17 +213,19 @@ def parse_forbes_html(html: str) -> dict[int, list[dict]]:
             salary = _parse_money(row[5])
             endorse = _parse_money(row[6])
             sport = SPORT_MAP.get(sport_raw.lower(), "other")
-            records.append({
-                "rank": int(rank_s),
-                "name": name,
-                "norm": norm_name(name),
-                "sport_raw": sport_raw,
-                "sport": sport,
-                "country": country,
-                "total_m": total,
-                "salary_m": salary,
-                "endorse_m": endorse,
-            })
+            records.append(
+                {
+                    "rank": int(rank_s),
+                    "name": name,
+                    "norm": norm_name(name),
+                    "sport_raw": sport_raw,
+                    "sport": sport,
+                    "country": country,
+                    "total_m": total,
+                    "salary_m": salary,
+                    "endorse_m": endorse,
+                }
+            )
         if records:
             out.setdefault(year, []).extend(records)
     return out
@@ -263,14 +276,26 @@ def cross_ref(doc: dict) -> dict:
                 matched_records += 1
                 matched_athletes.add(key)
                 if len(examples) < 12:
-                    examples.append({"year": int(year), "name": r["name"],
-                                     "sport": r["sport"], "total_m": r["total_m"],
-                                     "unified_rows": len(idx[key])})
+                    examples.append(
+                        {
+                            "year": int(year),
+                            "name": r["name"],
+                            "sport": r["sport"],
+                            "total_m": r["total_m"],
+                            "unified_rows": len(idx[key]),
+                        }
+                    )
             else:
                 sports_with_name = norm_any.get(r["norm"], [])
-                unmatched.append({"year": int(year), "name": r["name"],
-                                  "sport": r["sport"], "sport_raw": r["sport_raw"],
-                                  "name_found_in_sports": sorted(set(sports_with_name))})
+                unmatched.append(
+                    {
+                        "year": int(year),
+                        "name": r["name"],
+                        "sport": r["sport"],
+                        "sport_raw": r["sport_raw"],
+                        "name_found_in_sports": sorted(set(sports_with_name)),
+                    }
+                )
     # unique athletes in our 3 sports
     unique_in3 = sum(1 for k in matched_athletes)
     return {
@@ -289,10 +314,12 @@ def cross_ref(doc: dict) -> dict:
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
-    ap.add_argument("--offline", action="store_true",
-                    help="use cached forbes_earnings.json; only run cross-ref")
-    ap.add_argument("--refresh", action="store_true",
-                    help="re-fetch even if cache exists")
+    ap.add_argument(
+        "--offline",
+        action="store_true",
+        help="use cached forbes_earnings.json; only run cross-ref",
+    )
+    ap.add_argument("--refresh", action="store_true", help="re-fetch even if cache exists")
     args = ap.parse_args()
 
     DATA.mkdir(parents=True, exist_ok=True)
@@ -305,15 +332,14 @@ def main() -> int:
     else:
         if out.exists() and not args.refresh:
             doc = json.loads(out.read_text(encoding="utf-8"))
-            print(f"forbes_earnings.json cached (use --refresh to re-fetch): "
-                  f"{doc['n_years']} years")
+            print(f"forbes_earnings.json cached (use --refresh to re-fetch): " f"{doc['n_years']} years")
         else:
             print("fetching Wikipedia Forbes list ...")
             doc = build_forbes()
-            out.write_text(json.dumps(doc, indent=2, ensure_ascii=False),
-                           encoding="utf-8")
-            print(f"saved {out.name}: {doc['n_years']} years "
-                  f"({sum(len(v) for v in doc['lists'].values())} records)")
+            out.write_text(json.dumps(doc, indent=2, ensure_ascii=False), encoding="utf-8")
+            print(
+                f"saved {out.name}: {doc['n_years']} years " f"({sum(len(v) for v in doc['lists'].values())} records)"
+            )
             time.sleep(1.0)
 
     # summary
@@ -325,26 +351,31 @@ def main() -> int:
 
     # cross-ref vs unified corpus
     cov = cross_ref(doc)
-    (DATA / "forbes_coverage.json").write_text(
-        json.dumps(cov, indent=2, ensure_ascii=False), encoding="utf-8")
+    (DATA / "forbes_coverage.json").write_text(json.dumps(cov, indent=2, ensure_ascii=False), encoding="utf-8")
     if cov.get("present"):
         print(f"\ncross-ref vs unified.json ({cov['unified_rows']} rows):")
-        print(f"  Forbes records in our 3 sports matched: "
-              f"{cov['forbes_records_matched_in3']}/{cov['forbes_records_total']}  "
-              f"({cov['forbes_unique_athletes_matched_in3']} unique athletes)")
+        print(
+            f"  Forbes records in our 3 sports matched: "
+            f"{cov['forbes_records_matched_in3']}/{cov['forbes_records_total']}  "
+            f"({cov['forbes_unique_athletes_matched_in3']} unique athletes)"
+        )
         print(f"  by sport: {cov['by_sport']}")
         unmatched = cov.get("unmatched_in_sport", [])
         if unmatched:
-            print(f"  unmatched in-sport records: {len(unmatched)} "
-                  f"(name-variant or not in corpus):")
+            print(f"  unmatched in-sport records: {len(unmatched)} " f"(name-variant or not in corpus):")
             for u in unmatched:
-                tag = (f" [name exists as {u['name_found_in_sports']}]" if u["name_found_in_sports"] else " [name not in corpus]")
-                print(f"    {u['year']} {u['name']:<22} [{u['sport'][:2]}] "
-                      f"({u['sport_raw']}){tag}")
+                tag = (
+                    f" [name exists as {u['name_found_in_sports']}]"
+                    if u["name_found_in_sports"]
+                    else " [name not in corpus]"
+                )
+                print(f"    {u['year']} {u['name']:<22} [{u['sport'][:2]}] " f"({u['sport_raw']}){tag}")
         print("  examples:")
         for e in cov["examples"][:8]:
-            print(f"    {e['year']} {e['name']:<22} [{e['sport'][:2]}] "
-                  f"total=${e['total_m']}M  unified_rows={e['unified_rows']}")
+            print(
+                f"    {e['year']} {e['name']:<22} [{e['sport'][:2]}] "
+                f"total=${e['total_m']}M  unified_rows={e['unified_rows']}"
+            )
     else:
         print(f"unified.json not found at {cov['unified_json']} (cross-ref skipped)")
     return 0

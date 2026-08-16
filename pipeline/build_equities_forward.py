@@ -107,14 +107,14 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from build_tennis_forward import null_extras_gain, r, ridge  # noqa: E402
+from build_tennis_forward import null_extras_gain, r, ridge
 
 ROOT = Path(__file__).resolve().parent.parent
 REAL = Path("C:/Users/jcdav/vector-equities/assets/real_data.json")
 OUT = ROOT / "data" / "equities_forward_report.json"
 CUT_YEAR = 2021
 TARGETS = ("Profitability", "Balance_Health", "Market_Momentum")
-EARNS = 0.01     # a gain below this is not worth calling a gain
+EARNS = 0.01  # a gain below this is not worth calling a gain
 
 
 def main() -> int:
@@ -148,15 +148,17 @@ def main() -> int:
     identical_rows = int((np.abs(D).max(axis=1) < 1e-6).sum())
 
     print(f"{len(prs)} consecutive-year pairs   train {tr.sum()}   test {te.sum()}")
-    print(f"  carry-forward check: {exact_zero}/{D.size} deltas exactly zero "
-          f"({100*exact_zero/D.size:.2f}%), {identical_rows} identical rows")
+    print(
+        f"  carry-forward check: {exact_zero}/{D.size} deltas exactly zero "
+        f"({100*exact_zero/D.size:.2f}%), {identical_rows} identical rows"
+    )
     print(f"\n  {'skill':22} {'persist':>8} {'emb ONLY':>9} {'score+emb':>10} {'gain':>8}")
 
     rows, any_earns = [], False
     for tgt in TARGETS:
         j = keys.index(tgt)
         yp, yn = S[src, j], S[dst, j]
-        F = np.hstack([S[src, j:j + 1], E[src]])
+        F = np.hstack([S[src, j : j + 1], E[src]])
         persist = r(yp[te], yn[te])
         only = r(ridge(E[src][tr], yn[tr], E[src][te]), yn[te])
         r1 = r(ridge(yp[tr, None], yn[tr], yp[te, None]), yn[te])
@@ -180,92 +182,136 @@ def main() -> int:
                 continue
             g1 = r(ridge(yp[a_tr, None], yn[a_tr], yp[a_te, None]), yn[a_te])
             gb = r(ridge(F[a_tr], yn[a_tr], F[a_te]), yn[a_te])
-            sweep.append({"cut_year": cut, "n_test": int(a_te.sum()),
-                          "score_only_r": round(g1, 4), "score_plus_embedding_r": round(gb, 4),
-                          "gain": round(gb - g1, 4)})
+            sweep.append(
+                {
+                    "cut_year": cut,
+                    "n_test": int(a_te.sum()),
+                    "score_only_r": round(g1, 4),
+                    "score_plus_embedding_r": round(gb, 4),
+                    "gain": round(gb - g1, 4),
+                }
+            )
         cg = [s_["gain"] for s_ in sweep]
         all_pos = bool(cg) and all(g > 0 for g in cg)
 
         earns = gain > EARNS and p_val < 0.05 and all_pos
         any_earns = any_earns or earns
-        rows.append({"skill": tgt, "persistence_r": round(persist, 4),
-                     "embedding_only_r": round(only, 4), "score_only_r": round(r1, 4),
-                     "score_plus_embedding_r": round(rb, 4), "gain": round(gain, 4),
-                     "null_p": p_val, "cut_year_sweep": sweep,
-                     "gain_positive_at_every_cut": all_pos,
-                     "gain_mean_across_cuts": round(float(np.mean(cg)), 4) if cg else None,
-                     "earns_its_keep": bool(earns)})
-        print(f"  {tgt:22} {persist:>8.4f} {only:>9.4f} {rb:>10.4f} {gain:>+8.4f}"
-              f"   p={p_val:.3f} {'EARNS' if earns else 'no'}")
+        rows.append(
+            {
+                "skill": tgt,
+                "persistence_r": round(persist, 4),
+                "embedding_only_r": round(only, 4),
+                "score_only_r": round(r1, 4),
+                "score_plus_embedding_r": round(rb, 4),
+                "gain": round(gain, 4),
+                "null_p": p_val,
+                "cut_year_sweep": sweep,
+                "gain_positive_at_every_cut": all_pos,
+                "gain_mean_across_cuts": round(float(np.mean(cg)), 4) if cg else None,
+                "earns_its_keep": bool(earns),
+            }
+        )
+        print(
+            f"  {tgt:22} {persist:>8.4f} {only:>9.4f} {rb:>10.4f} {gain:>+8.4f}"
+            f"   p={p_val:.3f} {'EARNS' if earns else 'no'}"
+        )
         if sweep:
-            print(f"  {'':22} cuts: " + "  ".join(
-                f"{c['cut_year']}:{c['gain']:+.4f}" for c in sweep)
-                + ("  all positive" if all_pos else "  NOT positive at every cut"))
+            print(
+                f"  {'':22} cuts: "
+                + "  ".join(f"{c['cut_year']}:{c['gain']:+.4f}" for c in sweep)
+                + ("  all positive" if all_pos else "  NOT positive at every cut")
+            )
 
-    print(f"\n  verdict: {'some targets earn it' if any_earns else 'NO on MAGNITUDE, not on significance — every gain beats the null but all sit below the 0.01 bar'}")
+    print(
+        f"\n  verdict: {'some targets earn it' if any_earns else 'NO on MAGNITUDE, not on significance — every gain beats the null but all sit below the 0.01 bar'}"
+    )
 
-    OUT.write_text(json.dumps({
-        "question": ("Does the shipped 64-d equities embedding predict next year's skill "
-                     "profile beyond what this year's own score already predicts?"),
-        "verdict": ("NO, ON MAGNITUDE — NOT ON SIGNIFICANCE. Gains of +0.0043 / +0.0006 / "
+    OUT.write_text(
+        json.dumps(
+            {
+                "question": (
+                    "Does the shipped 64-d equities embedding predict next year's skill "
+                    "profile beyond what this year's own score already predicts?"
+                ),
+                "verdict": (
+                    "NO, ON MAGNITUDE — NOT ON SIGNIFICANCE. Gains of +0.0043 / +0.0006 / "
                     "+0.0029 against persistence of 0.8473 / 0.9151 / 0.8477. Every one of "
                     "them BEATS the shuffled-extras null (p = 0.000 / 0.025 / 0.000), so the "
                     "embedding does carry a real, detectable increment. It is just far too "
                     "small to matter: below the 0.01 bar this file set before running. "
                     "Statistically distinguishable and practically negligible are different "
                     "findings, and reporting only the p-value would turn a null result into "
-                    "a headline." if not any_earns else "some targets earn it"),
-        "redundant_not_uninformative": (
-            "Scored ALONE, with the current score withheld, the embedding recovers next "
-            "year's skill about as well as persistence does. It encodes the present profile "
-            "well; it just knows nothing about next year that the present does not say. "
-            "'Redundant' and 'uninformative' are different findings and this is the first."),
-        "read_the_baseline_first": (
-            "Persistence is 0.85-0.92 here. There is very little headroom for any model, and "
-            "'gain ~0 against a 0.92 baseline' is a far weaker claim than 'the model is "
-            "bad'. A quality composite that moved enough to leave room would be suspicious."),
-        "carry_forward_check": {
-            "deltas": int(D.size), "exactly_zero": exact_zero,
-            "pct_exactly_zero": round(100 * exact_zero / D.size, 2),
-            "rows_identical_to_prior_year": identical_rows,
-            "why": ("Persistence of 0.9 is what a stale-data bug looks like, so this ran "
-                    "before any conclusion was drawn from it. The values genuinely move."),
-        },
-        "scope_corrected": (
-            "Corrected TWICE; the first correction repeated the false premise. This file "
-            "claimed mtnn_report.json records no next-year head. It has a top-level "
-            "next_profile block (val r2 0.262 over 990 rows, test r2 0.1965 over 500), and "
-            "model.py:274 / train_mtnn.py:456 define and train the head at loss weight "
-            "0.10. I never opened the report — both the claim and its first correction came "
-            "from a remembered summary treated as verified because it was my own earlier "
-            "sentence. dumbmodel.com's equities insights[4] has cited those exact fields "
-            "since the page was built, so I contradicted my own live verified page."),
-        "scope_of_this_probe": (
-            "Tests the SHIPPED EMBEDDING — the trunk output in real_data.json, what the "
-            "site serves — under a linear read. Does NOT test the next_profile head, whose "
-            "weights are not in the shipped asset. The head's r2 0.1965 and this file's "
-            "persistence r 0.85-0.92 are NOT comparable: the head is scored on the full "
-            "z-scored profile vector across all skill dims, this is scored per-skill on "
-            "three named composites, over different rows and a different split. Lining "
-            "them up would be the cross-metric apples-to-oranges this repo keeps refusing."),
-        "n_pairs": len(prs), "n_train": int(tr.sum()), "n_test": int(te.sum()),
-        "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
-        "per_target": rows,
-        "sweep_added_late": (
-            "Tennis and hoops required gain_positive_at_every_cut from the start; this file "
-            "did not. Nothing false shipped, because every equities gain sits below the 0.01 "
-            "bar regardless — but the verdict was one number away from resting on a split "
-            "nobody had varied. build_gridiron_forward.py's first run made that concrete: TE "
-            "reported as an earner at +0.0105 on one cut, -0.0022 when the boundary moved. "
-            "All three equities gains ARE positive at every cut, so the finding is unchanged "
-            "and now says more: real, consistent, and too small to matter."),
-        "vs_other_sports": (
-            "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities ~0 "
-            "over 0.85-0.92, gridiron 0 of 4 positions over 0.49-0.77. The GAINS are not "
-            "directly comparable — different targets, different baselines, different domains "
-            "— but the pattern that headroom tracks baseline is worth noticing rather than "
-            "reading as a ranking of the models."),
-    }, indent=2) + "\n", encoding="utf-8")
+                    "a headline."
+                    if not any_earns
+                    else "some targets earn it"
+                ),
+                "redundant_not_uninformative": (
+                    "Scored ALONE, with the current score withheld, the embedding recovers next "
+                    "year's skill about as well as persistence does. It encodes the present profile "
+                    "well; it just knows nothing about next year that the present does not say. "
+                    "'Redundant' and 'uninformative' are different findings and this is the first."
+                ),
+                "read_the_baseline_first": (
+                    "Persistence is 0.85-0.92 here. There is very little headroom for any model, and "
+                    "'gain ~0 against a 0.92 baseline' is a far weaker claim than 'the model is "
+                    "bad'. A quality composite that moved enough to leave room would be suspicious."
+                ),
+                "carry_forward_check": {
+                    "deltas": int(D.size),
+                    "exactly_zero": exact_zero,
+                    "pct_exactly_zero": round(100 * exact_zero / D.size, 2),
+                    "rows_identical_to_prior_year": identical_rows,
+                    "why": (
+                        "Persistence of 0.9 is what a stale-data bug looks like, so this ran "
+                        "before any conclusion was drawn from it. The values genuinely move."
+                    ),
+                },
+                "scope_corrected": (
+                    "Corrected TWICE; the first correction repeated the false premise. This file "
+                    "claimed mtnn_report.json records no next-year head. It has a top-level "
+                    "next_profile block (val r2 0.262 over 990 rows, test r2 0.1965 over 500), and "
+                    "model.py:274 / train_mtnn.py:456 define and train the head at loss weight "
+                    "0.10. I never opened the report — both the claim and its first correction came "
+                    "from a remembered summary treated as verified because it was my own earlier "
+                    "sentence. dumbmodel.com's equities insights[4] has cited those exact fields "
+                    "since the page was built, so I contradicted my own live verified page."
+                ),
+                "scope_of_this_probe": (
+                    "Tests the SHIPPED EMBEDDING — the trunk output in real_data.json, what the "
+                    "site serves — under a linear read. Does NOT test the next_profile head, whose "
+                    "weights are not in the shipped asset. The head's r2 0.1965 and this file's "
+                    "persistence r 0.85-0.92 are NOT comparable: the head is scored on the full "
+                    "z-scored profile vector across all skill dims, this is scored per-skill on "
+                    "three named composites, over different rows and a different split. Lining "
+                    "them up would be the cross-metric apples-to-oranges this repo keeps refusing."
+                ),
+                "n_pairs": len(prs),
+                "n_train": int(tr.sum()),
+                "n_test": int(te.sum()),
+                "split": f"TEMPORAL — train on target year <= {CUT_YEAR}, test strictly after",
+                "per_target": rows,
+                "sweep_added_late": (
+                    "Tennis and hoops required gain_positive_at_every_cut from the start; this file "
+                    "did not. Nothing false shipped, because every equities gain sits below the 0.01 "
+                    "bar regardless — but the verdict was one number away from resting on a split "
+                    "nobody had varied. build_gridiron_forward.py's first run made that concrete: TE "
+                    "reported as an earner at +0.0105 on one cut, -0.0022 when the boundary moved. "
+                    "All three equities gains ARE positive at every cut, so the finding is unchanged "
+                    "and now says more: real, consistent, and too small to matter."
+                ),
+                "vs_other_sports": (
+                    "tennis +0.0941 over a 0.7486 baseline, hoops +0.0625 over 0.4514, equities ~0 "
+                    "over 0.85-0.92, gridiron 0 of 4 positions over 0.49-0.77. The GAINS are not "
+                    "directly comparable — different targets, different baselines, different domains "
+                    "— but the pattern that headroom tracks baseline is worth noticing rather than "
+                    "reading as a ranking of the models."
+                ),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"wrote {OUT}")
 
     # ---- --check HAD NO BODY, AND THIS FILE WAS REGISTERED AS A GATE ------------
@@ -289,13 +335,16 @@ def main() -> int:
     fails = []
     frac_identical = identical_rows / max(1, len(prs))
     if frac_identical > 0.01:
-        fails.append(f"CARRY-FORWARD: {identical_rows}/{len(prs)} pairs ({100*frac_identical:.1f}%) "
-                     f"are identical to their prior year — persistence of "
-                     f"{rows[0]['persistence_r']} would be measuring duplication, not skill")
+        fails.append(
+            f"CARRY-FORWARD: {identical_rows}/{len(prs)} pairs ({100*frac_identical:.1f}%) "
+            f"are identical to their prior year — persistence of "
+            f"{rows[0]['persistence_r']} would be measuring duplication, not skill"
+        )
     null_sd = float(ndist.std())
     if null_sd < 1e-6:
-        fails.append(f"DEGENERATE NULL: shuffled-extras sd is {null_sd:.2e}; every p-value "
-                     f"in this report is uninterpretable")
+        fails.append(
+            f"DEGENERATE NULL: shuffled-extras sd is {null_sd:.2e}; every p-value " f"in this report is uninterpretable"
+        )
 
     if args.check and fails:
         print()

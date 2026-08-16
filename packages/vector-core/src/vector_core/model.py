@@ -62,9 +62,7 @@ def _build_classes():
             super().__init__()
             self.in_dim = in_dim
             self.inp = nn.Linear(in_dim * 2, hidden)
-            self.blocks = nn.ModuleList(
-                [nn.Linear(hidden, hidden) for _ in range(depth)]
-            )
+            self.blocks = nn.ModuleList([nn.Linear(hidden, hidden) for _ in range(depth)])
             self.norms = nn.ModuleList([nn.LayerNorm(hidden) for _ in range(depth)])
             self.out = nn.Linear(hidden, out_dim)
 
@@ -136,10 +134,7 @@ def _build_classes():
             else:
                 blocks = self._split(x)
                 masks = self._split(mask) if mask is not None else [None] * len(blocks)
-            embs = [
-                tower(b, m)
-                for tower, b, m in zip(self.towers, blocks, masks, strict=False)
-            ]
+            embs = [tower(b, m) for tower, b, m in zip(self.towers, blocks, masks, strict=False)]
             stacked = torch.stack(embs, dim=1)  # (B, n_towers, tower_dim)
             z = self.fusion(stacked)  # (B, emb_dim)
             return F.normalize(z, dim=-1)

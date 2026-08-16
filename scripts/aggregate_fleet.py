@@ -61,9 +61,21 @@ except ModuleNotFoundError:
 # the committed source file (matching the "source" field in fleet.json) and the
 # default branch to read from.
 PUBLIC_SOURCES = {
-    "vector-hoops": {"owner": "jcdavis131", "ref": "main", "path": "assets/eval_scoreboard.json"},
-    "vector-pitch": {"owner": "jcdavis131", "ref": "main", "path": "assets/eval_scoreboard.json"},
-    "vector-gridiron": {"owner": "jcdavis131", "ref": "main", "path": "assets/eval_scoreboard.json"},
+    "vector-hoops": {
+        "owner": "jcdavis131",
+        "ref": "main",
+        "path": "assets/eval_scoreboard.json",
+    },
+    "vector-pitch": {
+        "owner": "jcdavis131",
+        "ref": "main",
+        "path": "assets/eval_scoreboard.json",
+    },
+    "vector-gridiron": {
+        "owner": "jcdavis131",
+        "ref": "main",
+        "path": "assets/eval_scoreboard.json",
+    },
     "vector-equities": {
         "owner": "jcdavis131",
         "ref": "main",
@@ -111,7 +123,7 @@ def validate(data: dict) -> list[str]:
 
 def fetch_json(url: str, timeout: float = 15.0) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": "aggregate_fleet/1.0"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 (trusted host)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -135,7 +147,12 @@ def refresh_public(data: dict) -> int:
         url = RAW_BASE.format(owner=src["owner"], repo=repo, ref=src["ref"], path=src["path"])
         try:
             blob = fetch_json(url)
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError) as exc:
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            TimeoutError,
+            ValueError,
+        ) as exc:
             print(f"  {repo}: fetch failed ({exc}); keeping existing values")
             continue
         # We fetched the live scoreboard. Repo schemas differ, so we do not blindly

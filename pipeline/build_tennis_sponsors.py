@@ -71,37 +71,227 @@ EQUITIES = Path("C:/Users/jcdav/vector-equities/assets/universe_full_history.jso
 # false NEGATIVE costs one candidate, a false POSITIVE puts a common noun in a sponsor
 # registry and makes the coverage number a lie.
 STOP = {
-    "open", "opens", "championship", "championships", "classic", "cup", "trophy",
-    "international", "masters", "tournament", "tour", "finals", "final", "series",
-    "invitational", "challenge", "challenger", "games", "game", "grand", "slam", "prix",
-    "atp", "wta", "itf", "men", "mens", "women", "womens", "ladies", "gentlemen",
-    "singles", "doubles", "tennis", "court", "courts", "grass", "clay", "hard", "indoor",
-    "outdoor", "of", "the", "de", "del", "della", "di", "du", "da", "das", "dos", "el",
-    "la", "le", "les", "los", "and", "at", "in", "on", "for", "cor", "torneo", "abierto",
-    "copa", "coupe", "internazionali", "campeonato", "trofeo", "championnats", "meisterschaften",
-    "bowl", "cities", "city", "county", "state", "national", "nationals", "region",
-    "regional", "week", "days", "day", "spring", "summer", "autumn", "winter", "sunshine",
-    "gold", "silver", "st", "santa", "san", "port", "new", "north", "south", "east", "west",
-    "1", "2", "i", "ii", "iii",
+    "open",
+    "opens",
+    "championship",
+    "championships",
+    "classic",
+    "cup",
+    "trophy",
+    "international",
+    "masters",
+    "tournament",
+    "tour",
+    "finals",
+    "final",
+    "series",
+    "invitational",
+    "challenge",
+    "challenger",
+    "games",
+    "game",
+    "grand",
+    "slam",
+    "prix",
+    "atp",
+    "wta",
+    "itf",
+    "men",
+    "mens",
+    "women",
+    "womens",
+    "ladies",
+    "gentlemen",
+    "singles",
+    "doubles",
+    "tennis",
+    "court",
+    "courts",
+    "grass",
+    "clay",
+    "hard",
+    "indoor",
+    "outdoor",
+    "of",
+    "the",
+    "de",
+    "del",
+    "della",
+    "di",
+    "du",
+    "da",
+    "das",
+    "dos",
+    "el",
+    "la",
+    "le",
+    "les",
+    "los",
+    "and",
+    "at",
+    "in",
+    "on",
+    "for",
+    "cor",
+    "torneo",
+    "abierto",
+    "copa",
+    "coupe",
+    "internazionali",
+    "campeonato",
+    "trofeo",
+    "championnats",
+    "meisterschaften",
+    "bowl",
+    "cities",
+    "city",
+    "county",
+    "state",
+    "national",
+    "nationals",
+    "region",
+    "regional",
+    "week",
+    "days",
+    "day",
+    "spring",
+    "summer",
+    "autumn",
+    "winter",
+    "sunshine",
+    "gold",
+    "silver",
+    "st",
+    "santa",
+    "san",
+    "port",
+    "new",
+    "north",
+    "south",
+    "east",
+    "west",
+    "1",
+    "2",
+    "i",
+    "ii",
+    "iii",
 }
 
 # Demonyms and country/place adjectives. `location` covers the city; these cover the rest.
 DEMONYM = {
-    "german", "germany", "swedish", "sweden", "serbia", "serbian", "hellenic", "greek",
-    "greece", "french", "france", "italian", "italy", "spanish", "spain", "swiss",
-    "switzerland", "dutch", "netherlands", "belgian", "belgium", "austrian", "austria",
-    "australian", "australia", "chinese", "china", "japanese", "japan", "korean", "korea",
-    "us", "usa", "american", "america", "canadian", "canada", "brazil", "brazilian",
-    "mexican", "mexico", "argentina", "argentine", "chile", "chilean", "colombia",
-    "colombian", "croatia", "croatian", "czech", "hungarian", "hungary", "romanian",
-    "romania", "russian", "russia", "polish", "poland", "portuguese", "portugal",
-    "moroccan", "morocco", "tunisian", "tunisia", "qatar", "dubai", "emirates", "india",
-    "indian", "thailand", "thai", "singapore", "malaysia", "malaysian", "turkish",
-    "turkey", "israel", "israeli", "british", "britain", "england", "english", "scottish",
-    "irish", "ireland", "welsh", "european", "europe", "asian", "asia", "african",
-    "pacific", "atlantic", "mediterranean", "nordic", "baltic", "estonia", "estonian",
-    "kazakhstan", "uzbekistan", "slovenia", "slovak", "slovakia", "bulgaria", "bulgarian",
-    "luxembourg", "monte", "carlo", "mexicano", "brasil", "espana", "italia", "osaka",
+    "german",
+    "germany",
+    "swedish",
+    "sweden",
+    "serbia",
+    "serbian",
+    "hellenic",
+    "greek",
+    "greece",
+    "french",
+    "france",
+    "italian",
+    "italy",
+    "spanish",
+    "spain",
+    "swiss",
+    "switzerland",
+    "dutch",
+    "netherlands",
+    "belgian",
+    "belgium",
+    "austrian",
+    "austria",
+    "australian",
+    "australia",
+    "chinese",
+    "china",
+    "japanese",
+    "japan",
+    "korean",
+    "korea",
+    "us",
+    "usa",
+    "american",
+    "america",
+    "canadian",
+    "canada",
+    "brazil",
+    "brazilian",
+    "mexican",
+    "mexico",
+    "argentina",
+    "argentine",
+    "chile",
+    "chilean",
+    "colombia",
+    "colombian",
+    "croatia",
+    "croatian",
+    "czech",
+    "hungarian",
+    "hungary",
+    "romanian",
+    "romania",
+    "russian",
+    "russia",
+    "polish",
+    "poland",
+    "portuguese",
+    "portugal",
+    "moroccan",
+    "morocco",
+    "tunisian",
+    "tunisia",
+    "qatar",
+    "dubai",
+    "emirates",
+    "india",
+    "indian",
+    "thailand",
+    "thai",
+    "singapore",
+    "malaysia",
+    "malaysian",
+    "turkish",
+    "turkey",
+    "israel",
+    "israeli",
+    "british",
+    "britain",
+    "england",
+    "english",
+    "scottish",
+    "irish",
+    "ireland",
+    "welsh",
+    "european",
+    "europe",
+    "asian",
+    "asia",
+    "african",
+    "pacific",
+    "atlantic",
+    "mediterranean",
+    "nordic",
+    "baltic",
+    "estonia",
+    "estonian",
+    "kazakhstan",
+    "uzbekistan",
+    "slovenia",
+    "slovak",
+    "slovakia",
+    "bulgaria",
+    "bulgarian",
+    "luxembourg",
+    "monte",
+    "carlo",
+    "mexicano",
+    "brasil",
+    "espana",
+    "italia",
+    "osaka",
 }
 
 
@@ -133,10 +323,9 @@ def load_company_names() -> set[str]:
         return set()
     try:
         doc = json.loads(EQUITIES.read_text(encoding="utf-8"))
-    except Exception:                                                 # noqa: BLE001
+    except Exception:
         return set()
-    rows = doc if isinstance(doc, list) else (
-        doc.get("universe") or doc.get("companies") or doc.get("rows") or [])
+    rows = doc if isinstance(doc, list) else (doc.get("universe") or doc.get("companies") or doc.get("rows") or [])
     names: set[str] = set()
     for r in rows:
         if not isinstance(r, dict):
@@ -153,8 +342,11 @@ def load_company_names() -> set[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--check", action="store_true",
-                    help="exit 1 if renamed-location coverage collapses below the floor")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="exit 1 if renamed-location coverage collapses below the floor",
+    )
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -164,8 +356,7 @@ def main() -> int:
     ents = json.loads(ENTITIES.read_text(encoding="utf-8"))["entities"]
 
     # (location -> tournament -> years). The rename signal lives here.
-    byloc: dict[str, dict[str, set]] = collections.defaultdict(
-        lambda: collections.defaultdict(set))
+    byloc: dict[str, dict[str, set]] = collections.defaultdict(lambda: collections.defaultdict(set))
     for r in ents:
         byloc[r["location"]][r["tournament"]].add(int(r["year"]))
 
@@ -189,14 +380,16 @@ def main() -> int:
         moved = {c: sorted(ys) for c, ys in years_with.items() if ys != all_years}
         if moved:
             renamed[loc] = [
-                {"token": c, "years_present": ys,
-                 "years_absent": sorted(all_years - set(ys))}
+                {
+                    "token": c,
+                    "years_present": ys,
+                    "years_absent": sorted(all_years - set(ys)),
+                }
                 for c, ys in sorted(moved.items())
             ]
 
     company_tokens = load_company_names()
-    corroborated = sorted({
-        c for cs in cand_by_pair.values() for c in cs if c in company_tokens})
+    corroborated = sorted({c for cs in cand_by_pair.values() for c in cs if c in company_tokens})
 
     # CONFIRMED = the conjunction of two INDEPENDENT signals: the token matches a company
     # name AND it arrives or leaves at a fixed location. Either alone is noisy — bare name
@@ -213,13 +406,19 @@ def main() -> int:
     # Southern. Judging those tokens individually would have discarded four real sponsors as
     # common nouns. The source tournament names are carried so the phrase is readable.
     tour_of = collections.defaultdict(set)
-    for (tn, loc) in all_pairs:
+    for tn, loc in all_pairs:
         tour_of[loc].add(tn)
     confirmed_detail = {
-        tok: [{"location": loc, **e,
-               "tournament_names": sorted(t for t in tour_of[loc] if tok in toks(t))}
-              for loc, es in sorted(renamed.items())
-              for e in es if e["token"] == tok]
+        tok: [
+            {
+                "location": loc,
+                **e,
+                "tournament_names": sorted(t for t in tour_of[loc] if tok in toks(t)),
+            }
+            for loc, es in sorted(renamed.items())
+            for e in es
+            if e["token"] == tok
+        ]
         for tok in confirmed
     }
 
@@ -233,7 +432,8 @@ def main() -> int:
             "0.29% of tennis tournaments. That figure measures WIKIDATA P859 coverage, "
             "which is a sparse editorial property — not sponsor coverage. The sponsor of a "
             "tennis tournament is its NAME, and the name was already in the xlsx this repo "
-            "downloaded. A real value answering a different question than it appears to."),
+            "downloaded. A real value answering a different question than it appears to."
+        ),
         "source": "tennis-data.co.uk xlsx, already acquired — no new fetch, no key",
         "tournament_location_pairs": len(all_pairs),
         "pairs_with_a_candidate_token": len(with_cand),
@@ -242,21 +442,29 @@ def main() -> int:
         "locations_with_a_rename": len(renamed),
         "locations_with_a_rename_pct": renamed_pct,
         "TIERS": {
-            "CANDIDATE": ("a token that is not the location, not a demonym, not event "
-                          "vocabulary. A HYPOTHESIS. The count of candidates is not "
-                          "evidence of anything except that a stoplist ran."),
-            "RENAMED": ("the candidate is present in some years at a fixed location and "
-                        "absent in others. Strong: events do not rename for fun, so a "
-                        "token that arrives or leaves is a dated sponsorship event."),
-            "CORROBORATED": ("the candidate also matches a company-name token in the local "
-                             "equities universe. STILL NOISY on its own — bare name "
-                             "matching returns '500', 'california', 'car', 'circle', common "
-                             "nouns that happen to sit inside some company's name."),
-            "CONFIRMED": ("CORROBORATED **and** RENAMED. Two independent signals: a company "
-                          "name match, and arrival/departure at a fixed venue. A common "
-                          "noun does not systematically arrive and depart at one location, "
-                          "and a draw-split digit is not a company, so neither error "
-                          "survives the conjunction. This is the tier to build on."),
+            "CANDIDATE": (
+                "a token that is not the location, not a demonym, not event "
+                "vocabulary. A HYPOTHESIS. The count of candidates is not "
+                "evidence of anything except that a stoplist ran."
+            ),
+            "RENAMED": (
+                "the candidate is present in some years at a fixed location and "
+                "absent in others. Strong: events do not rename for fun, so a "
+                "token that arrives or leaves is a dated sponsorship event."
+            ),
+            "CORROBORATED": (
+                "the candidate also matches a company-name token in the local "
+                "equities universe. STILL NOISY on its own — bare name "
+                "matching returns '500', 'california', 'car', 'circle', common "
+                "nouns that happen to sit inside some company's name."
+            ),
+            "CONFIRMED": (
+                "CORROBORATED **and** RENAMED. Two independent signals: a company "
+                "name match, and arrival/departure at a fixed venue. A common "
+                "noun does not systematically arrive and depart at one location, "
+                "and a draw-split digit is not a company, so neither error "
+                "survives the conjunction. This is the tier to build on."
+            ),
         },
         "equities_universe_found": bool(company_tokens),
         "equities_name_tokens": len(company_tokens),
@@ -275,24 +483,27 @@ def main() -> int:
             "NOT defeat a toponym, because the stoplist only knows the one city in the "
             "`location` column. Stated rather than filtered: a hand-written exclusion list "
             "for this would be tuned against the cases it judges, which is the failure this "
-            "phase has been correcting everywhere else."),
+            "phase has been correcting everywhere else."
+        ),
         "CONFIRMED_strongest_evidence": (
             "AEGON -> Viking appears at Birmingham AND Eastbourne in the same year. One "
             "sponsor rebrand surfacing simultaneously at two unrelated venues is not "
             "something a tokeniser can manufacture, and Aegon UK did rebrand to Viking. "
             "Cross-venue synchrony is a stronger check than either tier and is the natural "
-            "next filter if this needs tightening."),
+            "next filter if this needs tightening."
+        ),
         "CONFIRMED_detail": confirmed_detail,
         "corroboration_caveat": (
             "A token match is a NAME match, not an entity resolution — 'citi' matching a "
             "company token does not prove that company sponsored that event. It raises the "
             "candidate above stoplist noise and nothing more. Entity resolution needs a "
             "second source and is not claimed here."
-            if company_tokens else
-            "The equities universe file was NOT FOUND, so corroboration did not run. This "
+            if company_tokens
+            else "The equities universe file was NOT FOUND, so corroboration did not run. This "
             "is a missing input, not a measured zero — the two are different findings and "
             "reporting the first as the second is how a transport failure gets read as a "
-            "data result."),
+            "data result."
+        ),
         "renamed_locations": dict(sorted(renamed.items())),
     }
     OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -301,11 +512,10 @@ def main() -> int:
     print(f"  with a candidate token         : {len(with_cand)}  ({cand_pct}%)")
     print(f"locations                        : {n_loc}")
     print(f"  with a RENAME across years     : {len(renamed)}  ({renamed_pct}%)")
-    print(f"equities universe found          : {bool(company_tokens)} "
-          f"({len(company_tokens)} name tokens)")
+    print(f"equities universe found          : {bool(company_tokens)} " f"({len(company_tokens)} name tokens)")
     print(f"  CORROBORATED tokens            : {len(corroborated)}  {corroborated[:10]}")
     print(f"  CONFIRMED (corroborated+rename): {len(confirmed)}  {confirmed}")
-    print(f"\nvs docs/TENNIS_GOLF_FEASIBILITY.md's recorded 0.29% (that was Wikidata P859)")
+    print("\nvs docs/TENNIS_GOLF_FEASIBILITY.md's recorded 0.29% (that was Wikidata P859)")
     print(f"wrote {OUT}")
 
     if args.check and renamed_pct < 20.0:

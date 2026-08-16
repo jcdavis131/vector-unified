@@ -73,7 +73,7 @@ STARTERS = {"QB": 1, "RB": 2, "WR": 3, "TE": 1}
 REPLACEMENT_RANK = {pos: TEAMS * n for pos, n in STARTERS.items()}
 
 MIN_GAMES = 8
-WINDOW_YEARS = 5   # rookie deal + fifth-year option: what the pick actually buys
+WINDOW_YEARS = 5  # rookie deal + fifth-year option: what the pick actually buys
 MIN_CELL = 8
 BUCKETS = [(1, 32, "R1"), (33, 64, "R2"), (65, 105, "R3"), (106, 262, "R4-7")]
 POSITIONS = ("QB", "RB", "WR", "TE")
@@ -163,13 +163,11 @@ def _ensure_configured() -> None:
         return
     names_vec: list[str] = []
     if GRID_VEC.exists():
-        names_vec = [p["name"] for p in
-                     json.loads(GRID_VEC.read_text(encoding="utf-8"))["players"]]
+        names_vec = [p["name"] for p in json.loads(GRID_VEC.read_text(encoding="utf-8"))["players"]]
     names_draft: list[str] = []
     if DRAFT_CSV.exists():
         with DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as fh:
-            names_draft = [(r.get("pfr_player_name") or "").strip()
-                           for r in csv.DictReader(fh)]
+            names_draft = [(r.get("pfr_player_name") or "").strip() for r in csv.DictReader(fh)]
     configure_norm(names_vec, [n for n in names_draft if n])
 
 
@@ -222,6 +220,7 @@ def gsis_acquitted(seasons_of: dict) -> set[str]:
     if not GRID_MATRIX.exists():
         return set()
     import numpy as np
+
     a = np.load(GRID_MATRIX, allow_pickle=True)
     if "gsis" not in a or "name" not in a or "season" not in a:
         return set()
@@ -337,10 +336,8 @@ def main() -> int:
 
     # Configure the normaliser BEFORE any name is normalised. Per source, never pooled.
     with DRAFT_CSV.open(encoding="utf-8", errors="replace", newline="") as _fh:
-        _draft_names = [(r.get("pfr_player_name") or "").strip()
-                        for r in csv.DictReader(_fh)]
-    n_protected = configure_norm([p["name"] for p in vec],
-                                 [n for n in _draft_names if n])
+        _draft_names = [(r.get("pfr_player_name") or "").strip() for r in csv.DictReader(_fh)]
+    n_protected = configure_norm([p["name"] for p in vec], [n for n in _draft_names if n])
 
     surv = json.loads(SURV.read_text(encoding="utf-8"))
     lo_year, hi_year = surv["report"]["draft_year_window"]
@@ -378,8 +375,7 @@ def main() -> int:
         # pick that produced NOTHING outranked one that produced below-starter play:
         # QB R4-7 scored -2.65 against QB R1's -7.87, which says a wasted 7th-rounder
         # beats a franchise quarterback. That is an artefact of letting VOR go negative.
-        seasons_of[norm_name(p["name"])].append(
-            (int(p["season"]), max(0.0, float(ppr) - base)))
+        seasons_of[norm_name(p["name"])].append((int(p["season"]), max(0.0, float(ppr) - base)))
 
     # ---- EVERY drafted player, including the ones who never appear ------------
     # This is the correction. Iterating the DRAFT (the denominator) instead of the
@@ -433,23 +429,30 @@ def main() -> int:
             b = bucket(pick)
             if not b:
                 continue
-            window = [v for (s, v) in seasons_of.get(n, ())
-                      if yr <= s < yr + WINDOW_YEARS]
+            window = [v for (s, v) in seasons_of.get(n, ()) if yr <= s < yr + WINDOW_YEARS]
             if not window:
                 zero_seasons[(pos, b)] += 1
             totals[(pos, b)].append(sum(window))
             # per-player rows so the MATCHED cross-sport correlation (7.7b) can be
             # computed on the same construct hoops now uses, instead of comparing
             # `impact` percentile against fantasy PPR percentile
-            player_rows.append({
-                "name": n, "pos": pos, "overall": pick, "bucket": b, "year": yr,
-                "expect_log": round(max(0.0, 1 - log1p(pick) / log1p(262.0)), 4),
-                "vor_total": round(sum(window), 2), "played": bool(window),
-                # FULL-career qualifying season count, not the 5-year window. It exists so
-                # check_draft_value_invariants.py I6 can assert that the direction axis
-                # derived the same series this table did. The hoops half of that pair
-                # silently used a different eligibility rule for a whole build.
-                "seasons_total": len(seasons_of.get(n, ()))})
+            player_rows.append(
+                {
+                    "name": n,
+                    "pos": pos,
+                    "overall": pick,
+                    "bucket": b,
+                    "year": yr,
+                    "expect_log": round(max(0.0, 1 - log1p(pick) / log1p(262.0)), 4),
+                    "vor_total": round(sum(window), 2),
+                    "played": bool(window),
+                    # FULL-career qualifying season count, not the 5-year window. It exists so
+                    # check_draft_value_invariants.py I6 can assert that the direction axis
+                    # derived the same series this table did. The hoops half of that pair
+                    # silently used a different eligibility rule for a whole build.
+                    "seasons_total": len(seasons_of.get(n, ())),
+                }
+            )
 
     per = surv["report"]["per_position"]
     rows = []
@@ -461,78 +464,116 @@ def main() -> int:
             cell = v["by_bucket"].get(b)
             ds = totals.get((pos, b)) or []
             if len(ds) < MIN_CELL:
-                rows.append({"pos": pos, "bucket": b,
-                             "drafted": len(ds),
-                             "survival_pct": cell["rate"] if cell else None,
-                             "n_surv": len(ds), "cond_vor": None, "ev_vor": None,
-                             "thin": True})
+                rows.append(
+                    {
+                        "pos": pos,
+                        "bucket": b,
+                        "drafted": len(ds),
+                        "survival_pct": cell["rate"] if cell else None,
+                        "n_surv": len(ds),
+                        "cond_vor": None,
+                        "ev_vor": None,
+                        "thin": True,
+                    }
+                )
                 continue
             cond = statistics.mean(ds)
             zeros = zero_seasons.get((pos, b), 0)
-            rows.append({"pos": pos, "bucket": b, "drafted": len(ds),
-                         "survival_pct": cell["rate"] if cell else None,
-                         "n_surv": len(ds),
-                         "never_played_pct": round(100.0 * zeros / len(ds), 1),
-                         "cond_vor": round(cond, 2),
-                         "ev_vor": round(cond, 2),
-                         "thin": False})
+            rows.append(
+                {
+                    "pos": pos,
+                    "bucket": b,
+                    "drafted": len(ds),
+                    "survival_pct": cell["rate"] if cell else None,
+                    "n_surv": len(ds),
+                    "never_played_pct": round(100.0 * zeros / len(ds), 1),
+                    "cond_vor": round(cond, 2),
+                    "ev_vor": round(cond, 2),
+                    "thin": False,
+                }
+            )
 
     scored = [r for r in rows if not r["thin"]]
     by_ev = sorted(scored, key=lambda x: -x["ev_vor"])
 
     report = {
         "units": "PPR points per game above replacement",
-        "league": {"teams": TEAMS, "starters": STARTERS,
-                   "replacement_rank": REPLACEMENT_RANK},
-        "league_note": ("Cross-position ordering DEPENDS on these settings. Superflex or a "
-                        "2TE lineup moves QB and TE respectively. Declared here rather than "
-                        "hidden in a function so the dependency is visible."),
+        "league": {
+            "teams": TEAMS,
+            "starters": STARTERS,
+            "replacement_rank": REPLACEMENT_RANK,
+        },
+        "league_note": (
+            "Cross-position ordering DEPENDS on these settings. Superflex or a "
+            "2TE lineup moves QB and TE respectively. Declared here rather than "
+            "hidden in a function so the dependency is visible."
+        ),
         "min_games_for_baseline": MIN_GAMES,
         "window_years": WINDOW_YEARS,
-        "formula": ("mean over ALL drafted players in the bucket of SUM(VOR) across their "
-                    "first WINDOW_YEARS seasons. Washouts contribute 0.0. No conditioning, "
-                    "no multiplication by survival — survival is priced in by including "
-                    "the players who never played."),
+        "formula": (
+            "mean over ALL drafted players in the bucket of SUM(VOR) across their "
+            "first WINDOW_YEARS seasons. Washouts contribute 0.0. No conditioning, "
+            "no multiplication by survival — survival is priced in by including "
+            "the players who never played."
+        ),
         "draft_year_window": [lo_year, hi_year],
         "suffix_protected_names": n_protected,
-        "suffix_note": ("Conflict-aware suffix stripping: a suffix is dropped unless the "
-                        "stripped form already exists as its own name WITHIN THE SAME "
-                        "source. Keeps Marvin Harrison and Marvin Harrison Jr. apart while "
-                        "still joining Chris Godwin Jr. to Chris Godwin across files. "
-                        "1,903 joins against 1,900 strip-always and 1,879 keep-always."),
+        "suffix_note": (
+            "Conflict-aware suffix stripping: a suffix is dropped unless the "
+            "stripped form already exists as its own name WITHIN THE SAME "
+            "source. Keeps Marvin Harrison and Marvin Harrison Jr. apart while "
+            "still joining Chris Godwin Jr. to Chris Godwin across files. "
+            "1,903 joins against 1,900 strip-always and 1,879 keep-always."
+        ),
         "corr_expectation_vor": round(
-            statistics.correlation([r["expect_log"] for r in player_rows],
-                                   [r["vor_total"] for r in player_rows]), 4)
-        if len(player_rows) > 2 else None,
+            statistics.correlation(
+                [r["expect_log"] for r in player_rows],
+                [r["vor_total"] for r in player_rows],
+            ),
+            4,
+        )
+        if len(player_rows) > 2
+        else None,
         "cells": rows,
         "ranking_ev_vor": [f"{r['pos']} {r['bucket']}" for r in by_ev],
         "now_cross_position_comparable": (
             "YES, in these league settings. VOR subtracts each position's replacement "
             "level, so a point is a point. The percentile version was NOT comparable "
-            "across positions and said so."),
-        "still_true": ("Fantasy PPR remains a FANTASY delivery measure — blind to blocking, "
-                       "route running and all defence. VOR fixes the units, not the sport."),
+            "across positions and said so."
+        ),
+        "still_true": (
+            "Fantasy PPR remains a FANTASY delivery measure — blind to blocking, "
+            "route running and all defence. VOR fixes the units, not the sport."
+        ),
     }
-    OUT.write_text(json.dumps({**report, "players": player_rows}, indent=2,
-                              ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps({**report, "players": player_rows}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
 
-    print(f"VOR = PPR ppg above replacement | {TEAMS}-team, "
-          f"{'/'.join(f'{n}{p}' for p, n in STARTERS.items())} "
-          f"-> replacement {REPLACEMENT_RANK}\n")
+    print(
+        f"VOR = PPR ppg above replacement | {TEAMS}-team, "
+        f"{'/'.join(f'{n}{p}' for p, n in STARTERS.items())} "
+        f"-> replacement {REPLACEMENT_RANK}\n"
+    )
     print(f"{'pos':4} {'bucket':7} {'drafted':>8} {'surv%':>7} {'never%':>7} {'EV VOR':>8}")
     for r in rows:
         if r["thin"]:
-            print(f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} "
-                  f"{(str(r['survival_pct']) + '%') if r['survival_pct'] is not None else '-':>7} "
-                  f"{'thin':>9} {'-':>8}  {r['n_surv']}")
+            print(
+                f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} "
+                f"{(str(r['survival_pct']) + '%') if r['survival_pct'] is not None else '-':>7} "
+                f"{'thin':>9} {'-':>8}  {r['n_surv']}"
+            )
         else:
-            print(f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} "
-                  f"{(r['survival_pct'] if r['survival_pct'] is not None else 0):>6.1f}% "
-                  f"{r['never_played_pct']:>6.1f}% {r['ev_vor']:>8.2f}")
+            print(
+                f"{r['pos']:4} {r['bucket']:7} {r['drafted']:>8} "
+                f"{(r['survival_pct'] if r['survival_pct'] is not None else 0):>6.1f}% "
+                f"{r['never_played_pct']:>6.1f}% {r['ev_vor']:>8.2f}"
+            )
     print("\nranked by EV in VOR (now comparable ACROSS positions):")
     for r in by_ev[:8]:
         print(f"  {r['pos']:3} {r['bucket']:5} {r['ev_vor']:>7.2f}")

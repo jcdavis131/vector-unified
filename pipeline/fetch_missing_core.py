@@ -25,9 +25,13 @@ Usage:
   python pipeline/fetch_missing_core.py --full --force
   python pipeline/fetch_missing_core.py --scaffold-write
 """
+
 from __future__ import annotations
-import json, pathlib, sys, time, re
-from typing import Dict, List
+
+import json
+import pathlib
+import sys
+import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CACHE = ROOT / "pipeline" / "cache"
@@ -37,10 +41,27 @@ DEST_UNIFIED = ASSETS_DATA / "unified.json"
 
 # Cross-domain expected files — like hoops 686 files but across 4 domains
 SISTER_DOMAINS = {
-    "hoops": {"src": "/home/hatch/workspace/vector-hoops/pipeline/cache", "expected_files": 686, "years": list(range(1996, 2026)), "size_ref": "51M"},
-    "equities": {"src": "/home/hatch/workspace/vector-equities/pipeline/cache", "expected_files": 1000, "years": list(range(2018, 2026))},
-    "pitch": {"src": "/home/hatch/workspace/vector-pitch/pipeline/cache", "expected_files": 72, "years": list(range(1990, 2026))},
-    "gridiron": {"src": "/home/hatch/workspace/vector-gridiron/pipeline/cache", "expected_files": 30, "years": list(range(2020, 2026))},
+    "hoops": {
+        "src": "/home/hatch/workspace/vector-hoops/pipeline/cache",
+        "expected_files": 686,
+        "years": list(range(1996, 2026)),
+        "size_ref": "51M",
+    },
+    "equities": {
+        "src": "/home/hatch/workspace/vector-equities/pipeline/cache",
+        "expected_files": 1000,
+        "years": list(range(2018, 2026)),
+    },
+    "pitch": {
+        "src": "/home/hatch/workspace/vector-pitch/pipeline/cache",
+        "expected_files": 72,
+        "years": list(range(1990, 2026)),
+    },
+    "gridiron": {
+        "src": "/home/hatch/workspace/vector-gridiron/pipeline/cache",
+        "expected_files": 30,
+        "years": list(range(2020, 2026)),
+    },
     "tennis": {"src": "tennis", "expected_files": 20, "years": list(range(2018, 2026))},
 }
 
@@ -58,19 +79,67 @@ UNIFIED_CROSSWALK_EXPECTED = {
 }
 
 # Unified equivalent of hoops cap_rules: cross-domain economic + era metadata
-UNIFIED_ERA_BY_SEASON: Dict[str, Dict] = {
-    "2018-19": {"hoops_cap": 101_869_000, "nfl_cap": 177_200_000, "spx": 2506, "tv_era": "pre-new deals", "unified_era": "pre-COVID"},
-    "2019-20": {"hoops_cap": 109_140_000, "nfl_cap": 188_200_000, "spx": 3230, "tv_era": "pre-COVID", "unified_era": "COVID start"},
-    "2020-21": {"hoops_cap": 109_140_000, "nfl_cap": 198_200_000, "spx": 3756, "tv_era": "COVID 17CBA", "unified_era": "COVID freeze"},
-    "2021-22": {"hoops_cap": 112_414_000, "nfl_cap": 182_500_000, "spx": 4766, "tv_era": "2020 CBA 17g", "unified_era": "rebound"},
-    "2022-23": {"hoops_cap": 123_655_000, "nfl_cap": 208_200_000, "spx": 3839, "tv_era": "last year pre-new", "unified_era": "rate shock"},
-    "2023-24": {"hoops_cap": 136_021_000, "nfl_cap": 224_800_000, "spx": 4770, "tv_era": "NFL $110B yr1 / NBA? / $76B future", "unified_era": "AI recovery / new TV era start"},
-    "2024-25": {"hoops_cap": 140_588_000, "nfl_cap": 255_400_000, "spx": 5881, "tv_era": "$110B NFL spike", "unified_era": "higher-for-longer unwind"},
-    "2025-26": {"hoops_cap": 154_647_000, "nfl_cap": 279_200_000, "spx": None, "tv_era": "NBA $76B yr1 / NFL yr2", "unified_era": "live year — 10% max growth mandatory both leagues"},
+UNIFIED_ERA_BY_SEASON: dict[str, dict] = {
+    "2018-19": {
+        "hoops_cap": 101_869_000,
+        "nfl_cap": 177_200_000,
+        "spx": 2506,
+        "tv_era": "pre-new deals",
+        "unified_era": "pre-COVID",
+    },
+    "2019-20": {
+        "hoops_cap": 109_140_000,
+        "nfl_cap": 188_200_000,
+        "spx": 3230,
+        "tv_era": "pre-COVID",
+        "unified_era": "COVID start",
+    },
+    "2020-21": {
+        "hoops_cap": 109_140_000,
+        "nfl_cap": 198_200_000,
+        "spx": 3756,
+        "tv_era": "COVID 17CBA",
+        "unified_era": "COVID freeze",
+    },
+    "2021-22": {
+        "hoops_cap": 112_414_000,
+        "nfl_cap": 182_500_000,
+        "spx": 4766,
+        "tv_era": "2020 CBA 17g",
+        "unified_era": "rebound",
+    },
+    "2022-23": {
+        "hoops_cap": 123_655_000,
+        "nfl_cap": 208_200_000,
+        "spx": 3839,
+        "tv_era": "last year pre-new",
+        "unified_era": "rate shock",
+    },
+    "2023-24": {
+        "hoops_cap": 136_021_000,
+        "nfl_cap": 224_800_000,
+        "spx": 4770,
+        "tv_era": "NFL $110B yr1 / NBA? / $76B future",
+        "unified_era": "AI recovery / new TV era start",
+    },
+    "2024-25": {
+        "hoops_cap": 140_588_000,
+        "nfl_cap": 255_400_000,
+        "spx": 5881,
+        "tv_era": "$110B NFL spike",
+        "unified_era": "higher-for-longer unwind",
+    },
+    "2025-26": {
+        "hoops_cap": 154_647_000,
+        "nfl_cap": 279_200_000,
+        "spx": None,
+        "tv_era": "NBA $76B yr1 / NFL yr2",
+        "unified_era": "live year — 10% max growth mandatory both leagues",
+    },
 }
 
 
-def audit_cache() -> Dict:
+def audit_cache() -> dict:
     cache_files = list(CACHE.glob("*.json")) + list(CACHE.glob("*.npz")) if CACHE.exists() else []
     data_files = list(DATA_DIR.glob("*")) if DATA_DIR.exists() else []
     cache_pop = [f for f in cache_files if f.is_file() and f.stat().st_size > 0]
@@ -92,7 +161,7 @@ def audit_cache() -> Dict:
             if isinstance(u, dict):
                 unified_count = len(u)
                 # detect cross domain keys
-                has_domains = any(k in u for k in ["hoops","gridiron","pitch","equities","cross"])
+                has_domains = any(k in u for k in ["hoops", "gridiron", "pitch", "equities", "cross"])
                 skeleton = unified_bytes < 10000 or not has_domains
             elif isinstance(u, list):
                 unified_count = len(u)
@@ -172,7 +241,9 @@ def audit_cache() -> Dict:
         "missing_reports": missing_reports,
         "missing_reports_count": len(missing_reports),
         "sister_gaps": sister_gaps,
-        "sister_gap_avg": round(sum(v["gap_pct"] for v in sister_gaps.values())/len(sister_gaps), 1) if sister_gaps else 0,
+        "sister_gap_avg": round(sum(v["gap_pct"] for v in sister_gaps.values()) / len(sister_gaps), 1)
+        if sister_gaps
+        else 0,
         "total_expected": total_expected,
         "populated_total": total_pop,
         "missing_pct": round(missing_pct, 1),
@@ -194,7 +265,8 @@ def write_unified_era():
             out.write_text(json.dumps(existing, indent=2))
             print(f"merged {out}")
             return
-        except: pass
+        except:
+            pass
     out.write_text(json.dumps(UNIFIED_ERA_BY_SEASON, indent=2))
     print(f"wrote {out} with {len(UNIFIED_ERA_BY_SEASON)} seasons cross-domain")
 
@@ -202,12 +274,18 @@ def write_unified_era():
 def fetch_domain_placeholder(domain: str, year: int, force=False, offline=False) -> bool:
     CACHE.mkdir(parents=True, exist_ok=True)
     p = CACHE / f"{domain}_{year}.json"
-    if not force and p.exists() and p.stat().st_size>0:
+    if not force and p.exists() and p.stat().st_size > 0:
         return True
     if offline:
         return False
     if "--scaffold-write" in sys.argv:
-        stub = {"domain": domain, "year": year, "joined": False, "stub": True, "_scaffold": "fetch_missing_core.py placeholder"}
+        stub = {
+            "domain": domain,
+            "year": year,
+            "joined": False,
+            "stub": True,
+            "_scaffold": "fetch_missing_core.py placeholder",
+        }
         p.write_text(json.dumps(stub))
         return True
     return False
@@ -223,22 +301,30 @@ def main():
     year_filter = None
     if "--domain" in args:
         idx = args.index("--domain")
-        if idx+1 < len(args):
-            domain_filter = args[idx+1]
+        if idx + 1 < len(args):
+            domain_filter = args[idx + 1]
     if "--year" in args:
         idx = args.index("--year")
-        if idx+1 < len(args):
-            try: year_filter = int(args[idx+1])
-            except: pass
+        if idx + 1 < len(args):
+            try:
+                year_filter = int(args[idx + 1])
+            except:
+                pass
 
     audit = audit_cache()
     print(json.dumps(audit, indent=2))
 
     if dry_run or (audit_only and "--full" not in args and "--scaffold-write" not in args):
         print(f"\nUnified missing {audit['missing_pct']}% — {audit['populated_total']}/{audit['total_expected']} files")
-        print(f"Sister gaps avg {audit['sister_gap_avg']}% — {json.dumps({k: v['gap_pct'] for k,v in audit['sister_gaps'].items()})}")
-        print(f"Unified skeleton? {audit['unified_skeleton']} bytes={audit['unified_json_bytes']} reports missing {audit['missing_reports_count']}/{len(UNIFIED_CROSSWALK_EXPECTED)}")
-        print(f"Data present? pipeline/data {audit['data_populated']}/{audit['expected_data']} files {audit['data_bytes_total']} bytes (4.0M expected present = only populated domain)")
+        print(
+            f"Sister gaps avg {audit['sister_gap_avg']}% — {json.dumps({k: v['gap_pct'] for k,v in audit['sister_gaps'].items()})}"
+        )
+        print(
+            f"Unified skeleton? {audit['unified_skeleton']} bytes={audit['unified_json_bytes']} reports missing {audit['missing_reports_count']}/{len(UNIFIED_CROSSWALK_EXPECTED)}"
+        )
+        print(
+            f"Data present? pipeline/data {audit['data_populated']}/{audit['expected_data']} files {audit['data_bytes_total']} bytes (4.0M expected present = only populated domain)"
+        )
         if not dry_run and audit_only:
             return
 
@@ -249,7 +335,7 @@ def main():
 
     if "--full" in args or "--scaffold-write" in args:
         domains = [domain_filter] if domain_filter else list(SISTER_DOMAINS.keys())[:4]
-        years = [year_filter] if year_filter else [2023,2024,2025]
+        years = [year_filter] if year_filter else [2023, 2024, 2025]
         for d in domains:
             for y in years:
                 fetch_domain_placeholder(d, y, force=force, offline=offline)

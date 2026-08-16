@@ -70,8 +70,8 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 
-SEED = 0                   # embedding training + shared ladder seed
-D_ALIGN = 16               # common aligned input dim (min domain width is realty's 18)
+SEED = 0  # embedding training + shared ladder seed
+D_ALIGN = 16  # common aligned input dim (min domain width is realty's 18)
 D_HIDDEN = 64
 D_EMB = 32
 LR = 1e-3
@@ -79,27 +79,40 @@ WEIGHT_DECAY = 1e-4
 MAX_EPOCHS = 300
 PATIENCE = 40
 CORAL_WEIGHT = 0.1
-RIDGE_ALPHA = 1.0          # probe head; fixed a priori == ladder ridge default
+RIDGE_ALPHA = 1.0  # probe head; fixed a priori == ladder ridge default
 
 # Owner-lane harness conventions, reproduced exactly.
-EQUITIES_SEED, EQUITIES_CUT = 42, 2022     # vector-equities bench/run_benchmark.py
-HOOPS_SEED, HOOPS_CUT = 7, 2026            # vector-hoops bench/run_benchmark.py
+EQUITIES_SEED, EQUITIES_CUT = 42, 2022  # vector-equities bench/run_benchmark.py
+HOOPS_SEED, HOOPS_CUT = 7, 2026  # vector-hoops bench/run_benchmark.py
 
 # domain -> (target name, kind) trained as embedding heads
 DOMAIN_TARGETS: dict[str, list[tuple[str, str]]] = {
-    "hoops": [(t, "regression") for t in (
-        "next_season_per", "next_season_win_shares", "next_season_bpm",
-        "next_season_pts", "next_season_reb", "next_season_ast")],
-    "gridiron": [(t, "regression") for t in (
-        "next_game_fpts", "next_game_yards", "next_game_tds")],
-    "equities": [("forward_return", "regression"),
-                 ("forward_realized_vol", "regression"),
-                 ("drawdown_exceedance", "binary")],
-    "realty": [("next_year_price_change", "regression"),
-               ("three_year_price_change", "regression"),
-               ("above_market_appreciation", "binary")],
-    "pitch": [("next_window_minutes", "regression"),
-              ("next_window_goal_contribution", "regression")],
+    "hoops": [
+        (t, "regression")
+        for t in (
+            "next_season_per",
+            "next_season_win_shares",
+            "next_season_bpm",
+            "next_season_pts",
+            "next_season_reb",
+            "next_season_ast",
+        )
+    ],
+    "gridiron": [(t, "regression") for t in ("next_game_fpts", "next_game_yards", "next_game_tds")],
+    "equities": [
+        ("forward_return", "regression"),
+        ("forward_realized_vol", "regression"),
+        ("drawdown_exceedance", "binary"),
+    ],
+    "realty": [
+        ("next_year_price_change", "regression"),
+        ("three_year_price_change", "regression"),
+        ("above_market_appreciation", "binary"),
+    ],
+    "pitch": [
+        ("next_window_minutes", "regression"),
+        ("next_window_goal_contribution", "regression"),
+    ],
 }
 
 TRANSFER = {  # transfer target -> (held-out domain, owner target)
@@ -208,8 +221,10 @@ def train_shared_embedding(domains: list[dict], seed: int = SEED):
         def __init__(self):
             super().__init__()
             self.net = nn.Sequential(
-                nn.Linear(D_ALIGN, D_HIDDEN), nn.GELU(),
-                nn.Linear(D_HIDDEN, D_HIDDEN), nn.GELU(),
+                nn.Linear(D_ALIGN, D_HIDDEN),
+                nn.GELU(),
+                nn.Linear(D_HIDDEN, D_HIDDEN),
+                nn.GELU(),
                 nn.Linear(D_HIDDEN, D_EMB),
             )
 
@@ -242,8 +257,16 @@ def train_shared_embedding(domains: list[dict], seed: int = SEED):
                 kind,
             )
             heads[f"{name}::{tname}"] = nn.Linear(D_EMB, 1)
-        pack.append({"name": name, "U": U, "tr": tr_l, "va": va_l, "tgt": tgt,
-                     "aligner": aligner})
+        pack.append(
+            {
+                "name": name,
+                "U": U,
+                "tr": tr_l,
+                "va": va_l,
+                "tgt": tgt,
+                "aligner": aligner,
+            }
+        )
 
     params = list(trunk.parameters()) + list(heads.parameters())
     opt = torch.optim.AdamW(params, lr=LR, weight_decay=WEIGHT_DECAY)
@@ -308,9 +331,11 @@ def train_shared_embedding(domains: list[dict], seed: int = SEED):
                 "heads": {k: v.clone() for k, v in heads.state_dict().items()},
             }
         if (ep + 1) % 50 == 0 or ep == 0:
-            print(f"  [emb] epoch {ep + 1:3d} train={float(loss.detach()):.4f} "
-                  f"val={vloss:.4f} best={best_val:.4f}@{best_epoch} "
-                  f"({time.time() - t0:.0f}s)")
+            print(
+                f"  [emb] epoch {ep + 1:3d} train={float(loss.detach()):.4f} "
+                f"val={vloss:.4f} best={best_val:.4f}@{best_epoch} "
+                f"({time.time() - t0:.0f}s)"
+            )
         if ep + 1 - best_epoch >= PATIENCE:
             print(f"  [emb] early stop at epoch {ep + 1}")
             break
@@ -331,8 +356,10 @@ def train_shared_embedding(domains: list[dict], seed: int = SEED):
         "params_total": int(sum(p.numel() for p in params)),
         "wall_seconds": round(time.time() - t0, 1),
     }
-    print(f"  [emb] done: best val {best_val:.4f} @ epoch {best_epoch}, "
-          f"{info['params_total']} params, {info['wall_seconds']}s")
+    print(
+        f"  [emb] done: best val {best_val:.4f} @ epoch {best_epoch}, "
+        f"{info['params_total']} params, {info['wall_seconds']}s"
+    )
     return trunk_fn, info
 
 
@@ -450,6 +477,7 @@ def main(argv: list[str] | None = None) -> int:
         aligner = PCAWhiten().fit(X_task, split.train_idx)
         Z = trunk_fn(aligner.transform(X_task))
         from sklearn.linear_model import Ridge as _Ridge
+
         head = _Ridge(alpha=RIDGE_ALPHA)
         head.fit(Z[split.train_idx], y_task[split.train_idx])
         preds = head.predict(Z[split.test_idx])
@@ -469,26 +497,33 @@ def main(argv: list[str] | None = None) -> int:
                 "rows_labeled": str(len(rows)),
                 "embedding_trained_on": ",".join(info["trained_on"]),
                 "embedding_best_epoch": str(info["best_epoch"]),
-                "data": "REAL sibling-lane exchange datasets "
-                        "(bench/data/exchange/*/datasheet.json)",
-                "probe": f"frozen 32-d embedding + Ridge(alpha={RIDGE_ALPHA}) fit "
-                         "on the harness train side only",
+                "data": "REAL sibling-lane exchange datasets " "(bench/data/exchange/*/datasheet.json)",
+                "probe": f"frozen 32-d embedding + Ridge(alpha={RIDGE_ALPHA}) fit " "on the harness train side only",
             },
         )
         mtnns[tname] = MTNNRung(predictions=preds)
         probe_notes[tname] = {
-            "n_rows": len(rows), "n_train": len(split.train_idx),
-            "n_test": len(split.test_idx), "cut": cut, "owner_seed": owner_seed,
+            "n_rows": len(rows),
+            "n_train": len(split.train_idx),
+            "n_test": len(split.test_idx),
+            "cut": cut,
+            "owner_seed": owner_seed,
         }
-        print(f"  probe: rows={len(rows)} train={len(split.train_idx)} "
-              f"test={len(split.test_idx)} (cut {cut})")
+        print(f"  probe: rows={len(rows)} train={len(split.train_idx)} " f"test={len(split.test_idx)} (cut {cut})")
 
         # -- unified exchange rows: frozen embedding + labels + split --
-        exchange_rows.append({
-            "target": tname, "domain": held_out, "Z": Z.astype(np.float32),
-            "y": y_task, "group": group, "tkey": tkey,
-            "train": split.train_idx, "test": split.test_idx,
-        })
+        exchange_rows.append(
+            {
+                "target": tname,
+                "domain": held_out,
+                "Z": Z.astype(np.float32),
+                "y": y_task,
+                "group": group,
+                "tkey": tkey,
+                "train": split.train_idx,
+                "test": split.test_idx,
+            }
+        )
 
     # -- shared ladder: defaults + hoops persistence rung + alignment control --
     _, _, y_h, _, tk_h, cut_h, _ = task_arrays["transfer_next_season_per"]
@@ -513,22 +548,22 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = {
         "architecture": f"shared trunk Linear({D_ALIGN},{D_HIDDEN})-GELU-"
-                        f"Linear({D_HIDDEN},{D_HIDDEN})-GELU-Linear({D_HIDDEN},"
-                        f"{D_EMB}), L2-normalized embedding; one Linear({D_EMB},1) "
-                        "head per (domain,target)",
+        f"Linear({D_HIDDEN},{D_HIDDEN})-GELU-Linear({D_HIDDEN},"
+        f"{D_EMB}), L2-normalized embedding; one Linear({D_EMB},1) "
+        "head per (domain,target)",
         "schema_alignment": f"per-domain vector_core RobustScaler -> PCA({D_ALIGN}, "
-                            "full SVD) -> per-component whitening, fit on that "
-                            "domain's train rows only",
+        "full SVD) -> per-component whitening, fit on that "
+        "domain's train rows only",
         "losses": "masked MSE on train-z-scored regression targets + masked BCE "
-                  f"on binary targets (per-domain mean) + CORAL x{CORAL_WEIGHT} "
-                  "(pairwise embedding mean+covariance alignment, train rows)",
+        f"on binary targets (per-domain mean) + CORAL x{CORAL_WEIGHT} "
+        "(pairwise embedding mean+covariance alignment, train rows)",
         "optimizer": f"AdamW(lr={LR}, weight_decay={WEIGHT_DECAY}), full-batch",
         "max_epochs": MAX_EPOCHS,
         "early_stop_patience": PATIENCE,
         "seed": SEED,
         "probe_head": f"sklearn Ridge(alpha={RIDGE_ALPHA}) fit on harness train side",
         "hyperparameter_selection": "all hyperparameters fixed a priori (no grid, "
-                                    "no val sweep, test never consulted)",
+        "no val sweep, test never consulted)",
         "runs": run_infos,
         "probe_tasks": probe_notes,
     }
@@ -545,43 +580,44 @@ def main(argv: list[str] | None = None) -> int:
     arrays = {
         "X": X_all,
         "domain": dom,
-        "entity_id": np.concatenate([np.asarray(r["group"]).astype("U16")
-                                     for r in exchange_rows]),
+        "entity_id": np.concatenate([np.asarray(r["group"]).astype("U16") for r in exchange_rows]),
         "time_id": np.concatenate([r["tkey"] for r in exchange_rows]),
-        "split_train": np.concatenate([r["train"] + o
-                                       for r, o in zip(exchange_rows, off)]),
+        "split_train": np.concatenate([r["train"] + o for r, o in zip(exchange_rows, off, strict=False)]),
         "split_val": np.array([], dtype=np.int64),
-        "split_test": np.concatenate([r["test"] + o
-                                      for r, o in zip(exchange_rows, off)]),
+        "split_test": np.concatenate([r["test"] + o for r, o in zip(exchange_rows, off, strict=False)]),
     }
-    for r, o, n in zip(exchange_rows, off, (n0, n1)):
+    for r, o, n in zip(exchange_rows, off, (n0, n1), strict=False):
         y_full = np.full(n0 + n1, np.nan, dtype=np.float32)
         m_full = np.zeros(n0 + n1, dtype=bool)
-        y_full[o:o + n] = r["y"]
-        m_full[o:o + n] = True
+        y_full[o : o + n] = r["y"]
+        m_full[o : o + n] = True
         arrays[f"y_{r['target']}"] = y_full
         arrays[f"label_mask_{r['target']}"] = m_full
     np.savez_compressed(ex / "dataset.npz", **arrays)
     sheet = {
         "built": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "rows": int(n0 + n1),
-        "row_layout": {"transfer_forward_return (equities rows)": [0, int(n0)],
-                       "transfer_next_season_per (hoops rows)": [int(n0), int(n0 + n1)]},
+        "row_layout": {
+            "transfer_forward_return (equities rows)": [0, int(n0)],
+            "transfer_next_season_per (hoops rows)": [int(n0), int(n0 + n1)],
+        },
         "X": f"{D_EMB}-d frozen cross-domain embedding of each held-out row "
-             "(per-row trunk trained WITHOUT that row's domain)",
-        "labels": {t: f"identical to the owner lane's y_{TRANSFER[t][1]} on its "
-                      "labeled rows (see bench/data/exchange/"
-                      f"{TRANSFER[t][0]}/datasheet.json)" for t in TRANSFER},
+        "(per-row trunk trained WITHOUT that row's domain)",
+        "labels": {
+            t: f"identical to the owner lane's y_{TRANSFER[t][1]} on its "
+            "labeled rows (see bench/data/exchange/"
+            f"{TRANSFER[t][0]}/datasheet.json)"
+            for t in TRANSFER
+        },
         "splits": "owner lanes' temporal splits reproduced exactly (equities fy "
-                  ">= 2022 test; hoops target_year >= 2026 test); split_val is "
-                  "empty because the probe head is closed-form ridge with no "
-                  "early stopping",
+        ">= 2022 test; hoops target_year >= 2026 test); split_val is "
+        "empty because the probe head is closed-form ridge with no "
+        "early stopping",
         "time_id": "equities rows: fiscal year; hoops rows: target season year",
         "training_config": "bench/training_config.json",
         "report": "bench/benchmark_report.json",
     }
-    (ex / "datasheet.json").write_text(json.dumps(sheet, indent=2) + "\n",
-                                       encoding="utf-8")
+    (ex / "datasheet.json").write_text(json.dumps(sheet, indent=2) + "\n", encoding="utf-8")
     print(f"wrote exchange artifacts to {ex}")
 
     # -- honest console summary --
@@ -591,10 +627,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {ts.target_name}: {ts.status} ({ts.note})")
             continue
         v = ts.scorecard.verdicts.get(ts.primary_metric)
-        print(f"  {ts.target_name} [{ts.primary_metric}]: "
-              f"best_baseline={v.best_baseline}={v.best_baseline_value:.4f} "
-              f"mtnn={v.mtnn_value:.4f} delta={v.mtnn_delta:+.4f} "
-              f"beats={v.mtnn_beats_best_baseline}")
+        print(
+            f"  {ts.target_name} [{ts.primary_metric}]: "
+            f"best_baseline={v.best_baseline}={v.best_baseline_value:.4f} "
+            f"mtnn={v.mtnn_value:.4f} delta={v.mtnn_delta:+.4f} "
+            f"beats={v.mtnn_beats_best_baseline}"
+        )
         skipped = [r.name for r in ts.scorecard.methods if r.status != "ok"]
         if skipped:
             print(f"    non-ok rungs: {skipped}")

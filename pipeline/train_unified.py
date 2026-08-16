@@ -53,9 +53,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from load_encoders import SPORT_DIM, SPORT_ID, ROOT, UCACHE
-from _torch_safe import safe_torch_load
+from load_encoders import ROOT, SPORT_DIM, UCACHE
 
 DATA = ROOT / "data"
 SEED = 7
@@ -74,10 +72,22 @@ class GRL(torch.autograd.Function):
 
 
 class UnifiedTrunk(nn.Module):
-    def __init__(self, sport_dims, n_seasons_era, d_adapter=48, d_sport_tok=8,
-                 d_era=8, d_emb=64, n_arch=8, n_pos=(5, 4, 3), dropout=0.2,
-                 shared_adapter=False, market_heads=False, cultural_text=False,
-                 d_text=384):
+    def __init__(
+        self,
+        sport_dims,
+        n_seasons_era,
+        d_adapter=48,
+        d_sport_tok=8,
+        d_era=8,
+        d_emb=64,
+        n_arch=8,
+        n_pos=(5, 4, 3),
+        dropout=0.2,
+        shared_adapter=False,
+        market_heads=False,
+        cultural_text=False,
+        d_text=384,
+    ):
         super().__init__()
         self.sport_dims = sport_dims
         self.d_sport_tok = d_sport_tok
@@ -96,8 +106,12 @@ class UnifiedTrunk(nn.Module):
         self.era_emb = nn.Embedding(n_seasons_era, d_era)
         d_in = d_adapter + d_sport_tok + d_era
         self.trunk = nn.Sequential(
-            nn.Linear(d_in, 128), nn.GELU(), nn.LayerNorm(128),
-            nn.Dropout(dropout), nn.Linear(128, d_emb))
+            nn.Linear(d_in, 128),
+            nn.GELU(),
+            nn.LayerNorm(128),
+            nn.Dropout(dropout),
+            nn.Linear(128, d_emb),
+        )
         self.native_heads = nn.ModuleList([nn.Linear(d_emb, n_arch) for _ in range(3)])
         self.pos_heads = nn.ModuleList([nn.Linear(d_emb, n_pos[s]) for s in range(3)])
         self.sport_clf = nn.Linear(d_emb, 3)
@@ -218,7 +232,7 @@ def cov_loss(z):
     zc = z - z.mean(0)
     cov = (zc.T @ zc) / (N - 1)
     off = cov - torch.diag(torch.diagonal(cov))
-    return (off ** 2).sum() / d
+    return (off**2).sum() / d
 
 
 def _zscore_masked(vals, mask):
@@ -240,53 +254,82 @@ def _fallback_synthetic_matrix(device):
     / pitch_mtnn_embeddings.json are missing. Tagged honest not promoted, pending
     130 feats full 18 families LOCAL-GPU deferred.
     """
-    print("[fallback] MISSING caches embedding_v3.npz/mtnn_best.pt/pitch_mtnn_embeddings.json", file=sys.stderr)
-    print("[fallback] → synthetic 15-feat 6 families pt 3.7MB gated honest not promoted, pending 130 feats full LOCAL-GPU deferred", file=sys.stderr)
+    print(
+        "[fallback] MISSING caches embedding_v3.npz/mtnn_best.pt/pitch_mtnn_embeddings.json",
+        file=sys.stderr,
+    )
+    print(
+        "[fallback] → synthetic 15-feat 6 families pt 3.7MB gated honest not promoted, pending 130 feats full LOCAL-GPU deferred",
+        file=sys.stderr,
+    )
     rng = np.random.default_rng(SEED)
     n_h, n_g, n_p = 12966, 5323, 2430
     n = n_h + n_g + n_p
+
     # L2-normalized random embeddings matching SPORT_DIM
     def rand_normed(n_, d_):
         e = rng.normal(size=(n_, d_)).astype(np.float32)
-        e /= (np.linalg.norm(e, axis=1, keepdims=True) + 1e-9)
+        e /= np.linalg.norm(e, axis=1, keepdims=True) + 1e-9
         return e
+
     E_h = rand_normed(n_h, SPORT_DIM["hoops"])
     E_g = rand_normed(n_g, SPORT_DIM["gridiron"])
     E_p = rand_normed(n_p, SPORT_DIM["pitch"])
-    sport_id = np.array([0]*n_h + [1]*n_g + [2]*n_p, dtype=np.int64)
+    sport_id = np.array([0] * n_h + [1] * n_g + [2] * n_p, dtype=np.int64)
     player_idx = np.concatenate([np.arange(n_h), np.arange(n_g), np.arange(n_p)]).astype(np.int64)
     n_eras = 30
     era_id = rng.integers(0, n_eras, size=n, dtype=np.int64)
     arch_id = rng.integers(0, 8, size=n, dtype=np.int64)
     native = rng.integers(0, 8, size=n, dtype=np.int64)
-    pos_id = np.concatenate([
-        rng.integers(0,5,size=n_h),
-        rng.integers(0,4,size=n_g),
-        rng.integers(0,3,size=n_p),
-    ]).astype(np.int64)
+    pos_id = np.concatenate(
+        [
+            rng.integers(0, 5, size=n_h),
+            rng.integers(0, 4, size=n_g),
+            rng.integers(0, 3, size=n_p),
+        ]
+    ).astype(np.int64)
     pos_mask = np.ones(n, dtype=np.int64)
     UCACHE.mkdir(parents=True, exist_ok=True)
-    np.savez(UCACHE / "unified_matrix.npz",
-             E_hoops=E_h.astype(np.float32),
-             E_gridiron=E_g.astype(np.float32),
-             E_pitch=E_p.astype(np.float32),
-             sport_id=sport_id, player_idx=player_idx, era_id=era_id,
-             arch_id=arch_id, native_cluster=native,
-             pos_id=pos_id, pos_mask=pos_mask,
-             sport_dim=np.array([SPORT_DIM[s] for s in SPORTS], dtype=np.int64),
-             n_sports=np.int64(3), n_eras=np.int64(n_eras), min_year=np.int64(1996),
-             arch_names=np.array([f"A{i}" for i in range(8)], dtype=object),
+    np.savez(
+        UCACHE / "unified_matrix.npz",
+        E_hoops=E_h.astype(np.float32),
+        E_gridiron=E_g.astype(np.float32),
+        E_pitch=E_p.astype(np.float32),
+        sport_id=sport_id,
+        player_idx=player_idx,
+        era_id=era_id,
+        arch_id=arch_id,
+        native_cluster=native,
+        pos_id=pos_id,
+        pos_mask=pos_mask,
+        sport_dim=np.array([SPORT_DIM[s] for s in SPORTS], dtype=np.int64),
+        n_sports=np.int64(3),
+        n_eras=np.int64(n_eras),
+        min_year=np.int64(1996),
+        arch_names=np.array([f"A{i}" for i in range(8)], dtype=object),
     )
     # unified_meta.json minimal
-    (DATA / "unified_meta.json").write_text(json.dumps({
-        "n_rows": int(n), "coverage": {"hoops": n_h, "gridiron": n_g, "pitch": n_p},
-        "n_eras": n_eras, "min_year": 1996, "max_year": 1996+n_eras-1,
-        "arch_names": [f"A{i}" for i in range(8)],
-        "arch_counts": {f"A{i}": int((arch_id==i).sum()) for i in range(8)},
-        "sport_dim": SPORT_DIM, "n_pos": {"hoops":5,"gridiron":4,"pitch":3},
-        "fallback": True, "fallback_reason": "15-feat 6 families partial, pending 130 feats full LOCAL-GPU",
-        "pt_size_mb": 3.7, "gated": "honest not promoted",
-    }, indent=2), encoding="utf-8")
+    (DATA / "unified_meta.json").write_text(
+        json.dumps(
+            {
+                "n_rows": int(n),
+                "coverage": {"hoops": n_h, "gridiron": n_g, "pitch": n_p},
+                "n_eras": n_eras,
+                "min_year": 1996,
+                "max_year": 1996 + n_eras - 1,
+                "arch_names": [f"A{i}" for i in range(8)],
+                "arch_counts": {f"A{i}": int((arch_id == i).sum()) for i in range(8)},
+                "sport_dim": SPORT_DIM,
+                "n_pos": {"hoops": 5, "gridiron": 4, "pitch": 3},
+                "fallback": True,
+                "fallback_reason": "15-feat 6 families partial, pending 130 feats full LOCAL-GPU",
+                "pt_size_mb": 3.7,
+                "gated": "honest not promoted",
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
     print(f"[fallback] saved synthetic {UCACHE / 'unified_matrix.npz'} N={n}")
     # Now load via normal path
     return load_matrix_normal(device)
@@ -294,8 +337,7 @@ def _fallback_synthetic_matrix(device):
 
 def load_matrix_normal(device, market=False, cultural_text=False):
     d = np.load(UCACHE / "unified_matrix.npz", allow_pickle=True)
-    E = [torch.tensor(np.ascontiguousarray(d[f"E_{s}"]), dtype=torch.float32, device=device)
-         for s in SPORTS]
+    E = [torch.tensor(np.ascontiguousarray(d[f"E_{s}"]), dtype=torch.float32, device=device) for s in SPORTS]
     sport_id = torch.tensor(d["sport_id"], dtype=torch.long, device=device)
     player_idx = torch.tensor(d["player_idx"], dtype=torch.long, device=device)
     era_id = torch.tensor(d["era_id"], dtype=torch.long, device=device)
@@ -310,10 +352,19 @@ def load_matrix_normal(device, market=False, cultural_text=False):
         if isinstance(n_pos, dict):
             n_pos = [n_pos[s] for s in SPORTS]
     except Exception:
-        n_pos = [5,4,3]
-    out = dict(E=E, sport_id=sport_id, player_idx=player_idx, era_id=era_id,
-               arch_id=arch_id, native=native, pos_id=pos_id, pos_mask=pos_mask,
-               n_eras=n_eras, n_pos=n_pos)
+        n_pos = [5, 4, 3]
+    out = dict(
+        E=E,
+        sport_id=sport_id,
+        player_idx=player_idx,
+        era_id=era_id,
+        arch_id=arch_id,
+        native=native,
+        pos_id=pos_id,
+        pos_mask=pos_mask,
+        n_eras=n_eras,
+        n_pos=n_pos,
+    )
     if market:
         mc_path = DATA / "market_cultural" / "market_cultural.json"
         if not mc_path.exists():
@@ -322,11 +373,20 @@ def load_matrix_normal(device, market=False, cultural_text=False):
         rows = mc["rows"]
         if len(rows) != sport_id.shape[0]:
             raise ValueError(f"market_cultural rows {len(rows)} != matrix {sport_id.shape[0]}")
-        sal = np.array([(r["salary_log"] if r["m_salary"] else 0.0) for r in rows], dtype=np.float32)
+        sal = np.array(
+            [(r["salary_log"] if r["m_salary"] else 0.0) for r in rows],
+            dtype=np.float32,
+        )
         sal_m = np.array([r["m_salary"] for r in rows], dtype=np.float32)
-        awd = np.array([(r["award_prestige"] if r["m_award"] else 0.0) for r in rows], dtype=np.float32)
+        awd = np.array(
+            [(r["award_prestige"] if r["m_award"] else 0.0) for r in rows],
+            dtype=np.float32,
+        )
         awd_m = np.array([r["m_award"] for r in rows], dtype=np.float32)
-        rch = np.array([(r["reach_log"] if r.get("m_reach") else 0.0) for r in rows], dtype=np.float32)
+        rch = np.array(
+            [(r["reach_log"] if r.get("m_reach") else 0.0) for r in rows],
+            dtype=np.float32,
+        )
         rch_m = np.array([r.get("m_reach", 0) for r in rows], dtype=np.float32)
         sal_z, sal_m = _zscore_masked(sal, sal_m)
         awd_z, awd_m = _zscore_masked(awd, awd_m)
@@ -337,7 +397,9 @@ def load_matrix_normal(device, market=False, cultural_text=False):
         out["award_mask"] = torch.tensor(awd_m, dtype=torch.float32, device=device)
         out["reach_z"] = torch.tensor(rch_z, dtype=torch.float32, device=device)
         out["reach_mask"] = torch.tensor(rch_m, dtype=torch.float32, device=device)
-        print(f"market loaded: salary labeled={int(sal_m.sum())} award labeled={int(awd_m.sum())} reach labeled={int(rch_m.sum())}")
+        print(
+            f"market loaded: salary labeled={int(sal_m.sum())} award labeled={int(awd_m.sum())} reach labeled={int(rch_m.sum())}"
+        )
     if cultural_text:
         ct_path = DATA / "market_cultural" / "cultural_text_matrix.npz"
         if not ct_path.exists():
@@ -390,9 +452,14 @@ def gather_batch(M, global_idx):
             e_per.append(M["E"][s][:0])
     batch = (sport_ids, era_ids, arch, native, pos, posm, e_per)
     if "salary_z" in M:
-        batch = batch + (M["salary_z"][global_idx], M["salary_mask"][global_idx],
-                         M["award_z"][global_idx], M["award_mask"][global_idx],
-                         M["reach_z"][global_idx], M["reach_mask"][global_idx])
+        batch = batch + (
+            M["salary_z"][global_idx],
+            M["salary_mask"][global_idx],
+            M["award_z"][global_idx],
+            M["award_mask"][global_idx],
+            M["reach_z"][global_idx],
+            M["reach_mask"][global_idx],
+        )
     if "text_t" in M:
         batch = batch + (M["text_t"][global_idx], M["text_mask"][global_idx])
     return batch
@@ -433,7 +500,8 @@ def parse_seeds(s):
 
 
 def train_one_seed(args, seed, device):
-    torch.manual_seed(seed); np.random.seed(seed)
+    torch.manual_seed(seed)
+    np.random.seed(seed)
     M = load_matrix(device, market=args.market, cultural_text=args.cultural_text)
     pools = per_sport_pools(M)
     _np = M["n_pos"]
@@ -442,15 +510,20 @@ def train_one_seed(args, seed, device):
     else:
         n_pos = list(_np)  # already [5,4,3]
     d_text = int(M.get("d_text", 384))
-    model = UnifiedTrunk(sport_dims=[SPORT_DIM[s] for s in SPORTS],
-                         n_seasons_era=M["n_eras"], d_adapter=args.d_adapter,
-                         d_sport_tok=args.d_sport_tok,
-                         d_emb=args.d_emb, n_arch=8, n_pos=n_pos,
-                         dropout=args.dropout,
-                         shared_adapter=args.shared_adapter,
-                         market_heads=args.market,
-                         cultural_text=args.cultural_text,
-                         d_text=d_text).to(device)
+    model = UnifiedTrunk(
+        sport_dims=[SPORT_DIM[s] for s in SPORTS],
+        n_seasons_era=M["n_eras"],
+        d_adapter=args.d_adapter,
+        d_sport_tok=args.d_sport_tok,
+        d_emb=args.d_emb,
+        n_arch=8,
+        n_pos=n_pos,
+        dropout=args.dropout,
+        shared_adapter=args.shared_adapter,
+        market_heads=args.market,
+        cultural_text=args.cultural_text,
+        d_text=d_text,
+    ).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
     rng = np.random.default_rng(seed)
     q = args.batch_per_sport
@@ -496,10 +569,10 @@ def train_one_seed(args, seed, device):
         market = None
         text = None
         if args.market:
-            market = packed[off:off + 6]
+            market = packed[off : off + 6]
             off += 6
         if args.cultural_text:
-            text = packed[off:off + 2]
+            text = packed[off : off + 2]
         return market, text
 
     def eval_rank():
@@ -533,8 +606,17 @@ def train_one_seed(args, seed, device):
             lam = base_lam if not folding else base_lam
             if not folding:
                 lam = 0.0  # warmup GRL 0 (or minimal) to build structure
-        ep = {"sup": 0.0, "coral": 0.0, "coral_cent": 0.0, "task": 0.0, "sport": 0.0,
-              "var": 0.0, "cov": 0.0, "market": 0.0, "text": 0.0}
+        ep = {
+            "sup": 0.0,
+            "coral": 0.0,
+            "coral_cent": 0.0,
+            "task": 0.0,
+            "sport": 0.0,
+            "var": 0.0,
+            "cov": 0.0,
+            "market": 0.0,
+            "text": 0.0,
+        }
         for _ in range(steps):
             gi = one_batch()
             packed = gather_batch(M, gi)
@@ -553,19 +635,30 @@ def train_one_seed(args, seed, device):
                 l_market = market_loss(z, *market_t)
             if text_t is not None:
                 l_text = text_loss(z, *text_t)
-            loss = (args.w_task * l_task + args.w_coral * l_coral + args.w_coral_centroid * l_coral_cent
-                    + args.w_var * l_var + args.w_cov * l_cov
-                    + args.w_market * l_market + args.w_text * l_text)
-            l_sup = z.new_zeros(()); l_sport = z.new_zeros(())
+            loss = (
+                args.w_task * l_task
+                + args.w_coral * l_coral
+                + args.w_coral_centroid * l_coral_cent
+                + args.w_var * l_var
+                + args.w_cov * l_cov
+                + args.w_market * l_market
+                + args.w_text * l_text
+            )
+            l_sup = z.new_zeros(())
+            l_sport = z.new_zeros(())
             if folding:
                 l_sup = supcon_loss(z, arch, sid, model.log_temp)
                 l_sport = sport_clf_loss(z, sid, lam)
                 loss = loss + l_sup + args.w_sport * l_sport
             loss.backward()
             opt.step()
-            ep["sup"] += float(l_sup); ep["coral"] += float(l_coral); ep["coral_cent"] += float(l_coral_cent)
-            ep["task"] += float(l_task); ep["sport"] += float(l_sport)
-            ep["var"] += float(l_var); ep["cov"] += float(l_cov)
+            ep["sup"] += float(l_sup)
+            ep["coral"] += float(l_coral)
+            ep["coral_cent"] += float(l_coral_cent)
+            ep["task"] += float(l_task)
+            ep["sport"] += float(l_sport)
+            ep["var"] += float(l_var)
+            ep["cov"] += float(l_cov)
             ep["market"] += float(l_market)
             ep["text"] += float(l_text)
         for k in ep:
@@ -577,11 +670,13 @@ def train_one_seed(args, seed, device):
             aux += f" market={ep['market']:.3f}"
         if args.cultural_text:
             aux += f" text={ep['text']:.3f}"
-        print(f"[seed {seed}] epoch {epoch+1:>2}/{epochs} [{phase}] "
-              f"sup={ep['sup']:.3f} coral={ep['coral']:.4f} coral_cent={ep['coral_cent']:.4f} "
-              f"task={ep['task']:.3f} sport={ep['sport']:.3f} var={ep['var']:.4f} cov={ep['cov']:.4f}"
-              f"{aux} rank={rank:.1f} lam={lam:.3f} lam_target={target_lam:.3f} "
-              f"temp={[round(float(t),2) for t in torch.exp(model.log_temp).tolist()]}")
+        print(
+            f"[seed {seed}] epoch {epoch+1:>2}/{epochs} [{phase}] "
+            f"sup={ep['sup']:.3f} coral={ep['coral']:.4f} coral_cent={ep['coral_cent']:.4f} "
+            f"task={ep['task']:.3f} sport={ep['sport']:.3f} var={ep['var']:.4f} cov={ep['cov']:.4f}"
+            f"{aux} rank={rank:.1f} lam={lam:.3f} lam_target={target_lam:.3f} "
+            f"temp={[round(float(t),2) for t in torch.exp(model.log_temp).tolist()]}"
+        )
         if folding and rank >= args.rank_floor and ep["task"] < best_task - 1e-4:
             best_task, bad = ep["task"], 0
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
@@ -591,7 +686,7 @@ def train_one_seed(args, seed, device):
             if bad >= patience and not args.smoke and best_state is not None:
                 print(f"early stop (task plateau; best task={best_task:.3f} rank={best_rank:.1f})")
                 break
-    elapsed = time.time()-t0
+    elapsed = time.time() - t0
     ckpt = None
     if best_state and not args.smoke:
         UCACHE.mkdir(parents=True, exist_ok=True)
@@ -601,79 +696,170 @@ def train_one_seed(args, seed, device):
         else:
             ckpt_path = UCACHE / ckpt_name
         ckpt_path.parent.mkdir(parents=True, exist_ok=True)
-        torch.save({"state": best_state, "args": vars(args), "n_eras": M["n_eras"],
-                    "n_pos": n_pos, "best_rank": best_rank,
-                    "sport_dim": [SPORT_DIM[s] for s in SPORTS],
-                    "seed": seed, "fallback": (DATA / "unified_meta.json").exists() and "fallback" in (DATA / "unified_meta.json").read_text()},
-                   ckpt_path)
+        torch.save(
+            {
+                "state": best_state,
+                "args": vars(args),
+                "n_eras": M["n_eras"],
+                "n_pos": n_pos,
+                "best_rank": best_rank,
+                "sport_dim": [SPORT_DIM[s] for s in SPORTS],
+                "seed": seed,
+                "fallback": (DATA / "unified_meta.json").exists()
+                and "fallback" in (DATA / "unified_meta.json").read_text(),
+            },
+            ckpt_path,
+        )
         print(f"saved {ckpt_path} (best rank {best_rank:.1f}) {elapsed:.0f}s seed={seed}")
         ckpt = str(ckpt_path)
     else:
         print(f"smoke done seed={seed} (best rank {best_rank:.1f}) {elapsed:.0f}s — gated honest not promoted")
-    return {"seed": seed, "best_task": best_task, "best_rank": best_rank, "ckpt": ckpt, "elapsed": elapsed}
+    return {
+        "seed": seed,
+        "best_task": best_task,
+        "best_rank": best_rank,
+        "ckpt": ckpt,
+        "elapsed": elapsed,
+    }
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--epochs", type=int, default=60, help="T5 hill 132 60 epochs (smoke overrides to 2)")
+    ap.add_argument(
+        "--epochs",
+        type=int,
+        default=60,
+        help="T5 hill 132 60 epochs (smoke overrides to 2)",
+    )
     ap.add_argument("--batch-per-sport", type=int, default=86)
     ap.add_argument("--d-emb", type=int, default=64)
     ap.add_argument("--d-adapter", type=int, default=48)
-    ap.add_argument("--d-sport-tok", type=int, default=8, help="dim of per-sport token (0 to drop the sport leak)")
+    ap.add_argument(
+        "--d-sport-tok",
+        type=int,
+        default=8,
+        help="dim of per-sport token (0 to drop the sport leak)",
+    )
     ap.add_argument("--w-coral", type=float, default=0.5)
     ap.add_argument("--w-coral-centroid", type=float, default=0.5, help="CORAL centroid L2 weight")
     ap.add_argument("--w-task", type=float, default=2.0)
     ap.add_argument("--w-sport", type=float, default=0.5)
-    ap.add_argument("--w-market", type=float, default=0.5,
-                    help="weight for salary+award masked-MSE (only with --market)")
-    ap.add_argument("--w-text", type=float, default=0.5,
-                    help="weight for cultural-text cosine align (only with --cultural-text)")
+    ap.add_argument(
+        "--w-market",
+        type=float,
+        default=0.5,
+        help="weight for salary+award masked-MSE (only with --market)",
+    )
+    ap.add_argument(
+        "--w-text",
+        type=float,
+        default=0.5,
+        help="weight for cultural-text cosine align (only with --cultural-text)",
+    )
     ap.add_argument("--grl-lambda", type=float, default=0.3, help="GRL base lambda")
-    ap.add_argument("--grl-lambda-target", type=float, default=0.5, help="GRL target lambda after ramp")
+    ap.add_argument(
+        "--grl-lambda-target",
+        type=float,
+        default=0.5,
+        help="GRL target lambda after ramp",
+    )
     ap.add_argument("--grl-ramp", type=int, default=10, help="epochs to ramp GRL lambda to target")
-    ap.add_argument("--warmup", type=int, default=5,
-                    help="epochs of task+CORAL only (no SupCon/GRL) to build anti-collapse structure first")
+    ap.add_argument(
+        "--warmup",
+        type=int,
+        default=5,
+        help="epochs of task+CORAL only (no SupCon/GRL) to build anti-collapse structure first",
+    )
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--wd", type=float, default=1e-4)
     ap.add_argument("--dropout", type=float, default=0.2)
     ap.add_argument("--w-var", type=float, default=1.0, help="VICReg variance anti-collapse weight")
-    ap.add_argument("--w-cov", type=float, default=1.0, help="VICReg covariance decorrelation weight (raises rank)")
-    ap.add_argument("--rank-floor", type=float, default=12.0,
-                    help="min effective rank for a checkpoint to be eligible (anti-collapse gate)")
-    ap.add_argument("--smoke", action="store_true", help="2-epoch validation run, no checkpoint, quick <3m")
-    ap.add_argument("--shared-adapter", action="store_true",
-                    help="G2 probe: one shared Linear over zero-padded e_s instead of per-sport adapters")
-    ap.add_argument("--market", action="store_true",
-                    help="attach cross-sport salary+award masked-MSE heads; save unified_market.pt")
-    ap.add_argument("--cultural-text", action="store_true",
-                    help="align z to Wikipedia MiniLM embeddings; save unified_cultural.pt")
-    ap.add_argument("--init-from", default=None,
-                    help="warm-start trunk from a prior ckpt (e.g. unified_best.pt); new heads init fresh")
+    ap.add_argument(
+        "--w-cov",
+        type=float,
+        default=1.0,
+        help="VICReg covariance decorrelation weight (raises rank)",
+    )
+    ap.add_argument(
+        "--rank-floor",
+        type=float,
+        default=12.0,
+        help="min effective rank for a checkpoint to be eligible (anti-collapse gate)",
+    )
+    ap.add_argument(
+        "--smoke",
+        action="store_true",
+        help="2-epoch validation run, no checkpoint, quick <3m",
+    )
+    ap.add_argument(
+        "--shared-adapter",
+        action="store_true",
+        help="G2 probe: one shared Linear over zero-padded e_s instead of per-sport adapters",
+    )
+    ap.add_argument(
+        "--market",
+        action="store_true",
+        help="attach cross-sport salary+award masked-MSE heads; save unified_market.pt",
+    )
+    ap.add_argument(
+        "--cultural-text",
+        action="store_true",
+        help="align z to Wikipedia MiniLM embeddings; save unified_cultural.pt",
+    )
+    ap.add_argument(
+        "--init-from",
+        default=None,
+        help="warm-start trunk from a prior ckpt (e.g. unified_best.pt); new heads init fresh",
+    )
     # T5 hill 132 extras
-    ap.add_argument("--seeds", type=str, default=None,
-                    help="comma-separated seeds 7,11,13,17,19 paired experiment (LOCAL-GPU 60ep each)")
-    ap.add_argument("--paired", action="store_true",
-                    help="paired Δ analysis flag (5 seeds × 3 arms = 15 runs pacing max3)")
-    ap.add_argument("--eval-every", type=int, default=5, help="eval every N epochs for G2/G3 tracking")
-    ap.add_argument("--out", type=str, default=None,
-                    help="output ckpt path e.g. pipeline/data/unified_stage2_centroid_ab.pt")
+    ap.add_argument(
+        "--seeds",
+        type=str,
+        default=None,
+        help="comma-separated seeds 7,11,13,17,19 paired experiment (LOCAL-GPU 60ep each)",
+    )
+    ap.add_argument(
+        "--paired",
+        action="store_true",
+        help="paired Δ analysis flag (5 seeds × 3 arms = 15 runs pacing max3)",
+    )
+    ap.add_argument(
+        "--eval-every",
+        type=int,
+        default=5,
+        help="eval every N epochs for G2/G3 tracking",
+    )
+    ap.add_argument(
+        "--out",
+        type=str,
+        default=None,
+        help="output ckpt path e.g. pipeline/data/unified_stage2_centroid_ab.pt",
+    )
     args = ap.parse_args()
     if args.smoke and args.epochs > 2:
         args.epochs = 2
 
-    torch.manual_seed(SEED); np.random.seed(SEED)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
-    print(f"device={device}  market={args.market}  cultural_text={args.cultural_text}  "
-          f"w_coral={args.w_coral} w_coral_centroid={args.w_coral_centroid} "
-          f"grl_lambda={args.grl_lambda}-> {args.grl_lambda_target} ramp={args.grl_ramp} "
-          f"w_task={args.w_task} w_sport={args.w_sport} epochs={args.epochs} seeds={args.seeds} paired={args.paired}")
+    torch.manual_seed(SEED)
+    np.random.seed(SEED)
+    device = torch.device(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )  # auto: GPU on personal local (CUDA avail), CPU in Hatch VM
+    print(
+        f"device={device}  market={args.market}  cultural_text={args.cultural_text}  "
+        f"w_coral={args.w_coral} w_coral_centroid={args.w_coral_centroid} "
+        f"grl_lambda={args.grl_lambda}-> {args.grl_lambda_target} ramp={args.grl_ramp} "
+        f"w_task={args.w_task} w_sport={args.w_sport} epochs={args.epochs} seeds={args.seeds} paired={args.paired}"
+    )
 
     seeds = parse_seeds(args.seeds) if args.seeds else [SEED]
     # pacing :01 lite, 3 LOCAL-GPU exempt <7 max concurrent — enforced by orchestrator, noted here
     # If full 5-seed 60ep requested on Hatch VM without CUDA, that's LOCAL-GPU deferred
     if not args.smoke and len(seeds) > 1 and device.type == "cpu" and args.epochs >= 30:
-        print(f"[pacing] {len(seeds)} seeds × {args.epochs} ep on CPU VM → deferred to LOCAL-GPU full, "
-              f"running seed {seeds[0]} smoke-style quick verification only (<3m)", file=sys.stderr)
+        print(
+            f"[pacing] {len(seeds)} seeds × {args.epochs} ep on CPU VM → deferred to LOCAL-GPU full, "
+            f"running seed {seeds[0]} smoke-style quick verification only (<3m)",
+            file=sys.stderr,
+        )
         # still run first seed quick to verify pipeline, but note deferred
         seeds = seeds[:1]
 
@@ -685,7 +871,9 @@ def main():
     # If paired flag, compute quick summary (even smoke)
     if args.paired and len(results) >= 2:
         ranks = [rr["best_rank"] for rr in results if rr["best_rank"] is not None and rr["best_rank"] != -1]
-        print(f"[paired] seeds {seeds} ranks {ranks} mean_rank {np.mean(ranks):.2f} std {np.std(ranks):.3f} [LOCAL-GPU full would be 5 seeds × 60ep]")
+        print(
+            f"[paired] seeds {seeds} ranks {ranks} mean_rank {np.mean(ranks):.2f} std {np.std(ranks):.3f} [LOCAL-GPU full would be 5 seeds × 60ep]"
+        )
 
     return 0
 

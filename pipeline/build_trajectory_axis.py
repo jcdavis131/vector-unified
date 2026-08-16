@@ -61,10 +61,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # normaliser across sports would apply gridiron's `marvin harrison`/`marvin harrison jr`
 # protection to hoops names, the same cross-sport contamination that made the first version
 # of check_merged_careers.py flag `james jones` in the HOOPS table on a gridiron collision.
-import build_hoops_vor_draft_value as H  # noqa: E402
-import build_vor_draft_value as G  # noqa: E402
-from build_hoops_vor_draft_value import norm_name as norm_hoops  # noqa: E402
-from build_vor_draft_value import norm_name as norm_gridiron  # noqa: E402
+import build_hoops_vor_draft_value as H
+import build_vor_draft_value as G
+from build_hoops_vor_draft_value import norm_name as norm_hoops
+from build_vor_draft_value import norm_name as norm_gridiron
 
 ROOT = Path(__file__).resolve().parent.parent
 HOOPS = Path("C:/Users/jcdav/vector-hoops")
@@ -77,8 +77,8 @@ GRID_VEC = Path("C:/Users/jcdav/vector-gridiron/assets/vectors.json")
 OUT = ROOT / "data" / "trajectory_axis.json"
 
 IMPACT = "impact"
-MIN_SEASONS = 4      # same floor vector-hoops uses for its career classes
-TAIL_PCT = 20.0      # top/bottom fifth of the residual distribution
+MIN_SEASONS = 4  # same floor vector-hoops uses for its career classes
+TAIL_PCT = 20.0  # top/bottom fifth of the residual distribution
 HIGH_EXPECT_Q = 60.0  # "high billing" = expect_slot above this percentile
 LOW_EXPECT_Q = 40.0
 
@@ -153,54 +153,91 @@ def run_gridiron(args) -> int:
         if not pd:
             dropped["no_pedigree"] += 1
             continue
-        rows.append({
-            "name": name, "seasons": len(dels),
-            "expect_log": float(pd.get("expect_log") or 0.0),
-            "undrafted": bool(pd.get("undrafted")),
-            "overall": pd.get("overall"),
-            "position": pd.get("position") or "",
-            "delivery": statistics.mean(dels),
-        })
+        rows.append(
+            {
+                "name": name,
+                "seasons": len(dels),
+                "expect_log": float(pd.get("expect_log") or 0.0),
+                "undrafted": bool(pd.get("undrafted")),
+                "overall": pd.get("overall"),
+                "position": pd.get("position") or "",
+                "delivery": statistics.mean(dels),
+            }
+        )
 
     if len(rows) < 50:
         print(f"only {len(rows)} gridiron careers with both inputs — not assigning.")
         return 2
 
     counts, slope, intercept = score(rows, "expect_log")
-    corr = statistics.correlation([r["expect_log"] for r in rows],
-                                  [r["delivery"] for r in rows])
+    corr = statistics.correlation([r["expect_log"] for r in rows], [r["delivery"] for r in rows])
     ranked = sorted(rows, key=lambda r: r["residual"])
     report = {
-        "sport": "gridiron", "careers_scored": len(rows), "dropped": dropped,
+        "sport": "gridiron",
+        "careers_scored": len(rows),
+        "dropped": dropped,
         "min_seasons": MIN_SEASONS,
         "expectation": "gridiron_pedigree.json expect_log = 1 - log1p(pick)/log1p(262)",
         "delivery": "career-mean PPR ppg percentile WITHIN (season, position)",
-        "fit": {"slope": round(slope, 4), "intercept": round(intercept, 3),
-                "corr_expectation_delivery": round(corr, 4)},
+        "fit": {
+            "slope": round(slope, 4),
+            "intercept": round(intercept, 3),
+            "corr_expectation_delivery": round(corr, 4),
+        },
         "counts": counts,
-        "T0_examples": [{"name": r["name"], "pos": r["position"], "pick": r["overall"],
-                         "delivery": round(r["delivery"], 1),
-                         "residual": round(r["residual"], 1)}
-                        for r in ranked if r["trajectory"] == "T0"][:10],
-        "T1_examples": [{"name": r["name"], "pos": r["position"], "pick": r["overall"],
-                         "undrafted": r["undrafted"], "delivery": round(r["delivery"], 1),
-                         "residual": round(r["residual"], 1)}
-                        for r in reversed(ranked) if r["trajectory"] == "T1"][:10],
+        "T0_examples": [
+            {
+                "name": r["name"],
+                "pos": r["position"],
+                "pick": r["overall"],
+                "delivery": round(r["delivery"], 1),
+                "residual": round(r["residual"], 1),
+            }
+            for r in ranked
+            if r["trajectory"] == "T0"
+        ][:10],
+        "T1_examples": [
+            {
+                "name": r["name"],
+                "pos": r["position"],
+                "pick": r["overall"],
+                "undrafted": r["undrafted"],
+                "delivery": round(r["delivery"], 1),
+                "residual": round(r["residual"], 1),
+            }
+            for r in reversed(ranked)
+            if r["trajectory"] == "T1"
+        ][:10],
     }
     out = ROOT / "data" / "trajectory_axis_gridiron.json"
-    out.write_text(json.dumps({
-        "caveat_scope": ("OFFENSIVE SKILL POSITIONS ONLY (QB/RB/WR/TE). All 18 gridiron "
-                         "features are pass/rush/receiving; linemen and defenders are not "
-                         "in the vector set."),
-        "caveat_survivorship": ("A high pick who never earned 4 charted seasons is ABSENT, "
-                                "not labelled T0 — the worst busts leave before "
-                                "accumulating a career."),
-        "caveat_delivery": ("Fantasy PPR is a FANTASY delivery measure. It rewards volume "
-                            "and touchdowns and ignores blocking and route-running a coach "
-                            "would value. It is the delivery signal this repo has, not the "
-                            "delivery signal football has."),
-        "report": report, "careers": rows,
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps(
+            {
+                "caveat_scope": (
+                    "OFFENSIVE SKILL POSITIONS ONLY (QB/RB/WR/TE). All 18 gridiron "
+                    "features are pass/rush/receiving; linemen and defenders are not "
+                    "in the vector set."
+                ),
+                "caveat_survivorship": (
+                    "A high pick who never earned 4 charted seasons is ABSENT, "
+                    "not labelled T0 — the worst busts leave before "
+                    "accumulating a career."
+                ),
+                "caveat_delivery": (
+                    "Fantasy PPR is a FANTASY delivery measure. It rewards volume "
+                    "and touchdowns and ignores blocking and route-running a coach "
+                    "would value. It is the delivery signal this repo has, not the "
+                    "delivery signal football has."
+                ),
+                "report": report,
+                "careers": rows,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
@@ -210,13 +247,13 @@ def run_gridiron(args) -> int:
     print(f"labels: T0 {counts['T0']}  T1 {counts['T1']}  unlabelled {counts['unlabelled']}\n")
     print("T0 - high pick, under-delivered:")
     for e in report["T0_examples"][:6]:
-        print(f"  {e['pos']:>3} pick {str(e['pick']):>4}  pct {e['delivery']:>5}"
-              f"  resid {e['residual']:>6}  {e['name']}")
+        print(
+            f"  {e['pos']:>3} pick {e['pick']!s:>4}  pct {e['delivery']:>5}" f"  resid {e['residual']:>6}  {e['name']}"
+        )
     print("\nT1 - low pick / undrafted, over-delivered:")
     for e in report["T1_examples"][:6]:
         pk = "undrafted" if e["undrafted"] else f"pick {e['pick']}"
-        print(f"  {e['pos']:>3} {pk:>10}  pct {e['delivery']:>5}"
-              f"  resid {e['residual']:>6}  {e['name']}")
+        print(f"  {e['pos']:>3} {pk:>10}  pct {e['delivery']:>5}" f"  resid {e['residual']:>6}  {e['name']}")
     print(f"\nwrote {out}")
     return 0
 
@@ -273,8 +310,10 @@ def main() -> int:
     # grades as order-aligned with vectors.json players[]; if that ever stops being true
     # every grade lands on the wrong player and nothing else here would notice.
     if len(vplayers) != len(grades):
-        print(f"ALIGNMENT BROKEN: vectors.json has {len(vplayers)} players, "
-              f"skills.json has {len(grades)} grade rows. Refusing to score.")
+        print(
+            f"ALIGNMENT BROKEN: vectors.json has {len(vplayers)} players, "
+            f"skills.json has {len(grades)} grade rows. Refusing to score."
+        )
         return 2
     skill_keys = [s.get("key") if isinstance(s, dict) else s for s in sk["skills"]]
     if IMPACT not in skill_keys:
@@ -311,14 +350,16 @@ def main() -> int:
         if not pd:
             dropped["no_pedigree"] += 1
             continue
-        rows.append({
-            "name": name,
-            "seasons": len(impacts),
-            "expect_slot": float(pd.get("expect_slot") or 0.06),
-            "undrafted": bool(pd.get("undrafted")),
-            "overall": pd.get("overall"),
-            "delivery": statistics.mean(impacts),
-        })
+        rows.append(
+            {
+                "name": name,
+                "seasons": len(impacts),
+                "expect_slot": float(pd.get("expect_slot") or 0.06),
+                "undrafted": bool(pd.get("undrafted")),
+                "overall": pd.get("overall"),
+                "delivery": statistics.mean(impacts),
+            }
+        )
 
     if len(rows) < 50:
         print(f"only {len(rows)} careers with both inputs — not assigning.")
@@ -363,35 +404,63 @@ def main() -> int:
         "min_seasons": MIN_SEASONS,
         "expectation": "pedigree.json expect_slot (rookie-scale curve)",
         "delivery": "mean percentile-within-season `impact` grade over the career",
-        "fit": {"slope": round(slope, 4), "intercept": round(intercept, 3),
-                "corr_expectation_delivery": round(corr, 4)},
+        "fit": {
+            "slope": round(slope, 4),
+            "intercept": round(intercept, 3),
+            "corr_expectation_delivery": round(corr, 4),
+        },
         "counts": counts,
-        "tails": {"TAIL_PCT": TAIL_PCT, "HIGH_EXPECT_Q": HIGH_EXPECT_Q,
-                  "LOW_EXPECT_Q": LOW_EXPECT_Q},
+        "tails": {
+            "TAIL_PCT": TAIL_PCT,
+            "HIGH_EXPECT_Q": HIGH_EXPECT_Q,
+            "LOW_EXPECT_Q": LOW_EXPECT_Q,
+        },
     }
 
     ranked = sorted(rows, key=lambda r: r["residual"])
     report["T0_examples"] = [
-        {"name": r["name"], "pick": r["overall"], "delivery": round(r["delivery"], 1),
-         "residual": round(r["residual"], 1)}
-        for r in ranked if r["trajectory"] == "T0"][:10]
+        {
+            "name": r["name"],
+            "pick": r["overall"],
+            "delivery": round(r["delivery"], 1),
+            "residual": round(r["residual"], 1),
+        }
+        for r in ranked
+        if r["trajectory"] == "T0"
+    ][:10]
     report["T1_examples"] = [
-        {"name": r["name"], "pick": r["overall"], "undrafted": r["undrafted"],
-         "delivery": round(r["delivery"], 1), "residual": round(r["residual"], 1)}
-        for r in reversed(ranked) if r["trajectory"] == "T1"][:10]
+        {
+            "name": r["name"],
+            "pick": r["overall"],
+            "undrafted": r["undrafted"],
+            "delivery": round(r["delivery"], 1),
+            "residual": round(r["residual"], 1),
+        }
+        for r in reversed(ranked)
+        if r["trajectory"] == "T1"
+    ][:10]
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({
-        "built_from": {"pedigree": str(PEDIGREE), "skills": str(SKILLS)},
-        "caveat_survivorship": (
-            "A high pick who never earned 4 charted seasons is ABSENT, not labelled T0. "
-            "The worst busts leave the league before they accumulate a career, so T0 is "
-            "biased toward players who under-delivered while still being good enough to "
-            "keep playing. This understates the tail it is trying to name."),
-        "caveat_scope": "hoops only. gridiron has the inputs but no exported artifact; pitch has none.",
-        "report": report,
-        "careers": rows,
-    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(
+            {
+                "built_from": {"pedigree": str(PEDIGREE), "skills": str(SKILLS)},
+                "caveat_survivorship": (
+                    "A high pick who never earned 4 charted seasons is ABSENT, not labelled T0. "
+                    "The worst busts leave the league before they accumulate a career, so T0 is "
+                    "biased toward players who under-delivered while still being good enough to "
+                    "keep playing. This understates the tail it is trying to name."
+                ),
+                "caveat_scope": "hoops only. gridiron has the inputs but no exported artifact; pitch has none.",
+                "report": report,
+                "careers": rows,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     if args.json:
         print(json.dumps(report, indent=2))
@@ -402,7 +471,7 @@ def main() -> int:
     print(f"labels: T0 {counts['T0']}   T1 {counts['T1']}   unlabelled {counts['unlabelled']}\n")
     print("T0 — high billing, under-delivered:")
     for e in report["T0_examples"][:6]:
-        print(f"  pick {str(e['pick']):>4}  impact {e['delivery']:>5}  resid {e['residual']:>6}  {e['name']}")
+        print(f"  pick {e['pick']!s:>4}  impact {e['delivery']:>5}  resid {e['residual']:>6}  {e['name']}")
     print("\nT1 — low billing, over-delivered:")
     for e in report["T1_examples"][:6]:
         pk = "undrafted" if e["undrafted"] else f"pick {e['pick']}"
