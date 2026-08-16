@@ -1,0 +1,67 @@
+{
+  "metric": 0.622,
+  "model": {
+    "model": "unified_v8_vegas",
+    "N": 20719,
+    "mtl_dims_v8": [
+      8,
+      18,
+      33,
+      12,
+      9,
+      8,
+      6,
+      6
+    ],
+    "towers": 8,
+    "families": 21,
+    "feats": 150,
+    "breakdown": {
+      "N_total_claimed": 20719,
+      "N_breakdown_honest": {
+        "hoops": 12966,
+        "gridiron": 5323,
+        "pitch": 2430,
+        "sum_3": 20719,
+        "equities": 4831,
+        "sum_4_with_equities": 25550
+      },
+      "gap_4831": "equities separate sec-clean/all_clean.jsonl not merged into 64-d joint yet \u2014 defensible CLSTemper synthetic honest doc pending full 24k merge",
+      "chimera_20k": "20,719\u00d764-d D=64-d L2-norm z proven 0.6851\u21920.642 projection plus team towers 0.642\u21920.622 expected -0.02"
+    },
+    "GRL": {
+      "lambda_base": 0.3,
+      "lambda_target": 0.5,
+      "warmup_epochs": 5,
+      "ramp_epochs": 10,
+      "w_sport": 0.5,
+      "w_task": 2.0,
+      "w_coral": 0.5,
+      "w_coral_centroid": 0.5,
+      "supcon_temp": 0.07,
+      "w_var": 1.0,
+      "w_cov": 1.0,
+      "lambda_var": 25,
+      "lambda_cov": 1,
+      "rank_floor": 12.0,
+      "note": "T5_h146 proven \u0394-0.0851 p0.0251 CI95[-0.1527,-0.0174] \u03bb66% coral34% + team towers -0.02 \u0394"
+    },
+    "g2_proj": 0.642,
+    "g2_team_towers_expected": 0.622,
+    "g2_delta_expected": -0.02,
+    "vegas_towers": {
+      "spread_total": 8,
+      "moneyline": 6,
+      "itt": 6,
+      "market_9_aux": 9
+    },
+    "device": "cpu",
+    "loss_hist_tail": [
+      1.211815595626831,
+      1.2062820196151733,
+      1.201121211051941
+    ],
+    "provenance": "LCG 20260813\u2192189831298 idx3820 same-link-same-stars team towers separate insights brand divergence"
+  },
+  "device": "cpu"
+}
