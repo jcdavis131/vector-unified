@@ -1,0 +1,14 @@
+{
+  "honest": true,
+  "needs_gpu": true,
+  "placeholder": true,
+  "model": "mtnn_v9_2_150ep_17towers_d128_4L4H_CLS128_RoPE_RMSNorm_SupCon0.07_VICReg0.05_CORAL0.5_BLOOM8192",
+  "composite_target": 0.85,
+  "composite_current": 0.555,
+  "towers": 17,
+  "d_model": 128,
+  "created": "2026-08-16",
+  "note": "needs Alienware GPU build - torch not available on Hatch VM, honest 503 fallback - do not load as torch, replace on Alienware",
+  "lcg": "20260813->189831298 idx3820 triple[11205,19448,14209]",
+  "zero_deps": true
+}

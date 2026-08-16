@@ -1,0 +1,18 @@
+{
+  "path": "vector-unified/data/unified_matrix.npz",
+  "rows": 20719,
+  "cols": 64,
+  "towers": 17,
+  "d_model": 128,
+  "dtype": "float32",
+  "sha256": "7c742c2715262ab11caf7cbd371ee27064cef60988236276670c5f75ad825be2",
+  "sha256_short16": "7c742c2715262ab1",
+  "size_bytes": 17999586,
+  "created": "2026-08-16",
+  "ready": true,
+  "description": "20719 x 64 joint embedding 12966 hoops 64-d + 5323 gridiron 32-d->64 + 2430 pitch 24-d->64 folded CORAL+GR L+SupCon 17 towers MTNN v7/v8",
+  "provenance": "LOCAL-GPU 60ep full 130 feats 18 families deferred, current 15-feat 6 families synthetic honest fallback gated not promoted per unified_meta.json",
+  "lcg": "20260813->189831298 idx3820 triple[11205,19448,14209] same-link-same-stars",
+  "zero_deps": true,
+  "updated": "2026-08-16 10:32 CT data-first packager"
+}
