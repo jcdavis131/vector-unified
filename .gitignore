@@ -3,7 +3,6 @@
 # This repo was created 2026-07-25 to put 5,397 lines of previously UNVERSIONED
 # pipeline code and its architecture docs under history. Before that, one
 # accidental delete lost the joint-embedding work outright.
-#
 # Rule: source and docs are tracked; large GENERATED artifacts are not, because
 # they are reproducible from the pipeline and would put ~43 MB of JSON blobs into
 # history with no diffability. If you later want the published artifacts
@@ -22,7 +21,6 @@ assets/**/*.json
 assets/**/*.json.*
 assets/**/*.npz.*
 assets/**/*.pt.*
-
 # Acquired + intermediate data (27 MB; re-fetchable via pipeline/acquire_*.py)
 data/*
 # RECORDS OF OPEN FINDINGS, tracked so they survive a clone and so the operator dashboard
@@ -62,7 +60,6 @@ data/*
 # site unverifiable by anyone but me. The site's own fine print says "every number is
 # recomputable from public sources", and a citation pointing at a file git never carried
 # does not meet that claim.
-#
 # Safe to track because they are byte-DETERMINISTIC — fixed seeds, no timestamps; all four
 # re-ran identical (2,872 / 3,024 / 7,265 / 8,768 bytes) before their lines were written. A
 # generated file that churns each run belongs ignored, so the check is the precondition, not
@@ -73,18 +70,15 @@ data/*
 !data/equities_forward_report.json
 !data/gridiron_forward_report.json
 pipeline/data/
-
 # Scraped-page cache — 11 spotrac_nfl_*.html files at ~2.6 MB each (~28 MB).
 # Caught only by checking `git diff --cached` BEFORE the first commit: staging
 # had ballooned to 581,559 lines. Scrape cache is re-fetchable and belongs
 # nowhere near history.
 pipeline/cache/
 **/cache/
-
 # A pre-pitch-consolidation backup copy of unified.json (16.7 MB duplicate)
 pipeline/data/bak_pre_pitch_con/
 **/bak_pre_*/
-
 # Python
 __pycache__/
 *.py[cod]
@@ -92,7 +86,6 @@ __pycache__/
 venv/
 .pytest_cache/
 .ruff_cache/
-
 # vector-core package: never commit its local venv / build artifacts
 packages/vector-core/.venv/
 packages/vector-core/**/__pycache__/
@@ -100,12 +93,10 @@ packages/vector-core/*.egg-info/
 packages/vector-core/src/*.egg-info/
 packages/vector-core/build/
 packages/vector-core/dist/
-
 # OS / editor
 .DS_Store
 Thumbs.db
 *.swp
-
 # transient logs from a detached ablation re-run
 ablation_rerun.log
 ablation_rerun.err
@@ -115,3 +106,20 @@ chain_ablation.ps1
 grl_paired.log
 coral_vicreg.log
 chain_cv.ps1
+.scout/
+**/dev_key
+**/*_api_key
+.env.local
+dev-api-audit.log
+checkpoints/
+hidden_files/checkpoints/
+# --- Business professional standard additions (2026-08-17 cleanup) ---
+pipeline/checkpoints/
+bundles/ultra/runs/
+!bundles/ultra/runs/.gitkeep
+*.log
+*.tmp
+*.pyc
+*.pyo
+exports/
+archive/

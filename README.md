@@ -100,3 +100,8 @@ No install (std lib). For pipeline: numpy+sklearn+torch CPU OK (MTNN small, trun
 ## License
 
 MIT. Solo personal project, no connection to employer, built with public/free-tier only — see `LICENSE`.
+
+## Zero-deps
+
+Hatch VM CPU-only, no pip torch, stdlib only. Torch auto cuda else cpu on Alienware GPU handoff. Honest 503 if CUDA unavailable. Bundle zero_deps.json {"zero_deps":true,"allow":"acne:./src"} — ACNE optional local-first.
+

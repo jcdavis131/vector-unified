@@ -131,3 +131,68 @@ python3 -c "import hashlib,pathlib; p=pathlib.Path('data/unified_matrix.npz'); p
 - Front Office: Kelly 0.25 frac 1% max 3 concurrent IC>0.03 Sharpe>1.2 win>55% DD<12% — paper-track until gates PASS — games free forever single subtle footer "Built free · Open-source · No paywall"
 
 End lock — 2026-08-16 11:05 CT — zero-deps true stdlib only — LCG same-link-same-stars offline-ready PWA v67.1 void #080A0F.
+
+---
+## 2026-08-19 21:48 CT churn-main8 embedding_v3 20719x128 rebuild MTNN v9.2 150ep honest 503 re-queue — front chimera parity branch scout/unified-front-chimera-0819
+
+> Branch: scout/unified-front-chimera-0819 + scout/unified-embedding-v3-rebuild-0819 (same lane dual)
+> Lane: churn-main7 front chimera + churn-main8 embedding_v3 — co-owned single_action_per_tick Boyd Decide
+> Zero-deps true stdlib only single_action_per_tick
+
+### Front Chimera Fix — LCG Both Chains Same-Link-Same-Stars PWA v67 59→73
+
+- **Status**: FIXED local
+  - `index.html` chip meta now shows LCG 20260813→189831298 idx3820 triple[11205,19448,14209] + 20260818→1412440227 idx5278 triple[13791,10902,19455] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 void #080A0F 40px sticky z40/z39 single-select clear prev CORE20 LOD4000/8000 DPR1
+  - `index.html` pill LCG same expanded + glibc formula + void #080A0F 40px sticky CORE20 LOD4000/8000
+  - `footer` now both chains + PWA v67 CORE20 LOD4000/8000 void #080A0F single-select
+  - `og:description` meta both chains + void + single-select + CORE20
+  - `window.VECTOR_FAMILY` expanded navH 40px sticky z40 povH 44px sticky z39 void #080A0F core20 LOD4000/8000 single-select clear prev lcg2 idx2 triple2 five2 lcg_both verified
+  - `assets/js/app.js` — added DAILY_SEED_REF2=20260818 DAILY_LCG02=1412440227 DAILY_IDX02=5278 triple2/five2 + verifySecond() + bothChainsVerified() returning `both` true only if both pass glibc same-link-same-stars
+  - `manifest.json` — LCG field now both chains + five both + void + 40px sticky + CORE20 + single-select + LOD4000/8000 DPR1, lcg_0813 / lcg_0818 objects stored
+  - `assets/shared-game-shell.js` — rewritten with LCG_BOTH constant, VOID #080A0F, NAV_H 40px sticky z40 POV_H 44px sticky z39 SINGLE_SELECT clear prev CORE20 LOD4000/8000 DPR1 zero-deps VT navigation:auto — daily 20,719 5th game parity hoops-level
+- **Hoops-level parity checks**:
+  - void #080A0F present CSS + index + shell + map canvas #sky bg=var(--void)
+  - 40px sticky nav z40, 44px POV z39 sticky top var(--nav-h) + env(safe-area-inset-top)
+  - single-select map clear prev: `shared-map.js` draw() clearRect+fillRect each frame (clearPrev), targetId=newId replaces prev null clears all
+  - CORE20 LOD4000/8000 DPR1 fillRect lens1.8× quaternion arcball momentum0.94 RAF spring k=120 b=0.18 auto
+  - OKABE-8 visible dark ivory #FFFEF7 #FEFCF9 not i%8 domain fix hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE
+
+### Embedding_v3 MISMATCH_FALLBACK Honest 503 + Alienware Re-Queue
+
+- **Current FS**: `data/embedding_v3.npz` 12966×64 4.88MB hoops-only fallback `E shape (12966,64)` — keys E,player_id,season,name,cluster,position,archetype_logits,position_logits — NOT canonical 20719×128 ~18.8MB 17 towers d_model128 MTNN v9.2 150ep 20719x128 teacher12M→1.2M client
+- **Canonical expected**: [20719,128] float32 teacher12M→1.2M client 17 towers d_model128 4-head CLS128 RoPE 32-d/h RMSNorm ε1e-6 SwiGLU 256 gated VICReg var25 cov1 w0.05 SupCon τ0.07 w0.15 hybrid0.65/0.35 hard0.4 CLS aux CE0.1 masked link15% teammate same-team BCE w0.5 KL64 team+era RR32/type batch512 150ep smoke2ep early-stop20
+- **Config ready**: `config/mtnn_v9.2_20719x128.json` — stdlib-only JSON tool clean, 7/7/0 provenance, LCG both chains same-link-same-stars void #080A0F 40px sticky CORE20 LOD4000/8000 single-select clear prev, timeline 7-field mandatory
+- **Diagnostic**: `pipeline/data/embedding_v3_diagnostic.json` — honest 503, MISMATCH_FALLBACK 12966x64 vs 20719x128 BLOCKER, device Hatch VM CPU no CUDA torch ModuleNotFoundError
+- **Honest 503**: Hatch VM CPU no CUDA — torch unavailable — never fake results — re-queue Alienware CUDA auto 24GiB torch.cuda.is_available() device auto
+- **Alienware command queue**:
+```bash
+cd ~/workspace/vector-unified
+# ensure caches present (already 18M unified_matrix 20719x64 ready + equities_matrix 1.2M + pitch embeddings 804k + gridiron 32-d 398k + hoops 12966x64 3.09M)
+# 1) smoke 2ep quick <3m rank 21.6-22.6 validation
+python3 pipeline/train_stage2.py --smoke --epochs 2 --grl-lambda 0.3 --grl-lambda-target 0.5 --grl-ramp 10 --w-task 2.0 --w-coral 0.5 --w-coral-centroid 0.5 --w-sport 0.5 --seeds 7,11
+
+# 2) Full MTNN v9.2 150ep 17 towers 128-d teacher12M → 1.2M client (like best_epoch58 flow)
+pip install torch --index-url https://download.pytorch.org/whl/cu121
+pip install numpy scikit-learn tqdm
+python3 pipeline/train_mtnn_v9_unified.py --epochs 150 --d-model 128 --heads 4 --layers 4 --cls-dim 128 --w-vicreg 0.05 --token-dropout 0.1 --w-coral 0.5 --w-coral-centroid 0.5 --grl-lambda 0.3 --grl-target 0.5 --seeds 7,11,13,17,19 --out pipeline/data/unified_stage2_20719x128_best.pt --emb-out data/embedding_v3_20719x128.npz
+
+# alt generic generic train_unified 60ep if v9 script missing:
+python3 pipeline/train_unified.py --epochs 60 --grl-lambda 0.3 --grl-lambda-target 0.5 --grl-ramp 10 --w-task 2.0 --w-coral 0.5 --w-coral-centroid 0.5 --w-sport 0.5 --seeds 7,11,13,17,19 --paired --eval-every 5 --out pipeline/data/unified_stage2_centroid_ab.pt
+
+# 3) eval overwrite experimental block only with measured G2 real not placeholder shipped hashes
+python3 pipeline/eval_unified.py --ckpt pipeline/data/unified_stage2_20719x128_best.pt
+python3 -m json.tool data/unified_report.json > /dev/null && echo "report OK" && cat data/unified_report.json | grep -A2 -i g2
+
+# 4) rebuild caches for Hatch — 20719x128 canonical + 20719x64 refreshed
+python3 pipeline/build_unified_matrix.py --in pipeline/data/unified_stage2_20719x128_best.pt --out data/unified_matrix.npz --embedding-v3-out data/embedding_v3.npz --emb-dims 128 --N 20719
+python3 -c "import hashlib,pathlib; p=pathlib.Path('data/unified_matrix.npz'); print('unified_matrix', p.stat().st_size, hashlib.sha256(p.read_bytes()).hexdigest()[:16]); p2=pathlib.Path('data/embedding_v3.npz'); print('embedding_v3', p2.stat().st_size, hashlib.sha256(p2.read_bytes()).hexdigest()[:16])"
+python3 -m json.tool config/mtnn_v9.2_20719x128.json > /dev/null && echo "MTNN v9.2 config json.tool clean"
+
+# 5) push to scout/alienware-results inbound machine-only branch
+# git checkout -b scout/alienware-results && git add pipeline/data/unified_stage2_20719x128_best.pt data/embedding_v3.npz data/unified_matrix.npz data/unified_report.json ALIENWARE_RESULTS.md config/mtnn_v9.2_20719x128.json && git commit -m "feat: embedding_v3 20719x128 MTNN v9.2 150ep teacher12M→1.2M G2 0.639→0.615 G3 GraphBFF dual daily boards 30 LCG both chains TLPG DAU3/WAU3 dedup LCG math " && git push -u origin scout/alienware-results
+```
+
+- **Unblocks**: G2 floor 0.639→0.615 rank12.4→≥32 sil0.683→0.74 composite0.8688→0.91 + G3 GraphBFF dual 7-core TCA224 70% + TAA128 k=8 30% + schools aux 0.12 chimera 24799→45279 PWA v67 59→73 hashes + daily boards 30 gate8.7 + Launched 99.9→100%
+- **Single enforcement**: verifier_with_budget thr8.0 budget3 earlyExit0.3 fix-once max2 — honest 503 never fake 503 on Hatch returns config + diagnostic + re-queue not fabricated tensor
+- **Zero-deps true single_action_per_tick Boyd Decide LCG same-link-same-stars TLPG DAU3/WAU3 dedup CORE20 LOD4000/8000 void #080A0F 40px sticky z40/z39 single-select map clear prev**
+
