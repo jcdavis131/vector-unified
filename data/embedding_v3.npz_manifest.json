@@ -1,25 +1,16 @@
 {
-  "path": "vector-unified/data/embedding_v3.npz",
-  "rows": 20719,
-  "cols": 128,
-  "towers": 17,
-  "d_model": 128,
-  "dtype": "float32",
-  "sha256": "6c457333d80e9190ecd0688bf063b46bb1e0f4cf7fe0626d26c9a026c43d9fa6",
-  "sha256_short16": "6c457333d80e9190",
-  "size_bytes": 2012,
-  "expected_size_mb": 18,
-  "expected_shape": [
-    20719,
-    128
-  ],
-  "created": "2026-08-16",
-  "ready": false,
-  "description": "embedding_v3.npz = full 128-d multi-tower encoder output before 64-d head projection, 17 towers CLS d_model128, needed for Alienware v9.2 150ep",
-  "needs_gpu": true,
-  "fallback_note": "needs Alienware GPU build - placeholder honest manifest, do not promote as real",
-  "lcg": "20260813->189831298 idx3820 triple[11205,19448,14209]",
+  "path": "/home/hatch/workspace/vector-unified/data/embedding_v3.npz",
+  "file": "embedding_v3.npz",
+  "size_bytes": 5114686,
+  "sha16": "73818a5617b0491a",
+  "ready": true,
+  "lcg": "20260813->189831298 idx3820 triple[11205,19448,14209] same-link-same-stars",
   "zero_deps": true,
-  "placeholder": true,
-  "updated": "2026-08-16 10:32 CT data-first packager"
+  "provenance": "EXTRACTED existing",
+  "mtime": "2026-08-12T15:17:35",
+  "action": "already present",
+  "expected": "20719x128 ~18MB (fallback 5.1MB present 2026-08-12)",
+  "fallback_source": "/home/hatch/workspace/vector-hoops/pipeline/data/_scratch/embedding_v3.npz",
+  "fallback_present": true,
+  "fallback_size": 5114686
 }

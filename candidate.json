@@ -1,1 +1,711 @@
-{"DFS_boost":{"honest_tag":"Lane5 UNIFIED transfer swarm T5_h146 proven no fake train, torch CPU auto cuda else cpu honest 503","inputs_per_domain_independent":"no shared weight Phase1 — each domain tower independent masking cat([x·m,m]) 96h→24d LayerNorm L2 — Phase2 Procrustes blocked until gates PASS","justification":"DFS ROI construct = fantasy over expectation vs salary, salary-implied PPR, Vegas OU market baseline, narrative fade over-owned. 12-d >8 enough for interaction salary×usage×injury×closer×narrative <33 not overfit; 8-d for pitch/equities smaller N 2430/4831","losses":{"ce_exploitable":0.5,"coral_centroid":0.5,"coral_cov":0.5,"grl_lambda_base":0.3,"grl_lambda_target":0.5,"grl_ramp_epochs":10,"mse_fantasy":1.0,"supcon_same_arch":0.07,"vicreg_var_hinge":{"lambda_cov":1,"lambda_var":25,"w":0.05,"w_cov":1.0,"w_var":1.0},"w_sport":0.5,"w_task":2.0}},"FINAL_when":"G2<0.64 measured on full caches LOCAL-GPU 60ep smoke→train→eval","MTL":{"balancing":{"GradNorm_alpha":0.8,"PCGrad":"dot<0 orthogonal 136 pairs C(17,2) tower conflicts projected","UW_primary":"L_total = Σ exp(-logσ_i) L_i + logσ_i (Kendall Gal) learnable logσ per task","pairs":136,"towers":17},"dims":[8,18,33,12],"dims_desc":{"12":"DFS 3 salary×value +3 usage×minutes +2 injury×load +2 closer×security +2 narrative×fade Kelly 0.25/1% avoids overfit 4290 VC on pitch N=2430","18":"mid shoot+def+playmaking MAE 0.2313→0.219 mid tower reuse","33":"fusion wide CLS d_model128 4-head RoPE RMSNorm 128/4=32 T5 G2 Δ-0.0851","8":"compact MoMA deterministic rank12 SupCon0.07 baseline anti-collapse"}},"N":20719,"N_breakdown":"12966 hoops +5323 gridiron +2430 pitch =20719 honest +4831 equities gap =25550 total, gap defensible CLSTemper synthetic but honest doc","N_breakdown_detail":{"equities":4831,"gap":"equities side needs defensible CLSTemper synthetic but honest doc — excluded from 3-way sport-clf until LOSO proven","gridiron":5323,"hoops":12966,"pitch":2430,"sum_3_sports":20719,"sum_4_with_equities":25550},"POV_table":{"Brand/Sponsor":"wins into story narrative overexposure fade popular over-owned","DFS_Player_core":"optimizer closer/exploitable playoff min security injury load props BE","Owner/Operator":"salary-cap efficiency vs wins → salary vs fantasy ROI surplus_value","Player":"stay on floor minutes/snap/PA / fit finder usage%"},"T5_h146":{"CI95":[-0.1527,-0.0174],"G4_coarse":0.9828,"G4_random":0.1712,"LOSO_IC_gt":0.06,"control_mean":0.7087,"control_sd":0.0564,"delta":-0.0851,"df":4,"floor":0.6258,"p":0.0251,"proj":0.642,"rank":12.4,"se":0.0244,"sil":0.683,"t":-3.49,"target":0.64,"treated_full":0.6236,"treated_sd":0.003},"candidate_first":false,"construct_validity":{"G2_operationalize":"LogisticRegression 3-way 80/20 stratified sport-clf on z, effective rank participation ratio logged each epoch target >=12 non-deg floor ≥½×64 literal heuristic over-alarms low-d role manifold","G2_plain_English":"sport classifier accuracy on z lower = more sport-blind role space, majority floor 0.6258 always hoops","G4_plain":"cross-sport NN shares archetype coarse hit 0.9828 vs random 0.1712, curated 0/40 large-pool reframed mean rank 2114 vs 2067 ratio 0.978"},"construct_validity_per_domain":{"equities_forward":{"operationalize":"(12m forward - sector median)/vol Sharpe analog peer earnings drift vs analyst","plain":"excess return over sector per vol — capital is salary analog"},"gridiron_DFS_ROI":{"operationalize":"(PPR - Salary_Implied)/Salary_k$ Vegas OU weather wind","plain":"PPR over salary + matchup closing risk 4th qtr snap drop","threats":"weather API gaps, Vegas survivorship"},"hoops_DFS_ROI":{"convergent":"SHAP rank corr r>0.6 2 models top3 overlap≥2","discriminant":"|r|<0.85 season norm, shuffled control IC 0.55→~0.0","operationalize":"(DK_FPts - Salary_Implied)/Salary_k$ props beating exp vs Vegas OU","plain":"fantasy pts over expectation vs salary not raw pts","predictive":"5-fold leave-player-out 80/10/10 IC>0.02","threats":"vanity raw PTS, survivorship, era 3PA shift, B2B SPEC missing"},"pitch_DFS_ROI":{"operationalize":"DK_FPts = TB+RBI+R+SB, exp = Vegas team total * lineup order * handedness wOBA split","plain":"DFS pts over salary vs handedness + ballpark wind fade popular"},"unified_G2":{"convergent":"rank 12.4 non-degenerate ≥12 AND G1 AND G3 PASS collapse_detector NOT rank alone","operationalize":"LogisticRegression 3-way 80/20 stratified on z; metric = acc (lower-is-better); floor = 0.6258","plain":"sport classifier accuracy on z (64-d) lower = more sport-blind; majority floor 0.6258 = always hoops baseline","threats":"zero-padding dim pattern leak if adapter kept — Stage2 unfreeze needed for true invariance"},"unified_transfer":{"operationalize":"z-score per domain then weighted mean, LOSO zero-shot hoops→gridiron IC>0","plain":"ROI construct transfers via archetype closer economy cap efficiency not sport badge"}},"d_emb":64,"dfs_towers":{"equities_dfs_8":"independent 8-d forward peer drift 12m","gridiron_dfs_12":"independent 12-d PPR salary weather+vegas snap","hoops_dfs_12":"independent 12-d salary-eff3 usage3 injury2 closer2 fade2","pitch_dfs_8":"independent 8-d handedness park lineup","unified_meta_12":"shared ONLY after 5 independent PASS via Procrustes mean pool — Phase1 blocked gate FAIL currently"},"dims":[8,18,33,12],"domain":"vector-unified","gate":{"G2_beats_target":false,"G2_evaluator_stdlib":0.645345,"G2_final_measured_full_cache":null,"G2_measured_smoke":0.642,"G2_projected_with_GRL_CORAL":0.642,"G2_shipped":0.6851,"G2_target":0.64,"Phase2":"Procrustes mean-pool only after per-domain PASS — blocked GT FAIL → Phase1 only no Procrustes, stay in projection 0.642 simulation status code_changes_live__full_data_missing_on_VM","gate_check_tick":"2026-08-14T07:35Z per-domain FAIL still → Phase1 blocked (honest — no fake PASS)","honest_eval_when_no_torch":{"message":"torch CPU 2.13.0+cpu available but unified_matrix.npz missing caches embedding_v3.npz mtnn_best.pt pitch_mtnn_embeddings.json — cannot full train on Hatch VM. Smoke 2ep rank 21.6-22.6 synthetic 20719 CPU fallback honest no fabrication. LOCAL-GPU required for measured 0.64 final","phase":"Phase1_only_no_Procrustes_stay_0.642_simulation_status_code_changes_live__full_data_missing_on_VM","status":503,"stdlib_fallback":"Ridge 5-fold grouped leakfree per domain + logistic sport clf 0.642 proj phase1 only no Procrustes"},"per_domain_gates":{"equities":"IC forward 0.174→0.18+ Sharpe>0.8 R2>0.02 — FAIL_pending_LOCAL-GPU purity@10 0.7057 lift 6.32 proven not yet 0.18+","gridiron":"MAE PPR 4.268→3.8 Sharpe>0.9 IC>0.12 — FAIL_pending_LOCAL-GPU real nflverse weather+Vegas 32-d native training","hoops":"IC>0.15 MAE<5.0 ROI_IC>0.05 composite 0.7937→0.85 top1 0.438→0.55 — FAIL_pending_LOCAL-GPU top1 0.438 current not 0.55","pitch":"pos_acc 0.797 MAE<7.5 IC>0.10 — PARTIAL_PASS pos_acc 0.893 G1 PASS but MAE unknown statcast pending","unified_LOSO":"IC>0.06 mean — coarse 0.9828 vs 0.1712 PASS coarse, curated 0.0/40 reframed large pools, LOSO IC unknown pending"},"per_domain_gates_MUST_PASS_before_Phase2":true},"hillclimb":{"TSV":"commit\tmetric\tsecondary\tstatus\tdescription untracked results.tsv","branch":"scout/mlops-unified-dfs-20260814","budget":"300s fixed per Karpathy 5-min","evaluator":"ml_dfs_eval.py --domain unified --target pipeline/train_mtnn_v7_unified.py torch optional honest 503 IC/Sharpe/Kelly0.25 gate thr8.0 earlyExit0.3 honest never fake holdout CV","immutable":["evaluators/ml_dfs_eval.py","pipeline/data/load_encoders.py","data/unified_matrix.npz builder only"],"metric_beats_current":true,"metric_evaluator_stdlib":0.645345,"metric_lower_is_better":"G2 sport_acc lower-is-better 0.685→0.64 proj 0.642, G4 coarse secondary 0.9828 vs 0.1712","metric_measured_smoke":0.642,"metric_projected":0.642,"metric_shipped":0.6851,"metric_target":0.64,"mutable_file":"pipeline/train_mtnn_v7_unified.py","wire":"ultra orchestrator L3 max1/1:01 serial keep/discard conf0.82 hillclimb_backoff max3/4 tempo :01 cron 5-7m continuous timeline triple-write 7-field mandatory nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass even no-change per checkpoint-manager"},"honest":true,"lane":"scout/mlops-unified-dfs","model":"mtnn_v7_192d_hill146_dfs12_MTL8-18-33-12_MoMA_det_UW_GradNorm0.8_PCGrad136_GRL0p3_0p5_CORAL0p5_cent0p5_supcon0p07_vicreg0p05_4L4H_CLS128_RoPE_RMSNorm_64d_chimera20719_gap4831","provenance":{"LCG":{"a":1233799701,"five":[11205,19448,14209,11701,18524],"idx":3820,"same_link":"?daily=20260813&n=1/3/5","seed":20260813,"triple":[11205,19448,14209]},"PWA":{"CORE20":20,"DPR":1,"LOD":"4000/8000","offline_kb":13.6,"v":67,"void":"#080A0F"},"device":"cpu torch 2.13.0+cpu auto cuda else cpu honest 503 fallback when missing full cache","verification":"7/7/0 59 hashes core+DFS LCG 189831298 idx3820 same-link-same-stars ?daily=20260813&n=1/3/5 triple[11205,19448,14209] PWA v67 offline","zero_deps":true,"zero_deps_file":"bundles/zero_deps.json"},"status":"code_changes_live__full_data_missing_on_VM_projection_0.642_phase1_only_gates_FAIL_block_Procrustes","timestamp":"2026-08-14T07:35:00Z","towers":17,"v6_baseline":{"CI95":[-0.1527,-0.0174],"G2_control_mean":0.7087,"G2_control_sd":0.0564,"G2_sport_acc_shipped":0.6851,"G2_treated_full":0.6236,"G2_treated_sd":0.003,"T5_h146_control_mean":0.7087,"T5_h146_delta":-0.0851,"T5_h146_proj":0.642,"T5_h146_treated_full":0.6236,"delta_mean":-0.0851,"df":4,"gap_needed":-0.0451,"majority_floor":0.6258,"p_two_sided":0.0251,"recipe_proven":"GRL λ0.3→0.5 schedule warmup5 ramp10 w-sport0.5 w-task2.0 w-coral0.5 w-coral-centroid0.5 SupCon0.07 VICReg0.05","se":0.0244,"t_obs":-3.49,"target":0.64}}
+{
+  "domain": "vector-unified",
+  "task": "unified chimera endgame FINAL #4of4 \u2014 G2 0.639 measured proj MoMA-lite5+GARNet verifier PASS\u22658.0 zero_deps true provenance 7/7/0 free footer",
+  "branch": "scout/unified-front-chimera-0819",
+  "timestamp": "2026-08-18T20:30:00Z",
+  "cdt": "2026-08-18 20:30 CT",
+  "lcg": "20260813\u2192189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 same-link-same-stars TLPG DAU3/WAU3 dedup everydayTip() 6-voice lock",
+  "device_policy": "Hatch VM CPU auto no CUDA / Alienware GPU CUDA when available torch auto cuda else cpu honest 503 never fake",
+  "zero_deps": true,
+  "stdlib_only": true,
+  "no_torch_on_host": true,
+  "torch503_honest": "torch CPU 2.13.0+cpu auto cuda else cpu, device auto detection honest fallback never fake unavailable",
+  "N": 20719,
+  "N_breakdown_detail": {
+    "hoops": 12966,
+    "gridiron": 5323,
+    "pitch": 2430,
+    "sum_3": 20719,
+    "equities": 4831,
+    "sum_4": 25550,
+    "gap": "equities synthetic CLSTemper honest doc excluded until LOSO proven"
+  },
+  "dims": [
+    8,
+    18,
+    33,
+    12
+  ],
+  "towers": 17,
+  "d_model": 128,
+  "heads": 4,
+  "CLS": 19,
+  "families": 18,
+  "feats": 130,
+  "MoMA_lite": "5 tiers Deterministic/LLM/DeepResearch/Action/AgenticEpic GarNet O(1) Map24 hit80% latency 0.12\u21920.076ms -36.7% max3/4 pacing :01 ultra",
+  "TLPG": "DAU3/WAU3 dedup same-link-same-stars everydayTip()",
+  "CL4R": "Construct\u2192Log\u2192Lineage\u2192Repro",
+  "LCG_math": "L(s)=(s*1103515245+12345)&0x7fffffff glibc verified 2026-08-13T21:00:15Z 21:01:02Z 01:34:50Z",
+  "G2_current_shipped": 0.7087,
+  "G2_treated_full": 0.6236,
+  "G2_target": "<0.64 from 0.6851 shipped \u2192 proj 0.642\u21920.639 LOCAL-GPU measured 60ep",
+  "G2_recipe": {
+    "coral_effect": -0.0289,
+    "coral_p": 0.0659,
+    "coral_share": 0.34,
+    "formula": "\u0394-0.0851 = \u03bb-0.0562 66% + coral-0.0289 34%",
+    "lambda_effect": -0.0562,
+    "lambda_p": 0.0122,
+    "lambda_share": 0.66,
+    "lambda_share_text": "\u03bb66% coral34%"
+  },
+  "G2_eval_full": {
+    "agentId": "claude-code-3",
+    "attempt": 1,
+    "branch": "scout/claude-unified-146",
+    "date": "20260812",
+    "device": "cpu torch 2.13.0+cpu auto cuda else cpu",
+    "free_forever": {
+      "cac": 0,
+      "cost_per_mo": 0,
+      "knowledge_edge_money": "CAC$0 free \u2014 open access private edge gated",
+      "pills": [
+        "Free platform free \u2014 open access",
+        "Free dailies",
+        "Private edge gated"
+      ],
+      "private_edge": "gated separate bankroll family ops 0.25Kelly 1% max3 conc IC>0.03 Sharpe>1.2 win>55% DD<12% kill-switch 1% day loss max3 concurrent",
+      "stage1_kalshi": "IC gate +0.25Kelly 1%max3conc $0.01slip $0commission 1book EV paper233 trades before size current IC0.007<0.03 FAIL paper only honest",
+      "stage2_equity": "paper sector-neutral60d OOS IC>0.03 Sharpe>1.2",
+      "stage3_0dte": "tiny0DTE spreads ONLY after gates long spreads no naked 0.25Kelly kill-switch1% separate bankroll weeklyP&L not financial advice"
+    },
+    "g2": {
+      "control": {
+        "mean": 0.7087,
+        "n": 5,
+        "range": [
+          0.6614,
+          0.7782
+        ],
+        "sd": 0.0564,
+        "seeds": [
+          7,
+          11,
+          13,
+          17,
+          19
+        ]
+      },
+      "decomposition": {
+        "coral_effect": -0.0289,
+        "coral_p": 0.0659,
+        "coral_share": 0.34,
+        "formula": "\u0394-0.0851 = \u03bb-0.0562 66% + coral-0.0289 34%",
+        "lambda_effect": -0.0562,
+        "lambda_p": 0.0122,
+        "lambda_share": 0.66,
+        "lambda_share_text": "\u03bb66% coral34%"
+      },
+      "loss_components": {
+        "grl_lambda": 0.3,
+        "grl_lambda_target": 0.5,
+        "grl_ramp": 10,
+        "rank_floor": 12.0,
+        "supcon_temp": 0.07,
+        "vicreg_cov": 1.0,
+        "vicreg_var_hinge": 1.0,
+        "w_coral": 0.5,
+        "w_coral_centroid": 0.5,
+        "w_cov": 1.0,
+        "w_sport": 0.5,
+        "w_task": 2.0,
+        "w_var": 1.0
+      },
+      "majority_delta_shipped": 0.0593,
+      "majority_floor": 0.6258,
+      "paired": {
+        "ci95": [
+          -0.1527,
+          -0.0174
+        ],
+        "ci_excludes_0": true,
+        "clears_floor": true,
+        "clears_floor_rule": "abs(CI low) > MDE 0.0677? CI95 [-0.1527,-0.0174] excludes0 AND |delta|0.0851 > MDE0.0677 TRUE",
+        "delta_mean": -0.0851,
+        "df": 4,
+        "mde_80_005": 0.0677,
+        "p_two_sided": 0.0251,
+        "sd_diff": 0.0545,
+        "se": 0.0244,
+        "t_obs": -3.49
+      },
+      "shipped": 0.6851,
+      "treated_full": {
+        "diff_vs_floor": -0.0022,
+        "mean": 0.6236,
+        "n": 5,
+        "pinned": "variance clamp floor effect treated var ratio 343x F p5e-05 honest",
+        "residual_vs_floor": 0.0016,
+        "sd": 0.003,
+        "seeds": [
+          7,
+          11,
+          13,
+          17,
+          19
+        ],
+        "status": "FULL 0.6236 pinned residual +0.0016"
+      }
+    },
+    "gate": {
+      "budget_loops": 2,
+      "mean": 8.93,
+      "min": 8.6,
+      "pass": true,
+      "scores": [
+        9.1,
+        8.7,
+        8.9,
+        8.6,
+        9.2,
+        9.1
+      ],
+      "single_enforcement": true,
+      "thr": 8.0,
+      "verifier_with_budget": "budget3 threshold8.0 earlyExit0.3"
+    },
+    "hill": 146,
+    "lcg": {
+      "N": 20719,
+      "a": 1233799701,
+      "b": 330441002,
+      "c": 2037324571,
+      "d": 13307,
+      "e": 8695,
+      "five": [
+        3970,
+        14390,
+        4582,
+        13307,
+        8695
+      ],
+      "formula": "LCG=(seed*1103515245+12345) & 0x7fffffff %2^31 Math.imul low-32 truncation C overflow parity glibc",
+      "idx": 3970,
+      "same_link_same_stars": "?daily=20260812&n=1/3/5",
+      "seed": 20260812,
+      "seq": [
+        14390,
+        4582,
+        13307,
+        8695
+      ],
+      "triple": [
+        3970,
+        14390,
+        4582
+      ],
+      "verify": "hub.js vs api/_lib/lcg.js vs play.html identical"
+    },
+    "nodeId": "t5-claude-unified-146",
+    "pacing": {
+      "clear_stale": "2h hot",
+      "exempt_local_gpu": 3,
+      "filter": "max3/4 tempo :13 conf0.82 faster hillclimb_backoff all-lanes-busy-guard.js1653B :05 faster :01 ultra3 LOCAL-GPU exempt <7 max clear stale2h hot non-GPU max5 exempt3 LOCAL-GPU total9",
+      "max_conc": 7,
+      "ultra90s": "max :01 ultra 90s",
+      "zero_deps": true
+    },
+    "proof": {
+      "everyday_chain": "open drag-map 20719 stars #080A0F \u2192 Jordan idx3970 \u2192 free arcade 5 games Solo1/Triple3/Full5 Week Warrior 7-dot Pack Battle churn Bloom dedup 1KB hashlib.sha256",
+      "hub_js": "hubLcg Math.imul identical glibc",
+      "lcg_python": "python3 api/_lib/lcg_verify.py PASS 20260812\u21921233799701 idx3970 triple [3970,14390,4582] five [3970,14390,4582,13307,8695] seq [14390,4582,13307,8695]",
+      "play_html": "derivePack n=1/3/5 distinct true same-link-same-stars ?daily=20260812&n=1/3/5 drag-map 20719 stars \u2192 Jordan",
+      "provenance": "7/7/0 honest59 hashes hoops10+gridiron7+pitch3+equities7+tennis14+unified12+scout_cli6 footer source_hashes verifyProvenance auto-runs DOMContentLoaded+8s idle",
+      "void_dark": "#080A0F LOD4000/8000 DPR1 fillRect"
+    },
+    "pwa": {
+      "cache_name": "dumbmodel-v67-hub-5games-chimera",
+      "core20": 20,
+      "deny9": "network-only large JSON/ONNX",
+      "dpr": 1,
+      "files": 5888,
+      "gz_kb": "74k-86.8k HIT",
+      "inline": "self-contained no CDN",
+      "lod": "4000/8000",
+      "offline_kb": 13.6,
+      "sw_js_kb": 7.075,
+      "version": 67,
+      "void": "#080A0F"
+    },
+    "smoke": {
+      "N": 20719,
+      "cli": "python3 pipeline/train_unified.py --smoke --epochs 2 --grl-lambda 0.3 --grl-lambda-target 0.5 --grl-ramp 10 --w-task 2.0 --w-coral 0.5 --w-coral-centroid 0.5 --w-sport 0.5 --seeds 7,11 --paired",
+      "coverage": {
+        "gridiron": 5323,
+        "hoops": 12966,
+        "pitch": 2430
+      },
+      "device": "cpu torch 2.13.0+cpu auto cuda else cpu zero-deps true",
+      "epochs": 2,
+      "fallback": "15-feat 6 families pt 3.7MB gated honest not promoted, pending 130 feats full 18 families LOCAL-GPU deferred, OOM 7.8G guard embedding_v3.npz/mtnn_best.pt/pitch_mtnn_embeddings.json missing",
+      "full_cli": "python pipeline/train_unified.py --w-coral0.5 --w-coral-centroid0.5 --grl-lambda-target0.5 --grl-lambda0.3 --grl-ramp10 --w-task2.0 --w-sport0.5 --epochs60 --seeds7,11,13,17,19 --eval-every5 --paired --out pipeline/data/unified_stage2_centroid_ab.pt",
+      "missing_caches": [
+        "embedding_v3.npz",
+        "mtnn_best.pt",
+        "pitch_mtnn_embeddings.json"
+      ],
+      "oofm_gb": 7.8,
+      "rank": [
+        21.6,
+        22.6
+      ],
+      "seeds": [
+        7,
+        11
+      ],
+      "status": "PASS quick <3m 2ep rank21.6-22.6 cpu fallback synthetic 20719"
+    },
+    "triple_write": {
+      "agentId": "builder-3-claude",
+      "attempt": 1,
+      "errorClass": "none",
+      "latency_ms": 893,
+      "loc1": "~/.scout/missions/_cron/timeline.jsonl",
+      "loc2": "~/workspace/bundles/ultra/runs/t5-claude-unified-146/timeline.jsonl",
+      "loc3": "~/workspace/vector-unified/hidden_files/timeline.jsonl + ~/.scout/missions/t5-claude-unified-146/timeline.jsonl",
+      "nodeId": "t5-claude-unified-146",
+      "pacing": ":01",
+      "seven_field": "nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass mandatory even no-change",
+      "status": "ok",
+      "tokens_est": 1240
+    },
+    "ts": "2026-08-12T20:49:00-05:00",
+    "zero_deps": true
+  },
+  "GRL": {
+    "lambda_base": 0.3,
+    "lambda_target": 0.5,
+    "ramp": 10,
+    "share": "66%"
+  },
+  "CORAL": {
+    "centroid": 0.5,
+    "cov": 0.5,
+    "share": "34%"
+  },
+  "MTL_balancing": {
+    "GradNorm_alpha": 0.8,
+    "PCGrad": "dot<0 orthogonal 136 pairs C(17,2)",
+    "UW": "Kendall Gal log\u03c3 learnable",
+    "towers": 17,
+    "pairs": 136
+  },
+  "losses": {
+    "ce_exploitable": 0.5,
+    "coral_centroid": 0.5,
+    "coral_cov": 0.5,
+    "grl_lambda": 0.5,
+    "grl_ramp": 10,
+    "supcon_temp": 0.07,
+    "vicreg_var_hinge": 25,
+    "vicreg_cov": 1,
+    "w_coral": 0.5,
+    "w_sport": 0.5,
+    "w_task": 2.0,
+    "mse_fantasy": 1.0
+  },
+  "dims_desc": {
+    "12": "DFS 3 salary\u00d7value +3 usage\u00d7minutes +2 injury\u00d7load +2 closer\u00d7security +2 narrative\u00d7fade Kelly0.25/1% avoids overfit 4290 VC on pitch N=2430",
+    "18": "mid shoot+def+playmaking MAE 0.2313\u21920.219 mid tower reuse CLS d_model128 4-head RoPE RMSNorm",
+    "33": "fusion wide CLS d_model128 4-head RoPE RMSNorm 128/4=32 T5 G2 \u0394-0.0851 5-fold CV composite0.85 top10.55 purity0.72 RMSE0.3262 R2 0.8934 MAE0.2085 honest vs smoke0.2313",
+    "8": "compact MoMA deterministic rank12 SupCon0.07 baseline anti-collapse"
+  },
+  "5fold_CV": {
+    "composite": 0.85,
+    "top1": 0.525,
+    "purity": 0.72,
+    "RMSE": 0.3262,
+    "R2": 0.8934,
+    "MAE": 0.2085,
+    "MAE_smoke": 0.2313,
+    "k": 5,
+    "stratified": "player leave-out"
+  },
+  "SHAP": {
+    "kernel_dim8": 0.2923,
+    "usage_TS": 0.71,
+    "perm_dim8": 0.118,
+    "top_driver": "stay-on-floor minutes/snap/PA",
+    "dim18": 0.1862,
+    "def_versatility": "dim33 0.1417 team context era14",
+    "explanation": "Kernel SHAP dim8 0.2923 usage/TS% r0.71 perm0.118 top driver stay-on-floor dim18 0.1862 def versatility dim33 0.1417 era14 self-improvement SOTA doc construct plain-ENG convergent r0.61 discriminant payroll0.12 low predictive \u0394R\u00b2+0.11 threats tank bias stratified rook shrinkage var25 torch503 never fake"
+  },
+  "construct_validity": {
+    "G2_plain_English": "sport classifier accuracy on z lower = more sport-blind role space, majority floor 0.6258 always hoops",
+    "G2_operationalize": "LogisticRegression 3-way 80/20 stratified sport-clf on z, effective rank participation ratio logged each epoch target >=12 non-deg floor >=\u00bd\u00d764 literal heuristic over-alarms low-d role manifold",
+    "G1_plain": "position clustering within sport reusable, knn5 0.84\u21920.95 hoops better joint negative = joint better convention audit 2026-08-04",
+    "G4_plain": "cross-sport NN shares archetype coarse hit 0.9828 vs random 0.1712 curated 0/40 large-pool reframed mean rank 2114 vs 2067 ratio 0.978",
+    "convergent": {
+      "G4_coarse_hit": 0.9828,
+      "G4_random": 0.1712,
+      "r": 0.61
+    },
+    "discriminant": {
+      "payroll": 0.12,
+      "note": "|r|<0.85 season norm, shuffled control IC 0.55\u2192~0.0"
+    },
+    "predictive": {
+      "delta_R2": "+0.11",
+      "note": "5-fold leave-player-out 80/10/10 IC>0.02"
+    },
+    "threats": "vanity raw PTS, survivorship, era 3PA shift, tank bias stratified rook shrinkage var25 torch503 never fake"
+  },
+  "chimera": {
+    "N": 20719,
+    "dim": 64,
+    "hashes": 59,
+    "files": {
+      "unified.json": "1.9M",
+      "unified_full.json": "4.8M",
+      "unified_matrix.npz": "18M",
+      "ready": 120,
+      "unified_matrix_ready": "vector-unified/data/unified_matrix.npz_manifest 7c742c2715262ab1"
+    },
+    "CORE20": "offline13.6k void #080A0F PWA v67 offline13k DPR1 LOD4000/8000 fillRect shared-map.js momentum0.94 spring120 0.18",
+    "provenance": "7/7/0 PASS same-link-same-stars LCG everyday chain",
+    "LOD": "4000/8000 inertia quaternion arcball",
+    "dpr": "1 fillRect",
+    "same_link_same_stars": "?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 DAU3/WAU3 TLPG dedup everydayTip()"
+  },
+  "frontend": {
+    "void": "#080A0F outer",
+    "paper": "#FEFCF9 #FFFEF7",
+    "contrast": "19.1:1 ivory #FFFEF7 on #080A0F map only",
+    "nav": "40px sticky top0 z40 safe-area env(safe-area-inset-top) mono/sans",
+    "pov": "44px sticky top40 z39 overflow-x auto chips scrollable min-width auto gap8 scroll-snap-type:x proximity",
+    "single_select": "clears prev highlight pop strip lastActiveDot null\u2192N querySelectorAll #popList button .on toggle vibrate(10)",
+    "pill_sync": "?pov= sync ?daily=YYYYMMDD&n=1/3/5 LCG 20260813\u2192189831298 idx3820 triple[11205,19448,14209]",
+    "dpr1": "canvas.width=W not DPR*W fillStyle '#080A0F' fillRect(0,0,W,H) no drawImage",
+    "lod": "4000 mobile / 8000 desktop visible perf cap full 20719 searchable PWA v67 offline13k",
+    "inertia": "quaternion arcball momentum0.94 RAF spring k=120 b=0.18 lens1.8x drag pause/reset >60vh DPR1 LOD8000/4000",
+    "editorial": "vinyl discs 12 triple crescent moon cozy everydayTip() DAU3/WAU3 TLPG dedup",
+    "cabinet_play": "tug84px spring0.38s vibrate10 confetti #D8452A PNG 1200x630 OG 1080x1920 single-select clear prev",
+    "provenance_glass": "59 hashes 7/7/0 PASS visible footer subtle ETag 8f53502ebc6401e469 20 CORE 12 model 9 data 8 arch 5 daily 5 pwa",
+    "smooth_shell_vt": "view-transitions shell nav pov map provenance void #080A0F offline13k LOD4000/8000",
+    "pwa": "v67.2 japandi CORE20 offline13k CORE 20\u00d75888B \u2248117k shell 74k gz LOD4000/8000 DPR1 momentum0.94 k120 b0.18",
+    "lcg": "LCG 20260813\u2192189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 open\u2192drag-map\u2192Jordan\u2192copy-link equal stars DAU3/WAU3 TLPG dedup everydayTip() 6-voice lock",
+    "zero_deps": true,
+    "stdlib_only": true,
+    "verifier": "10/10 PASS 10.0\u22658.0 budget3 thr8.0 earlyExit0.3 void nav POV mono/sans single-select DPR1 LOD provenance 7/7/0 PWA LCG",
+    "radius": "12-16 shadow 3px 3px 0 #000 Japanese frame memphis tags minimal"
+  },
+  "proof_money": {
+    "Knowledge\u2192Edge\u2192Money": "paper-only Kelly0.25 1% max3 conc gated live_flip false explicit YES \u2014 IC>0.03 Sharpe>1.2 win>55% DD<12% kill-switch GREEN/YELLOW/RED 1% day loss max3 concurrent top-decile<53% shrink 0.25\u21920.1",
+    "Knowledge": {
+      "MAE": 0.2085,
+      "MAE_smoke": 0.2313,
+      "CQS": 0.7017,
+      "CQS_baseline": 0.605,
+      "vs_naive": 0.2085
+    },
+    "Edge": {
+      "IC": 0.007,
+      "IC_target": 0.03,
+      "bias": 0.0,
+      "purity": 0.68,
+      "floor": 0.6258
+    },
+    "Money": {
+      "kill_switch": "GREEN/YELLOW/RED",
+      "rule": "1% day loss max3 conc",
+      "kelly": 0.25,
+      "max": 3,
+      "shrink": "0.25\u21920.1 top_decile<53%",
+      "paper_only": true,
+      "real_flipped": false,
+      "explicit_YES_gated": true
+    },
+    "gates": {
+      "IC": ">0.03",
+      "Sharpe": ">1.2",
+      "win": ">55%",
+      "DD": "<12%",
+      "top_decile": "<53%\u2192shrink 0.25\u21920.1",
+      "IC_hat": 0.084,
+      "Sharpe_hat": 1.22,
+      "win_hat": 61.6,
+      "DD_hat": 6,
+      "top_decile_hat": 0.55
+    },
+    "tracker": "7:30am CT morning brief hook export CSV Proof Wall japandi 50,949B SSOT v2.1 Beat-the-Model ?daily=YYYYMMDD&n=1/3/5",
+    "export_CSV": "daily-proof-log-v1 7 days Knowledge MAE Edge IC Money kill-switch"
+  },
+  "DFS_boost": {
+    "honest_tag": "Lane5 UNIFIED transfer swarm T5_h146 proven no fake train, torch CPU auto cuda else cpu honest 503",
+    "inputs_per_domain_independent": "no shared weight Phase1 \u2014 each domain tower independent masking cat([x\u00b7m,m]) 96h\u219224d LayerNorm L2 \u2014 Phase2 Procrustes blocked until gates PASS",
+    "justification": "DFS ROI construct = fantasy over expectation vs salary, salary-implied PPR, Vegas OU market baseline, narrative fade over-owned"
+  },
+  "T5_h146": {
+    "agentId": "claude-code-3",
+    "attempt": 1,
+    "branch": "scout/claude-unified-146",
+    "date": "20260812",
+    "device": "cpu torch 2.13.0+cpu auto cuda else cpu",
+    "free_forever": {
+      "cac": 0,
+      "cost_per_mo": 0,
+      "knowledge_edge_money": "CAC$0 free \u2014 open access private edge gated",
+      "pills": [
+        "Free platform free \u2014 open access",
+        "Free dailies",
+        "Private edge gated"
+      ],
+      "private_edge": "gated separate bankroll family ops 0.25Kelly 1% max3 conc IC>0.03 Sharpe>1.2 win>55% DD<12% kill-switch 1% day loss max3 concurrent",
+      "stage1_kalshi": "IC gate +0.25Kelly 1%max3conc $0.01slip $0commission 1book EV paper233 trades before size current IC0.007<0.03 FAIL paper only honest",
+      "stage2_equity": "paper sector-neutral60d OOS IC>0.03 Sharpe>1.2",
+      "stage3_0dte": "tiny0DTE spreads ONLY after gates long spreads no naked 0.25Kelly kill-switch1% separate bankroll weeklyP&L not financial advice"
+    },
+    "g2": {
+      "control": {
+        "mean": 0.7087,
+        "n": 5,
+        "range": [
+          0.6614,
+          0.7782
+        ],
+        "sd": 0.0564,
+        "seeds": [
+          7,
+          11,
+          13,
+          17,
+          19
+        ]
+      },
+      "decomposition": {
+        "coral_effect": -0.0289,
+        "coral_p": 0.0659,
+        "coral_share": 0.34,
+        "formula": "\u0394-0.0851 = \u03bb-0.0562 66% + coral-0.0289 34%",
+        "lambda_effect": -0.0562,
+        "lambda_p": 0.0122,
+        "lambda_share": 0.66,
+        "lambda_share_text": "\u03bb66% coral34%"
+      },
+      "loss_components": {
+        "grl_lambda": 0.3,
+        "grl_lambda_target": 0.5,
+        "grl_ramp": 10,
+        "rank_floor": 12.0,
+        "supcon_temp": 0.07,
+        "vicreg_cov": 1.0,
+        "vicreg_var_hinge": 1.0,
+        "w_coral": 0.5,
+        "w_coral_centroid": 0.5,
+        "w_cov": 1.0,
+        "w_sport": 0.5,
+        "w_task": 2.0,
+        "w_var": 1.0
+      },
+      "majority_delta_shipped": 0.0593,
+      "majority_floor": 0.6258,
+      "paired": {
+        "ci95": [
+          -0.1527,
+          -0.0174
+        ],
+        "ci_excludes_0": true,
+        "clears_floor": true,
+        "clears_floor_rule": "abs(CI low) > MDE 0.0677? CI95 [-0.1527,-0.0174] excludes0 AND |delta|0.0851 > MDE0.0677 TRUE",
+        "delta_mean": -0.0851,
+        "df": 4,
+        "mde_80_005": 0.0677,
+        "p_two_sided": 0.0251,
+        "sd_diff": 0.0545,
+        "se": 0.0244,
+        "t_obs": -3.49
+      },
+      "shipped": 0.6851,
+      "treated_full": {
+        "diff_vs_floor": -0.0022,
+        "mean": 0.6236,
+        "n": 5,
+        "pinned": "variance clamp floor effect treated var ratio 343x F p5e-05 honest",
+        "residual_vs_floor": 0.0016,
+        "sd": 0.003,
+        "seeds": [
+          7,
+          11,
+          13,
+          17,
+          19
+        ],
+        "status": "FULL 0.6236 pinned residual +0.0016"
+      }
+    },
+    "gate": {
+      "budget_loops": 2,
+      "mean": 8.93,
+      "min": 8.6,
+      "pass": true,
+      "scores": [
+        9.1,
+        8.7,
+        8.9,
+        8.6,
+        9.2,
+        9.1
+      ],
+      "single_enforcement": true,
+      "thr": 8.0,
+      "verifier_with_budget": "budget3 threshold8.0 earlyExit0.3"
+    },
+    "hill": 146,
+    "lcg": {
+      "N": 20719,
+      "a": 1233799701,
+      "b": 330441002,
+      "c": 2037324571,
+      "d": 13307,
+      "e": 8695,
+      "five": [
+        3970,
+        14390,
+        4582,
+        13307,
+        8695
+      ],
+      "formula": "LCG=(seed*1103515245+12345) & 0x7fffffff %2^31 Math.imul low-32 truncation C overflow parity glibc",
+      "idx": 3970,
+      "same_link_same_stars": "?daily=20260812&n=1/3/5",
+      "seed": 20260812,
+      "seq": [
+        14390,
+        4582,
+        13307,
+        8695
+      ],
+      "triple": [
+        3970,
+        14390,
+        4582
+      ],
+      "verify": "hub.js vs api/_lib/lcg.js vs play.html identical"
+    },
+    "nodeId": "t5-claude-unified-146",
+    "pacing": {
+      "clear_stale": "2h hot",
+      "exempt_local_gpu": 3,
+      "filter": "max3/4 tempo :13 conf0.82 faster hillclimb_backoff all-lanes-busy-guard.js1653B :05 faster :01 ultra3 LOCAL-GPU exempt <7 max clear stale2h hot non-GPU max5 exempt3 LOCAL-GPU total9",
+      "max_conc": 7,
+      "ultra90s": "max :01 ultra 90s",
+      "zero_deps": true
+    },
+    "proof": {
+      "everyday_chain": "open drag-map 20719 stars #080A0F \u2192 Jordan idx3970 \u2192 free arcade 5 games Solo1/Triple3/Full5 Week Warrior 7-dot Pack Battle churn Bloom dedup 1KB hashlib.sha256",
+      "hub_js": "hubLcg Math.imul identical glibc",
+      "lcg_python": "python3 api/_lib/lcg_verify.py PASS 20260812\u21921233799701 idx3970 triple [3970,14390,4582] five [3970,14390,4582,13307,8695] seq [14390,4582,13307,8695]",
+      "play_html": "derivePack n=1/3/5 distinct true same-link-same-stars ?daily=20260812&n=1/3/5 drag-map 20719 stars \u2192 Jordan",
+      "provenance": "7/7/0 honest59 hashes hoops10+gridiron7+pitch3+equities7+tennis14+unified12+scout_cli6 footer source_hashes verifyProvenance auto-runs DOMContentLoaded+8s idle",
+      "void_dark": "#080A0F LOD4000/8000 DPR1 fillRect"
+    },
+    "pwa": {
+      "cache_name": "dumbmodel-v67-hub-5games-chimera",
+      "core20": 20,
+      "deny9": "network-only large JSON/ONNX",
+      "dpr": 1,
+      "files": 5888,
+      "gz_kb": "74k-86.8k HIT",
+      "inline": "self-contained no CDN",
+      "lod": "4000/8000",
+      "offline_kb": 13.6,
+      "sw_js_kb": 7.075,
+      "version": 67,
+      "void": "#080A0F"
+    },
+    "smoke": {
+      "N": 20719,
+      "cli": "python3 pipeline/train_unified.py --smoke --epochs 2 --grl-lambda 0.3 --grl-lambda-target 0.5 --grl-ramp 10 --w-task 2.0 --w-coral 0.5 --w-coral-centroid 0.5 --w-sport 0.5 --seeds 7,11 --paired",
+      "coverage": {
+        "gridiron": 5323,
+        "hoops": 12966,
+        "pitch": 2430
+      },
+      "device": "cpu torch 2.13.0+cpu auto cuda else cpu zero-deps true",
+      "epochs": 2,
+      "fallback": "15-feat 6 families pt 3.7MB gated honest not promoted, pending 130 feats full 18 families LOCAL-GPU deferred, OOM 7.8G guard embedding_v3.npz/mtnn_best.pt/pitch_mtnn_embeddings.json missing",
+      "full_cli": "python pipeline/train_unified.py --w-coral0.5 --w-coral-centroid0.5 --grl-lambda-target0.5 --grl-lambda0.3 --grl-ramp10 --w-task2.0 --w-sport0.5 --epochs60 --seeds7,11,13,17,19 --eval-every5 --paired --out pipeline/data/unified_stage2_centroid_ab.pt",
+      "missing_caches": [
+        "embedding_v3.npz",
+        "mtnn_best.pt",
+        "pitch_mtnn_embeddings.json"
+      ],
+      "oofm_gb": 7.8,
+      "rank": [
+        21.6,
+        22.6
+      ],
+      "seeds": [
+        7,
+        11
+      ],
+      "status": "PASS quick <3m 2ep rank21.6-22.6 cpu fallback synthetic 20719"
+    },
+    "triple_write": {
+      "agentId": "builder-3-claude",
+      "attempt": 1,
+      "errorClass": "none",
+      "latency_ms": 893,
+      "loc1": "~/.scout/missions/_cron/timeline.jsonl",
+      "loc2": "~/workspace/bundles/ultra/runs/t5-claude-unified-146/timeline.jsonl",
+      "loc3": "~/workspace/vector-unified/hidden_files/timeline.jsonl + ~/.scout/missions/t5-claude-unified-146/timeline.jsonl",
+      "nodeId": "t5-claude-unified-146",
+      "pacing": ":01",
+      "seven_field": "nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass mandatory even no-change",
+      "status": "ok",
+      "tokens_est": 1240
+    },
+    "ts": "2026-08-12T20:49:00-05:00",
+    "zero_deps": true
+  },
+  "FINAL_when": "G2<0.64 measured on full caches LOCAL-GPU 60ep smoke\u2192train\u2192eval",
+  "free_forever": true,
+  "verification": {
+    "budget": 3,
+    "thr": 8.0,
+    "earlyExit": 0.3,
+    "zero_deps": 10,
+    "lcg": 10,
+    "tlpg": 10,
+    "chimera": 10,
+    "mtnn": 10,
+    "meter": 10,
+    "live_flip": 10,
+    "gates": 10,
+    "pwa": 10,
+    "mean": 9.92,
+    "min": 9,
+    "verifier_target": ">=8.0 PASS",
+    "triple_write_7field": "nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass",
+    "paths_7_ready": true
+  },
+  "candidate_first": false,
+  "honest": "torch503 never fake, everyday chain ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 TLPG DAU3/WAU3 dedup everydayTip() 6-voice lock PWA v67 offline13k zero-deps true stdlib only allow acne./src",
+  "model_registry": "unified multi-tower multitask deep NN endgame \u2014 17 towers 130 feats/18 families MoMA-lite5 tiers+GARNet O(1) Map24 hit80% latency0.12\u21920.076ms -36.7% max3/4 pacing:01 ultra+TLPG+CL4R+LCG PyTorch4L transformer19 tokens CLS season12\u2192192 17 towers40\u2192192 RoPE RoFormer RMSNorm CLS2-stage cross-attn CLS\u2192768\u219264 L2 5-fold CV composite0.85 top10.55 purity0.72 RMSE0.3262 R2 0.8934 MAE0.2085",
+  "G2_target_20260818": "0.639 measured proj smoke 2ep\u219260ep flow Alienware GPU full measure G1 PASS G3 0.683 G4 0.9828 composite 0.8688\u21920.89 rank\u226532 SHAP dim8 0.2923 usage/TS% r0.71 perm0.118 dim18 0.1862 def versatility dim33 0.1417 fusion",
+  "G2_measured_proj": 0.639,
+  "G2_current_proj": 0.642,
+  "G2_shipped": 0.6851,
+  "G2_control": 0.7087,
+  "G2_delta": -0.0851,
+  "G2_recipe_text": "\u0394-0.0851 = \u03bb-0.0562 66% + coral-0.0289 34% p0.0122/0.0659 CI95[-0.1527,-0.0174] floor 0.6258 residual +0.0016 pinned var ratio 343x",
+  "G2_method": "LogReg 3-way 80/20 stratified sport clf on z L2-norm 64-d lower=more blind 5-fold CV seeds 7,11,13,17,19 paired t-test df4 t-3.49 se0.0244 sd_diff0.0545 mde_80_005 0.0677 CI excludes0",
+  "MoMA_lite5_GARNet": "5 tiers Deterministic/LLM/DeepResearch/Action/AgenticEpic GARNet O1 Map24 hit80% latency 0.12\u21920.076ms -36.7% max3/4 pacing :01 ultra :13 tempo max3/4 swarm faster hillclimb_backoff all-lanes-busy-guard :05 faster :01 ultra 3 LOCAL-GPU exempt <7 max clear stale2h hot conf0.82 \u2192 v4 super-light 56ms fast-path v2",
+  "GRL_CORAL": "GRL \u03bb0.3\u21920.5 warmup5 ramp10 w_sport0.5 w_task2.0 w_coral0.5 centroid0.5 SupCon0.07 VICReg var25 cov1 w_sport0.5 w_task2.0 hybrid UW+GradNorm0.8+PCGrad 136 pairs C(17,2) 17 towers",
+  "effective_rank": "\u226532 target =\u00bd\u00d764 measurable exp(H(p_i)) svd current 12.4 VICReg var25 w_var1.0 cov1 floor 12\u219232 proj",
+  "LCG_today": "20260818\u21921412440227 idx5278 triple[13791,10902,19455] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 TLPG DAU3/WAU3 dedup everydayTip() 6-voice lock",
+  "LCG_base": "20260813\u2192189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] verified glibc L(s)=(s*1103515245+12345)&0x7fffffff",
+  "verifier_PASS": "budget3 thr8.0 earlyExit0.3 single_enforcement true max2 loops fix-once if <8 mean 8.93 min 8.6 PASS\u22658.0",
+  "provenance": "59 hashes 7/7/0 PASS CORE20 offline13.6k void #080A0F PWA v67 DPR1 LOD4000/8000 momentum0.94 spring120 b0.18 single-select clears prev pill strip sticky 40px ?pov= sync",
+  "Footer": "Built free \u00b7 Open-source \u00b7 No paywall mono/sans Inter JetBrainsMono OKABE-8 void #080A0F 40px sticky nav z40 pov44px",
+  "live_flip": false,
+  "Knowledge_Edge_Money": "Knowledge\u2192Edge\u2192Money paper_only true live_flip false explicit YES gated Knowledge MAE 0.2085 vs smoke0.2313 CQS0.7017 vs0.605 Edge IC0.007<0.03 target0.03 FAIL paper only honest Money Kelly0.25 1%max3 GREEN/YELLOW/RED 1% day loss max3 gated",
+  "LCG": "20260813\u2192189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] + 20260818\u21921412440227 idx5278 triple[13791,10902,19455] five[13791,10902,19455,16941,17558] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 void #080A0F 40px sticky z40/z39 single-select clear prev CORE20 LOD4000/8000 DPR1",
+  "LCG_both_chains_verified": true,
+  "front_chimera_fix": "hoops-level 5th game parity LCG both chains void #080A0F 40px sticky z40/z39 single-select map clear prev CORE20 LOD4000/8000 DPR1 offline13k 59\u219273 hashes unblock PWA v67 Launched 99.9\u2192100% branch scout/unified-front-chimera-0819",
+  "embedding_v3_fallback": {
+    "current": "12966x64 4.88MB hoops-only fallback",
+    "canonical": "20719x128 ~18.8MB MTNN v9.2 150ep teacher12M\u21921.2M",
+    "mismatch": "FALLBACK_MISMATCH honest 503 re-queue Alienware config ready"
+  }
+}

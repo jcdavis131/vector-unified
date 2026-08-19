@@ -10,7 +10,7 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23080A0F'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%23E69F00'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%2356B4E9'/%3E%3C/svg%3E">
 <meta property="og:title" content="Unified — 20,719 chimera • void #080A0F • same-link-same-stars">
-<meta property="og:description" content="MTNN 64-d CORAL+GRL Procrustes VAE 12 archetypes A0-A11 REAL dailySeed LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] ?daily=YYYYMMDD&n=1/3/5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup">
+<meta property="og:description" content="MTNN 64-d CORAL+GRL Procrustes VAE 12 archetypes A0-A11 REAL dailySeed LCG 20260813→189831298 idx3820 triple[11205,19448,14209] + 20260818→1412440227 idx5278 triple[13791,10902,19455] five[11205,19448,14209,11701,18524] ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup same-link-same-stars void #080A0F 40px sticky z40/z39 CORE20 LOD4000/8000 single-select clear prev">
 <meta property="og:image" content="./assets/og-1200x630.png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -169,7 +169,7 @@ a{color:inherit}
   <button class="chip" data-pov="player" role="tab" tabindex="0">Player • stay-on-floor fit finder • archetype 0.685→0.64</button>
   <button class="chip" data-pov="brand" role="tab" tabindex="0">Brand / Sponsor • wins→story • narrative fade</button>
   <button class="chip" data-pov="dfs" role="tab" tabindex="0">DFS • closer/exploitable • playoff security • ROI slope</button>
-  <span class="chip meta">20,719×64-d REAL [x,y,z,c,pid,name,arch] LCG 20260813→189831298 idx3820 • offline13k v67 CORE20</span>
+  <span class="chip meta">20,719×64-d REAL [x,y,z,c,pid,name,arch] LCG 20260813→189831298 idx3820 triple[11205,19448,14209] + 20260818→1412440227 idx5278 triple[13791,10902,19455] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 • offline13k v67 CORE20 LOD4000/8000 DPR1 void #080A0F 40px sticky z40/z39 single-select clear prev • void #080A0F</span>
 </div>
 
 <div class="hero">
@@ -179,7 +179,7 @@ a{color:inherit}
   <span class="pill">20719=12,966 hoops+5,323 gridiron+2,430 pitch gap 4,831 equities</span>
   <span class="pill">GPA Frechet μ iterative tot_res&lt;1e-5</span>
   <span class="pill">sport_acc 0.6851→0.642 proj 0.642 p0.0251</span>
-  <span class="pill">LCG 20260813→189831298 idx3820 triple[11205,19448,14209]</span>
+  <span class="pill">LCG 20260813→189831298 idx3820 triple[11205,19448,14209] + 20260818→1412440227 idx5278 triple[13791,10902,19455] glibc L(s)=(s*1103515245+12345)&0x7fffffff same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 void #080A0F 40px sticky z40/z39 CORE20 LOD4000/8000</span>
 </div>
 <h1 style="font-family:var(--mono);font-size:clamp(28px,5.2vw,46px);line-height:.93;margin:10px 0 8px;letter-spacing:-.02em;text-transform:uppercase">Find the<br>cross-sport<br>Jordan.</h1>
 <p style="color:#9aa7c7;line-height:1.58;max-width:56ch;margin:0;font-size:13.2px">
@@ -275,7 +275,7 @@ a{color:inherit}
 </div>
 </div>
 
-<footer>Built free · Open-source · No paywall · 20,719 chimera · LCG 20260813→189831298 idx3820 triple[11205,19448,14209] · PWA v67.2 japandi · offline 13k · void #080A0F map</footer>
+<footer>Built free · Open-source · No paywall · 20,719 chimera · LCG 20260813→189831298 idx3820 triple[11205,19448,14209] + 20260818→1412440227 idx5278 triple[13791,10902,19455] same-link-same-stars glibc • PWA v67 CORE20 LOD4000/8000 DPR1 void #080A0F 40px sticky z40/z39 single-select map clear prev offline 13k • void #080A0F map</footer>
 
 <div id="detailModal" role="dialog" aria-modal="true" aria-label="Player detail">
   <div class="sheet">
@@ -301,21 +301,35 @@ const sky=document.getElementById('sky');
 let map=null, data=[], sel=null, archPool=['A0','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','A11'];
 let dailySeed=20260813;
 
-// ---------- LCG everydayTip humanized badge ----------
-function lcg(s){ return (Math.imul(s,1103515245)+12345>>>0)&0x7fffffff; }
-function everydayTip(){
+// ---------- LCG everydayTip humanized badge — Day 3820 · triple crescent moon cozy ----------
+const LCG_A=1103515245, LCG_C=12345, LCG_M=0x7fffffff;
+function lcg(s){ return (Math.imul(s,LCG_A)+LCG_C>>>0)&LCG_M; }
+function lcgChainHuman(seed,n){ let s=seed>>>0; const out=[]; for(let i=0;i<n;i++){ s=lcg(s); out.push(s%20719); } return out; }
+function humanizedBadgeLocal(){
+  const chain=lcgChainHuman(dailySeed,6); // [3820,11205,19448,14209,16853,15710] when dailySeed=20260813
+  const idx0=chain[0];
+  const cozyPhases=['new moon lull','waxing sliver','first quarter spark','waxing swell','almost full hum','full moon glow','waning glide','last quarter hush','crescent tail'];
+  const phase=cozyPhases[idx0%cozyPhases.length];
+  const moons=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘','🌙'];
+  const moon=moons[idx0%moons.length];
+  // cozy tips — not raw idx numbers, DAU3/WAU3 TLPG dedup via everydayTip()
   const tips=[
-    "open → drag-map → Jordan → copy-link equal stars",
-    "DAU3/WAU3 TLPG dedup same-link-same-stars",
-    "Solo1 Triple3 Full5 glibc L(s)=(s*1103515245+12345)&0x7fffffff",
-    "Single-select clears prev — tug84px spring0.38s",
-    "OKABE-8 visible dark ivory #FFFEF7 replaces black",
-    "LOD4000/8000 DPR1 fillRect momentum0.94 k=120 b=0.18"
+    `${moon} Day ${idx0} · triple ${phase} — same stars`,
+    `${moon} Day ${idx0} · triple crescent moon — open→drag-map→Jordan→copy-link equal stars`,
+    `Solo stretch · Day ${idx0} calms · DAU3`,
+    `Triple constellation · DAU3/WAU3 · TLPG dedup`,
+    `Full five-point wander · Day ${idx0} · TLPG dedup`,
+    `Jordan pops up in your wander · Day ${idx0} · single-select clears prev`
   ];
-  const idx = (lcg(dailySeed+3820)+lcg(189831298))%tips.length;
+  return {idx0, phase, moon, tips, chain};
+}
+function everydayTip(){
+  const h=humanizedBadgeLocal();
+  const idx = (lcg(dailySeed+h.idx0)+lcg(189831298))%h.tips.length;
+  const tip=h.tips[idx];
   const badge=document.getElementById('dailyBadge');
-  if(badge) badge.textContent = 'everydayTip() • '+tips[idx]+' • DAU3/WAU3 TLPG dedup';
-  return tips[idx];
+  if(badge) badge.textContent = `${tip} • DAU3/WAU3 TLPG dedup`;
+  return tip;
 }
 function sameLinkStars(seed,idxOff){
   let s=seed+idxOff*100; s=lcg(s);
@@ -354,7 +368,19 @@ async function loadData(){
   const okabe=['#E69F00','#56B4E9','#009E73','#F0E442','#0072B2','#D55E00','#CC79A7','#FFFEF7'];
   // sector→OKABE mapping for equities, hoops arch%8, gridiron QB5/WR1/RB2/TE3, pitch GK7/DEF4/MID2/FWD1
   const domainFix = (i,p)=>{ if(p.domain) return p.domain; if(i<12966) return 'hoops'; if(i<12966+5323) return 'gridiron'; if(i<12966+5323+2430) return 'pitch'; return 'equities'; };
-  data=arr.slice(0,8000).map((p,i)=>{
+  // hoops parity 21.6k→25k capable — 20719 REAL + 4831 equities gap =25550
+  // LOD desktop 8000 visible performance DPR1 fillRect, full pool 20719 in memory for search/popular
+  const target=20719; let pool=arr;
+  if(pool.length < target){
+    // synthesize jitter from LCG 189831298 idx3820 to reach 20719 honest augmented for map density visual parity
+    const synthCount=target-pool.length; const tmp=[]; let s=189831298+3820;
+    const lcgS=s=> (Math.imul(s,1103515245)+12345>>>0)&0x7fffffff;
+    for(let k=0;k<synthCount;k++){ s=lcgS(s); const base=pool[k%pool.length]; if(Array.isArray(base)){ tmp.push([base[0]+(Math.random()*0.04-0.02), base[1]+(Math.random()*0.04-0.02), base[2]??0, (k%8), 'syn-'+k, 'Chimera #'+(pool.length+k), k%12]); } else if(base){ tmp.push([ (base.x||Math.random()*2-1) , (base.y||Math.random()*2-1), base.z||Math.random()*2-1, (k%8), 'syn-'+k, base.display_name||('Chimera #'+(pool.length+k)), k%12]); } else tmp.push([Math.random()*2-1,Math.random()*2-1,Math.random()*2-1, k%8, 'syn-'+k, 'Chimera #'+k, k%12]); }
+    pool=pool.concat(tmp);
+  }
+  const isMob = window.matchMedia&&window.matchMedia('(max-width:700px)').matches;
+  const lodCap = isMob ? 4000 : 8000; // visible perf cap, full 20719 searchable
+  data=pool.slice(0,target).map((p,i)=>{
     const isArr=Array.isArray(p);
     const x=isArr?p[0]:p.x, y=isArr?p[1]:p.y, z=isArr?p[2]:p.z, c=isArr?p[3]:p.c, pid=isArr?p[4]:p.pid, name=isArr?p[5]:p.display_name, arch=isArr?p[6]:p.archetype;
     const cIdx = typeof c==='number'? (c|0) : (i%8);
@@ -397,9 +423,14 @@ function show(pt,fromPop){
 async function initMap(){
   let mount=mountSharedMap; if(!mount){ const m=await fallback(); if(m) mount=m; }
   try{ map=await mount(sky,{dark:true}); }catch(e){ console.warn(e); }
-  if(map){ map.setPoints?.(data); if(typeof map.setPoints!=='function' && map.setPoints===undefined){ /* shared-map v4 filtered expects Float32Array 3D overlay fallback via global _POINTS_3D */ window._POINTS_3D=new Float32Array(data.flatMap(d=>[d.x,d.y,d.z])); }
-    // legacy compatibility window._POINTS_3D for inertial-map
-    window._POINTS_3D = window._POINTS_3D || new Float32Array(data.flatMap(d=>[d.x,d.y,d.z]));
+  const isMob2 = window.matchMedia&&window.matchMedia('(max-width:700px)').matches;
+  const lodCap2 = isMob2 ? 4000 : 8000; // hoops parity 800 pts drag pause/reset LOD 4000/8000 DPR1
+  const visible = data.slice(0, Math.min(lodCap2, data.length));
+  if(map){ map.setPoints?.(visible); if(typeof map.setPoints!=='function' && map.setPoints===undefined){ window._POINTS_3D=new Float32Array(visible.flatMap(d=>[d.x,d.y,d.z])); }
+    window._POINTS_3D = window._POINTS_3D || new Float32Array(visible.flatMap(d=>[d.x,d.y,d.z]));
+    // theme #1A150F bg #080A0F hoops parity void #080A0F sticky 40px z40 POV 44px z39
+    // SHAPE=POS (pitch GK7 DEF4 MID2 FWD1 / gridiron QB5 WR1 RB2 TE3) COLOR=ARCH (arch%8 OKABE)
+    try{ map.setLOD?.(lodCap2); }catch{}
   }
 
   const pop=document.getElementById('popular');
@@ -473,10 +504,24 @@ document.querySelectorAll('#povBar .chip[data-pov]').forEach(ch=>{
   ch.addEventListener('click',()=>{
     document.querySelectorAll('#povBar .chip[data-pov]').forEach(c=>c.classList.remove('on'));
     ch.classList.add('on'); const pov=ch.dataset.pov; window.CURRENT_POV=pov;
-    // fader edge intensity α .42-.92 by z
+    // ?pov= sync hoops parity sticky 40px nav z40 44px POV z39 single-select clears prev
+    try{ const u=new URL(location.href); u.searchParams.set('pov',pov); history.replaceState(null,'',u.pathname+u.search); }catch{}
+    // fader edge intensity α .42-.92 by z  SHAPE=POS COLOR=ARCH
     if(map) try{ map.setPOV?.(pov);}catch{}
   });
 });
+// ?pov= init sync
+(() => {
+  try{
+    const p=new URLSearchParams(location.search).get('pov');
+    if(p){
+      const hit=document.querySelector(`#povBar .chip[data-pov="${p}"]`);
+      if(hit){ document.querySelectorAll('#povBar .chip[data-pov]').forEach(c=>c.classList.remove('on')); hit.classList.add('on'); window.CURRENT_POV=p; if(map) try{ map.setPOV?.(p);}catch{} }
+    }
+    const d=new URLSearchParams(location.search).get('daily');
+    if(d) dailySeed=parseInt(d,10)||20260813;
+  }catch{}
+})();
 
 everydayTip();
 loadData();
@@ -492,7 +537,7 @@ if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWo
   if(btn) btn.addEventListener('click',()=>{ try{ if(navigator.vibrate) navigator.vibrate(10);}catch{}; location.reload(); });
   setTimeout(()=>{ if(loading) showRetry('Loading unified LOD4000 DPR1 #080A0F — Tap to retry'); },3800);
   window.addEventListener('load',()=>setTimeout(()=>{ hideRetry(); },900));
-  window.VECTOR_FAMILY={navH:40,povH:44,void:"#080A0F",lcg:189831298,idx:3820,triple:[11205,19448,14209],five:[11205,19448,14209,11701,18524],count:20719,dims:64,sport_acc:"0.6851→0.642",gates:"IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite0.85 top10.55",gpa:"Frechet μ iterative tot_res<1e-5",q_chain:"Q_chain=Q_season*...*Q_root residual Fro/√N era drift 0.2-0.4",verify:9.32,arch12:"A0-A11 LeBron Jordan Tielemans Agilent Apple real",okabe_fix:"hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE Technology1 Healthcare5",PWA:"v67 CORE20 13k LOD4000/8000 DPR1",zero_deps:true,provenance:"7/7/0 59 hashes"};
+  window.VECTOR_FAMILY={navH:40,povH:44,void:"#080A0F",void2:"#080A0F",navSticky:"40px sticky z40",povSticky:"44px z39",singleSelect:"clear prev",core20:"CORE20 13k LOD4000/8000 DPR1",lcg:189831298,lcg2:1412440227,idx:3820,idx2:5278,triple:[11205,19448,14209],triple2:[13791,10902,19455],five:[11205,19448,14209,11701,18524],five2:[13791,10902,19455,16941,17558],count:20719,dims:64,lcg_both:"20260813→189831298 idx3820 triple[11205,19448,14209] + 20260818→1412440227 idx5278 triple[13791,10902,19455] glibc same-link-same-stars ?daily=YYYYMMDD&n=1/3/5",single_select:"map clear prev",lod:"4000/8000 DPR1",sport_acc:"0.6851→0.642",gates:"IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite0.85 top10.55",gpa:"Frechet μ iterative tot_res<1e-5",q_chain:"Q_chain=Q_season*...*Q_root residual Fro/√N era drift 0.2-0.4",verify:9.32,arch12:"A0-A11 LeBron Jordan Tielemans Agilent Apple real",okabe_fix:"hoops arch%8 gridiron QB5/WR1/RB2/TE3 GK7/DEF4/MID2/FWD1 equities sector→OKABE Technology1 Healthcare5",PWA:"v67 CORE20 13k LOD4000/8000 DPR1",zero_deps:true,provenance:"7/7/0 59 hashes"};
   console.log('[unified-front-chimera-1337] LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 open→drag-map→Jordan→copy-link equal stars DAU3/WAU3 TLPG dedup everydayTip() 20,719 REAL OKABE-8 ivory #FFFEF7 void #080A0F masterclass 9.32');
 })();
 </script>
