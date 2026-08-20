@@ -1,35 +1,44 @@
-/* Vector Unified site-nav — mirrors hoops shell, brand VECTOR UNIFIED */
+/* Shared top navigation — mount on <nav class="site-nav" data-active="/path"> */
 (function (global) {
   'use strict';
+
   var LINKS = [
-    { href: '/index.html', label: 'Void', title: '20,719 stars void — chimera daily LCG' },
-    { href: '/play.html', label: 'Play', title: 'Chimera daily: guess archetype from cross-sport neighbour' },
-    { href: '/model.html', label: 'Lab', title: 'Inside unified: encoders, CORAL, GRL, SupCon' },
-    { href: '/methods.html', label: 'Methods', title: 'Every number recomputable — sources + math' },
-    { href: '/model.html#ablation', label: 'Ablation', title: 'G1/G2/G3/G4, each loss must earn keep' },
+    { href: '/play', label: 'Play' },
+    { href: '/model', label: 'Network', title: 'MTNN Network Explorer' },
+    { href: '/trends', label: 'Trends', title: 'Trend Research' },
+    { href: '/players', label: 'Players', title: 'Player References' },
+    { href: '/teams', label: 'Teams', title: 'Team Labs' },
+    { href: '/methods', label: 'Methods' },
+    { href: '/leaderboard', label: 'Leaderboard' },
+    { href: '/dashboard', label: 'Lab', title: 'Dumbmodel Lab — Data→Clean→Train→Eval' },
   ];
+
   function mount() {
     var nav = document.querySelector('.site-nav');
     if (!nav) return;
-    var path = nav.getAttribute('data-active') || location.pathname || '/';
+    var active = nav.getAttribute('data-active') || '';
     var linksHtml = LINKS.map(function (l) {
-      var isActive = path === l.href ||
-        (path === '/' && l.href === '/index.html') ||
-        (path.startsWith('/model') && l.href.includes('model')) ||
-        (path.startsWith('/methods') && l.href.includes('methods')) ||
-        (path.startsWith('/play') && l.href.includes('play'));
-      return '<a class="site-nav__link' + (isActive ? ' is-active' : '') + '" href="' + l.href + '"' +
+      var isActive = active === l.href ||
+        (active === '/players' && (l.href === '/players')) ||
+        (active === '/trends' && l.href === '/trends') ||
+        (active === '/model' && l.href === '/model') ||
+        (active === '/teams' && l.href === '/teams');
+      return '<a class="site-nav__link' + (isActive ? ' is-active' : '') + '"' +
+        ' href="' + l.href + '"' +
         (l.title ? ' title="' + l.title + '"' : '') +
-        (isActive ? ' aria-current="page"' : '') + '>' + l.label + '</a>';
+        (isActive ? ' aria-current="page"' : '') +
+        '>' + l.label + '</a>';
     }).join('');
     nav.innerHTML =
-      '<a class="site-nav__brand" href="/index.html">VECTOR<span class="site-nav__accent">UNIFIED</span></a>' +
+      '<a class="site-nav__brand" href="/">VECTOR<span class="site-nav__accent">HOOPS</span></a>' +
       '<div class="site-nav__links">' + linksHtml + '</div>';
   }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mount);
   } else {
     mount();
   }
-  global.VUSiteNav = { mount: mount, links: LINKS };
+
+  global.VHSiteNav = { mount: mount, links: LINKS };
 })(window);
