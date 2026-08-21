@@ -1,0 +1,12 @@
+{
+  "attempt": "npx vercel --prod",
+  "status": "network ECONNRESET registry.npmjs.org vercel - Hatch VM network restricted honest 503",
+  "active_policy": "Vercel ACTIVE for vector-unified per user correction 2026-08-19 17:23 CDT - works for all sites including dumbmodel.com and vector-*",
+  "branch": "scout/unified-front-chimera-0819",
+  "PR": "https://github.com/jcdavis131/vector-unified/pull/8",
+  "frontend": "void #080A0F 40px sticky z40/z39 single-select clear prev CORE20 LOD4000/8000 DPR1 offline13k verified locally: index.html 5 hits LCG both, manifest.json 2 hits, app.js 2 hits, shared-game-shell 6 hits, shared-map single-select 4 hits",
+  "embedding_v3": "12966x64 fallback 4.88MB vs 20719x128 canonical MISMATCH_FALLBACK honest 503 re-queue Alienware config/mtnn_v9.2_20719x128.json + pipeline/data/embedding_v3_diagnostic.json",
+  "LCG_both": "20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] + 20260818→1412440227 idx5278 triple[13791,10902,19455] five[13791,10902,19455,16941,17558] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5",
+  "zero_deps": true,
+  "timeline_7field": "nodeId,agentId,attempt,latency_ms,tokens_est,status,errorClass mandatory even no-change triple-write 4 mirrors"
+}
