@@ -4,10 +4,25 @@
   "buildCommand": null,
   "outputDirectory": "public",
   "headers": [
-    {"source": "/(.*)", "headers": [{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
-    {"source": "/sw.js", "headers": [{"key":"Cache-Control","value":"no-cache"}]}
+    {
+      "source": "/(.*)",
+      "headers": [
+        {"key": "Cache-Control", "value": "public, max-age=0, must-revalidate"},
+        {"key": "X-Content-Type-Options", "value": "nosniff"}
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [{"key": "Cache-Control", "value": "public, max-age=0, must-revalidate"}]
+    }
   ],
   "rewrites": [
-    {"source": "/", "destination": "/index.html"}
+    {"source": "/play", "destination": "/index.html"},
+    {"source": "/players", "destination": "/index.html"},
+    {"source": "/model", "destination": "/index.html"},
+    {"source": "/trends", "destination": "/index.html"},
+    {"source": "/lab", "destination": "/index.html"},
+    {"source": "/dfs", "destination": "/index.html"},
+    {"source": "/(.*)", "destination": "/index.html"}
   ]
 }
