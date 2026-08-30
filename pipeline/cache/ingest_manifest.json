@@ -1,0 +1,514 @@
+{
+  "built": "2026-08-30T17:46:39.424209Z",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "nodeId": "ingest",
+  "agentId": "ingest-v1",
+  "attempt": 1,
+  "zero_deps": true,
+  "stdlib_only": true,
+  "never_synthetic": true,
+  "honest_503": true,
+  "cpu_only": true,
+  "forge_exempt": true,
+  "goal": "mlops-factory-train-check-ship — verify full path ingest→clean→featurize→bundle→ship→monitor without 60ep full train (Cameron pause). Only smoke 2ep allowed.",
+  "expected_counts": {
+    "nba": 12966,
+    "nfl": 5323,
+    "pitch": 2430,
+    "equities_fy": 4831,
+    "schools": 27181,
+    "total_players": 20719
+  },
+  "caches": {
+    "embedding_v3.npz": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/embedding_v3.npz",
+      "bytes": 5114686,
+      "expected_bytes": 5114686,
+      "expected_mb": "5.1M",
+      "expected_shape": [
+        12966,
+        64
+      ],
+      "role": "fallback hoops-only",
+      "critical": true,
+      "pending_forge": false,
+      "desc": "12966x64 fallback, not canonical",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "files": [
+          "E",
+          "player_id",
+          "season",
+          "name",
+          "cluster",
+          "position",
+          "archetype_logits",
+          "position_logits",
+          "skill_pred",
+          "skill_keys",
+          "next_profile_pred",
+          "game_feature_keys"
+        ],
+        "shapes": {
+          "E": {
+            "shape": [
+              12966,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "player_id": {
+            "shape": [
+              12966
+            ],
+            "dtype": "int64"
+          },
+          "season": {
+            "shape": [
+              12966
+            ],
+            "dtype": "<U7"
+          },
+          "name": {
+            "shape": [
+              12966
+            ],
+            "dtype": "<U24"
+          },
+          "cluster": {
+            "shape": [
+              12966
+            ],
+            "dtype": "int64"
+          },
+          "position": {
+            "shape": [
+              12966
+            ],
+            "dtype": "int64"
+          },
+          "archetype_logits": {
+            "shape": [
+              12966,
+              8
+            ],
+            "dtype": "float32"
+          },
+          "position_logits": {
+            "shape": [
+              12966,
+              5
+            ],
+            "dtype": "float32"
+          },
+          "skill_pred": {
+            "shape": [
+              12966,
+              12
+            ],
+            "dtype": "float32"
+          },
+          "skill_keys": {
+            "shape": [
+              12
+            ],
+            "dtype": "<U10"
+          },
+          "next_profile_pred": {
+            "shape": [
+              12966,
+              14
+            ],
+            "dtype": "float32"
+          },
+          "game_feature_keys": {
+            "shape": [
+              14
+            ],
+            "dtype": "<U10"
+          }
+        },
+        "numpy": true
+      },
+      "exact_match": true
+    },
+    "embedding_v3_20719x64.npz": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/embedding_v3_20719x64.npz",
+      "bytes": 5305136,
+      "expected_bytes": 5305136,
+      "expected_mb": "5.3M",
+      "expected_shape": [
+        20719,
+        64
+      ],
+      "role": "intermediate unified 64-d",
+      "critical": false,
+      "pending_forge": false,
+      "desc": "20719x64 intermediate ready",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "files": [
+          "E",
+          "provenance"
+        ],
+        "shapes": {
+          "E": {
+            "shape": [
+              20719,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "provenance": {
+            "shape": [],
+            "dtype": "<U141"
+          }
+        },
+        "numpy": true
+      }
+    },
+    "mtnn_best.pt": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/mtnn_best.pt",
+      "bytes": 4543179,
+      "expected_bytes": 4543179,
+      "expected_mb": "4.5M",
+      "expected_shape": null,
+      "role": "model checkpoint",
+      "critical": true,
+      "pending_forge": false,
+      "desc": "4.5MB MTNN best 17 towers",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "error": "'bytes' object has no attribute 'dtype'",
+        "numpy": true
+      },
+      "exact_match": true
+    },
+    "pitch_mtnn_embeddings.json": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/pitch_mtnn_embeddings.json",
+      "bytes": 804295,
+      "expected_bytes": 804295,
+      "expected_mb": "804k",
+      "expected_shape": null,
+      "role": "pitch embeddings",
+      "critical": true,
+      "pending_forge": false,
+      "desc": "804k valid JSON 2430 players",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "error": "Cannot load file containing pickled data when allow_pickle=False",
+        "numpy": true
+      },
+      "exact_match": true,
+      "valid_json": true,
+      "json_keys": [
+        "built",
+        "model",
+        "d_emb",
+        "n_players",
+        "contexts",
+        "config",
+        "players"
+      ],
+      "n_players": 2430,
+      "d_emb": 24
+    },
+    "unified_matrix.npz": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix.npz",
+      "bytes": 17999586,
+      "expected_bytes": 17999586,
+      "expected_mb": "18M",
+      "expected_shape": [
+        20719,
+        64
+      ],
+      "role": "unified 20719x64 E_unified",
+      "critical": true,
+      "pending_forge": false,
+      "desc": "18M 20719x64 core",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "files": [
+          "X",
+          "sport_id",
+          "n_hoops",
+          "n_gridiron",
+          "n_pitch",
+          "n_total",
+          "seed",
+          "E_unified",
+          "E_hoops",
+          "E_gridiron_original",
+          "E_gridiron_64",
+          "E_pitch_64",
+          "equities_X",
+          "equities_n"
+        ],
+        "shapes": {
+          "X": {
+            "shape": [
+              20719,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "sport_id": {
+            "shape": [
+              20719
+            ],
+            "dtype": "int64"
+          },
+          "n_hoops": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "n_gridiron": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "n_pitch": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "n_total": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "seed": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "E_unified": {
+            "shape": [
+              20719,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "E_hoops": {
+            "shape": [
+              12966,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "E_gridiron_original": {
+            "shape": [
+              5323,
+              32
+            ],
+            "dtype": "float32"
+          },
+          "E_gridiron_64": {
+            "shape": [
+              5323,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "E_pitch_64": {
+            "shape": [
+              2430,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "equities_X": {
+            "shape": [
+              4831,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "equities_n": {
+            "shape": [],
+            "dtype": "int64"
+          }
+        },
+        "numpy": true
+      },
+      "shape_verified": true
+    },
+    "unified_matrix_with_schools.npz": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix_with_schools.npz",
+      "bytes": 6349910,
+      "expected_bytes": 6349910,
+      "expected_mb": "6.3M",
+      "expected_shape": [
+        24799,
+        64
+      ],
+      "role": "lite schools 4080",
+      "critical": false,
+      "pending_forge": false,
+      "desc": "6.3M 24799x64 lite 4080 schools 80/state",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "files": [
+          "embeddings",
+          "schools_n",
+          "chimera_n",
+          "provenance"
+        ],
+        "shapes": {
+          "embeddings": {
+            "shape": [
+              24799,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "schools_n": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "chimera_n": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "provenance": {
+            "shape": [],
+            "dtype": "<U81"
+          }
+        },
+        "numpy": true
+      }
+    },
+    "unified_matrix_with_schools_full_27181.npz": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix_with_schools_full_27181.npz",
+      "bytes": 12263956,
+      "expected_bytes": 12263956,
+      "expected_mb": "12M",
+      "expected_shape": [
+        47900,
+        64
+      ],
+      "role": "full 27181 schools",
+      "critical": false,
+      "pending_forge": false,
+      "desc": "12M 47900x64 full 27,181 NCES",
+      "bytes_match": true,
+      "bytes_delta": 0,
+      "shape_inspection": {
+        "files": [
+          "embeddings",
+          "chimera_n",
+          "schools_n",
+          "total",
+          "provenance"
+        ],
+        "shapes": {
+          "embeddings": {
+            "shape": [
+              47900,
+              64
+            ],
+            "dtype": "float32"
+          },
+          "chimera_n": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "schools_n": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "total": {
+            "shape": [],
+            "dtype": "int64"
+          },
+          "provenance": {
+            "shape": [],
+            "dtype": "<U66"
+          }
+        },
+        "numpy": true
+      }
+    },
+    "embedding_v3_20719x128.npz": {
+      "exists": false,
+      "expected_bytes": 19700000,
+      "expected_mb": "18.8M",
+      "expected_shape": [
+        20719,
+        128
+      ],
+      "role": "canonical Forge PENDING",
+      "critical": false,
+      "pending_forge": true,
+      "desc": "canonical 20719x128 MRL 128-d — PENDING Forge LOCAL-GPU, not failure",
+      "path": "/home/hatch/workspace/vector-unified/data/embedding_v3_20719x128.npz"
+    }
+  },
+  "real_data_sources": {
+    "progress_json": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/progress.json",
+      "counts": {
+        "hoops": 12966,
+        "gridiron": 5323,
+        "pitch": 2430,
+        "total": 20719,
+        "equities": 4831
+      },
+      "verification": "12966+5323=18289+2430=20719 PASS",
+      "bytes": 1912
+    },
+    "unified_meta": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/unified_meta.json",
+      "n_rows": 20719,
+      "coverage": {
+        "hoops": 12966,
+        "gridiron": 5323,
+        "pitch": 2430
+      },
+      "bytes": 714
+    },
+    "coverage_verified": true,
+    "equities_sec_summary": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/pipeline/cache/sec_summary",
+      "n_files": 1490,
+      "expected_files": 1490,
+      "expected_fy": 4831,
+      "note": "1490 tickers * ~3 FYs 2022-2024 = ~4470, plus legacy 4831 FYs total"
+    },
+    "equities_matrix": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/equities_matrix.npz",
+      "bytes": 1237482,
+      "note": "4831 FYs 64-d separate"
+    },
+    "schools_full": {
+      "exists": true,
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix_with_schools_full_27181.npz",
+      "bytes": 12263956,
+      "n_schools": 27181,
+      "n_total_chimera": 47900,
+      "verification": "20719+27181=47900 PASS"
+    }
+  },
+  "warnings": [
+    "embedding_v3_20719x128.npz missing — expected PENDING Forge LOCAL-GPU, not failure (canonical 20719x128 ~18.8MB)"
+  ],
+  "errors": [],
+  "pending_forge": [
+    "embedding_v3_20719x128.npz — canonical 20719x128 MRL 128-d — PENDING Forge LOCAL-GPU, not failure"
+  ],
+  "status": "partial_ok",
+  "errorClass": "warn"
+}

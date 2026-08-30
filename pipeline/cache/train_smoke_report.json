@@ -1,0 +1,134 @@
+{
+  "pipeline": "train_smoke",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "epochs": 2,
+  "smoke": true,
+  "batch": 512,
+  "torch": false,
+  "numpy": true,
+  "status": "SKIPPED_HONEST_503",
+  "reason": "torch missing on Hatch VM CPU \u2014 Forge metal runs full 2ep smoke, honest 503 skip train",
+  "unified_matrix": {
+    "path": "/home/hatch/workspace/vector-unified/data/unified_matrix.npz",
+    "shape": [
+      20719,
+      64
+    ],
+    "dtype": "float32",
+    "mean_norm": 1.0,
+    "max_abs": 0.5464193224906921,
+    "sport_counts": {
+      "0": 12966,
+      "1": 5323,
+      "2": 2430
+    },
+    "real": true,
+    "never_synthetic": true
+  },
+  "embedding_v3": {
+    "embedding_v3.npz": {
+      "exists": true,
+      "size_mb": 5.11,
+      "shape": [
+        12966,
+        64
+      ],
+      "max_abs": 0.47937214374542236
+    },
+    "embedding_v3_20719x64.npz": {
+      "exists": true,
+      "size_mb": 5.31,
+      "shape": [
+        20719,
+        64
+      ],
+      "max_abs": 0.5464193224906921
+    },
+    "canonical_20719x128": {
+      "exists": false,
+      "expected_mb": 18.8,
+      "status": "PENDING Forge expected",
+      "path": "/home/hatch/workspace/vector-unified/data/embedding_v3_20719x128.npz"
+    }
+  },
+  "schools_full": {
+    "full_47900": {
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix_with_schools_full_27181.npz",
+      "shape": [
+        47900,
+        64
+      ],
+      "chimera_n": 20719,
+      "schools_n": 27181,
+      "total": 47900,
+      "status": "PASS",
+      "real": true
+    },
+    "chimera_24799": {
+      "shape": [
+        24799,
+        64
+      ],
+      "chimera_n": 20719
+    }
+  },
+  "forward_pass": {
+    "status": "DONE",
+    "method": "TCA 224-d 70% + TAA 128-d k8 30% + schools aux 64-d 0.12 weight \u2192 64-d L2 sphere",
+    "fusion_weights": {
+      "tca": 0.7,
+      "taa": 0.3,
+      "schools_aux": 0.12
+    },
+    "chimera": "24799\u219247900",
+    "input_shape": [
+      20719,
+      64
+    ],
+    "output_shape": [
+      20719,
+      64
+    ],
+    "unit_norm": {
+      "mean": 1.0,
+      "min": 0.9999998807907104,
+      "max": 1.0000001192092896,
+      "ok": true
+    },
+    "max_abs": {
+      "observed": 0.5464193224906921,
+      "expected_ceiling": 0.90783,
+      "ok": true,
+      "mean_abs": 0.10145790874958038
+    },
+    "not_collapsed": true,
+    "std_per_dim_mean": 0.12499534338712692,
+    "mean": -0.0002738662005867809,
+    "std": 0.12499969452619553,
+    "cosine_knn_sample_500_mean_sim": 0.00024635758018121123,
+    "silhouette_target": ">=0.05",
+    "real_data": true,
+    "never_synthetic": true,
+    "honest": true
+  },
+  "checkpoint": {
+    "path": "/home/hatch/workspace/vector-unified/pipeline/checkpoints/unified_17towers_smoke_v2.pt",
+    "exists": false,
+    "size_mb": 0,
+    "note": "1.5M existing OK"
+  },
+  "config": {
+    "g2_target": "0.685\u21920.639\u21920.615 rank12.4\u2192\u226532 sil0.683\u21920.74 composite0.8688\u21920.91",
+    "g3_target": "TCA 224-d 70% + TAA 128-d k8 30% + schools aux 64-d 0.12 chimera24799\u219247900 sil\u22650.05",
+    "grl": "\u03bb0.3\u21920.5 ramp10 warmup5 w_task2.0 w_sport0.5",
+    "coral": "centroid+cov w0.5 each",
+    "supcon": "\u03c40.07",
+    "vicreg": "var25 cov1 w0.05",
+    "never_synthetic": true,
+    "honest_503": true,
+    "cpu_only": true
+  },
+  "latency_ms": 622,
+  "tokens_est": 650,
+  "ts": "2026-08-30T17:46:44Z"
+}

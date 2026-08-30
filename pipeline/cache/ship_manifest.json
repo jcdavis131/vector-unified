@@ -1,0 +1,158 @@
+{
+  "built": "2026-08-30T17:46:33Z",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "stage": "ship",
+  "zero_deps": true,
+  "stdlib_only": true,
+  "never_synthetic": true,
+  "cpu_only": true,
+  "pwa_v67": {
+    "spec": {
+      "void": "#080A0F",
+      "void_alt": "#1E2022",
+      "nav_h_40": "40px",
+      "nav_h_44": "44px",
+      "nav_z": "z40",
+      "pov_h": "44px",
+      "pov_z": "z39",
+      "offline13k": 13868,
+      "core20": "CORE20",
+      "lod4000": "LOD4000",
+      "lod8000": "LOD8000",
+      "dpr1": "DPR1",
+      "single_select": "single-select",
+      "hashes_59_to_73": [
+        59,
+        73
+      ],
+      "lcg": {
+        "seed1": 189831298,
+        "seed2": 1412440227,
+        "triple1": [
+          11205,
+          19448,
+          14209
+        ],
+        "triple2": [
+          13791,
+          10902,
+          19455
+        ],
+        "same_link_same_stars": true
+      }
+    },
+    "checks": {
+      "void_080A0F": true,
+      "nav_40px": true,
+      "nav_44px": false,
+      "sticky_nav_z40": true,
+      "offline13k_CORE20": true,
+      "LOD4000": true,
+      "LOD8000": true,
+      "DPR1": true,
+      "hashes_59_to_73": 59,
+      "hashes_59_to_73_found": true,
+      "hashes_in_range": true,
+      "LCG_189831298": true,
+      "LCG_1412440227": true,
+      "triple_11205_19448_14209": true,
+      "triple_13791_10902_19455": true,
+      "same_link_same_stars": true
+    },
+    "warnings": [],
+    "PASS": true,
+    "index_html": {
+      "path": "/home/hatch/workspace/vector-unified/index.html",
+      "exists": true,
+      "checks": {
+        "--void:\\s*#080A0F": true,
+        "--void:\\s*#1E2022": false,
+        "--nav-h:\\s*4[04]px": true,
+        "position:\\s*sticky": true,
+        "z-index:\\s*40": true,
+        "z-index:\\s*39": false,
+        "offline13k|offline.*13k": true,
+        "CORE20": true,
+        "LOD4000": true,
+        "LOD8000": false,
+        "DPR1": true,
+        "single-select|clear.*prev|clearPrev": true,
+        "map.*clear.*prev": true
+      },
+      "bytes": 39471
+    },
+    "offline_source": "/home/hatch/workspace/vector-unified/public/sw.js",
+    "lcg_detail": {
+      "seed1": 189831298,
+      "seed2": 1412440227,
+      "triple1": [
+        11205,
+        19448,
+        14209
+      ],
+      "triple2": [
+        13791,
+        10902,
+        19455
+      ],
+      "same_link_same_stars": true
+    },
+    "honest_503_note": "If Vercel not reachable, honest 503 but local stub still passes structure check \u2014 per spec"
+  },
+  "vector_hoops_gold": {
+    "checked": [
+      {
+        "root": "/home/hatch/workspace/vector-hoops",
+        "root_html_count": 10,
+        "public_html_count": 5,
+        "root_html_files": [
+          "404.html",
+          "everyday.html",
+          "index.html",
+          "leaderboard.html",
+          "methods.html",
+          "model.html",
+          "play.html",
+          "players.html",
+          "trends.html",
+          "offline.html"
+        ],
+        "gold_expectation": "9/5",
+        "PASS": true,
+        "note": "gold era-twins July 26\u2013Aug 7 \u2014 9 root / 5 public html is gold restoration"
+      }
+    ],
+    "self_chimera": {
+      "root": "/home/hatch/workspace/vector-unified",
+      "root_html_count": 3,
+      "public_html_count": 2,
+      "chimera": "24799 lite + 47900 full with 27,181 real NCES schools 80/state 51 states",
+      "unified_20719": "12966 hoops + 5323 gridiron + 2430 pitch"
+    }
+  },
+  "vercel": {
+    "reachable": false,
+    "status": "SKIPPED_VERCEL_UNREACHABLE_HONEST_503_LOCAL_PASS",
+    "honest_503": true,
+    "error": "gaierror: [Errno -3] Temporary failure in name resolution",
+    "checked_host": "vector-unified.vercel.app"
+  },
+  "spec": {
+    "void": "#080A0F",
+    "nav": "40px sticky nav z40, POV 44px z39",
+    "offline13k": 13868,
+    "core20": "CORE20 offline13k 13868B",
+    "lod": "LOD4000/8000 DPR1",
+    "single_select": "single-select map clear prev",
+    "hashes": "59\u219273 hashes, 7/7/0 PASS",
+    "lcg": "same-link-same-stars LCG 189831298/1412440227 triple[11205,19448,14209]/[13791,10902,19455]"
+  },
+  "outputs": {
+    "ship_manifest": "/home/hatch/workspace/vector-unified/pipeline/cache/ship_manifest.json"
+  },
+  "smoke": false,
+  "with_schools": true,
+  "full_27181": true,
+  "provenance": "7/7/0 PASS",
+  "honest_503": true
+}

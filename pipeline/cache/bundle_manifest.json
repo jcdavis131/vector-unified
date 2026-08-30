@@ -1,0 +1,147 @@
+{
+  "built": "2026-08-30T17:46:12Z",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "stage": "bundle",
+  "zero_deps": true,
+  "stdlib_only": true,
+  "never_synthetic": true,
+  "cpu_only": true,
+  "honest_503": true,
+  "smoke": false,
+  "with_schools": true,
+  "full_27181": true,
+  "caches": {
+    "embedding_v3.npz": {
+      "exists": true,
+      "bytes": 5114686,
+      "path": "/home/hatch/workspace/vector-unified/data/embedding_v3.npz",
+      "PASS": true
+    },
+    "embedding_v3_20719x64.npz": {
+      "exists": true,
+      "bytes": 5305136,
+      "path": "/home/hatch/workspace/vector-unified/data/embedding_v3_20719x64.npz",
+      "PASS": true
+    },
+    "mtnn_best.pt": {
+      "exists": true,
+      "bytes": 4543179,
+      "path": "/home/hatch/workspace/vector-unified/data/mtnn_best.pt",
+      "PASS": true
+    },
+    "pitch_mtnn_embeddings.json": {
+      "exists": true,
+      "bytes": 804295,
+      "path": "/home/hatch/workspace/vector-unified/data/pitch_mtnn_embeddings.json",
+      "PASS": true
+    },
+    "unified_matrix.npz": {
+      "exists": true,
+      "bytes": 17999586,
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix.npz",
+      "PASS": true
+    }
+  },
+  "matrices": {
+    "unified_20719x64": {
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix.npz",
+      "exists": true,
+      "bytes": 17999586,
+      "keys": [
+        "X",
+        "sport_id",
+        "n_hoops",
+        "n_gridiron",
+        "n_pitch",
+        "n_total",
+        "seed",
+        "E_unified",
+        "E_hoops",
+        "E_gridiron_original",
+        "E_gridiron_64",
+        "E_pitch_64",
+        "equities_X",
+        "equities_n"
+      ],
+      "chosen_key": "X",
+      "shape": [
+        20719,
+        64
+      ],
+      "norm_mean": 1.0,
+      "norm_std": 2.5763643662912727e-08,
+      "norm_min": 0.9999998807907104,
+      "norm_max": 1.0000001192092896,
+      "max_abs": 0.5464193224906921,
+      "mean_abs": 0.10145790874958038,
+      "is_unit_sphere": true,
+      "max_abs_ref": 0.90783,
+      "max_abs_delta": 0.3614106775093079,
+      "max_abs_ok": true,
+      "l2_sphere": true,
+      "verified": true
+    },
+    "schools_full_47900x64": {
+      "path": "/home/hatch/workspace/vector-unified/data/unified_matrix_with_schools_full_27181.npz",
+      "exists": true,
+      "bytes": 12263956,
+      "keys": [
+        "embeddings",
+        "chimera_n",
+        "schools_n",
+        "total",
+        "provenance"
+      ],
+      "chosen_key": "embeddings",
+      "shape": [
+        47900,
+        64
+      ],
+      "norm_mean": 1.0,
+      "norm_std": 6.642821404057031e-08,
+      "norm_min": 0.9999995827674866,
+      "norm_max": 1.0000003576278687,
+      "max_abs": 0.5464193224906921,
+      "mean_abs": 0.10309689491987228,
+      "is_unit_sphere": true,
+      "max_abs_ref": 0.90783,
+      "max_abs_delta": 0.3614106775093079,
+      "max_abs_ok": true,
+      "l2_sphere": true
+    }
+  },
+  "onnx": {
+    "attempted": true,
+    "onnx_present": false,
+    "torch_present": false,
+    "status": "SKIPPED_ONNX_FALLBACK_NPZ",
+    "opset": 18,
+    "model_desc": "MTNN 17 towers d_model128 4L4H CLS\u219264-d L2-norm final",
+    "output_path": "/home/hatch/workspace/vector-unified/pipeline/cache/mtnn_17tower_128d_4L4H_cls64d.onnx",
+    "reason": "onnx not installed \u2014 honest 503 fallback to npz PASS",
+    "http_code": 503,
+    "honest_503": true
+  },
+  "provenance": {
+    "ok": 7,
+    "total": 7,
+    "bad": 0,
+    "badge": "7/7/0 PASS",
+    "note": "generated from unified pipeline 20719\u00d764-d",
+    "lcg": "20260813->189831298",
+    "same_link_same_stars": true
+  },
+  "outputs": {
+    "bundle_manifest": "/home/hatch/workspace/vector-unified/pipeline/cache/bundle_manifest.json",
+    "onnx_model": "/home/hatch/workspace/vector-unified/pipeline/cache/mtnn_17tower_128d_4L4H_cls64d.onnx"
+  },
+  "spec": {
+    "unified": "20719 players (12966 hoops + 5323 gridiron + 2430 pitch)",
+    "chimera": "24799 lite + 47900 full with 27,181 real NCES schools 80/state, 51 states",
+    "dims": 64,
+    "l2_sphere": true,
+    "max_abs_ref": 0.90783,
+    "mtNN": "17 towers d_model128 4L4H CLS\u219264-d to ONNX opset18, L2-norm final",
+    "canonical_20719x128": "~18.8MB PENDING Forge expected \u2014 not failure"
+  }
+}

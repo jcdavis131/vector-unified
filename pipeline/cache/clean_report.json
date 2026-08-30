@@ -1,0 +1,137 @@
+{
+  "built": "2026-08-30T17:46:06.805815Z",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "nodeId": "clean",
+  "agentId": "clean-v1",
+  "attempt": 1,
+  "zero_deps": true,
+  "stdlib_only": true,
+  "never_synthetic": true,
+  "honest_503": true,
+  "cpu_only": true,
+  "forge_exempt": true,
+  "ingest_manifest_ref": null,
+  "checks": {
+    "pitch_mtnn_embeddings.json": {
+      "exists": true,
+      "valid": true,
+      "bytes": 804295,
+      "keys": [
+        "built",
+        "model",
+        "d_emb",
+        "n_players",
+        "contexts",
+        "config",
+        "players"
+      ],
+      "n_players": 2430,
+      "d_emb": 24,
+      "type": "dict",
+      "len": 7,
+      "expected_804k": true,
+      "size_mb": 0.804
+    },
+    "mtnn_best.pt": {
+      "exists": true,
+      "bytes": 4543179,
+      "mtime": 1787178613.685219,
+      "expected_4.5M": true
+    },
+    "embedding_v3.npz": {
+      "exists": true,
+      "bytes": 5114686,
+      "mtime": 1787178613.619219,
+      "expected_5.1M": true
+    },
+    "unified_matrix.npz": {
+      "exists": true,
+      "bytes": 17999586,
+      "mtime": 1786678746.094991,
+      "expected_18M": true
+    },
+    "unified_matrix_with_schools_full_27181.npz": {
+      "exists": true,
+      "bytes": 12263956,
+      "mtime": 1787182515.102189
+    }
+  },
+  "clean_stats": {
+    "shape": [
+      20719,
+      64
+    ],
+    "dtype": "float32",
+    "keys": [
+      "X",
+      "sport_id",
+      "n_hoops",
+      "n_gridiron",
+      "n_pitch",
+      "n_total",
+      "seed",
+      "E_unified",
+      "E_hoops",
+      "E_gridiron_original",
+      "E_gridiron_64",
+      "E_pitch_64",
+      "equities_X",
+      "equities_n"
+    ],
+    "sport_id_mapping": {
+      "0": 12966,
+      "1": 5323,
+      "2": 2430
+    },
+    "sport_mapping_ok": true,
+    "expected_mapping": {
+      "0": 12966,
+      "1": 5323,
+      "2": 2430
+    },
+    "player_id_uniqueness": true,
+    "player_id_n": 0,
+    "nan_count": 0,
+    "inf_count": 0,
+    "median_mean": -0.00016989918367471546,
+    "iqr_mean": 0.1781906271353364,
+    "scaled_max_abs": 3.0719639584641807,
+    "scaled_mean": -0.0005854307246861075,
+    "emptyset_to_zero": true,
+    "grad0": true,
+    "robust_scaling": "median/IQR numpy",
+    "l2_norm_mean": 1.0
+  },
+  "player_id_uniqueness": true,
+  "sport_id_mapping": {
+    "0": 12966,
+    "1": 5323,
+    "2": 2430
+  },
+  "sport_mapping_expected": {
+    "0": 12966,
+    "1": 5323,
+    "2": 2430
+  },
+  "nan_handling": "∅→0 grad0 median/IQR robust scaling, no synthetic imputation",
+  "robust_scaling": {
+    "method": "median/IQR",
+    "emptyset_to_zero": true,
+    "grad0_handling": "IQR==0 => epsilon 1e-6, NaN/Inf => 0, ∅=>0",
+    "never_synthetic": true
+  },
+  "pending_forge": {
+    "canonical_20719x128": "PENDING Forge LOCAL-GPU ~18.8MB MRL 128-d, not failure, expected gap documented — fallback 20719x64 intermediate ready",
+    "full_train_60ep": "PAUSED per Cameron — only smoke 2ep allowed, verified via ingest→clean→featurize→bundle→ship→monitor path without full train"
+  },
+  "status": "ok",
+  "errorClass": "none",
+  "critical_missing": [],
+  "clean_pass": true,
+  "lcg": {
+    "20260813": 189831298,
+    "20260818": 1412440227,
+    "same_link_same_stars": true
+  },
+  "provenance": "GraphBFF dual-stream 70/30 64-d L2 sphere, PWA v67, 7/7/0"
+}

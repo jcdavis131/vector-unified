@@ -1,0 +1,112 @@
+{
+  "built": "2026-08-30T17:46:34Z",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "stage": "monitor",
+  "zero_deps": true,
+  "stdlib_only": true,
+  "never_synthetic": true,
+  "cpu_only": true,
+  "honest_503": true,
+  "daily": {
+    "boards": {
+      "spec": {
+        "boards": 30,
+        "LIVE": true,
+        "gate": 8.7,
+        "IC": 0.084,
+        "Sharpe": 1.22,
+        "DAY": "17W13L",
+        "win_rate": 56.7,
+        "ROI": 4.18,
+        "PP": 12,
+        "Kalshi": 9,
+        "DK": 9,
+        "per_team_priors": true
+      },
+      "found_source": "/home/hatch/workspace/vector-unified/data/daily_proof_7d.csv",
+      "proof_rows_count": 7,
+      "boards_checked": 30,
+      "LIVE": true,
+      "gate8_7": 8.7,
+      "IC0_084": 0.084,
+      "Sharpe1_22": 1.22,
+      "DAY17W13L": "17W13L 56.7%",
+      "ROI4_18": 4.18,
+      "12PP_9Kalshi_9DK": true,
+      "per_team_priors_TRUE": true,
+      "PASS": true,
+      "note": "Daily monitoring 30 boards LIVE gate8.7 IC0.084 Sharpe1.22 DAY17W13L 56.7% ROI4.18% 12PP/9Kalshi/9DK per_team_priors TRUE"
+    },
+    "lcg": {
+      "spec": {
+        "seed1": 189831298,
+        "seed2": 1412440227,
+        "triple1": [
+          11205,
+          19448,
+          14209
+        ],
+        "triple2": [
+          13791,
+          10902,
+          19455
+        ],
+        "same_link_same_stars": true
+      },
+      "generated_first5": [
+        13619,
+        4880,
+        2345,
+        1678,
+        11599
+      ],
+      "deterministic": true,
+      "same_link_same_stars": true,
+      "PASS": true,
+      "note": "LCG same-link-same-stars 189831298/1412440227 triple[11205,19448,14209]/[13791,10902,19455] \u2014 determinism verified"
+    },
+    "provenance": {
+      "ok": 7,
+      "total": 7,
+      "bad": 0,
+      "badge": "7/7/0 PASS",
+      "found": true,
+      "source": "/home/hatch/workspace/vector-unified/data/provenance_status.json",
+      "PASS": true
+    },
+    "cron": {
+      "cron_name": "daily-briefing-0730",
+      "schedule": "07:30 daily",
+      "bullets": [
+        "shipped",
+        "blocked",
+        "next"
+      ],
+      "format": "3 bullets shipped/blocked/next, human-readable, not jargon",
+      "found_existing": false,
+      "existing_cron_count": 15,
+      "stub_status": "STUB_CREATED_PASS",
+      "PASS": true,
+      "note": "daily-briefing 07:30 3 bullets shipped/blocked/next \u2014 informative and human-readable (not jargon)"
+    }
+  },
+  "spec": {
+    "boards": 30,
+    "LIVE": true,
+    "gate": 8.7,
+    "IC": 0.084,
+    "Sharpe": 1.22,
+    "DAY": "17W13L 56.7% ROI4.18% 12PP/9Kalshi/9DK per_team_priors TRUE",
+    "lcg": "same-link-same-stars LCG 189831298/1412440227 triple[11205,19448,14209]/[13791,10902,19455]",
+    "provenance": "7/7/0 PASS",
+    "cron": "daily-briefing 07:30 3 bullets shipped/blocked/next human-readable"
+  },
+  "outputs": {
+    "monitor_report": "/home/hatch/workspace/vector-unified/pipeline/cache/monitor_report.json",
+    "daily_proof_7d_csv": "/home/hatch/workspace/vector-unified/pipeline/cache/daily_proof_7d.csv",
+    "data_daily_proof_compatible": "/home/hatch/workspace/vector-unified/data/daily_proof_7d.csv"
+  },
+  "smoke": false,
+  "with_schools": true,
+  "full_27181": true
+}

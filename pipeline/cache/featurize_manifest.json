@@ -1,0 +1,325 @@
+{
+  "pipeline": "featurize",
+  "branch": "scout/mlops-factory-rebuild-0to1",
+  "lane": "mlops-factory-featurize",
+  "timestamp": "2026-08-30T17:46:10Z",
+  "timestamp_local": "2026-08-30 17:46:10 UTC",
+  "shapes": {
+    "base": [
+      20719,
+      64
+    ],
+    "with_schools_lite": [
+      24799,
+      64
+    ],
+    "with_schools_full": [
+      47900,
+      64
+    ],
+    "selected": [
+      47900,
+      64
+    ],
+    "selected_mode": "full_27181",
+    "n_base": 20719,
+    "n_hoops": 12966,
+    "n_gridiron": 5323,
+    "n_pitch": 2430,
+    "n_schools_lite": 4080,
+    "n_schools_full": 27181,
+    "n_chimera_lite": 24799,
+    "n_chimera_full": 47900,
+    "demo": {
+      "demo_sample_n": 256,
+      "demo_eff_rank_est": 64,
+      "demo_d": 64,
+      "demo_note": "stdlib smoke \u2014 deterministic LCG, not saved as real embedding, for manifest verification only"
+    },
+    "losses_demo": {
+      "vicreg": {
+        "vicreg": 1.09347669882879,
+        "var": 0.8747810386007087,
+        "cov": 8.011558088416892e-06,
+        "var_coef": 25,
+        "cov_coef": 1,
+        "w": 0.05
+      },
+      "supcon": {
+        "supcon": 0.7431162125486371,
+        "raw": 4.954108083657581,
+        "tau": 0.07,
+        "w": 0.15
+      },
+      "masked_bce": {
+        "bce": 0.47400585875134427,
+        "raw": 0.9480117175026885,
+        "pct": 0.15,
+        "w": 0.5,
+        "n_edges": 224,
+        "n_masked": 33
+      }
+    },
+    "tca_taa_smoke": {
+      "small_n": 8,
+      "tca_224_shape": [
+        8,
+        224
+      ],
+      "taa_128_shape": [
+        8,
+        128
+      ],
+      "fused_shape": [
+        8,
+        64
+      ],
+      "tca_per_type_shapes": {
+        "volume": [
+          8,
+          32
+        ],
+        "playmaking": [
+          8,
+          32
+        ],
+        "defense": [
+          8,
+          32
+        ],
+        "shotmix": [
+          8,
+          32
+        ],
+        "teammates_same_team": [
+          8,
+          32
+        ],
+        "same_draft_class": [
+          8,
+          32
+        ],
+        "same_era_archetype": [
+          8,
+          32
+        ]
+      },
+      "neighbor_map_sample": {
+        "0": [
+          3,
+          4
+        ],
+        "1": [
+          7,
+          3
+        ]
+      },
+      "fusion_max_abs": 0.3635562434357302,
+      "fusion_l2": [
+        1.0,
+        0.9999999999999999
+      ]
+    },
+    "heavy_status": "skipped"
+  },
+  "dims": {
+    "d": 64,
+    "d_out": 64,
+    "tca": 224,
+    "taa": 128,
+    "fusion": 64,
+    "per_type": 32,
+    "n_types": 7,
+    "fusion_d": 64
+  },
+  "rope": {
+    "dim_per_head": 32,
+    "base": 10000,
+    "formula": "freq = 10000**(-2i/32) for i in [0..15] \u2014 32-d/h rotary",
+    "freqs_formula": "freq = 10000**(-2i/32) for i in [0..15]",
+    "freqs_example": [
+      1.0,
+      0.5623413251903491,
+      0.31622776601683794,
+      0.1778279410038923
+    ],
+    "heads": 7,
+    "heads_taa": 4,
+    "applied_to": "TCA Q/K per type (32-d/h), TAA Q/K shared 128-d (4 heads \u00d732)",
+    "pos_encoding": "season idx / node idx, most recent season for TAA neighbor sampling"
+  },
+  "rmsnorm": {
+    "eps": 1e-06,
+    "eps_formula": "RMSNorm(x) = x / sqrt(mean(x^2)+eps) * weight, eps=1e-6",
+    "applied": [
+      "TCA post-attn per type",
+      "TAA post-attn shared",
+      "fusion pre-L2"
+    ]
+  },
+  "swiglu": {
+    "hidden": 256,
+    "gated": true,
+    "activation": "silu",
+    "formula": "SwiGLU(x) = (SiLU(W1 x) * (W2 x)) W3, W1,W2 in R^(d->256), W3 in R^(256->d)",
+    "formula_detail": "SiLU(x)=x*sigmoid(x), gated = SiLU(xW1) * (xW2), out = gated W3",
+    "params_est": "~ 2*d*256 + 256*d per SwiGLU block, d=64 base, 224/128 for TCA/TAA",
+    "hidden_dim": 256
+  },
+  "tca": {
+    "types": [
+      "volume",
+      "playmaking",
+      "defense",
+      "shotmix",
+      "teammates_same_team",
+      "same_draft_class",
+      "same_era_archetype"
+    ],
+    "n_types": 7,
+    "d_per_type": 32,
+    "d_total": 224,
+    "formula": "7\u00d732=224-d concat",
+    "params_pct": 0.7,
+    "params_detail": "70% of GraphBFF dual params \u2014 7\u00d7 Q/K/V 32-d per type, RoPE 32-d/h, RMSNorm, SwiGLU 256",
+    "softmax": "per-type sparse",
+    "sparsity": "top 40% edges per type",
+    "sparsity_detail": "for each node, keep top 40% attention scores per type, mask others to -inf, then softmax",
+    "qkv": "Q/K/V 32-d per type, RoPE 32-d/h freq 10000**-2i/32, shared across batch",
+    "batching": "KL64 representative + RR32/type = 224 edges total per batch",
+    "rope": "32-d/h",
+    "norm": "RMSNorm \u03b51e-06",
+    "ffn": "SwiGLU 256 gated",
+    "graphbff_roles": [
+      "volume",
+      "playmaking",
+      "defense",
+      "shotmix",
+      "teammates_same_team",
+      "same_draft_class",
+      "same_era_archetype"
+    ]
+  },
+  "taa": {
+    "heads": 1,
+    "shared": true,
+    "d": 128,
+    "k": 8,
+    "fixed_degree": true,
+    "sampling": "8 most recent season, same state for schools, cap neighbor list 8",
+    "sampling_detail": "for each node, sample 8 neighbors sorted by season desc, same state if schools, LCG deterministic shuffle within top 2k, ensure most recent included",
+    "params_pct": 0.3,
+    "params_detail": "30% of GraphBFF dual params \u2014 1 head shared QKV 128-d, RoPE 32-d/h projected to 128-d (4 heads \u00d732)",
+    "qkv": "shared QKV 128-d, deterministic LCG init seed 17/19/23",
+    "rope": "32-d/h projected to 128-d (4 heads \u00d732)",
+    "norm": "RMSNorm \u03b51e-06",
+    "ffn": "SwiGLU 256 gated -> 128-d",
+    "temporal": "2L season trajectory \u2014 early vs late season same-player (hoops/gridiron TAA twin)"
+  },
+  "fusion": {
+    "weights": [
+      0.7,
+      0.3
+    ],
+    "tca_w": 0.7,
+    "taa_w": 0.3,
+    "l2_norm": "unit sphere",
+    "max_abs": 0.90783,
+    "output_dim": 64,
+    "projection": "224+128 -> 64 via SwiGLU 256 gated + RMSNorm \u03b51e-06 + L2 + max_abs clamp 0.90783",
+    "ensure": "max_abs \u22640.90783 post-L2 by iterative clip+renorm (2 steps) \u2014 ensures diffuse sphere, not one-hot",
+    "formula": "fused = 0.7*proj_TCA(224->64) + 0.3*proj_TAA(128->64), RMSNorm, L2, clip max_abs 0.90783, renorm"
+  },
+  "graphbff": {
+    "dual_stream": "70/30 TCA/TAA",
+    "kl": 64,
+    "rr_per_type": 32,
+    "rr_total": 224,
+    "edges": "224 = 32*7",
+    "batch": "KL64 representative + RR32/type 224 edges",
+    "batch_detail": "KL64 team+era clusters representative nodes + RR32/type\u00d77=224 edges random relational per type",
+    "masked_link": {
+      "pct": 0.15,
+      "loss": "BCE",
+      "w": 0.5,
+      "types": [
+        "teammate",
+        "same-team",
+        "same-pos",
+        "same-arch",
+        "trade",
+        "opponent",
+        "salary-tier"
+      ],
+      "detail": "15% edges masked, BCE loss w0.5"
+    },
+    "vicreg": {
+      "var": 25,
+      "cov": 1,
+      "w": 0.05,
+      "detail": "var25 cov1 w0.05 \u2014 anti-collapse rank\u226532",
+      "formula": "VICReg = w*(var_coef*var_loss + cov_coef*cov_loss), var_loss=hinge(1-std), cov_loss=off-diag cov^2"
+    },
+    "supcon": {
+      "tau": 0.07,
+      "w": 0.15,
+      "detail": "SupCon \u03c40.07 w0.15 \u2014 supervised contrastive over archetype/team",
+      "formula": "SupCon = -log(exp(z\u00b7z+/\u03c4)/\u03a3 exp(z\u00b7z_j/\u03c4)) mean over positives same label"
+    },
+    "total_loss": "GraphBFF = KL64 + RR32/type + 0.5*BCE_masked(15%) + 0.05*VICReg(var25 cov1) + 0.15*SupCon(\u03c40.07)"
+  },
+  "batching": {
+    "kl": 64,
+    "rr_per_type": 32,
+    "rr_total": 224,
+    "total_edges": 224,
+    "representative": "KL64 team+era clusters",
+    "relational": "RR32/type\u00d77=224 edges",
+    "batch_size": 512,
+    "batch_detail": "batch 512 \u2014 KL64 + RR32/type 224 edges, total 288 nodes representative+relational per batch"
+  },
+  "provenance": {
+    "zero_deps": true,
+    "stdlib_only": true,
+    "torch_optional": false,
+    "numpy_optional": true,
+    "never_synthetic": true,
+    "honest_503": true,
+    "english_code_only": true,
+    "branch": "scout/mlops-factory-rebuild-0to1",
+    "lane": "featurize",
+    "real_sources": {
+      "unified_matrix": "found 17999586 bytes",
+      "embedding_v3": "found 5114686 bytes",
+      "unified_meta": "found",
+      "schools_real_data": "missing \u2014 lite/full modes will be manifest-only, honest 503 for heavy",
+      "never_synthetic": true,
+      "honest_503_if_blocked": true
+    },
+    "forge": "Alienware single lane hot \u2014 Hatch CPU honest 503 zero-deps",
+    "void": "#080A0F 40px sticky z40/z39 CORE20 LOD4000/8000 DPR1 single-select clear prev",
+    "lcg": "20260813\u2192189831298 idx3820 triple[11205,19448,14209] + 20260818\u21921412440227 idx5278 triple[13791,10902,19455] same-link-same-stars",
+    "graphbff_pivot": "2026-08-19 paper 2602.04768",
+    "mtNN_v9_2": "17 towers d_model128 4-head CLS128 4L RoPE 32-d/h RMSNorm \u03b51e-6 SwiGLU 256 VICReg var25 cov1 w0.05 SupCon \u03c40.07 w0.15"
+  },
+  "outputs": {
+    "feature_matrix": "47900\u00d764 float32 L2 sphere max_abs\u22640.90783",
+    "dtype": "float32",
+    "l2_normalized": true,
+    "max_abs": 0.90783,
+    "finite": true,
+    "path": "pipeline/cache/featurize_manifest.json + (heavy) pipeline/data/featurize_47900x64.npz (torch required, honest 503 if missing)"
+  },
+  "config": {
+    "with_schools": true,
+    "full_27181": true,
+    "d": 64,
+    "selected_mode": "full_27181",
+    "n": 47900
+  },
+  "latency_ms": 3181,
+  "stdlib_core": true,
+  "heavy_requested": false,
+  "torch_available": false,
+  "numpy_available": true
+}
