@@ -1,0 +1,20 @@
+{
+  "n_rows": 20719,
+  "d_emb": 64,
+  "d_text": 384,
+  "G2_sport_invariance": {
+    "sport_acc": 0.6257,
+    "majority_baseline": 0.6258,
+    "delta_vs_majority": -0.0001,
+    "target_le": 0.7258,
+    "pass": true
+  },
+  "G3_archetype_coherence": {
+    "silhouette": -0.0034
+  },
+  "metrics_real": {
+    "sport_acc": 0.6257239382239382,
+    "silhouette": -0.0034490814432501793,
+    "explained_variance": 0.5018931031227112
+  }
+}
