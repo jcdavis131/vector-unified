@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vector-fusion"
+version = "0.2.0"
+description = "LLM embeddings + tabular features in a unified sklearn pipeline — fused retrieval for vector-* fleet (hoops/gridiron/pitch/equities/schools)."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "vector fleet" }]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=1.5",
+    "scikit-learn>=1.2",
+    "sentence-transformers>=2.2.2",
+    "transformers>=4.30.0",
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vector_fusion*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
