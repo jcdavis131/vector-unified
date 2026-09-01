@@ -1,0 +1,70 @@
+/* Human-Centered v6 — Who Do We Design For? — tokens */
+:root{
+  /* Paper / Ink — off-white like booklet */
+  --paper:#FFFEFB;
+  --paper-2:#FFFDF7;
+  --paper-raised:#FFFFFF;
+  --stone-50:#F6F1E9;
+  --stone-100:#EDE8E0;
+  --stone-200:#DDD6C9;
+  --stone-300:#C4B8A6;
+  --ink:#0A0A0F;
+  --ink-60:#5A5A62;
+  --ink-40:#8A8A92;
+  --ink-20:#B8B8C0;
+
+  /* Human blue — booklet handwritten */
+  --human:#2A5BD7;
+  --human-10:rgba(42,91,215,0.10);
+  --human-15:rgba(42,91,215,0.15);
+  --human-ink:#1A3DA6;
+
+  /* Terracotta kept only for selection focus, not hero */
+  --pop:#C17C60;
+  --pop-ink:#FFFEFB;
+
+  --void:#080A0F;
+  --void-2:#12151B;
+
+  /* Layout */
+  --nav-h:40px;
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+  --radius-pill:999px;
+  --border:1px solid var(--stone-200);
+  --border-strong:1px solid var(--stone-300);
+  --shadow-sm:0 1px 2px rgba(10,10,15,0.04),0 4px 12px rgba(10,10,15,0.04);
+  --shadow-md:0 8px 24px rgba(10,10,15,0.06);
+  --shadow-soft:0 12px 32px rgba(10,10,15,0.08);
+
+  /* Type — 3 voices */
+  --font-serif:"Newsreader", "Times New Roman", Georgia, serif;
+  --font-sans:ui-sans-system, -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+  --font-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-human:"Segoe Script", "Bradley Hand", "Comic Sans MS", "Snell Roundhand", cursive;
+
+  --text-11:11px;
+  --text-12:12px;
+  --text-13:13px;
+  --text-15:15px;
+  --text-18:18px;
+  --text-20:20px;
+  --text-24:24px;
+  --text-32:32px;
+  --text-48:clamp(32px,6vw,56px);
+  --text-64:clamp(40px,7vw,72px);
+  --text-display:clamp(44px,9vw,96px);
+
+  --leading-tight:1.02;
+  --leading-snug:1.18;
+  --leading-body:1.68;
+  --leading-ui:1.45;
+
+  --grid-max:1180px;
+  --reading-max:68ch;
+  --map-h:72vh;
+  --map-min:540px;
+
+  --focus:#2A5BD7;
+}
