@@ -61,6 +61,7 @@ def _honest_503(msg: str) -> int:
     print(f"503 unified_matrix.npz real-mode requires {msg} — honest fail, not fabricated", flush=True)
     raise SystemExit(11)
 
+
 def _ensure_source_exists():
     """Check all Pillar-1 sources before building — honest fail."""
     needed = []
@@ -69,8 +70,8 @@ def _ensure_source_exists():
         needed.append("data/archetype_map.json missing (native_to_cross)")
     # hoops
     from pathlib import Path
-    import os
-    hoops_p = Path(os.path.expanduser("~/workspace/vector-hoops/pipeline/data/embedding_v3.npz"))
+
+    hoops_p = Path("~/workspace/vector-hoops/pipeline/data/embedding_v3.npz").expanduser()
     hoops_p2 = Path(__file__).resolve().parents[1].parent / "vector-hoops" / "pipeline" / "data" / "embedding_v3.npz"
     if not hoops_p.exists() and not hoops_p2.exists():
         needed.append("hoops embedding_v3.npz missing")
@@ -88,6 +89,7 @@ def _ensure_source_exists():
     if needed:
         _honest_503("; ".join(needed))
 
+
 def _provenance_block():
     """7/7/0 LCG chain — provenance only, not non-prod-fabricated data."""
     return {
@@ -101,8 +103,9 @@ def _provenance_block():
         "equities_gap": "4831 missing → full 25550 after equities merge then Procrustes valence",
         "g2_proj": "0.642→0.622 (-0.02) team towers Phase1_only until per-domain PASS",
         "mean_pool_gate": "Phase2 Procrustes mean-pool ONLY after PASS: IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite 0.7937→0.85 top1 0.438→0.55 sport_acc 0.685→0.64 GPA Frechet μ iterative tot_res<1e-5",
-        "honest_fail": "503 never fabricated if source missing"
+        "honest_fail": "503 never fabricated if source missing",
     }
+
 
 def main():
     DATA.mkdir(parents=True, exist_ok=True)
@@ -227,25 +230,27 @@ def main():
     )
     # Provenance doc + honest meta
     prov = _provenance_block()
-    prov.update({
-        "n_rows": N,
-        "coverage": cov,
-        "n_eras": n_eras,
-        "min_year": min_year,
-        "max_year": max_year,
-        "arch_names": CROSS_ARCH_IDS,
-        "arch_counts": {CROSS_ARCH_IDS[i]: int((arch_ids == i).sum()) for i in range(len(CROSS_ARCH_IDS))},
-        "era_counts": {int(min_year + e): int((era_id == e).sum()) for e in range(n_eras)},
-        "sport_dim": SPORT_DIM,
-        "n_pos": N_POS,
-        "pos_valid": {s: int(((pos_masks == 1) & (sport_ids == SPORT_ID[s])).sum()) for s in E_per},
-        "L2_verified": {s: True for s in E_per},
-        "consumer_wiring": {
-            "dfs_harvest_unified": "exports/dfs/dfs_harvest_unified.jsonl 3000 rows 17 keys uniform dup0 validated — wiring referenced in train_mtnn_v7_unified.validate_dfs_harvest_unified()",
-            "provenance_file": "data/unified_provenance_7_7_0.json"
-        },
-        "honest_fail": "503 never fabricated if Pillar-1 missing"
-    })
+    prov.update(
+        {
+            "n_rows": N,
+            "coverage": cov,
+            "n_eras": n_eras,
+            "min_year": min_year,
+            "max_year": max_year,
+            "arch_names": CROSS_ARCH_IDS,
+            "arch_counts": {CROSS_ARCH_IDS[i]: int((arch_ids == i).sum()) for i in range(len(CROSS_ARCH_IDS))},
+            "era_counts": {int(min_year + e): int((era_id == e).sum()) for e in range(n_eras)},
+            "sport_dim": SPORT_DIM,
+            "n_pos": N_POS,
+            "pos_valid": {s: int(((pos_masks == 1) & (sport_ids == SPORT_ID[s])).sum()) for s in E_per},
+            "L2_verified": {s: True for s in E_per},
+            "consumer_wiring": {
+                "dfs_harvest_unified": "exports/dfs/dfs_harvest_unified.jsonl 3000 rows 17 keys uniform dup0 validated — wiring referenced in train_mtnn_v7_unified.validate_dfs_harvest_unified()",
+                "provenance_file": "data/unified_provenance_7_7_0.json",
+            },
+            "honest_fail": "503 never fabricated if Pillar-1 missing",
+        }
+    )
     # keep meta as superset
     (DATA / "unified_meta.json").write_text(json.dumps(prov, indent=2), encoding="utf-8")
     # also cache-side meta for pipeline/data consumer parity
@@ -261,7 +266,9 @@ def main():
         pass
 
     print(f"unified_matrix.npz  N={N:,}  sports={cov}  L2=1.0 verified 7/7/0 provenance OK")
-    print(f"  era {min_year}-{max_year} ({n_eras} bins)  LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] ?daily=YYYYMMDD&n=1/3/5")
+    print(
+        f"  era {min_year}-{max_year} ({n_eras} bins)  LCG 20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] ?daily=YYYYMMDD&n=1/3/5"
+    )
     print(
         "  arch counts: "
         + ", ".join(f"{CROSS_ARCH_IDS[i]}={int((arch_ids==i).sum())}" for i in range(len(CROSS_ARCH_IDS)))
@@ -275,8 +282,12 @@ def main():
     print("  per-sport arch coverage:")
     for s, d in per_sport_arch.items():
         print("    " + s + ": " + ", ".join(f"{k}={v}" for k, v in d.items() if v))
-    print(f"  consumer wiring dfs_harvest_unified.jsonl 3000 rows 17 keys uniform dup0 — validated, no non-prod-fabricated mock")
-    print(f"  mean-pool gate: Phase2 ONLY after per-domain PASS — IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite 0.7937→0.85 top1 0.438→0.55 sport_acc 0.685→0.64 GPA Frechet μ iterative tot_res<1e-5")
+    print(
+        "  consumer wiring dfs_harvest_unified.jsonl 3000 rows 17 keys uniform dup0 — validated, no non-prod-fabricated mock"
+    )
+    print(
+        "  mean-pool gate: Phase2 ONLY after per-domain PASS — IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite 0.7937→0.85 top1 0.438→0.55 sport_acc 0.685→0.64 GPA Frechet μ iterative tot_res<1e-5"
+    )
     return 0
 
 
