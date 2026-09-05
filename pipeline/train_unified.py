@@ -417,13 +417,19 @@ def load_matrix_normal(device, market=False, cultural_text=False):
 def load_matrix(device, market=False, cultural_text=False):
     mp = UCACHE / "unified_matrix.npz"
     if not mp.exists():
-        import sys; print('[unified] BLOCKED fallback — production-only honest 503', file=sys.stderr); sys.exit(2)
+        import sys
+
+        print("[unified] BLOCKED fallback — production-only honest 503", file=sys.stderr)
+        sys.exit(2)
     try:
         return load_matrix_normal(device, market=market, cultural_text=cultural_text)
     except FileNotFoundError as e:
         # honest OOM guard — missing caches referenced inside normal loader
         print(f"[load_matrix] {e} → fallback", file=sys.stderr)
-        import sys; print('[unified] BLOCKED fallback — production-only honest 503', file=sys.stderr); sys.exit(2)
+        import sys
+
+        print("[unified] BLOCKED fallback — production-only honest 503", file=sys.stderr)
+        sys.exit(2)
 
 
 def per_sport_pools(M):
