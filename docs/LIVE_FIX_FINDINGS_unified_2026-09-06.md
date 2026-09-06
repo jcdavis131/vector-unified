@@ -13,7 +13,11 @@ can touch.
 
 ## D1 — dead SPA rewrites (not fixed here; needs a Vercel dashboard check)
 
-**What's broken (verified live via curl, 2026-09-06):**
+L1 first surfaced this defect; every claim below was independently re-verified by
+this lane (L2) directly — via live curl and via the same read-only Vercel API calls
+L1 used — rather than taken on L1's word.
+
+**What's broken (verified live via curl, this lane, 2026-09-06):**
 
 `origin/main`'s own `vercel.json` (confirmed present at the exact commit backing the
 live production deployment) declares:
@@ -37,15 +41,20 @@ live pages) contain their own `href="/play"` links, so a visitor following the s
 own link graph hits a dead end.
 
 **Why this repo's own config is not the bug:** `cleanUrls` — declared in the *same*
-`vercel.json` file — **is** honored live (`/model.html` → `308` → `/model`), which
-proves the file is read at Vercel's build/deploy time. Only the `rewrites` block is
-not being applied. `get_project` (read-only Vercel API) does not expose a
-Root/Output-Directory override or a dashboard-level rewrites setting, so the
-mismatch cannot be diagnosed — let alone fixed — from outside the Vercel dashboard.
-Build logs for the live deployment (`dpl_425fgo3NcpUFwLgW3kromB68eZRB`) show a 29ms
-zero-config static deploy with no rewrite-manifest generation step logged, consistent
-with the dashboard's Root Directory or a project-level override not matching what
-`vercel.json` declares.
+`vercel.json` file — **is** honored live (`/model.html` → `308` → `/model`, re-curled
+by this lane, confirmed above), which proves the file is read at Vercel's
+build/deploy time. Only the `rewrites` block is not being applied. This lane called
+`get_project` (`prj_KFZ3qDFdIwmVXZkK4AyzFv0KqQ7w`) directly: the returned object has
+no `rootDirectory`, `outputDirectory` override, or rewrites-related field at all
+(only `id`, `name`, `framework:null`, `accountId`, `createdAt`, `updatedAt`,
+`nodeVersion`, `live:false`, `latestDeployment`, `domains`) — read-only inspection
+cannot see whatever dashboard setting is causing the divergence, let alone fix it.
+This lane also called `get_deployment_build_logs` on the live production deployment
+(`dpl_425fgo3NcpUFwLgW3kromB68eZRB`) directly and confirms the full log: a
+zero-config static build, `Build Completed in /vercel/output [29ms]`, with no
+rewrite-manifest generation step logged before "Deploying outputs..." — consistent
+with (not proof of) a dashboard-level Root Directory or project override causing
+`vercel.json`'s `rewrites` specifically to be skipped at deploy time.
 
 **Why no code change is attempted:** there is nothing in the repo to edit — the
 `rewrites` block is already exactly what the fix would be. Editing it further (e.g.
@@ -53,15 +62,17 @@ duplicating a fixed version elsewhere) would not change what the live deployment
 reads, and per this lane's guards, no `vercel` CLI, deploy command, or dashboard
 action is permitted from here.
 
-**Reproduction (curl, live site, quoted from L1's audit and re-confirmed by this
-lane's own D2/D3 curls against the same repo tree — command shape only, not
-re-run against the live network by this lane since D1 needed no additional live
-evidence beyond L1's):**
+**Reproduction (curl, live site, re-run by this lane 2026-09-06, output quoted
+verbatim):**
 
 ```
-curl -s -o /dev/null -w "%{http_code}" https://vector-unified.vercel.app/model   # 404, expected 200 (rewrite to /index.html)
-curl -s -o /dev/null -w "%{http_code}" https://vector-unified.vercel.app/play    # 404, expected 200
-curl -s -D - -o /dev/null https://vector-unified.vercel.app/model.html          # 308 -> /model (cleanUrls IS honored)
+$ curl -s -o /dev/null -w '%{http_code}' https://vector-unified.vercel.app/model
+404
+$ curl -s -o /dev/null -w '%{http_code}' https://vector-unified.vercel.app/play
+404
+$ curl -s -D - -o /dev/null https://vector-unified.vercel.app/model.html
+HTTP/2 308
+location: /model
 ```
 
 **Recommended operator action:** in the Vercel dashboard for project
