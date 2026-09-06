@@ -53,14 +53,19 @@ coded around.
 **Explicitly NOT done.** D1 (dead rewrites) is out of repo-scope, per above — needs the
 Vercel dashboard.
 
-**Merge target and blocker.** Base: **`origin/master`** (`a6c8e4b1`) — verified directly:
-`git merge-base weekend/live-fix-unified origin/master` returns `a6c8e4b1`, i.e. `master`'s
-current tip exactly, 10 commits ahead. Of those 10, 7 are pre-existing merge/deploy commits
-already carrying `origin/main`'s content into `master` (japandi-v4 redesign, news-tower
-deploys); the 3 new commits from this lane are on top:
-`273beb0` (the D2/D3 code fix), `ba3aaf1` (D1 findings-only), `559af99` (attribution
-correction). Clean merge into `master`, no conflicts expected. Live production, per L1, is
-actually `origin/main@df126851` — this branch's fix commits target the content that is
-live (verified against `df126851`'s bytes directly), and `master` already contains that
-content via the pre-existing merges, so merging to `master` does carry the fix forward. No
-git-level blocker.
+**Merge target and blocker — correction from an earlier draft of this PR body.** An
+earlier version of this section claimed the base was `origin/master` and that `master`
+already carried `origin/main`'s content. Re-verified directly and that was **wrong**:
+`git merge-base --is-ancestor <main's tip> origin/master` returns false — `master` is
+**7 commits behind `main`** (`git rev-list --count origin/master..origin/main` = 7,
+reverse = 0) and does not contain the japandi-v4 redesign or the news-tower deploys at
+all. The correct base is **`origin/main`** (`df1268510f19f4d05bd34f474450e8e345bca06e`):
+`git merge-base weekend/live-fix-unified origin/main` returns `df1268510` exactly (main's
+own current tip), **3 commits ahead, 0 behind** — this branch is `main` + this lane's 3
+new commits (`273beb0` the D2/D3 code fix, `ba3aaf1` D1 findings-only, `559af99`
+attribution correction), matching the L2 commit's own text ("worktree HEAD pinned to
+df126851"). Clean merge into `main`, no conflicts expected, and it is the branch that
+directly reaches live production (per L1, production is `origin/main@df126851`). Merging
+this branch into `master` instead would require first fast-forwarding `master` through
+`main`'s 7 commits — a larger, separate reconciliation, not something this branch alone
+resolves. No git-level blocker to merging into `main`.
