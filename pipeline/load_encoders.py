@@ -168,13 +168,27 @@ def load_pitch():
 def load_gridiron(device=None):
     """e_g regenerated from mtnn_best.pt over train_matrix.npz, season-aggregated (32-d).
 
-    Cached to pipeline/data/gridiron_season_emb.npz, invalidated by mtnn_best.pt mtime,
-    so the ~16s forward-pass runs once and is reused across build/train/eval.
+    Cached to pipeline/data/gridiron_season_emb.npz, invalidated by max(mtnn_best.pt
+    mtime, train_matrix.npz mtime), so the ~16s forward-pass runs once and is reused
+    across build/train/eval.
+
+    Was invalidated by the checkpoint's mtime alone. That missed the case this repo's
+    own cross-repo freshness check (pipeline/check_artifact_freshness.py, 92e4f9a) was
+    built to catch for `unified_matrix.npz` but never covered here: train_matrix.npz is
+    the gridiron trainer's own rebuilt feature/roster matrix, and it changes on a
+    different schedule than the checkpoint -- 2026-08-06 (mtnn_best.pt) vs 2026-09-01
+    (train_matrix.npz, +2 season-rows to 5325 with no retrain). A checkpoint-only key
+    would treat a cache regenerated today as fresh forever until the NEXT retrain, so a
+    future train_matrix.npz rebuild (gridiron has jobs queued) could go silently stale
+    again the same way -- the exact class of bug 92e4f9a's commit message describes,
+    recurring one level down, inside the function that check depends on.
     """
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ckpt_path = GRID / "pipeline" / "data" / "mtnn_best.pt"
+    matrix_path = GRID / "pipeline" / "data" / "train_matrix.npz"
     cache = UCACHE / "gridiron_season_emb.npz"
-    if cache.exists() and cache.stat().st_mtime >= ckpt_path.stat().st_mtime:
+    newest_input = max(ckpt_path.stat().st_mtime, matrix_path.stat().st_mtime)
+    if cache.exists() and cache.stat().st_mtime >= newest_input:
         a = np.load(cache, allow_pickle=False)
         E = np.ascontiguousarray(a["E"], dtype=np.float32)
         recs = [{
@@ -196,7 +210,7 @@ def load_gridiron(device=None):
     model.load_state_dict(ckpt["state"])
     model.eval()
 
-    d = np.load(GRID / "pipeline" / "data" / "train_matrix.npz", allow_pickle=False)
+    d = np.load(matrix_path, allow_pickle=False)
     Z = d["Z"].astype(np.float32); M = d["mask"].astype(np.float32)
     season = d["season"].astype(int); gsis = d["gsis"].astype(str)
     name = d["name"].astype(str); pos = d["pos"].astype(str); team = d["team"].astype(str)
