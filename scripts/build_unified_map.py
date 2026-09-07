@@ -16,6 +16,18 @@ months-old export sat next to it (2026-08-04 export from best_epoch=58 beside a 
 checkpoint at best_epoch=27). Serving that would put a model that no longer exists on a
 page claiming to show the current one, so this script refuses when they disagree.
 
+HOW TO RE-EXPORT, AND A TRAP. This script consumes assets/unified.json; the exporter that
+writes it is pipeline/export_unified_stage2.py. That exporter DOES NOT RUN on this branch:
+main's pipeline/train_stage2.py imports DEVICE_DEF from load_live_encoders, which main's
+load_live_encoders.py does not define, so the import fails before anything executes. The
+definition exists on fix/stage2-best-tracking (and several other branches). Until that lands
+on main, export from a checkout of that branch and copy assets/unified.json across. Two more
+things that bit on the way through: torch.cuda.is_available() returns True while
+device_count() is 0 when CUDA_VISIBLE_DEVICES is the empty string, so the repo's standard
+device idiom resolves to "cuda" and torch.load then fails - use CUDA_VISIBLE_DEVICES=-1 to
+run on CPU. And load_encoders.py derives HOME as ROOT.parent to find the sibling vector-*
+repos, so it only works from a checkout that sits directly under the home directory.
+
 Re-run after any re-export:  python scripts/build_unified_map.py
 """
 import datetime
