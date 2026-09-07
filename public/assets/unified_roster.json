@@ -1,0 +1,224 @@
+{
+ "source": "assets/unified.json",
+ "model": "UnifiedTrunk Stage 2.1 (unfrozen encoder alignment, best_epoch=27)",
+ "selection": "per sport, 4 player-seasons: the one nearest that sport's mean 64-d embedding, then farthest-point sampling for the rest so the tiles span the sport rather than resampling its centre",
+ "neighbour_rule": "for each tile, the single closest player-season from a DIFFERENT sport by cosine similarity in the same 64-d space",
+ "tiles": [
+  {
+   "sport": "gridiron",
+   "name": "Tim Jones",
+   "season": 2023,
+   "pos": "WR",
+   "team": "JAX",
+   "x": -0.7311,
+   "y": -0.3047,
+   "pick": "most typical",
+   "sim_to_sport_centroid": 0.9335,
+   "nearest_other_sport": {
+    "name": "Aaron Nesmith",
+    "sport": "hoops",
+    "season": "2025-26",
+    "pos": "2",
+    "cosine": 0.8859
+   }
+  },
+  {
+   "sport": "gridiron",
+   "name": "Derrick Henry",
+   "season": 2023,
+   "pos": "RB",
+   "team": "TEN",
+   "x": 0.7391,
+   "y": 0.0248,
+   "pick": "spread 1",
+   "sim_to_sport_centroid": -0.6399,
+   "nearest_other_sport": {
+    "name": "Scot Pollard",
+    "sport": "hoops",
+    "season": "2005-06",
+    "pos": "4",
+    "cosine": 0.7949
+   }
+  },
+  {
+   "sport": "gridiron",
+   "name": "Drew Stanton",
+   "season": 2016,
+   "pos": "QB",
+   "team": "ARI",
+   "x": -0.0716,
+   "y": 0.8976,
+   "pick": "spread 2",
+   "sim_to_sport_centroid": -0.2201,
+   "nearest_other_sport": {
+    "name": "Rodrigo De Paul",
+    "sport": "pitch",
+    "season": "Copa America 2024",
+    "pos": "MID",
+    "cosine": 0.8903
+   }
+  },
+  {
+   "sport": "gridiron",
+   "name": "Josh Perkins",
+   "season": 2019,
+   "pos": "TE",
+   "team": "PHI",
+   "x": 0.2172,
+   "y": -0.1411,
+   "pick": "spread 3",
+   "sim_to_sport_centroid": -0.0786,
+   "nearest_other_sport": {
+    "name": "Darko Velkovski",
+    "sport": "pitch",
+    "season": "Euro 2020",
+    "pos": "DEF",
+    "cosine": 0.8693
+   }
+  },
+  {
+   "sport": "hoops",
+   "name": "Brian Cook",
+   "season": "2010-11",
+   "pos": "3",
+   "team": null,
+   "x": -0.4487,
+   "y": -0.5487,
+   "pick": "most typical",
+   "sim_to_sport_centroid": 0.765,
+   "nearest_other_sport": {
+    "name": "Gabe Davis",
+    "sport": "gridiron",
+    "season": 2020,
+    "pos": "WR",
+    "cosine": 0.7917
+   }
+  },
+  {
+   "sport": "hoops",
+   "name": "Dejounte Murray",
+   "season": "2017-18",
+   "pos": "0",
+   "team": null,
+   "x": 0.4766,
+   "y": 0.7032,
+   "pick": "spread 1",
+   "sim_to_sport_centroid": -0.683,
+   "nearest_other_sport": {
+    "name": "Pascal Groß",
+    "sport": "pitch",
+    "season": "Bundesliga 2015/2016",
+    "pos": "MID",
+    "cosine": 0.7387
+   }
+  },
+  {
+   "sport": "hoops",
+   "name": "Aaron Brooks",
+   "season": "2014-15",
+   "pos": "0",
+   "team": null,
+   "x": -0.3763,
+   "y": 0.4491,
+   "pick": "spread 2",
+   "sim_to_sport_centroid": -0.0117,
+   "nearest_other_sport": {
+    "name": "Daizen Maeda",
+    "sport": "pitch",
+    "season": "WC 2022",
+    "pos": "FWD",
+    "cosine": 0.8059
+   }
+  },
+  {
+   "sport": "hoops",
+   "name": "Reggie Evans",
+   "season": "2013-14",
+   "pos": "3",
+   "team": null,
+   "x": 0.7383,
+   "y": -0.0518,
+   "pick": "spread 3",
+   "sim_to_sport_centroid": 0.1405,
+   "nearest_other_sport": {
+    "name": "Ben Davies",
+    "sport": "pitch",
+    "season": "WC 2022",
+    "pos": "DEF",
+    "cosine": 0.8604
+   }
+  },
+  {
+   "sport": "pitch",
+   "name": "Michael Murillo",
+   "season": "WC 2018",
+   "pos": "DEF",
+   "team": "Panama",
+   "x": 0.5304,
+   "y": -0.1331,
+   "pick": "most typical",
+   "sim_to_sport_centroid": 0.8763,
+   "nearest_other_sport": {
+    "name": "Anthony Davis",
+    "sport": "hoops",
+    "season": "2018-19",
+    "pos": "4",
+    "cosine": 0.7133
+   }
+  },
+  {
+   "sport": "pitch",
+   "name": "Lorenzo Insigne",
+   "season": "Serie A 2015/2016",
+   "pos": "FWD",
+   "team": "Napoli",
+   "x": -0.6199,
+   "y": 0.4296,
+   "pick": "spread 1",
+   "sim_to_sport_centroid": -0.7003,
+   "nearest_other_sport": {
+    "name": "Lance Stephenson",
+    "sport": "hoops",
+    "season": "2018-19",
+    "pos": "1",
+    "cosine": 0.815
+   }
+  },
+  {
+   "sport": "pitch",
+   "name": "Emerson",
+   "season": "Euro 2020",
+   "pos": "DEF",
+   "team": "Italy",
+   "x": 0.1653,
+   "y": -0.3319,
+   "pick": "spread 2",
+   "sim_to_sport_centroid": -0.2617,
+   "nearest_other_sport": {
+    "name": "Trenton Hassell",
+    "sport": "hoops",
+    "season": "2003-04",
+    "pos": "1",
+    "cosine": 0.9063
+   }
+  },
+  {
+   "sport": "pitch",
+   "name": "Nuno Mendes",
+   "season": "Ligue 1 2022/2023",
+   "pos": "DEF",
+   "team": "Paris Saint-Germain",
+   "x": 0.5878,
+   "y": 0.3625,
+   "pick": "spread 3",
+   "sim_to_sport_centroid": -0.3234,
+   "nearest_other_sport": {
+    "name": "Kelly Olynyk",
+    "sport": "hoops",
+    "season": "2023-24",
+    "pos": "4",
+    "cosine": 0.7436
+   }
+  }
+ ]
+}
