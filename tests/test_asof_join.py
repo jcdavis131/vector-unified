@@ -12,7 +12,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pipeline"))
 
-import build_asof_join as baj  # noqa: E402
+import build_asof_join as baj
 
 
 @pytest.fixture()
