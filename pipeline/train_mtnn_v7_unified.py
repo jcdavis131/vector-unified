@@ -185,17 +185,19 @@ LCG_CHAIN = {
     "lcg_formula": "L(s)=(s*1103515245+12345)&0x7fffffff glibc rand()",
     "example": "20260813→189831298 idx3820 triple[11205,19448,14209] five[11205,19448,14209,11701,18524] same-link-same-stars ?daily=YYYYMMDD&n=1/3/5 Solo1 Triple3 Full5 DAU3/WAU3 TLPG dedup everydayTip() humanized badge PWA v67 offline",
     "daily_chain": "?daily=YYYYMMDD&n=1/3/5 -> Solo1 Triple3 Full5",
-    "triple_verified": [11205,19448,14209],
-    "five_verified": [11205,19448,14209,11701,18524],
+    "triple_verified": [11205, 19448, 14209],
+    "five_verified": [11205, 19448, 14209, 11701, 18524],
     "provenance_score": "7/7",
     "provenance_missing": 0,
     "zero_deps": True,
-    "honest_fail": "503 Real-mode requires unified_matrix.npz but missing — honest fail, not fabricated"
+    "honest_fail": "503 Real-mode requires unified_matrix.npz but missing — honest fail, not fabricated",
 }
+
 
 def _honest_503_unified(msg: str):
     print(f"503 Real-mode requires unified_matrix.npz but {msg} — honest fail, not fabricated", flush=True)
     sys.exit(11)
+
 
 def validate_unified_matrix_exists() -> Path:
     """Ensure unified_matrix.npz build first honest fail not non-prod-fabricated mock."""
@@ -211,13 +213,15 @@ def validate_unified_matrix_exists() -> Path:
             return p
     _honest_503_unified(f"missing in {candidates} — run build_unified_matrix.py first (L2 1.0, 20719 rows)")
 
-def validate_L2_and_provenance(mat_path: Path = None) -> dict:
+
+def validate_L2_and_provenance(mat_path: Path | None = None) -> dict:
     """Verify L2 norms =1.0 atol1e-5, provenance 7/7/0, no non-prod-fabricated mock."""
     p = mat_path or validate_unified_matrix_exists()
     import numpy as np  # local import stdlib shim safe
+
     d = np.load(p, allow_pickle=True)
     # check keys
-    required = ["E_hoops","E_gridiron","E_pitch","sport_id"]
+    required = ["E_hoops", "E_gridiron", "E_pitch", "sport_id"]
     missing = [k for k in required if k not in d.files]
     if missing:
         # stacked variant may have different keys (Z) — allow secondary format
@@ -225,7 +229,7 @@ def validate_L2_and_provenance(mat_path: Path = None) -> dict:
             _honest_503_unified(f"keys missing {missing} in {p} — honest fail")
     # L2 verify where present
     verified = {}
-    for k in ("E_hoops","E_gridiron","E_pitch"):
+    for k in ("E_hoops", "E_gridiron", "E_pitch"):
         if k in d.files:
             E = d[k]
             norms = np.linalg.norm(E, axis=1)
@@ -236,54 +240,87 @@ def validate_L2_and_provenance(mat_path: Path = None) -> dict:
                 print(f"[unified v7] WARN {k} L2 not 1.0 mean={norms.mean():.4f} — re-norm required honest", flush=True)
     # sport counts
     if "sport_id" in d.files:
-        n=len(d["sport_id"])
+        n = len(d["sport_id"])
     else:
-        n=d[d.files[0]].shape[0] if d.files else 0
-    return {"path": str(p), "L2_ok": verified, "N": int(n), "provenance": LCG_CHAIN, "no_non-prod-fabricated_mock": True}
+        n = d[d.files[0]].shape[0] if d.files else 0
+    return {
+        "path": str(p),
+        "L2_ok": verified,
+        "N": int(n),
+        "provenance": LCG_CHAIN,
+        "no_non-prod-fabricated_mock": True,
+    }
+
 
 DFS_UNIFIED_PATH = Path.home() / "workspace" / "exports" / "dfs" / "dfs_harvest_unified.jsonl"
+
 
 def validate_dfs_harvest_unified(path: Path = DFS_UNIFIED_PATH) -> dict:
     """Validate dfs_harvest_unified.jsonl 3000 rows 17 keys uniform dup0 — consumer wiring."""
     if not path.exists():
         print(f"[unified v7] honest 503 missing {path} — dfs_harvest_unified fetch required", flush=True)
-        return {"n":0,"keys_len":0,"dups":0,"uniform":False,"provenance":"missing","ok":False,"path":str(path)}
+        return {
+            "n": 0,
+            "keys_len": 0,
+            "dups": 0,
+            "uniform": False,
+            "provenance": "missing",
+            "ok": False,
+            "path": str(path),
+        }
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
         n = len(lines)
-        if n==0:
-            return {"n":0,"keys_len":0,"dups":0,"uniform":False,"ok":False,"path":str(path)}
-        import json, hashlib
-        from collections import Counter
+        if n == 0:
+            return {"n": 0, "keys_len": 0, "dups": 0, "uniform": False, "ok": False, "path": str(path)}
+        import hashlib
+        import json
+
         first = json.loads(lines[0])
         keys = sorted(first.keys())
         keys_len = len(keys)
-        uniform = all(sorted(json.loads(l).keys())==keys for l in lines[:min(100,n)])
+        uniform = all(sorted(json.loads(l).keys()) == keys for l in lines[: min(100, n)])
         # dups via core hash excluding ts fields
-        seen={}
-        dups=0
+        seen = {}
+        dups = 0
         for l in lines:
             try:
-                j=json.loads(l)
+                j = json.loads(l)
             except:
                 continue
-            core=json.dumps({k:j[k] for k in sorted(j.keys()) if k not in ("ingested_at","ts")}, sort_keys=True)
-            h=hashlib.sha256(core.encode()).hexdigest()[:16]
+            core = json.dumps({k: j[k] for k in sorted(j.keys()) if k not in ("ingested_at", "ts")}, sort_keys=True)
+            h = hashlib.sha256(core.encode()).hexdigest()[:16]
             if h in seen:
-                dups+=1
+                dups += 1
             else:
-                seen[h]=1
-        prov = first.get("provenance","")
+                seen[h] = 1
+        prov = first.get("provenance", "")
         # conditional mean-pool honesty — currently file says True but gates FAIL -> should be conditional
         all_pass_flag = first.get("all_domains_pass_for_mean_pool")
         mean_pool_only = first.get("procrustes_mean_pool_only_after_PASS")
         gates_snap = first.get("gates_pass_snapshot", {})
-        ok = (n==3000 and keys_len==17 and uniform and dups==0)
-        print(f"[unified v7] dfs_harvest_unified validated {n} rows keys={keys_len} uniform={uniform} dups={dups} provenance={prov} all_pass={all_pass_flag} mean_pool_only_PASS={mean_pool_only} gates={gates_snap} — ok={ok}", flush=True)
-        return {"n":n,"keys_len":keys_len,"dups":dups,"uniform":uniform,"provenance":prov,"all_pass_flag":all_pass_flag,"mean_pool_only_PASS":mean_pool_only,"gates_snap":gates_snap,"ok":ok,"path":str(path),"keys":keys}
+        ok = n == 3000 and keys_len == 17 and uniform and dups == 0
+        print(
+            f"[unified v7] dfs_harvest_unified validated {n} rows keys={keys_len} uniform={uniform} dups={dups} provenance={prov} all_pass={all_pass_flag} mean_pool_only_PASS={mean_pool_only} gates={gates_snap} — ok={ok}",
+            flush=True,
+        )
+        return {
+            "n": n,
+            "keys_len": keys_len,
+            "dups": dups,
+            "uniform": uniform,
+            "provenance": prov,
+            "all_pass_flag": all_pass_flag,
+            "mean_pool_only_PASS": mean_pool_only,
+            "gates_snap": gates_snap,
+            "ok": ok,
+            "path": str(path),
+            "keys": keys,
+        }
     except Exception as e:
         print(f"[unified v7] dfs_harvest_unified validate error {e}", flush=True)
-        return {"error":str(e),"ok":False,"path":str(path)}
+        return {"error": str(e), "ok": False, "path": str(path)}
+
 
 # ---------- Per-domain gates ----------
 # Honest conditional mean-pool: ONLY after PASS — documented here as conditional (an honest 503 wrapper would enforce)
@@ -444,11 +481,21 @@ def train_unified_shim(args):
     try:
         mat_path = validate_unified_matrix_exists()
         l2_info = validate_L2_and_provenance(mat_path)
-        print(f"[unified v7] matrix OK {mat_path} N={l2_info['N']} L2={l2_info['L2_ok']} provenance 7/7/0 no non-prod-fabricated mock")
+        print(
+            f"[unified v7] matrix OK {mat_path} N={l2_info['N']} L2={l2_info['L2_ok']} provenance 7/7/0 no non-prod-fabricated mock"
+        )
     except SystemExit as se:
         # honest 503 — never fabricated
-        print(f"[unified v7] 503 Real-mode requires unified_matrix.npz but missing — honest fail, not fabricated (exit {se.code})", flush=True)
-        return {"status": "failed_503_missing_matrix", "device": DEVICE_TYPE, "g2_proj": 0.642, "phase": "Phase1_only_honest_503"}
+        print(
+            f"[unified v7] 503 Real-mode requires unified_matrix.npz but missing — honest fail, not fabricated (exit {se.code})",
+            flush=True,
+        )
+        return {
+            "status": "failed_503_missing_matrix",
+            "device": DEVICE_TYPE,
+            "g2_proj": 0.642,
+            "phase": "Phase1_only_honest_503",
+        }
 
     # ---- consumer wiring: dfs_harvest_unified 3000 rows 17 keys uniform dup0 ----
     try:
@@ -456,16 +503,23 @@ def train_unified_shim(args):
         if not dfs_stats.get("ok"):
             print(f"[unified v7] dfs_harvest_unified validation FAIL {dfs_stats} — honest doc, not mock", flush=True)
         else:
-            print(f"[unified v7] dfs_harvest_unified wiring OK 3000 rows 17 keys uniform dup0 — conditional Phase2 after PASS gate documented")
+            print(
+                "[unified v7] dfs_harvest_unified wiring OK 3000 rows 17 keys uniform dup0 — conditional Phase2 after PASS gate documented"
+            )
         # enforce conditional mean-pool honesty: all_domains_pass should reflect check_gates()
         gates_now = check_gates()
         any_fail = gates_now.get("_any_fail", True)
         # if file says all True but gates say FAIL, we document conflict honest
         if dfs_stats.get("all_pass_flag") is True and any_fail:
-            print(f"[unified v7] SPEC CONFLICT: dfs_harvest_unified.jsonl says all_domains_pass_for_mean_pool=True but check_gates() says FAIL → "
-                  f"must be conditional, Phase1_only until PASS (IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite0.7937→0.85 top1 0.438→0.55 sport_acc 0.685→0.64 GPA Frechet μ tote_res<1e-5). Document honest.", flush=True)
+            print(
+                "[unified v7] SPEC CONFLICT: dfs_harvest_unified.jsonl says all_domains_pass_for_mean_pool=True but check_gates() says FAIL → "
+                "must be conditional, Phase1_only until PASS (IC>0.15 MAE<5 ROI_IC>0.05 Brier<0.22 composite0.7937→0.85 top1 0.438→0.55 sport_acc 0.685→0.64 GPA Frechet μ tote_res<1e-5). Document honest.",
+                flush=True,
+            )
     except Exception as e:
-        print(f"[unified v7] dfs_harvest_unified wiring error {e} — consumer wiring must be explicit per task", flush=True)
+        print(
+            f"[unified v7] dfs_harvest_unified wiring error {e} — consumer wiring must be explicit per task", flush=True
+        )
 
     mod = load_train_unified()
     if mod is None or not HAS_TORCH:
@@ -476,7 +530,9 @@ def train_unified_shim(args):
         print(
             "[smoke] MTL dims [8,18,33,12] UW+GradNorm α0.8+PCGrad136 pairs GRL λ0.3→0.5 warmup5 ramp10 w-sport0.5 w-task2.0 w-coral0.5 centroid0.5 SupCon0.07"
         )
-        print(f"[smoke] per-domain gates: {check_gates()} — Phase2 Procrustes mean-pool ONLY after PASS gate conditional honest")
+        print(
+            f"[smoke] per-domain gates: {check_gates()} — Phase2 Procrustes mean-pool ONLY after PASS gate conditional honest"
+        )
         if mod and HAS_NP:
             pass
         return {
@@ -486,7 +542,7 @@ def train_unified_shim(args):
             "g2_target": 0.64,
             "phase": "Phase1_only_conditional_PASS_gate",
             "provenance": LCG_CHAIN,
-            "L2_verified": True
+            "L2_verified": True,
         }
     # Real path — delegate CLI arg building same as spec
     # Build argparse compatible dict
