@@ -100,7 +100,7 @@ OUT.write_text(json.dumps({
     # this export was actually produced, which is the file's own mtime. The exporter's claim
     # is kept verbatim below rather than dropped, so nothing is hidden.
     "built_utc": datetime.datetime.fromtimestamp(
-        SRC.stat().st_mtime, datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        SRC.stat().st_mtime, datetime.UTC).strftime("%Y-%m-%d %H:%M UTC"),
     "exporter_built_field": blob.get("built"),
     "model": label,
     "d_emb": blob.get("d_emb"),
@@ -209,5 +209,5 @@ ROSTER_OUT.write_text(json.dumps({
 print(f"wrote {ROSTER_OUT.relative_to(ROOT)}: {len(tiles)} tiles")
 for t in tiles:
     nb = t["nearest_other_sport"]
-    print(f"    {t['sport']:<9s} {str(t['name'])[:22]:<22s} {str(t.get('season')):<8s}"
+    print(f"    {t['sport']:<9s} {str(t['name'])[:22]:<22s} {t.get('season')!s:<8s}"
           f" -> {nb['sport']:<9s} {str(nb['name'])[:20]:<20s} cos {nb['cosine']:.3f}")

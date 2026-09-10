@@ -123,3 +123,4 @@ bundles/ultra/runs/
 *.pyo
 exports/
 archive/
+.vercel
