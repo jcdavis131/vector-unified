@@ -54,6 +54,11 @@ def _hoops_bundle(device):
         sys.path.insert(0, _vhs)
     spec = importlib.util.spec_from_file_location("hoops_train_mtnn", _vh / "train_mtnn.py")
     hm = importlib.util.module_from_spec(spec); spec.loader.exec_module(hm)
+    # Vendored module's ROOT/DATA_DIR resolve inside vector-unified; repoint at
+    # the hoops repo's data dir (train_matrix.npz, feature_manifest.json) and
+    # assets (vectors.json) before load_bundle() runs.
+    hm.DATA_DIR = HOOPS / "pipeline" / "data"
+    hm.VECTORS = HOOPS / "assets" / "vectors.json"
     ck = torch.load(HOOPS / "pipeline" / "data" / "mtnn_best.pt",
                     map_location=device, weights_only=False)
     a = ck["args"]
