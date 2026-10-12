@@ -84,7 +84,14 @@ def _hoops_bundle(device):
                     n_fusion_layers=a["n_fusion_layers"], n_attn_heads=a["n_attn_heads"],
                     d_fusion_hidden=(a["fusion_hidden"] or None),
                     n_injury=len(injury_cols)).to(device)
-    model.load_state_dict(ck["model"], strict=True)
+    # strict=False: the checkpoint's skill_towers.* weights are for the
+    # "skills" output head, which encode() never touches (G2 only needs
+    # embeddings). Verify that ONLY skill_towers keys are ignored.
+    _incompat = model.load_state_dict(ck["model"], strict=False)
+    _bad = [k for k in list(_incompat.missing_keys) + list(_incompat.unexpected_keys)
+            if not k.startswith("skill_towers.")]
+    if _bad:
+        raise RuntimeError(f"state_dict mismatch beyond skill_towers: {_bad[:10]}")
     xs, ms = hm.split_by_family(Z, M, fams, device)
     seas_t = torch.tensor(season_ids, device=device, dtype=torch.long)
     recs = [{"sport": "hoops", "player_id": str(int(pids[i])), "name": str(names[i]),
