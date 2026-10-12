@@ -72,7 +72,6 @@ def _hoops_bundle(device):
     sk_g, sk_m, skill_keys, _n_core = hm.load_skill_labels(names, seasons)
     form_cols = hm.feature_cols(manifest, hm.FORM_FEATURES) or []
     bbref_cols = hm.feature_cols(manifest, hm.BBREF_FEATURES) or []
-    injury_cols = hm.feature_cols(manifest, hm.INJURY_FEATURES) or []
     n_seasons = int(season_ids.max()) + 1
     model = hm.MTNN({f: len(c) for f, c in fams.items()}, n_seasons,
                     d_tower=a["tower_width"], d_tower_hidden=a["tower_hidden"],
@@ -82,8 +81,7 @@ def _hoops_bundle(device):
                     n_tower_blocks=a["tower_blocks"], mlp_heads=a["mlp_heads"],
                     d_head_hidden=a["d_head_hidden"], d_model=a["d_model"],
                     n_fusion_layers=a["n_fusion_layers"], n_attn_heads=a["n_attn_heads"],
-                    d_fusion_hidden=(a["fusion_hidden"] or None),
-                    n_injury=len(injury_cols)).to(device)
+                    d_fusion_hidden=(a["fusion_hidden"] or None)).to(device)
     model.load_state_dict(ck["model"], strict=True)
     xs, ms = hm.split_by_family(Z, M, fams, device)
     seas_t = torch.tensor(season_ids, device=device, dtype=torch.long)
