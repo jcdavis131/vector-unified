@@ -43,13 +43,16 @@ DEVICE_DEF = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def _hoops_bundle(device):
     import importlib.util
-    # hoops train_mtnn imports sibling modules (composite_score, ...) from its own
-    # pipeline dir; spec_from_file_location does NOT add that dir to sys.path, so do it
-    # explicitly before exec. (Pitch has no sibling imports; Gridiron uses load_encoders._MTNN.)
-    _hp = str(HOOPS / "pipeline")
-    if _hp not in sys.path:
-        sys.path.insert(0, _hp)
-    spec = importlib.util.spec_from_file_location("hoops_train_mtnn", HOOPS / "pipeline" / "train_mtnn.py")
+    # The hoops MTNN module is vendored (pipeline/vendor_hoops/, pinned to the
+    # 2026-08-31 vector-hoops tree whose weights are in mtnn_best.pt) because
+    # vector-hoops master removed train_mtnn.py. Sibling imports
+    # (composite_score, mtnn_validation) live in the same vendored dir.
+    # (Pitch has no sibling imports; Gridiron uses load_encoders._MTNN.)
+    _vh = Path(__file__).resolve().parent / "vendor_hoops"
+    _vhs = str(_vh)
+    if _vhs not in sys.path:
+        sys.path.insert(0, _vhs)
+    spec = importlib.util.spec_from_file_location("hoops_train_mtnn", _vh / "train_mtnn.py")
     hm = importlib.util.module_from_spec(spec); spec.loader.exec_module(hm)
     ck = torch.load(HOOPS / "pipeline" / "data" / "mtnn_best.pt",
                     map_location=device, weights_only=False)
